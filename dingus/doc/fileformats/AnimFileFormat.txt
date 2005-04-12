@@ -1,0 +1,47 @@
+-----------------------------------------------------------------------------
+
+DANIM file format:
+Binary file, Intel byte order
+
+Bytes	Desc
+---- HEADER ----
+4		Magic "DANI" chars
+4		Sampling type: 0=sampled, others TBD.
+4		Animation type: 0=clamp, 1=loop, 2=loop w/ last sample for transition
+4		Animation curve count
+4		Animation group count (each group contains same number of curves)
+
+---- FOR EACH CURVE ----
+asciiz	Curve name
+4		Parent curve index (-1 if no parent)
+
+[ the rest is for sampled animation case ]
+4		Sample count in each of the curves (when not collapsed)
+
+---- FOR EACH GROUP ----
+4		Group data type, as enumerated in dingus::eAnimDataFileType
+4		Data unit size (eg. 12 for float3)
+asciiz	Group name
+- for each curve in group -
+4		Interpolator type, as enumerated in dingus::CAnimCurve::eIpol
+4		First sample index
+varies	Collapsed value - size of data unit
+- end for each curve -
+4		Total sample count in group (equal to non-collapsed-curves * samples-in-curve)
+- for each sample -
+varies	Sample value
+- end for each sample -
+
+
+-----------------------------------------------------------------------------
+
+EXPORTER details:
+
+Exports groups in such order:
+1) position - named "pos" (VEC3)
+2) rotation - named "rot" (QUAT or QUAT_H)
+3) scale - named "scale" (FLT or FLT_H) or "scale3" (VEC3 or VEC3_H)
+4) camera (nearclip, farclip, fov) - named "cam", type VEC3
+5) diffuse+opacity color - named "color", type COLOR
+Each group is optional.
+

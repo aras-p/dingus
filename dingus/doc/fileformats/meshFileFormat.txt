@@ -1,0 +1,47 @@
+-----------------------------------------------------------------------------
+
+DMESH file format:
+Binary file, Intel byte order
+
+Bytes	Desc
+---- HEADER ----
+4		Magic "DMSH" chars
+4		Vertex count
+4		Face (tri) count
+4		Group count
+4		Vertex stride in bytes
+4		Vertex component flags: bits correspond to dingus::CVertexFormat
+4		Index stride in bytes (2 or 4)
+
+-- for each vertex --
+varies	Vertex data
+
+-- for each face --
+6 or 12	Vertex indices (short3 or int3, depending on index stride)
+
+-- for each group --
+4		Starting vertex index
+4		Vertex count
+4		Starting face index
+4		Face count
+
+
+
+[ the rest is for skinned mesh case ]
+[ If vertex contains skinning info, this is present: ]
+---- SKINNING INFO ----
+4		Bone count
+
+-- for each bone --
+asciiz	Bone name
+4		Parent bone index (-1 if no parent)
+48		Bone offset matrix (float4x3)
+
+
+
+
+-----------------------------------------------------------------------------
+
+EXPORTER details:
+
+TBD

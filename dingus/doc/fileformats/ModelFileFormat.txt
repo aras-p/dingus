@@ -1,0 +1,42 @@
+Model description file format.
+Lua file with single model; a model has a mesh name and mesh groups
+description. Mesh group has effect, render priority and effect parameters.
+
+-----------------------------------------------------------------------------
+Revision history:
+- 2004 04 02	v1.1	Aras
+	Just one model per file
+- 2004 04 01	v1.0	Aras
+	Initial revision
+
+
+-----------------------------------------------------------------------------
+Example file, format should be clear :)
+
+name = 'MeshID'
+groups = {
+{
+	fx = 'Effect',
+	pri = PriorityInteger,
+	params = {
+		{ 'tex', 'tBase', 'TextureFile' },
+		{ 'cube', 'tCubemap', 'CubeTextureFile' },
+		{ 'stex', 'tSharedTex', 'SharedTextureID' },
+		{ 'vec3', 'vVector3', 1.0, 2.0, 3.0 },
+		{ 'vec4', 'vColor', 1.0, 0.5, 0.2, 1.0 },
+		{ 'flt', 'fScalar', 13.0 },
+	}
+},
+-- other groups
+}
+
+-----------------------------------------------------------------------------
+Supported effect param types (first entry in param array):
+	TYPE	REV		DESC
+	tex		1.0		Texture ID
+	cube	1.0		Cubemap ID
+	vec3	1.0		Vector3 value
+	vec4	1.0		Vector4 value
+	flt		1.0		Float value
+	stex	1.0		Shared texture ID
+

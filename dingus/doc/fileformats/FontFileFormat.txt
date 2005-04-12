@@ -1,0 +1,48 @@
+-----------------------------------------------------------------------------
+
+DFONT2 file format:
+Binary file, Intel byte order
+
+Bytes	Desc
+---- HEADER ----
+4		Magic "DFN2" chars
+32char	Font name
+2ui		Font size
+1ui		Bold?
+1ui		Italic?
+2ui		First letter
+2ui		Letter count
+2ui		Texture width
+2ui		Texture height
+2ui		Texture gutter
+2ui		Max. char width in texels
+2ui		Max. char height in texels
+
+-- for each letter --
+2ui		UV x0	all UVs in texels, not like normal texture UVs
+2ui		UV y0
+2ui		UV x1
+2ui		UV y1
+
+
+
+-----------------------------------------------------------------------------
+
+DFONT file format:
+Binary file, Intel byte order
+
+Bytes	Desc
+---- HEADER ----
+4		Magic "DFNT" chars
+4ui		Letter count
+4ui		First character ASCII code
+2ui		Max. char width in texels
+2ui		Max. char height in texels
+
+-- for each letter --
+4f		UV x0
+4f		UV y0
+4f		UV x1
+4f		UV y1
+2ui		Width in texels. Can't just use UVs because the texture isn't always square.
+2ui		Height in texels
