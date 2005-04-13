@@ -1241,6 +1241,14 @@ SOURCE=.\dingus\utils\Config.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\dingus\utils\CpuTimer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\dingus\utils\CpuTimer.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\dingus\utils\Errors.cpp
 # End Source File
 # Begin Source File
