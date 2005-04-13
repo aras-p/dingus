@@ -1434,6 +1434,10 @@ SOURCE=.\doc\Effects.txt
 # End Group
 # Begin Source File
 
+SOURCE=.\changes.txt
+# End Source File
+# Begin Source File
+
 SOURCE=.\dingus\dxutils\DirectX.ico
 # End Source File
 # Begin Source File

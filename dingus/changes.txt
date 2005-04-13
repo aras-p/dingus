@@ -2,6 +2,7 @@
 Dingus codenamed "IC2005 demo"
 ========
 
+050413:	rdtsc based timer added to utils (cputimer). Mostly for debugging.
 050411:	Character animator now has history buffer for blending fast changing
 		anims. Also can synch-blend walk cycles.
 050411: Added ringdeque<T> to utils.
