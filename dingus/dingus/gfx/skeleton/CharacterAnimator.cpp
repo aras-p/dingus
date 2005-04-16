@@ -9,8 +9,8 @@ using namespace dingus;
 
 
 CCharacterAnimator::CCharacterAnimator()
-//:	mHasScale3( false )
-:	mDefaultBunch( NULL )
+:	mHasScale3( false )
+,	mDefaultBunch( NULL )
 ,	mDefaultDuration( 1.0f )
 ,	mDefaultFadeInTime( 0.0f )
 ,	mCurrAnim( NULL )
@@ -20,7 +20,7 @@ CCharacterAnimator::CCharacterAnimator()
 	// create mixers for transition between animations
 	mPosMixer = new TVector3Mixer();
 	mRotMixer = new TQuatMixer();
-	//mScale3Mixer = new TVector3Mixer();
+	mScale3Mixer = new TVector3Mixer();
 }
 
 
@@ -28,7 +28,7 @@ CCharacterAnimator::~CCharacterAnimator()
 {
 	delete mPosMixer;
 	delete mRotMixer;
-	//delete mScale3Mixer;
+	delete mScale3Mixer;
 }
 
 
@@ -36,7 +36,7 @@ void CCharacterAnimator::setNumCurves( int n )
 {
 	mBoneLocalPos.resize( n );
 	mBoneLocalRot.resize( n );
-	//mBoneLocalScale.resize( n );
+	mBoneLocalScale.resize( n );
 	mBoneLocal.resize( n );
 	mBoneWorld.resize( n );
 	mNumCurves = n;
@@ -45,7 +45,7 @@ void CCharacterAnimator::setNumCurves( int n )
 
 
 
-void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, float startTime, float duration, float numCurves )
+void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, float startTime, float duration, float numCurves, bool& hasScale )
 {
 	bunch = b;
 	if( b == NULL )
@@ -56,6 +56,16 @@ void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, float
 	CAnimationBunch::TQuatAnimation* rotAnim = b->findQuatAnim("rot");
 	assert( rotAnim );
 	rotStream = new TQuatAnimStream( *rotAnim, duration, 0, numCurves, startTime );
+
+	// scale3 optional
+	CAnimationBunch::TVector3Animation* scale3Anim = b->findVector3Anim("scale3");
+	if( scale3Anim ) {
+		scale3Stream = new TVectorAnimStream( *scale3Anim, duration, 0, numCurves, startTime );
+		hasScale = true;
+	} else {
+		scale3Stream = 0;
+		hasScale = false;
+	}
 }
 
 
@@ -71,8 +81,8 @@ void CCharacterAnimator::playAnim( const CAnimationBunch& bunch, float duration,
 	// setup current state to play single anim and push it
 	SSynchAnimState as;
 	float startTime = anim_time();
-	as.anims[0].setupState( &bunch, startTime, duration, mNumCurves );
-	as.anims[1].setupState( NULL, startTime, duration, mNumCurves );
+	as.anims[0].setupState( &bunch, startTime, duration, mNumCurves, mHasScale3 );
+	as.anims[1].setupState( NULL, startTime, duration, mNumCurves, mHasScale3 );
 	as.fadeIn = fadeInTime;
 	as.oneShot = oneShot;
 	mAnims.push_back( as );
@@ -122,7 +132,7 @@ void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CA
 		float t = anim_time();
 		float relPlayTime = asCurr->anims[1].posStream->getRelTime( t );
 		float startTime = t - relPlayTime * duration;
-		asCurr->anims[0].setupState( &bunch1, startTime, duration, mNumCurves );
+		asCurr->anims[0].setupState( &bunch1, startTime, duration, mNumCurves, mHasScale3 );
 
 	} else if( asCurr->anims[1].bunch == &bunch1 ) {
 		// previously 2nd anim now is 1st
@@ -135,7 +145,7 @@ void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CA
 		float t = anim_time();
 		float relPlayTime = asCurr->anims[0].posStream->getRelTime( t );
 		float startTime = t - relPlayTime * duration;
-		asCurr->anims[1].setupState( &bunch2, startTime, duration, mNumCurves );
+		asCurr->anims[1].setupState( &bunch2, startTime, duration, mNumCurves, mHasScale3 );
 
 	} else {
 		// both anims are new, setup them
@@ -146,8 +156,8 @@ void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CA
 			startTime = t - relPlayTime * duration;
 		} else
 			startTime = t;
-		asCurr->anims[0].setupState( &bunch1, startTime, duration, mNumCurves );
-		asCurr->anims[1].setupState( &bunch2, startTime, duration, mNumCurves );
+		asCurr->anims[0].setupState( &bunch1, startTime, duration, mNumCurves, mHasScale3 );
+		asCurr->anims[1].setupState( &bunch2, startTime, duration, mNumCurves, mHasScale3 );
 
 	}
 
@@ -195,7 +205,7 @@ void CCharacterAnimator::updateLocal()
 
 	mPosMixer->clearStreams();
 	mRotMixer->clearStreams();
-	//mScale3Mixer->clearStreams();
+	mScale3Mixer->clearStreams();
 
 
 	float curTime = anim_time();
@@ -240,11 +250,15 @@ void CCharacterAnimator::updateLocal()
 			float wht = (1.0f - ascurr.lerper) * baseWeight;
 			mPosMixer->addStream( ascurr.anims[0].posStream, wht );
 			mRotMixer->addStream( ascurr.anims[0].rotStream, wht );
+			if( mHasScale3 )
+				mScale3Mixer->addStream( ascurr.anims[0].scale3Stream, wht );
 		}
 		if( ascurr.anims[1].bunch ) {
 			float wht = (ascurr.lerper) * baseWeight;
 			mPosMixer->addStream( ascurr.anims[1].posStream, wht );
 			mRotMixer->addStream( ascurr.anims[1].rotStream, wht );
+			if( mHasScale3 )
+				mScale3Mixer->addStream( ascurr.anims[1].scale3Stream, wht );
 		}
 
 		--animIdx;
@@ -260,8 +274,8 @@ void CCharacterAnimator::updateLocal()
 	// mix the streams
 	mPosMixer->update( mNumCurves, &mBoneLocalPos[0], true );
 	mRotMixer->update( mNumCurves, &mBoneLocalRot[0], true );
-	//if( mHasScale3 )
-	//	mScale3Mixer->update( mNumCurves, &mBoneLocalScale[0], true );
+	if( mHasScale3 )
+		mScale3Mixer->update( mNumCurves, &mBoneLocalScale[0], true );
 
 	
 	//
@@ -270,6 +284,11 @@ void CCharacterAnimator::updateLocal()
 	int n = mNumCurves;
 	for( int b = 0; b < n; ++b ) {
 		mBoneLocal[b] = SMatrix4x4( mBoneLocalPos[b],mBoneLocalRot[b] );
+		if( mHasScale3 ) {
+			mBoneLocal[b].getAxisX() *= mBoneLocalScale[b].x;
+			mBoneLocal[b].getAxisY() *= mBoneLocalScale[b].y;
+			mBoneLocal[b].getAxisZ() *= mBoneLocalScale[b].z;
+		}
 	}
 }
 

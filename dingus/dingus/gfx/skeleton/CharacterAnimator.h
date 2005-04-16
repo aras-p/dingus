@@ -74,15 +74,15 @@ private:
 	typedef std::vector<SMatrix4x4>		TMatrixVector;
 
 	struct SAnimState {
-		SAnimState() : bunch(0), posStream(0), rotStream(0)/*, scale3Stream(0), fadeIn(0)*/ { }
+		SAnimState() : bunch(0), posStream(0), rotStream(0), scale3Stream(0) { }
 
-		void	setupState( const CAnimationBunch* b, float startTime, float duration, float numCurves );
-		void	resetState() { bunch = NULL; posStream=0; rotStream=0; /*scale3Stream=0;*/ }
+		void	setupState( const CAnimationBunch* b, float startTime, float duration, float numCurves, bool& hasScale );
+		void	resetState() { bunch = NULL; posStream=0; rotStream=0; scale3Stream=0; }
 
 		const CAnimationBunch*			bunch;
 		TVectorAnimStream::TSharedPtr	posStream;
 		TQuatAnimStream::TSharedPtr		rotStream;
-		//TVectorAnimStream::TSharedPtr	scale3Stream;
+		TVectorAnimStream::TSharedPtr	scale3Stream;
 	};
 	struct SSynchAnimState {
 		enum { ANIMS = 2 };
@@ -114,17 +114,17 @@ private:
 	/// Rotation mixer
 	TQuatMixer*		mRotMixer;
 	/// Scale3 mixer
-	//TVector3Mixer*	mScale3Mixer;
+	TVector3Mixer*	mScale3Mixer;
 	
 	/// Current number of anim curves
 	int				mNumCurves;
 
 	/// Has scale3 animation? (if present, must be in all animations)
-	//bool			mHasScale3;
+	bool			mHasScale3;
 
 	TVec3Vector		mBoneLocalPos;
 	TQuatVector		mBoneLocalRot;
-	//TVec3Vector		mBoneLocalScale;
+	TVec3Vector		mBoneLocalScale;
 	TMatrixVector	mBoneLocal;
 	TMatrixVector	mBoneWorld;
 
