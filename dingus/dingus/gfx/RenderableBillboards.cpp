@@ -67,7 +67,7 @@ void CRenderableBillboards::beforeRender( CRenderable& r, CRenderContext& ctx )
 		if( slot.empty() )
 			continue;
 
-		CVBChunk::TSharedPtr chunk = mVBSource.lock( slot.size() * 4 ); // 4 verts per billboard
+		TVBChunk::TSharedPtr chunk = mVBSource.lock( slot.size() * 4 ); // 4 verts per billboard
 		TVertex* vb = reinterpret_cast<TVertex*>( chunk->getData() );
 		TSlot::iterator bit, bitEnd = slot.end();
 		int ttt= 0;
@@ -124,7 +124,7 @@ void CRenderableBillboards::render( const CRenderContext& ctx )
 	TTextureChunkVector::const_iterator it, itEnd = mChunks.end();
 	for( it = mChunks.begin(); it != itEnd; ++it ) {
 		CD3DTexture* tex = it->first;
-		const CVBChunk& chunk = *it->second;
+		const TVBChunk& chunk = *it->second;
 
 		// set texture on effect
 		// TBD: better supply handle, not name - would be faster
@@ -133,7 +133,7 @@ void CRenderableBillboards::render( const CRenderContext& ctx )
 		getParams().getEffect()->commitParams();
 
 		// set streams, VB, etc.
-		CD3DVertexBuffer& vb = chunk.getVB();
+		CD3DVertexBuffer& vb = chunk.getBuffer();
 		device.setVertexBuffer( 0, &vb, 0, chunk.getStride() );
 		device.setDeclarationFVF( FVF_XYZ_DIFFUSE_TEX1 );
 		dx.DrawIndexedPrimitive( D3DPT_TRIANGLELIST, chunk.getOffset(), 0, chunk.getSize(), 0, chunk.getSize()/2 );

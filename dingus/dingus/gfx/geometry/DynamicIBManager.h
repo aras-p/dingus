@@ -2,8 +2,8 @@
 // Dingus project - a collection of subsystems for game/graphics applications
 // --------------------------------------------------------------------------
 
-#ifndef __DYNAMIC_VB_MANAGER_H
-#define __DYNAMIC_VB_MANAGER_H
+#ifndef __DYNAMIC_IB_MANAGER_H
+#define __DYNAMIC_IB_MANAGER_H
 
 #include "ManagedBuffer.h"
 #include "BufferChunk.h"
@@ -13,24 +13,24 @@
 namespace dingus {
 
 
-class CDynamicVBManager : public CManagedBuffer<TVBChunk, CD3DVertexBuffer>,
+class CDynamicIBManager : public CManagedBuffer<TIBChunk, CD3DIndexBuffer>,
 						public IDeviceResource,
-						public CSingleton<CDynamicVBManager>
+						public CSingleton<CDynamicIBManager>
 {
 public:
-	enum { DEFAULT_CAPACITY = 2*1024*1024 }; // 2 megabytes
-	static const DWORD		VB_USAGE;
-	static const D3DPOOL	VB_POOL;
+	enum { DEFAULT_CAPACITY = 1*1024*1024 }; // 1 megabyte
+	static const DWORD		IB_USAGE;
+	static const D3DPOOL	IB_POOL;
 
 public:
 	static void initialize( int capacityBytes ) {
-		CDynamicVBManager* vbmgr = new CDynamicVBManager( capacityBytes );
-		assert( vbmgr );
-		assignInstance( *vbmgr );
+		CDynamicIBManager* ibmgr = new CDynamicIBManager( capacityBytes );
+		assert( ibmgr );
+		assignInstance( *ibmgr );
 	}
 
 public:
-	virtual ~CDynamicVBManager();
+	virtual ~CDynamicIBManager();
 	
 	// IManagedResource
 	virtual void createResource();
@@ -42,20 +42,20 @@ protected:
 	// interface for CManagedBuffer
 	virtual byte* lockBuffer( int byteStart, int byteCount );
 
-	CD3DVertexBuffer* allocateBuffer( int capacityBytes );
+	CD3DIndexBuffer* allocateBuffer( int capacityBytes );
 
 private:
-	IDirect3DVertexBuffer9* createBuffer( int capacityBytes );
+	IDirect3DIndexBuffer9* createBuffer( int capacityBytes );
 
 private:
 	// CSingleton
-	CDynamicVBManager( int capacityBytes );
-	static CDynamicVBManager* createInstance() {
+	CDynamicIBManager( int capacityBytes );
+	static CDynamicIBManager* createInstance() {
 		ASSERT_FAIL_MSG( "must be initialized first" );
 		return NULL;
 	}
-	static void deleteInstance( CDynamicVBManager& instance ) { delete &instance; }
-	friend CSingleton<CDynamicVBManager>;
+	static void deleteInstance( CDynamicIBManager& instance ) { delete &instance; }
+	friend CSingleton<CDynamicIBManager>;
 };
 
 

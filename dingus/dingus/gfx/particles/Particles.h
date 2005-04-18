@@ -110,11 +110,11 @@ void CParticles<PART>::renderParticles( const CRenderCamera& camera )
 		vbSource, mParticleSystem.getParticleCount()
 	);
 	mParticleSystem.render( *mParticleRenderer );
-	CVBChunk::TSharedPtr chunk = mParticleRenderer->end();
+	TVBChunk::TSharedPtr chunk = mParticleRenderer->end();
 
 	// set params to renderable
 	mRenderable->setIB( *mIB );
-	mRenderable->setVB( chunk->getVB(), 0 );
+	mRenderable->setVB( chunk->getBuffer(), 0 );
 	mRenderable->setStride( chunk->getStride(), 0 );
 
 	mRenderable->setBaseVertex( chunk->getOffset() );

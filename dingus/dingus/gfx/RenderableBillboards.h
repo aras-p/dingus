@@ -8,7 +8,7 @@
 #include "../kernel/Proxies.h"
 #include "../renderer/Renderable.h"
 #include "../utils/Pool.h"
-#include "geometry/VBChunk.h"
+#include "geometry/BufferChunk.h"
 #include "geometry/VBManagerSource.h"
 
 
@@ -62,7 +62,7 @@ private:
 	typedef SVertexXyzDiffuseTex1			TVertex;
 	typedef CPool<SBillboard>				TSlot;
 	typedef std::map< CD3DTexture*, TSlot > TTextureSlotMap;
-	typedef std::vector< std::pair<CD3DTexture*, CVBChunk::TSharedPtr> > TTextureChunkVector;
+	typedef std::vector< std::pair<CD3DTexture*, TVBChunk::TSharedPtr> > TTextureChunkVector;
 
 private:
 	TSlot& getSlot( CD3DTexture& tex );

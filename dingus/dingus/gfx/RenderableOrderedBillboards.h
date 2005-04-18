@@ -7,7 +7,7 @@
 
 #include "../kernel/Proxies.h"
 #include "../renderer/Renderable.h"
-#include "geometry/VBChunk.h"
+#include "geometry/BufferChunk.h"
 #include "geometry/VBManagerSource.h"
 
 
@@ -64,7 +64,7 @@ private:
 	CVBManagerSource	mVBSource;
 	CEffectParams::TParamName	mTexParamName;
 	TBillVector mBills;
-	CVBChunk::TSharedPtr mChunk;
+	TVBChunk::TSharedPtr mChunk;
 };
 
 

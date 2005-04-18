@@ -15,7 +15,7 @@ const DWORD CDynamicVBManager::VB_USAGE = D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY;
 const D3DPOOL CDynamicVBManager::VB_POOL = D3DPOOL_DEFAULT;
 
 CDynamicVBManager::CDynamicVBManager( int capacityBytes )
-:	CManagedBuffer<CVBChunk,CD3DVertexBuffer>(capacityBytes)
+:	CManagedBuffer<TVBChunk,CD3DVertexBuffer>(capacityBytes)
 {
 	mBuffer = new CD3DVertexBuffer( NULL );
 }
@@ -77,10 +77,6 @@ void CDynamicVBManager::createResource()
 
 void CDynamicVBManager::activateResource()
 {
-	// first creation can happen only here
-	//if( !mBuffer )
-	//	mBuffer = new CD3DVertexBuffer( NULL );
-
 	if( !mBuffer->isNull() )
 		return;
 	mBuffer->setObject( createBuffer( getCapacityBytes() ) );

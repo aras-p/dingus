@@ -332,7 +332,19 @@ SOURCE=.\dingus\dxutils\resource.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\dingus\gfx\geometry\BufferChunk.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\dingus\gfx\geometry\ChunkSource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\dingus\gfx\geometry\DynamicIBManager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\dingus\gfx\geometry\DynamicIBManager.h
 # End Source File
 # Begin Source File
 
@@ -345,14 +357,6 @@ SOURCE=.\dingus\gfx\geometry\DynamicVBManager.h
 # Begin Source File
 
 SOURCE=.\dingus\gfx\geometry\ManagedBuffer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\geometry\VBChunk.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\geometry\VBChunk.h
 # End Source File
 # Begin Source File
 

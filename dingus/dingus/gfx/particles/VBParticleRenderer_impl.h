@@ -13,7 +13,7 @@
 template< typename PARTICLE >
 void CAbstractVBParticleRenderer<PARTICLE>::begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount )
+		IChunkSource<TVBChunk>& chunkSource, int particleCount )
 {
 	static int warnCounter = 0;
 	if( particleCount > MAX_PARTICLES ) {
@@ -26,11 +26,11 @@ void CAbstractVBParticleRenderer<PARTICLE>::begin(
 }
 
 template< typename PARTICLE >
-CVBChunk::TSharedPtr CAbstractVBParticleRenderer<PARTICLE>::end()
+TVBChunk::TSharedPtr CAbstractVBParticleRenderer<PARTICLE>::end()
 {
-	CVBChunk::TSharedPtr c = mChunk;
+	TVBChunk::TSharedPtr c = mChunk;
 	mChunk->unlock();
-	mChunk = CVBChunk::TSharedPtr();
+	mChunk = TVBChunk::TSharedPtr();
 	return c;
 }
 
@@ -48,7 +48,7 @@ CVBParticleRenderer<PARTICLE>::CVBParticleRenderer( float particleSize )
 template< typename PARTICLE >
 void CVBParticleRenderer<PARTICLE>::begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount )
+		IChunkSource<TVBChunk>& chunkSource, int particleCount )
 {
 	CAbstractVBParticleRenderer<PARTICLE>::begin( cameraPos, cameraRotMatrix, chunkSource, particleCount );
 	CParticleRenderHelper::getInstance().begin( cameraRotMatrix, mParticleSize );
@@ -105,7 +105,7 @@ CVBColoredParticleRenderer<PARTICLE>::CVBColoredParticleRenderer( float particle
 template< typename PARTICLE >
 void CVBColoredParticleRenderer<PARTICLE>::begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount )
+		IChunkSource<TVBChunk>& chunkSource, int particleCount )
 {
 	CAbstractVBParticleRenderer<PARTICLE>::begin( cameraPos, cameraRotMatrix, chunkSource, particleCount );
 	CParticleRenderHelper::getInstance().begin( cameraRotMatrix, mParticleSize );
@@ -166,7 +166,7 @@ CVBSizedRotColoredParticleRenderer<PARTICLE>::CVBSizedRotColoredParticleRenderer
 template< typename PARTICLE >
 void CVBSizedRotColoredParticleRenderer<PARTICLE>::begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount )
+		IChunkSource<TVBChunk>& chunkSource, int particleCount )
 {
 	CAbstractVBParticleRenderer<PARTICLE>::begin( cameraPos, cameraRotMatrix, chunkSource, particleCount );
 	CRotParticleRenderHelper::getInstance().begin( cameraRotMatrix );
@@ -232,7 +232,7 @@ CVBAnimatedSizedRotColoredParticleRenderer<PARTICLE>::CVBAnimatedSizedRotColored
 template< typename PARTICLE >
 void CVBAnimatedSizedRotColoredParticleRenderer<PARTICLE>::begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount )
+		IChunkSource<TVBChunk>& chunkSource, int particleCount )
 {
 	CAbstractVBParticleRenderer<PARTICLE>::begin( cameraPos, cameraRotMatrix, chunkSource, particleCount );
 	CRotParticleRenderHelper::getInstance().begin( cameraRotMatrix );
@@ -298,7 +298,7 @@ CVBAnimatedBlendedSizedRotColoredParticleRenderer<PARTICLE>::CVBAnimatedBlendedS
 template< typename PARTICLE >
 void CVBAnimatedBlendedSizedRotColoredParticleRenderer<PARTICLE>::begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount )
+		IChunkSource<TVBChunk>& chunkSource, int particleCount )
 {
 	CAbstractVBParticleRenderer<PARTICLE>::begin( cameraPos, cameraRotMatrix, chunkSource, particleCount * 2 );
 	CRotParticleRenderHelper::getInstance().begin( cameraRotMatrix );

@@ -29,8 +29,8 @@ public:
 	
 	virtual void begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount ) = 0;
-	virtual CVBChunk::TSharedPtr end() = 0;
+		IChunkSource<TVBChunk>& chunkSource, int particleCount ) = 0;
+	virtual TVBChunk::TSharedPtr end() = 0;
 	
 	int getStride() const { return mStride;	}
 	D3DPRIMITIVETYPE getPrimitiveType() const { return mPrimitiveType; }
@@ -52,14 +52,14 @@ public:
 
 	virtual void begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount );
-	virtual CVBChunk::TSharedPtr end();
+		IChunkSource<TVBChunk>& chunkSource, int particleCount );
+	virtual TVBChunk::TSharedPtr end();
 
 protected:
 	int calcVertexCount( int particleCount ) const { return particleCount * 4; }
 
 protected:
-	CVBChunk::TSharedPtr	mChunk;
+	TVBChunk::TSharedPtr	mChunk;
 };
 
 
@@ -74,7 +74,7 @@ public:
 	CVBParticleRenderer( float particleSize = 1.0f );
 	virtual void begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount );
+		IChunkSource<TVBChunk>& chunkSource, int particleCount );
 	// IParticleRenderer
 	virtual void render( TParticleVector const& particles );
 protected:
@@ -94,7 +94,7 @@ public:
 	CVBColoredParticleRenderer( float particleSize = 1.0f );
 	virtual void begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount );
+		IChunkSource<TVBChunk>& chunkSource, int particleCount );
 	// IParticleRenderer
 	virtual void render( TParticleVector const& particles );
 protected:
@@ -115,7 +115,7 @@ public:
 	CVBSizedRotColoredParticleRenderer();
 	virtual void begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount );
+		IChunkSource<TVBChunk>& chunkSource, int particleCount );
 	// IParticleRenderer
 	virtual void render( TParticleVector const& particles );
 protected:
@@ -132,7 +132,7 @@ public:
 	CVBAnimatedSizedRotColoredParticleRenderer( int rows, int cols );
 	virtual void begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount );
+		IChunkSource<TVBChunk>& chunkSource, int particleCount );
 	// IParticleRenderer
 	virtual void render( TParticleVector const& particles );
 protected:
@@ -150,7 +150,7 @@ public:
 	CVBAnimatedBlendedSizedRotColoredParticleRenderer( int rows, int cols );
 	virtual void begin(
 		const SVector3& cameraPos, const SMatrix4x4& cameraRotMatrix,
-		IChunkSource<CVBChunk>& chunkSource, int particleCount );
+		IChunkSource<TVBChunk>& chunkSource, int particleCount );
 	// IParticleRenderer
 	virtual void render( TParticleVector const& particles );
 protected:

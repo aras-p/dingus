@@ -47,11 +47,11 @@ void CDebugRenderer::commitDebugGeometry()
 		return;
 
 	// render used chunk portion
-	CVBChunk& chunk = *mVBChunk;
+	TVBChunk& chunk = *mVBChunk;
 	chunk.unlock( mUsedVertsInChunk );
 	assert( mRenderableBuffer );
 	mRenderableBuffer->resetVBs();
-	mRenderableBuffer->setVB( chunk.getVB(), 0 );
+	mRenderableBuffer->setVB( chunk.getBuffer(), 0 );
 	mRenderableBuffer->setStride( chunk.getStride(), 0 );
 	mRenderableBuffer->setPrimType( D3DPT_TRIANGLELIST );
 	assert( mUsedVertsInChunk % 3 == 0 );

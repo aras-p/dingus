@@ -82,7 +82,7 @@ void CRenderableOrderedBillboards::render( const CRenderContext& ctx )
 	// set IB/VB
 	assert( mIB );
 	device.setIndexBuffer( mIB );
-	device.setVertexBuffer( 0, &mChunk->getVB(), 0, mChunk->getStride() );
+	device.setVertexBuffer( 0, &mChunk->getBuffer(), 0, mChunk->getStride() );
 	device.setDeclarationFVF( FVF_XYZ_DIFFUSE_TEX1 );
 
 	// render pieces of billboards

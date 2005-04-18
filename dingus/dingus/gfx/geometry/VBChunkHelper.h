@@ -5,7 +5,7 @@
 #ifndef __VB_CHUNK_HELPER_H
 #define __VB_CHUNK_HELPER_H
 
-#include "VBChunk.h"
+#include "BufferChunk.h"
 #include "ChunkSource.h"
 
 
@@ -21,11 +21,11 @@ namespace dingus {
  *  than locking whole big portion.
  */
 class CVBChunkHelper {
-	typedef CVBChunk::TSharedPtr		SHARED_CHUNK;
+	typedef TVBChunk::TSharedPtr		SHARED_CHUNK;
 	typedef std::vector<SHARED_CHUNK>	TChunkVector;
 
 public:
-	CVBChunkHelper( IChunkSource<CVBChunk>& source )
+	CVBChunkHelper( IChunkSource<TVBChunk>& source )
 		: mSource(&source), mCurrentChunkLocked(false) { }
 
 	/**
@@ -80,7 +80,7 @@ private:
 	CVBChunkHelper& operator= ( CVBChunkHelper const& rhs );
 	
 private:
-	IChunkSource<CVBChunk>*		mSource;
+	IChunkSource<TVBChunk>*		mSource;
 	TChunkVector	mChunks;
 	bool			mCurrentChunkLocked;
 };

@@ -7,7 +7,7 @@
 
 #include "../math/Vector3.h"
 #include "../math/Matrix4x4.h"
-#include "geometry/VBChunk.h"
+#include "geometry/BufferChunk.h"
 #include "Vertices.h"
 
 
@@ -54,7 +54,7 @@ private:
 	CRenderContext*		mRenderCtx;
 	CRenderableBuffer*	mRenderableBuffer;
 
-	CVBChunk::TSharedPtr	mVBChunk;
+	TVBChunk::TSharedPtr	mVBChunk;
 	int		mUsedVertsInChunk;
 };
 

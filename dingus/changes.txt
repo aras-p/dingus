@@ -2,6 +2,9 @@
 Dingus codenamed "IC2005 demo"
 ========
 
+050418: Dynamic index buffer manager added (CDynamicIBManager).
+		CVBChunk is now TVBChunk (typedef for CBufferChunk<CD3DVertexBuffer>).
+		gfx/geometry/VBChunk.h is no more, use gfx/geometry/BufferChunk.h now.
 050416: Character animator now supports bone scaling.
 050413:	rdtsc based timer added to utils (cputimer). Mostly for debugging.
 050411:	Character animator now has history buffer for blending fast changing
