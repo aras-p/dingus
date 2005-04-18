@@ -9,8 +9,8 @@ namespace dingus {
 
 
 // kind of HACK
-inline float anim_time() {
-	return (float)CSystemTimer::getInstance().getTimeS();
+inline double anim_time() {
+	return CSystemTimer::getInstance().getTimeS();
 };
 
 
