@@ -123,7 +123,8 @@ void CWall::fracturePiecesInSphere( float t, bool fractureOut, const SVector3& p
 	if( !mPiecesInited )
 		initPieces();
 
-	mLastFractureTime = t;
+	if( fractureOut )
+		mLastFractureTime = t;
 
 	// to local space
 	SVector3 locPos;
@@ -153,4 +154,13 @@ void CWall::update( float t )
 {
 	if( !mPiecesInited )
 		initPieces();
+
+	const float RESTORE_TIME = 5.0f;
+	if( t > mLastFractureTime + RESTORE_TIME ) {
+		// TODO: optimize!
+		int n = mPieces.getPieceCount();
+		for( int i = 0; i < n; ++i ) {
+			mFracturedPieces[i] = false;
+		}
+	}
 }

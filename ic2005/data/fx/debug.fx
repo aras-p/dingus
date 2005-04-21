@@ -4,11 +4,10 @@
 SPosCol vsMain( SPosNCol i ) {
 	SPosCol o;
 	o.pos = mul( i.pos, mViewProj );
+	o.pos.z -= 0.001f;
 	const float3 lightDir = -normalize( float3( 0.2, -1.0, 0.5 ) );
 	//float diffuse = saturate( dot( i.normal, lightDir ) ) * 0.6 + 0.4;
 	float diffuse = 1.0;
-	//o.color.rgb = i.color.rgb * diffuse;
-	//o.color.a = 0.1;
 	o.color = i.color;
 	return o;
 }
@@ -19,15 +18,12 @@ technique tecFFP {
 		PixelShader = NULL;
 		FVF = Xyz | Normal | Diffuse;
 
-		AlphaTestEnable = False;
-
-		DepthBias = -0.0001f;
-		SlopeScaleDepthBias = -0.01f;
+		//DepthBias = -0.0001f;
+		//SlopeScaleDepthBias = -0.01f;
 
 		AlphaBlendEnable = True;
 		SrcBlend = SrcAlpha;
 		DestBlend = InvSrcAlpha;
-		ZFunc = LessEqual;
 		//ZWriteEnable = False;
 
 		ColorOp[0]	 = SelectArg1;
@@ -41,17 +37,6 @@ technique tecFFP {
 		CullMode = CCW;
 	}
 
-	/*
-	pass PAlpha {
-		AlphaBlendEnable = True;
-		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
-
-		AlphaTestEnable = False;
-		ZWriteEnable = False;
-	}
-	*/
-	
 	pass PLast {
 		DepthBias = 0;
 		SlopeScaleDepthBias = 0;

@@ -639,8 +639,9 @@ static void gFetchMousePieces( bool fractureOut )
 	SVector3 mousePos = eyePos + gMouseRay * minWallT;
 	const float MOUSE_RADIUS = 0.6f;
 
+	double t = CSystemTimer::getInstance().getTimeS();
 	for( i = 0; i < CFACE_COUNT; ++i ) {
-		gWalls[i]->fracturePiecesInSphere( 0.0f /* TBD */, fractureOut, mousePos, MOUSE_RADIUS, gMousePieces[i] );
+		gWalls[i]->fracturePiecesInSphere( t, fractureOut, mousePos, MOUSE_RADIUS, gMousePieces[i] );
 	}
 }
 

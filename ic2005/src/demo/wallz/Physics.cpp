@@ -127,8 +127,8 @@ void physics::initialize( float updDT, float grav, const SVector3& boundMin, con
 	dWorldSetAutoDisableFlag( world, 1 );
 	dWorldSetAutoDisableSteps( world, 20 );
 	dWorldSetAutoDisableTime( world, 0.5f );
-	dWorldSetAutoDisableLinearThreshold( world, 0.12f );
-	dWorldSetAutoDisableAngularThreshold( world, 0.12f );
+	dWorldSetAutoDisableLinearThreshold( world, 0.22f );
+	dWorldSetAutoDisableAngularThreshold( world, 0.22f );
 }
 
 
@@ -167,6 +167,12 @@ void	nearCallback( void *data, dGeomID o1, dGeomID o2 )
 	// disabled vs disabled or disabled vs geom-only
 	if( !active1 && !active2 )
 		return;
+
+	// HACK: skip disabled vs active
+	if( b1 && b2 ) {
+		if( !active1 || !active2 )
+			return;
+	}
 
 	const int NCONTACTS = 4;
 	dContact contact[NCONTACTS];
