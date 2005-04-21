@@ -19,11 +19,6 @@ namespace {
 	float	updateDT;
 
 
-	typedef SVertexXyzNormalDiffuse TPieceVertex;
-	const DWORD WALL_VERTEX_FVF = FVF_XYZ_NORMAL_DIFFUSE;
-
-
-
 
 	std::vector<const CWall3D*>	walls;
 
@@ -99,32 +94,7 @@ void CPhysPiece::preRender( int& vbcount, int& ibcount ) const
 
 void CPhysPiece::render( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
 {
-	int i;
-	
-	// VB
-	const SVertexXyzNormal* srcVB = &mRestPiece->getVB()[0];
-	vbcount = mRestPiece->getVB().size();
-	for( i = 0; i < vbcount; ++i ) {
-		SVector3 p, n;
-		D3DXVec3TransformCoord( &p, &srcVB->p, &mMatrix );
-		D3DXVec3TransformNormal( &n, &srcVB->n, &mMatrix );
-		vb->p = p;
-		vb->n = n;
-		vb->diffuse = 0xFFff8000; // TBD
-		++srcVB;
-		++vb;
-	}
-
-	// IB
-	const int* srcIB = &mRestPiece->getIB()[0];
-	ibcount = mRestPiece->getIB().size();
-	for( i = 0; i < ibcount; ++i ) {
-		int idx = *srcIB + baseIndex;
-		assert( idx >= 0 && idx < 64000 );
-		*ib = idx;
-		++srcIB;
-		++ib;
-	}
+	mRestPiece->render( mMatrix, vb, ib, baseIndex, vbcount, ibcount );
 }
 
 

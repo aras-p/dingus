@@ -2,6 +2,7 @@
 #include "WallPieces.h"
 #include <dingus/gfx/DebugRenderer.h>
 #include <dingus/math/Plane.h>
+#include <dingus/renderer/RenderableBuffer.h>
 
 
 void CWall2D::debugRender( const SVector3* vb, CDebugRenderer& renderer, const bool* fractured )
@@ -137,6 +138,36 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 }
 
 
+void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
+{
+	int i;
+	
+	// VB
+	const SVertexXyzNormal* srcVB = &mVB[0];
+	vbcount = mVB.size();
+	for( i = 0; i < vbcount; ++i ) {
+		SVector3 p, n;
+		D3DXVec3TransformCoord( &p, &srcVB->p, &matrix );
+		D3DXVec3TransformNormal( &n, &srcVB->n, &matrix );
+		vb->p = p;
+		vb->n = n;
+		vb->diffuse = 0xFFff8000; // TBD
+		++srcVB;
+		++vb;
+	}
+
+	// IB
+	const int* srcIB = &mIB[0];
+	ibcount = mIB.size();
+	for( i = 0; i < ibcount; ++i ) {
+		int idx = *srcIB + baseIndex;
+		assert( idx >= 0 && idx < 64000 );
+		*ib = idx;
+		++srcIB;
+		++ib;
+	}
+}
+
 
 // --------------------------------------------------------------------------
 
@@ -150,10 +181,20 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize )
 , mPiecesInited(false)
 {
 	mMatrix.identify();
+
+	for( int i = 0; i < RMCOUNT; ++i )
+		mRenderables[i] = NULL;
+	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
+	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
+	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
+	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallRefl") );
 }
 
 CWall3D::~CWall3D()
 {
+	for( int i = 0; i < RMCOUNT; ++i )
+		safeDelete( mRenderables[i] );
+
 	if( mVB ) delete[] mVB;
 	safeDeleteArray( mPieces3D );
 	safeDeleteArray( mFracturedPieces );
@@ -267,4 +308,64 @@ void CWall3D::update( float t )
 			mFracturedPieces[i] = false;
 		}
 	}
+}
+
+bool CWall3D::renderIntoVB()
+{
+	int nverts = 0, nindices = 0;
+	mVBChunk = NULL;
+	mIBChunk = NULL;
+
+	int i;
+
+	// accumulate total vertex/index count
+	int n = mWall2D.getPieceCount();
+	for( i = 0; i < n; ++i ) {
+		if( mFracturedPieces[i] )
+			continue;
+		const CWallPiece3D& pc = mPieces3D[i];
+		nverts += pc.getVB().size();
+		nindices += pc.getIB().size();
+	}
+
+	if( !nverts || !nindices )
+		return false;
+
+	// lock and render
+	assert( nindices < 64000 );
+	mVBChunk = CDynamicVBManager::getInstance().allocateChunk( nverts, sizeof(TPieceVertex) );
+	mIBChunk = CDynamicIBManager::getInstance().allocateChunk( nindices, 2 );
+	TPieceVertex* vb = (TPieceVertex*)mVBChunk->getData();
+	unsigned short* ib = (unsigned short*)mIBChunk->getData();
+	int baseIndex = 0;
+	for( i = 0; i < n; ++i ) {
+		int nvb, nib;
+		const CWallPiece3D& pc = mPieces3D[i];
+		pc.render( pc.getMatrix(), vb, ib, baseIndex, nvb, nib );
+		baseIndex += nvb;
+		vb += nvb;
+		ib += nib;
+	}
+	mVBChunk->unlock();
+	mIBChunk->unlock();
+
+	// setup renderables
+	for( i = 0; i < RMCOUNT; ++i ) {
+		if( !mRenderables[i] )
+			continue;
+		mRenderables[i]->resetVBs();
+
+		mRenderables[i]->setVB( mVBChunk->getBuffer(), 0 );
+		mRenderables[i]->setStride( mVBChunk->getStride(), 0 );
+		mRenderables[i]->setBaseVertex( mVBChunk->getOffset() );
+		mRenderables[i]->setMinVertex( 0 );
+		mRenderables[i]->setNumVertices( mVBChunk->getSize() );
+
+		mRenderables[i]->setIB( mIBChunk->getBuffer() );
+		mRenderables[i]->setStartIndex( mIBChunk->getOffset() );
+		mRenderables[i]->setPrimCount( mIBChunk->getSize() / 3 );
+
+		mRenderables[i]->setPrimType( D3DPT_TRIANGLELIST );
+	}
+	return true;
 }

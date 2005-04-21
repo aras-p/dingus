@@ -4,15 +4,27 @@
 #include <dingus/math/Vector2.h>
 #include <dingus/math/Line3.h>
 #include <dingus/gfx/Vertices.h>
+#include <dingus/gfx/geometry/DynamicVBManager.h>
+#include <dingus/gfx/geometry/DynamicIBManager.h>
 #include "AABox2.h"
 #include "Triangulate.h"
+#include "../DemoResources.h"
+
 
 typedef std::vector<SVector2>	TWallVertexVector;
 
 namespace dingus {
 	class CDebugRenderer;
+	class CRenderableIndexedBuffer;
 };
+
 class CWall3D;
+
+
+typedef SVertexXyzNormalDiffuse TPieceVertex;
+static const DWORD WALL_VERTEX_FVF = FVF_XYZ_NORMAL_DIFFUSE;
+
+
 
 // --------------------------------------------------------------------------
 
@@ -81,6 +93,7 @@ public:
 
 public:
 	void	init( const CWall3D& w, int idx );
+	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
 
 	const TVertexVector& getVB() const { return mVB; }
 	const TIntVector& getIB() const { return mIB; }
@@ -165,6 +178,7 @@ public:
 
 private:
 	void	initPieces();
+	bool	renderIntoVB();
 
 private:
 	CWall2D		mWall2D;
@@ -176,6 +190,10 @@ private:
 	CWallPiece3D*	mPieces3D;
 	bool*			mFracturedPieces;
 	float			mLastFractureTime;
+
+	CRenderableIndexedBuffer*	mRenderables[RMCOUNT];
+	TVBChunk::TSharedPtr		mVBChunk;
+	TIBChunk::TSharedPtr		mIBChunk;
 
 	bool			mPiecesInited;
 };
