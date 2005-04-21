@@ -145,8 +145,8 @@ static const SVector3 ROOM_MID = (ROOM_MIN + ROOM_MAX)*0.5f;
 static const SVector3 ROOM_SIZE = (ROOM_MAX - ROOM_MIN);
 static const SVector3 ROOM_HSIZE = ROOM_SIZE*0.5f;
 
-CMeshEntity*	gWallMeshes[CFACE_COUNT];
-const char*		gWallTexs[CFACE_COUNT] = { RT_REFL_PX, RT_REFL_NX, RT_REFL_PY, RT_REFL_NY, RT_REFL_PZ, RT_REFL_NZ };
+const char*		WALL_TEXS[CFACE_COUNT] = { RT_REFL_PX, RT_REFL_NX, RT_REFL_PY, RT_REFL_NY, RT_REFL_PZ, RT_REFL_NZ };
+
 CCameraEntity	gWallCamera;
 SMatrix4x4		gCameraViewProjMatrix;
 SMatrix4x4		gViewTexProjMatrix;
@@ -158,7 +158,7 @@ const bool WALLS_ACTIVE[CFACE_COUNT] = {
 	//true, true, false, false, true, true,
 	true, true, true, true, true, true,
 };
-CWall3D*				gWalls[CFACE_COUNT];
+CWall3D*			gWalls[CFACE_COUNT];
 std::vector<int>	gMousePieces[CFACE_COUNT];
 int					gWallIDs[CFACE_COUNT];
 
@@ -200,8 +200,9 @@ static void gRenderScene( eRenderMode rm )
 		gBicas->render( rm );
 	for( i = 0; i < gPieces.size(); ++i )
 		gPieces[i]->render( rm );
-	for( i = 0; i < CFACE_COUNT; ++i )
-		gWallMeshes[i]->render( rm );
+	for( i = 0; i < CFACE_COUNT; ++i ) {
+		gWalls[i]->render( rm );
+	}
 	
 	wall_phys::render( rm );
 }
@@ -352,7 +353,7 @@ void gRenderWallReflections()
 
 		// Now blurred stuff is in RT_REFL_TMP1. Copy it to our needed texture.
 		IDirect3DSurface9* surf;
-		RGET_S_TEX(gWallTexs[currWall])->getObject()->GetSurfaceLevel( 0, &surf );
+		RGET_S_TEX(WALL_TEXS[currWall])->getObject()->GetSurfaceLevel( 0, &surf );
 		dx.getDevice().StretchRect( RGET_S_SURF(RT_REFL_TMP1)->getObject(), NULL, surf, NULL, dx.getCaps().getStretchFilter() );
 		surf->Release();
 	}
@@ -465,60 +466,16 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	//gPieces.push_back( new CMeshEntity("BigRosette") );
 	//gPieces.push_back( new CMeshEntity("FrontRosette") );
 
-	// reflective walls
-	CMeshEntity* wall;
-	wall = new CMeshEntity( "wall" );
-	wall->mWorldMat.getAxisX().set(0,0,-ROOM_SIZE.z);
-	wall->mWorldMat.getAxisY().set(0,ROOM_SIZE.y,0);
-	wall->mWorldMat.getAxisZ().set(1,0,0);
-	wall->mWorldMat.getOrigin().set( ROOM_MAX.x, ROOM_MID.y, ROOM_MID.z );
-	gWallMeshes[CFACE_PX] = wall;
-	wall = new CMeshEntity( "wall" );
-	wall->mWorldMat.getAxisX().set(0,0,ROOM_SIZE.z);
-	wall->mWorldMat.getAxisY().set(0,ROOM_SIZE.y,0);
-	wall->mWorldMat.getAxisZ().set(-1,0,0);
-	wall->mWorldMat.getOrigin().set( ROOM_MIN.x, ROOM_MID.y, ROOM_MID.z );
-	gWallMeshes[CFACE_NX] = wall;
-	wall = new CMeshEntity( "wall" );
-	wall->mWorldMat.getAxisX().set(ROOM_SIZE.x,0,0);
-	wall->mWorldMat.getAxisY().set(0,0,-ROOM_SIZE.z);
-	wall->mWorldMat.getAxisZ().set(0,1,0);
-	wall->mWorldMat.getOrigin().set( ROOM_MID.x, ROOM_MAX.y, ROOM_MID.z );
-	gWallMeshes[CFACE_PY] = wall;
-	wall = new CMeshEntity( "wall" );
-	wall->mWorldMat.getAxisX().set(-ROOM_SIZE.x,0,0);
-	wall->mWorldMat.getAxisY().set(0,0,-ROOM_SIZE.z);
-	wall->mWorldMat.getAxisZ().set(0,-1,0);
-	wall->mWorldMat.getOrigin().set( ROOM_MID.x, ROOM_MIN.y, ROOM_MID.z );
-	gWallMeshes[CFACE_NY] = wall;
-	wall = new CMeshEntity( "wall" );
-	wall->mWorldMat.getAxisX().set(ROOM_SIZE.x,0,0);
-	wall->mWorldMat.getAxisY().set(0,ROOM_SIZE.y,0);
-	wall->mWorldMat.getAxisZ().set(0,0,1);
-	wall->mWorldMat.getOrigin().set( ROOM_MID.x, ROOM_MID.y, ROOM_MAX.z );
-	gWallMeshes[CFACE_PZ] = wall;
-	wall = new CMeshEntity( "wall" );
-	wall->mWorldMat.getAxisX().set(-ROOM_SIZE.x,0,0);
-	wall->mWorldMat.getAxisY().set(0,ROOM_SIZE.y,0);
-	wall->mWorldMat.getAxisZ().set(0,0,-1);
-	wall->mWorldMat.getOrigin().set( ROOM_MID.x, ROOM_MID.y, ROOM_MIN.z );
-	gWallMeshes[CFACE_NZ] = wall;
-	for( i = 0; i < CFACE_COUNT; ++i ) {
-		if( !gNoPixelShaders ) {
-			CEffectParams& epN = gWallMeshes[i]->getRenderMesh( RM_NORMAL )->getParams();
-			epN.addTexture( "tRefl", *RGET_S_TEX(gWallTexs[i]) );
-		}
-	}
-
+	// walls
 	{
 		const float ELEM_SIZE = 0.1f;
 
-		gWalls[CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE );
-		gWalls[CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE );
-		gWalls[CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE );
-		gWalls[CFACE_NY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE );
-		gWalls[CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE );
-		gWalls[CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE );
+		gWalls[CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, WALL_TEXS[CFACE_PX] );
+		gWalls[CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, WALL_TEXS[CFACE_NX] );
+		gWalls[CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE, WALL_TEXS[CFACE_PY] );
+		gWalls[CFACE_NY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE, WALL_TEXS[CFACE_NY] );
+		gWalls[CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE, WALL_TEXS[CFACE_PZ] );
+		gWalls[CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE, WALL_TEXS[CFACE_NZ] );
 
 		SMatrix4x4 wm;
 		wm.identify();
@@ -929,10 +886,10 @@ void CDemo::perform()
 
 	G_RENDERCTX->perform();
 	
-	for( i = 0; i < CFACE_COUNT; ++i ) {
-		gWalls[i]->debugRender( *gDebugRenderer );
+	//for( i = 0; i < CFACE_COUNT; ++i ) {
+		//gWalls[i]->debugRender( *gDebugRenderer );
 		//gWalls[i]->debugRender( *gDebugRenderer, gMousePieces[i] );
-	}
+	//}
 
 	// render GUI
 	gUIDlg->onRender( dt );
@@ -948,7 +905,12 @@ void CDemo::perform()
 void CDemo::shutdown()
 {
 	int i;
+
+	wall_phys::shutdown();
 	
+	for( i = 0; i < CFACE_COUNT; ++i )
+		delete gWalls[i];
+
 	delete gDebugRenderer;
 
 	safeDelete( gUIDlg );
@@ -956,6 +918,4 @@ void CDemo::shutdown()
 	delete gBicas;
 	delete gBicasUser;
 	delete gCameraController;
-	for( i = 0; i < CFACE_COUNT; ++i )
-		delete gWallMeshes[i];
 }

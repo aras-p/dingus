@@ -14,7 +14,7 @@
 typedef std::vector<SVector2>	TWallVertexVector;
 
 namespace dingus {
-	class CDebugRenderer;
+	//class CDebugRenderer;
 	class CRenderableIndexedBuffer;
 };
 
@@ -93,10 +93,14 @@ public:
 
 public:
 	void	init( const CWall3D& w, int idx );
-	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
+	void	preRender( int& vbcount, int& ibcount, bool inWall ) const;
+	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount, bool inWall ) const;
 
 	const TVertexVector& getVB() const { return mVB; }
 	const TIntVector& getIB() const { return mIB; }
+
+	int getVertsInWall() const { return mVertsInWall; }
+	int getIndicesInWall() const { return mIndicesInWall; }
 
 	const SMatrix4x4& getMatrix() const { return mMatrix; }
 	const SVector3& getSize() const { return mSize; }
@@ -105,6 +109,8 @@ private:
 	SMatrix4x4		mMatrix; // Initial matrix
 	TVertexVector	mVB;
 	TIntVector		mIB;
+	int				mVertsInWall;
+	int				mIndicesInWall;
 	SVector3		mSize;
 };
 
@@ -135,8 +141,8 @@ public:
 	const SVector2& getSize() const { return mSize; }
 	float getSmallestElemSize() const { return mSmallestElemSize; }
 
-	void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const bool* fractured );
-	void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const std::vector<int>& pieces );
+	//void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const bool* fractured );
+	//void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const std::vector<int>& pieces );
 	
 private:
 	TWallVertexVector			mVerts;
@@ -155,7 +161,7 @@ private:
  */ 
 class CWall3D : public boost::noncopyable {
 public:
-	CWall3D( const SVector2& size, float smallestElemSize );
+	CWall3D( const SVector2& size, float smallestElemSize, const char* reflTextureID );
 	~CWall3D();
 
 	const CWall2D& getWall2D() const { return mWall2D; }
@@ -173,8 +179,10 @@ public:
 	bool	intersectRay( const SLine3& ray, float& t ) const;
 	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, std::vector<int>& pcs );
 
-	void	debugRender( CDebugRenderer& renderer );
-	void	debugRender( CDebugRenderer& renderer, const std::vector<int>& pieces );
+	//void	debugRender( CDebugRenderer& renderer );
+	//void	debugRender( CDebugRenderer& renderer, const std::vector<int>& pieces );
+
+	void	render( eRenderMode rm );
 
 private:
 	void	initPieces();
@@ -195,7 +203,8 @@ private:
 	TVBChunk::TSharedPtr		mVBChunk;
 	TIBChunk::TSharedPtr		mIBChunk;
 
-	bool			mPiecesInited;
+	bool	mPiecesInited;
+	bool	mNeedsRenderingIntoVB;
 };
 
 

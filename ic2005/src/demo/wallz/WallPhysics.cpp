@@ -87,14 +87,13 @@ bool CPhysPiece::update()
 
 void CPhysPiece::preRender( int& vbcount, int& ibcount ) const
 {
-	vbcount = mRestPiece->getVB().size();
-	ibcount = mRestPiece->getIB().size();
+	mRestPiece->preRender( vbcount, ibcount, false );
 }
 
 
 void CPhysPiece::render( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
 {
-	mRestPiece->render( mMatrix, vb, ib, baseIndex, vbcount, ibcount );
+	mRestPiece->render( mMatrix, vb, ib, baseIndex, vbcount, ibcount, false );
 }
 
 
@@ -245,6 +244,7 @@ void wall_phys::render( eRenderMode rm )
 	}
 	G_RENDERCTX->attach( *renderable );
 }
+
 
 const wall_phys::SStats& wall_phys::getStats()
 {

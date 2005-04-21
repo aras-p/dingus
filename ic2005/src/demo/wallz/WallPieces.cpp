@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "WallPieces.h"
-#include <dingus/gfx/DebugRenderer.h>
+//#include <dingus/gfx/DebugRenderer.h>
 #include <dingus/math/Plane.h>
 #include <dingus/renderer/RenderableBuffer.h>
 
-
+/*
 void CWall2D::debugRender( const SVector3* vb, CDebugRenderer& renderer, const bool* fractured )
 {
 	renderer.beginDebug();
@@ -41,7 +41,7 @@ void CWall2D::debugRender( const SVector3* vb, CDebugRenderer& renderer, const s
 
 	renderer.endDebug();
 }
-
+*/
 
 
 // --------------------------------------------------------------------------
@@ -77,12 +77,20 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 			SVector2 pos = w.getWall2D().getVerts()[oldIdx];
 			pos -= pcenter;
 			SVertexXyzNormal vtx;
-			vtx.p.set( pos.x, pos.y, -HALF_THICK );
-			vtx.n.set( 0, 0, -1 );
+			vtx.p.set( pos.x, pos.y, HALF_THICK );
+			vtx.n.set( 0, 0, 1 );
 			mVB.push_back( vtx );
 		}
 		mIB.push_back( newIdx );
 	}
+	for( i = 0; i < nidx/3; ++i ) {
+		int iii = mIB[i*3+1];
+		mIB[i*3+1] = mIB[i*3+2];
+		mIB[i*3+2] = iii;
+	}
+	// remember the count at current state
+	mVertsInWall = mVB.size();
+	mIndicesInWall = mIB.size();
 	// construct another side
 	int nverts = mVB.size();
 	for( i = 0; i < nverts; ++i ) {
@@ -115,17 +123,17 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 		SVector3 edge01 = v1.p - v0.p;
 		SVector3 edge02 = v2.p - v0.p;
 		SVector3 normal = edge01.cross( edge02 ).getNormalized();
-		v0.n = v1.n = v2.n = v3.n = normal;
+		v0.n = v1.n = v2.n = v3.n = -normal;
 		mVB.push_back( v0 );
 		mVB.push_back( v1 );
 		mVB.push_back( v2 );
 		mVB.push_back( v3 );
 		mIB.push_back( nverts*2 + i*4 + 0 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
 		mIB.push_back( nverts*2 + i*4 + 1 );
 		mIB.push_back( nverts*2 + i*4 + 2 );
+		mIB.push_back( nverts*2 + i*4 + 1 );
 		mIB.push_back( nverts*2 + i*4 + 3 );
+		mIB.push_back( nverts*2 + i*4 + 2 );
 	}
 
 	// construct initial mMatrix
@@ -138,13 +146,19 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 }
 
 
-void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
+void CWallPiece3D::preRender( int& vbcount, int& ibcount, bool inWall ) const
+{
+	vbcount = inWall ? mVertsInWall : mVB.size();
+	ibcount = inWall ? mIndicesInWall : mIB.size();
+}
+
+void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount, bool inWall ) const
 {
 	int i;
 	
 	// VB
 	const SVertexXyzNormal* srcVB = &mVB[0];
-	vbcount = mVB.size();
+	vbcount = inWall ? mVertsInWall : mVB.size();
 	for( i = 0; i < vbcount; ++i ) {
 		SVector3 p, n;
 		D3DXVec3TransformCoord( &p, &srcVB->p, &matrix );
@@ -158,7 +172,7 @@ void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned 
 
 	// IB
 	const int* srcIB = &mIB[0];
-	ibcount = mIB.size();
+	ibcount = inWall ? mIndicesInWall : mIB.size();
 	for( i = 0; i < ibcount; ++i ) {
 		int idx = *srcIB + baseIndex;
 		assert( idx >= 0 && idx < 64000 );
@@ -172,20 +186,24 @@ void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned 
 // --------------------------------------------------------------------------
 
 
-CWall3D::CWall3D( const SVector2& size, float smallestElemSize )
+CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* reflTextureID )
 : mWall2D(size,smallestElemSize)
 , mVB(NULL)
 , mPieces3D(NULL)
 , mFracturedPieces(NULL)
 , mLastFractureTime( -100.0f )
 , mPiecesInited(false)
+, mNeedsRenderingIntoVB(false)
 {
 	mMatrix.identify();
 
 	for( int i = 0; i < RMCOUNT; ++i )
 		mRenderables[i] = NULL;
+	
 	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
+	mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
+	
 	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallRefl") );
 }
@@ -217,6 +235,7 @@ void CWall3D::initPieces()
 	}
 
 	mPiecesInited = true;
+	mNeedsRenderingIntoVB = true;
 }
 
 void CWall3D::calcVB()
@@ -232,7 +251,7 @@ void CWall3D::calcVB()
 	}
 }
 
-
+/*
 void CWall3D::debugRender( CDebugRenderer& renderer )
 {
 	if( !mVB )
@@ -246,7 +265,7 @@ void CWall3D::debugRender( CDebugRenderer& renderer, const std::vector<int>& pie
 		calcVB();
 	mWall2D.debugRender( mVB, renderer, pieces );
 }
-
+*/
 
 bool CWall3D::intersectRay( const SLine3& ray, float& t ) const
 {
@@ -288,8 +307,10 @@ void CWall3D::fracturePiecesInSphere( float t, bool fractureOut, const SVector3&
 		SVector3 tocenter = locPos - SVector3(c.x,c.y,0);
 		if( tocenter.lengthSq() < radius*radius ) {
 			pcs.push_back( i );
-			if( fractureOut )
+			if( fractureOut ) {
 				mFracturedPieces[i] = true;
+				mNeedsRenderingIntoVB = true;
+			}
 		}
 	}
 }
@@ -310,8 +331,11 @@ void CWall3D::update( float t )
 	}
 }
 
+
 bool CWall3D::renderIntoVB()
 {
+	mNeedsRenderingIntoVB = false;
+
 	int nverts = 0, nindices = 0;
 	mVBChunk = NULL;
 	mIBChunk = NULL;
@@ -324,8 +348,10 @@ bool CWall3D::renderIntoVB()
 		if( mFracturedPieces[i] )
 			continue;
 		const CWallPiece3D& pc = mPieces3D[i];
-		nverts += pc.getVB().size();
-		nindices += pc.getIB().size();
+		int nvb, nib;
+		pc.preRender( nvb, nib, true );
+		nverts += nvb;
+		nindices += nib;
 	}
 
 	if( !nverts || !nindices )
@@ -339,9 +365,11 @@ bool CWall3D::renderIntoVB()
 	unsigned short* ib = (unsigned short*)mIBChunk->getData();
 	int baseIndex = 0;
 	for( i = 0; i < n; ++i ) {
+		if( mFracturedPieces[i] )
+			continue;
 		int nvb, nib;
 		const CWallPiece3D& pc = mPieces3D[i];
-		pc.render( pc.getMatrix(), vb, ib, baseIndex, nvb, nib );
+		pc.render( pc.getMatrix(), vb, ib, baseIndex, nvb, nib, true );
 		baseIndex += nvb;
 		vb += nvb;
 		ib += nib;
@@ -368,4 +396,19 @@ bool CWall3D::renderIntoVB()
 		mRenderables[i]->setPrimType( D3DPT_TRIANGLELIST );
 	}
 	return true;
+}
+
+
+void CWall3D::render( eRenderMode rm )
+{
+	if( !mRenderables[rm] )
+		return;
+
+	if( mNeedsRenderingIntoVB ||
+		!mVBChunk || !mVBChunk->isValid() ||
+		!mIBChunk || !mIBChunk->isValid() )
+	{
+		renderIntoVB();
+	}
+	G_RENDERCTX->attach( *mRenderables[rm] );
 }

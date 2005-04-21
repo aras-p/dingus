@@ -59,7 +59,7 @@ void CSystem::setupBundles( const std::string& dataPath, dingus::CReloadableBund
 	CModelDescBundle::getInstance().addDirectory( dataPath + "model/" );
 	CFontBundle::getInstance().addDirectory( dataPath );
 
-	CDynamicVBManager::initialize( 2 * 1024 * 1024 ); // 2 megabytes
+	CDynamicVBManager::initialize( 4 * 1024 * 1024 ); // 4 megabytes
 	CDynamicVBManager& vbManager = CDynamicVBManager::getInstance();
 	CDynamicIBManager::initialize( 512 * 1024 ); // 0.5 megabyte
 	CDynamicIBManager& ibManager = CDynamicIBManager::getInstance();

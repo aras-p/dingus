@@ -1,23 +1,16 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
 
-float4x4 mWorld;
-float4x4 mWorldView;
-float4x4 mWVP;
-
-
 
 SPosColTexp vsMain( SPosN i ) {
 	SPosColTexp o;
-	float4 wpos = mul( i.pos, mWorld );
-	float3 tolight = normalize( vLightPos - wpos.xyz );
-	float3 n = -float3( mWorld[2][0], mWorld[2][1], mWorld[2][2] );
-	o.pos = mul( i.pos, mWVP );
+	float3 tolight = normalize( vLightPos - i.pos.xyz );
+	o.pos = mul( i.pos, mViewProj );
 
-	o.uvp = mul( wpos, mShadowProj );
+	o.uvp = mul( i.pos, mShadowProj );
 
-	float diffuse = max( 0.5, dot( tolight, n ) );
-	o.color = diffuse;
+	float diffuse = max( 0.0, dot( tolight, i.normal ) );
+	o.color = diffuse * 0.6 + 0.4;
 	return o;
 }
 
@@ -32,6 +25,7 @@ technique tec0
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_2_0 psMain();
+		FVF = Xyz | Normal | Diffuse;
 	}
 	pass PLast {
 		Texture[0] = NULL;

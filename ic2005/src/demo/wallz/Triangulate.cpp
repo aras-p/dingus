@@ -82,7 +82,7 @@ bool triangulator::process( const TVec2Vector& vb, const TIntVector& ib, TIntVec
 	
 	int *V = new int[n];
 	
-	// we want a counter-clockwise polygon in V
+	// we want a clockwise polygon in V
 	if ( 0.0f < area(vb,ib) ) {
 		for( int v=0; v<n; ++v )
 			V[v] = ib[v];
