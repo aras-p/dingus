@@ -20,19 +20,17 @@ static const float MOVE_FWD_CURVE_DATA[] = {
 	1.9f,
 	2.1f,
 	2.5f,
-	//2.9f,
-	//3.5f,
 };
 
 static const float MOVE_BCK_CURVE_DATA[] = {
 	0.0f,
-	-0.40f,
+	-0.30f,
 	-0.50f,
 	-0.60f,
 	-0.60f,
-	-0.61f,
-	-0.62f,
+	-0.60f,
 	-0.64f,
+	-0.75f,
 };
 
 static	CTabularFunction<float>	gMoveFwdCurve( sizeof(MOVE_FWD_CURVE_DATA)/sizeof(MOVE_FWD_CURVE_DATA[0]), MOVE_FWD_CURVE_DATA );
@@ -42,7 +40,7 @@ static	CTabularFunction<float>	gMoveBckCurve( sizeof(MOVE_BCK_CURVE_DATA)/sizeof
 
 CControllableCharacter::SAnimParams::SAnimParams( CAnimationBunch* anm, float movAmnt )
 :	anim(anm)
-,	duration( gGetAnimDuration(*anm) )
+,	duration( gGetAnimDuration(*anm, true) )
 ,	moveAmount( movAmnt )
 {
 	moveSpeed = moveAmount / duration;

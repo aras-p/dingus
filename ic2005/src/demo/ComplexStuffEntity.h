@@ -9,10 +9,12 @@
 
 // --------------------------------------------------------------------------
 
-inline static double gGetAnimDuration( CAnimationBunch& b )
+inline static double gGetAnimDuration( CAnimationBunch& b, bool loopLast )
 {
 	const double ANIM_FPS = 30.0f;
-	return b.findVector3Anim("pos")->getLength() / ANIM_FPS;
+	CAnimationBunch::TVector3Animation* a = b.findVector3Anim("pos");
+	assert( a );
+	return (a->getLength() - (loopLast ? 0 : 1)) / ANIM_FPS;
 }
 
 

@@ -3,7 +3,7 @@
 
 #include "../DemoResources.h"
 
-class CWall;
+class CWall3D;
 
 namespace dingus {
 	class CDebugRenderer;
@@ -21,7 +21,7 @@ namespace wall_phys {
 	void	initialize( float updDT, const SVector3& boundMin, const SVector3& boundMax );
 
 	/// @return wall's ID
-	int		addWall( CWall& wall );
+	int		addWall( const CWall3D& wall );
 
 	void	shutdown();
 

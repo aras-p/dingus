@@ -3,6 +3,7 @@
 
 #include <dingus/math/Vector2.h>
 #include <dingus/math/Line3.h>
+#include <dingus/gfx/Vertices.h>
 #include "AABox2.h"
 #include "Triangulate.h"
 
@@ -11,23 +12,23 @@ typedef std::vector<SVector2>	TWallVertexVector;
 namespace dingus {
 	class CDebugRenderer;
 };
-
+class CWall3D;
 
 // --------------------------------------------------------------------------
 
 /// Single piece of precomputed fracture, sitting in the wall.
-class CWallPiece {
+class CWallPiece2D {
 public:
-	CWallPiece()
+	CWallPiece2D()
 	{
 	}
-	CWallPiece( const CWallPiece& r )
+	CWallPiece2D( const CWallPiece2D& r )
 		: mPolygon(r.mPolygon)
 		, mTris(r.mTris)
 		, mAABB(r.mAABB)
 	{
 	}
-	void operator=( const CWallPiece& r )
+	void operator=( const CWallPiece2D& r )
 	{
 		if( this == &r )
 			return;
@@ -68,13 +69,40 @@ private:
 };
 
 
+
+// --------------------------------------------------------------------------
+
+
+/// Single piece of precomputed fracture, with 3D representation constructed.
+class CWallPiece3D : public boost::noncopyable {
+public:
+	typedef std::vector<SVertexXyzNormal>	TVertexVector;
+	typedef std::vector<int>				TIntVector;
+
+public:
+	void	init( const CWall3D& w, int idx );
+
+	const TVertexVector& getVB() const { return mVB; }
+	const TIntVector& getIB() const { return mIB; }
+
+	const SMatrix4x4& getMatrix() const { return mMatrix; }
+	const SVector3& getSize() const { return mSize; }
+
+private:
+	SMatrix4x4		mMatrix; // Initial matrix
+	TVertexVector	mVB;
+	TIntVector		mIB;
+	SVector3		mSize;
+};
+
+
 // --------------------------------------------------------------------------
 
 
 /// Single wall with precomputed fracture pieces in 2D.
-class CWallPieces : public boost::noncopyable {
+class CWall2D : public boost::noncopyable {
 public:
-	CWallPieces( const SVector2& size, float smallestElemSize )
+	CWall2D( const SVector2& size, float smallestElemSize )
 		: mSize( size )
 		, mSmallestElemSize( smallestElemSize )
 	{
@@ -85,11 +113,11 @@ public:
 	}
 	const TWallVertexVector& getVerts() const { return mVerts; }
 
-	void	addPiece( const CWallPiece& piece ) {
+	void	addPiece( const CWallPiece2D& piece ) {
 		mPieces.push_back( piece );
 	}
 	int getPieceCount() const { return mPieces.size(); }
-	const CWallPiece& getPiece( int i ) const { return mPieces[i]; }
+	const CWallPiece2D& getPiece( int i ) const { return mPieces[i]; }
 
 	const SVector2& getSize() const { return mSize; }
 	float getSmallestElemSize() const { return mSmallestElemSize; }
@@ -98,8 +126,8 @@ public:
 	void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const std::vector<int>& pieces );
 	
 private:
-	TWallVertexVector		mVerts;
-	std::vector<CWallPiece>	mPieces;
+	TWallVertexVector			mVerts;
+	std::vector<CWallPiece2D>	mPieces;
 	SVector2		mSize;				///< Whole wall spans 0 to mSize range
 	float			mSmallestElemSize;
 };
@@ -112,13 +140,15 @@ private:
  *	Single wall with precomputed fracture pieces, positioned in 3D and
  *  tracking fractured out pieces' state.
  */ 
-class CWall : public boost::noncopyable {
+class CWall3D : public boost::noncopyable {
 public:
-	CWall( const SVector2& size, float smallestElemSize );
-	~CWall();
+	CWall3D( const SVector2& size, float smallestElemSize );
+	~CWall3D();
 
-	const CWallPieces& getPieces() const { return mPieces; }
-	CWallPieces& getPieces() { return mPieces; }
+	const CWall2D& getWall2D() const { return mWall2D; }
+	CWall2D& getWall2D() { return mWall2D; }
+
+	const CWallPiece3D* getPieces3D() const { return mPieces3D; }
 
 	const SMatrix4x4& getMatrix() const { return mMatrix; }
 	void setMatrix( const SMatrix4x4& m ) { mMatrix = m; mInvMatrix = m; mInvMatrix.invert(); }
@@ -137,15 +167,17 @@ private:
 	void	initPieces();
 
 private:
-	CWallPieces	mPieces;
+	CWall2D		mWall2D;
+
 	SMatrix4x4	mMatrix;
 	SMatrix4x4	mInvMatrix;
 	SVector3*	mVB;
 
-	bool*		mFracturedPieces;
-	float		mLastFractureTime;
+	CWallPiece3D*	mPieces3D;
+	bool*			mFracturedPieces;
+	float			mLastFractureTime;
 
-	bool		mPiecesInited;
+	bool			mPiecesInited;
 };
 
 

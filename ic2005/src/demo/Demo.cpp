@@ -158,7 +158,7 @@ const bool WALLS_ACTIVE[CFACE_COUNT] = {
 	//true, true, false, false, true, true,
 	true, true, true, true, true, true,
 };
-CWall*				gWalls[CFACE_COUNT];
+CWall3D*				gWalls[CFACE_COUNT];
 std::vector<int>	gMousePieces[CFACE_COUNT];
 int					gWallIDs[CFACE_COUNT];
 
@@ -513,12 +513,12 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	{
 		const float ELEM_SIZE = 0.1f;
 
-		gWalls[CFACE_PX] = new CWall( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE );
-		gWalls[CFACE_NX] = new CWall( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE );
-		gWalls[CFACE_PY] = new CWall( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE );
-		gWalls[CFACE_NY] = new CWall( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE );
-		gWalls[CFACE_PZ] = new CWall( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE );
-		gWalls[CFACE_NZ] = new CWall( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE );
+		gWalls[CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE );
+		gWalls[CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE );
+		gWalls[CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE );
+		gWalls[CFACE_NY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE );
+		gWalls[CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE );
+		gWalls[CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE );
 
 		SMatrix4x4 wm;
 		wm.identify();
@@ -555,7 +555,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		gWalls[CFACE_NZ]->setMatrix( wm );
 
 		for( i = 0; i < CFACE_COUNT; ++i )
-			wallFractureCompute( gWalls[i]->getPieces() );
+			wallFractureCompute( gWalls[i]->getWall2D() );
 
 		wall_phys::initialize( PHYS_UPDATE_DT, ROOM_MIN-SVector3(1.0f,1.0f,1.0f), ROOM_MAX+SVector3(1.0f,1.0f,1.0f) );
 
@@ -593,7 +593,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gCamera.mWorldMat.identify();
 	gCameraAnimStartTime = anim_time();
 	gCameraAnim = RGET_ANIM("Camera");
-	gCameraAnimDuration = gGetAnimDuration( *gCameraAnim );
+	gCameraAnimDuration = gGetAnimDuration( *gCameraAnim, false );
 
 	gCameraAnimPos = gCameraAnim->findVector3Anim("pos");
 	gCameraAnimRot = gCameraAnim->findQuatAnim("rot");

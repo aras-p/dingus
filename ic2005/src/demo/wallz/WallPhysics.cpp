@@ -23,49 +23,16 @@ namespace {
 	const DWORD WALL_VERTEX_FVF = FVF_XYZ_NORMAL_DIFFUSE;
 
 
-	// Resting piece in the walls
-	class CRestingPiece : public boost::noncopyable {
-	public:
-		typedef std::vector<TPieceVertex>	TVertexVector;
-		typedef std::vector<int>			TIntVector;
-
-	public:
-		CRestingPiece( const CWall& w, int idx );
-
-		const TVertexVector& getVB() const { return mVB; }
-		const TIntVector& getIB() const { return mIB; }
-
-		const SMatrix4x4& getMatrix() const { return mMatrix; }
-		const SVector3& getSize() const { return mSize; }
-
-	private:
-		SMatrix4x4		mMatrix; // Initial matrix
-		TVertexVector	mVB;
-		TIntVector		mIB;
-		SVector3		mSize;
-	};
 
 
-
-	struct SWall : public boost::noncopyable {
-	public:
-		SWall() { }
-		~SWall() {
-			stl_utils::wipe( pieces );
-		}
-	public:
-		CWall*	wall;
-		std::vector<CRestingPiece*>	pieces;
-	};
-	typedef std::vector<SWall*>	TWallVector;
-	TWallVector	walls;
+	std::vector<const CWall3D*>	walls;
 
 
 
 	// Piece in physics
 	class CPhysPiece : public physics::CPhysObject {
 	public:
-		CPhysPiece( const CRestingPiece& rpiece );
+		CPhysPiece( const CWallPiece3D& rpiece );
 		~CPhysPiece();
 
 		/// @return false if already dead
@@ -76,7 +43,7 @@ namespace {
 
 	private:
 		SMatrix4x4				mMatrix;
-		const CRestingPiece*	mRestPiece;
+		const CWallPiece3D*	mRestPiece;
 		float					mTimeLeft;
 	};
 
@@ -100,102 +67,7 @@ namespace {
 // --------------------------------------------------------------------------
 
 
-CRestingPiece::CRestingPiece( const CWall& w, int idx )
-{
-	const CWallPiece& piece = w.getPieces().getPiece(idx);
-
-	const float HALF_THICK = 0.02f;
-	
-	// construct VB/IB for this piece, with positions centered
-	SVector2 pcenter = piece.getAABB().getCenter();
-
-	static std::vector<int>	vertRemap;
-	vertRemap.resize(0);
-	vertRemap.resize( w.getPieces().getVerts().size(), -1 );
-
-	int i;
-
-	int nidx = piece.getTriCount()*3;
-	mIB.reserve( nidx * 2 + piece.getVertexCount()*6 );
-	mVB.reserve( piece.getVertexCount()*6 );
-
-	// construct one side
-	for( i = 0; i < nidx; ++i ) {
-		int oldIdx = piece.getIB()[i];
-		int newIdx = vertRemap[oldIdx];
-		if( newIdx < 0 ) {
-			newIdx = mVB.size();
-			vertRemap[oldIdx] = newIdx;
-
-			SVector2 pos = w.getPieces().getVerts()[oldIdx];
-			pos -= pcenter;
-			TPieceVertex vtx;
-			vtx.p.set( pos.x, pos.y, -HALF_THICK );
-			vtx.n.set( 0, 0, -1 );
-			mVB.push_back( vtx );
-		}
-		mIB.push_back( newIdx );
-	}
-	// construct another side
-	int nverts = mVB.size();
-	for( i = 0; i < nverts; ++i ) {
-		TPieceVertex vtx = mVB[i];
-		vtx.p.z = -vtx.p.z;
-		vtx.n.z = -vtx.n.z;
-		mVB.push_back( vtx );
-	}
-	for( i = 0; i < nidx/3; ++i ) {
-		int idx0 = mIB[i*3+0];
-		int idx1 = mIB[i*3+1];
-		int idx2 = mIB[i*3+2];
-		mIB.push_back( idx0 + nverts );
-		mIB.push_back( idx2 + nverts );
-		mIB.push_back( idx1 + nverts );
-	}
-	// construct side caps
-	assert( nverts == piece.getVertexCount() );
-	for( i = 0; i < nverts; ++i ) {
-		int oldIdx0 = piece.getPolygon()[i];
-		int oldIdx1 = piece.getPolygon()[(i+1)%nverts];
-		int idx0 = vertRemap[oldIdx0];
-		int idx1 = vertRemap[oldIdx1];
-		assert( idx0 >= 0 && idx0 < nverts );
-		assert( idx1 >= 0 && idx1 < nverts );
-		TPieceVertex v0 = mVB[idx0];
-		TPieceVertex v1 = mVB[idx1];
-		TPieceVertex v2 = mVB[idx0+nverts];
-		TPieceVertex v3 = mVB[idx1+nverts];
-		SVector3 edge01 = v1.p - v0.p;
-		SVector3 edge02 = v2.p - v0.p;
-		SVector3 normal = edge01.cross( edge02 ).getNormalized();
-		v0.n = v1.n = v2.n = v3.n = normal;
-		mVB.push_back( v0 );
-		mVB.push_back( v1 );
-		mVB.push_back( v2 );
-		mVB.push_back( v3 );
-		mIB.push_back( nverts*2 + i*4 + 0 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
-		mIB.push_back( nverts*2 + i*4 + 3 );
-	}
-
-	// construct initial mMatrix
-	mMatrix.identify();
-	mMatrix = w.getMatrix();
-	mMatrix.getOrigin() += mMatrix.getAxisX() * pcenter.x;
-	mMatrix.getOrigin() += mMatrix.getAxisY() * pcenter.y;
-
-	mSize.set( piece.getAABB().getSize().x, piece.getAABB().getSize().y, HALF_THICK*2 );
-}
-
-
-
-// --------------------------------------------------------------------------
-
-
-CPhysPiece::CPhysPiece( const CRestingPiece& rpiece )
+CPhysPiece::CPhysPiece( const CWallPiece3D& rpiece )
 :	physics::CPhysObject( rpiece.getMatrix(), rpiece.getSize() )
 ,	mRestPiece( &rpiece )
 ,	mTimeLeft( gRandom.getFloat(5.0f,25.0f) )
@@ -230,7 +102,7 @@ void CPhysPiece::render( TPieceVertex* vb, unsigned short* ib, int baseIndex, in
 	int i;
 	
 	// VB
-	const TPieceVertex* srcVB = &mRestPiece->getVB()[0];
+	const SVertexXyzNormal* srcVB = &mRestPiece->getVB()[0];
 	vbcount = mRestPiece->getVB().size();
 	for( i = 0; i < vbcount; ++i ) {
 		SVector3 p, n;
@@ -273,20 +145,11 @@ void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector
 }
 
 
-int wall_phys::addWall( CWall& wall )
+int wall_phys::addWall( const CWall3D& wall )
 {
-	SWall* w = new SWall();
-	w->wall = &wall;
-
-	int npcs = wall.getPieces().getPieceCount();
-	for( int i = 0; i < npcs; ++i ) {
-		CRestingPiece* rpc = new CRestingPiece( wall, i );
-		w->pieces.push_back( rpc );
-	}
-
 	physics::addPlane( wall.getMatrix() );
 
-	walls.push_back( w );
+	walls.push_back( &wall );
 	return walls.size()-1;
 }
 
@@ -294,7 +157,7 @@ int wall_phys::addWall( CWall& wall )
 void wall_phys::shutdown()
 {
 	stl_utils::wipe( pieces );
-	stl_utils::wipe( walls );
+	walls.clear();
 
 	physics::shutdown();
 
@@ -305,7 +168,7 @@ void wall_phys::shutdown()
 void wall_phys::spawnPiece( int wallID, int index )
 {
 	assert( wallID >= 0 && wallID < walls.size() );
-	CPhysPiece* p = new CPhysPiece( *walls[wallID]->pieces[index] );
+	CPhysPiece* p = new CPhysPiece( walls[wallID]->getPieces3D()[index] );
 	pieces.push_back( p );
 }
 

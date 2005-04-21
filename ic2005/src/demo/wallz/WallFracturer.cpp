@@ -34,7 +34,7 @@ public:
 
 	void	distort();
 	void	combine();
-	void	toPieces( CWallPieces& pieces );
+	void	toPieces( CWall2D& pieces );
 
 
 private:
@@ -58,7 +58,7 @@ private:
 		return convex;
 	}
 
-	void	elemToPiece( int er, int ec, int eidx, CWallPieces& pieces, int* vertIdxInPieces );
+	void	elemToPiece( int er, int ec, int eidx, CWall2D& pieces, int* vertIdxInPieces );
 
 	int		tryTraceCluster( int vidx, int dir, int elID ) const;
 
@@ -193,7 +193,7 @@ void CFracGrid::combine()
 	}
 }
 
-void CFracGrid::toPieces( CWallPieces& pieces )
+void CFracGrid::toPieces( CWall2D& pieces )
 {
 	// Here we have a regular 2d grid of elements. 4-way adjacent clusters
 	// of them may be combined, each cluster has unique non-negative ID.
@@ -272,7 +272,7 @@ int CFracGrid::tryTraceCluster( int vidx, int dir, int elID ) const
 }
 
 
-void CFracGrid::elemToPiece( int er, int ec, int eidx, CWallPieces& pieces, int* vertIdxInPieces )
+void CFracGrid::elemToPiece( int er, int ec, int eidx, CWall2D& pieces, int* vertIdxInPieces )
 {
 	// The initial element is always upper left corner of the cluster.
 	// So fetch it's UL vertex and start traversing to the right.
@@ -284,7 +284,7 @@ void CFracGrid::elemToPiece( int er, int ec, int eidx, CWallPieces& pieces, int*
 
 	// walk the boundary of the cluster and fetch in the needed vertices
 	int edgeCounter = 0;
-	CWallPiece pc;
+	CWallPiece2D pc;
 	do {
 		assert( vidx >= 0 && vidx < mCols*mRows );
 		// add current vertex to pieces if not added yet
@@ -342,7 +342,7 @@ void CFracGrid::elemToPiece( int er, int ec, int eidx, CWallPieces& pieces, int*
 // --------------------------------------------------------------------------
 
 
-void wallFractureCompute( CWallPieces& wall )
+void wallFractureCompute( CWall2D& wall )
 {
 	CFracGrid* fracGrid = 0;
 	int cols = wall.getSize().x / wall.getSmallestElemSize();

@@ -9,7 +9,7 @@ CComplexStuffEntity::CComplexStuffEntity( const char* defaultAnim )
 {
 	mAnimator = new CCharacterAnimator();
 	CAnimationBunch& anim = *RGET_ANIM(defaultAnim);
-	float animDuration = gGetAnimDuration(anim);
+	float animDuration = gGetAnimDuration(anim,false);
 	mAnimator->setDefaultAnim( anim, animDuration, 0.1f );
 	mAnimator->playDefaultAnim();
 
