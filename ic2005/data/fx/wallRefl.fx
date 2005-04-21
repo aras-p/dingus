@@ -10,7 +10,7 @@ SPosColTexp vsMain( SPosN i ) {
 	o.uvp = mul( i.pos, mShadowProj );
 
 	float diffuse = max( 0.0, dot( tolight, i.normal ) );
-	o.color = diffuse * 0.6 + 0.4;
+	o.color = diffuse * 0.4 + 0.3;
 	return o;
 }
 

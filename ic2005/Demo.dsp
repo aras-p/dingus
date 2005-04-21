@@ -108,6 +108,10 @@ SOURCE=.\src\demo\wallz\Physics.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\demo\wallz\Quadtree.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\demo\wallz\Triangulate.cpp
 # End Source File
 # Begin Source File
