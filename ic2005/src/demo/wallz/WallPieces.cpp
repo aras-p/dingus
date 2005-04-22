@@ -161,7 +161,6 @@ namespace polygon_merger {
 
 	typedef std::set<int>	TIntSet;
 	TIntSet			vertices;
-	TIntSet			verticesComplex;
 	int				borderVertexIndex;
 	
 	typedef std::map< int, TIntVector > TIntIntsMap;
@@ -169,13 +168,13 @@ namespace polygon_merger {
 	TIntIntsMap		vertexPrevs;
 
 	TIntVector		vertexUseCount;
+	TIntVector		vertexTraceID;
 
 	enum eVertexType {
 		VTYPE_NONE,		///< Not computed yet
 		VTYPE_INTERIOR,	///< Completely interior
 		VTYPE_SINGLE,	///< On the border, belongs to single polygon
 		VTYPE_MULTI,	///< On the border, belongs to multiple polygons
-		VTYPE_COMPLEX,	///< On the border, belongs to multiple polygons, in a complex polygon forming way
 		VTYPE_DONE,		///< Already fully processed (traced into result polygon)
 	};
 	TIntVector		vertexTypes;
@@ -223,51 +222,11 @@ namespace polygon_merger {
 		return true; // fall through: must be interior
 	}
 
-	
-	bool isVertexComplex( int idx )
-	{
-		if( idx == 2765 )
-			int aaa = 13;
-		assert( idx >= 0 && idx < vertexUseCount.size() );
-		assert( vertexTypes[idx] == VTYPE_NONE );
-
-		// a vertex is complex if it has exactly two neighbors that are not
-		// shared in 'next' and 'prev'
-		
-		TIntIntsMap::const_iterator it;
-		int i, n;
-
-		it = vertexNexts.find( idx );
-		assert( it != vertexNexts.end() );
-		const TIntVector& vnext = it->second;
-		it = vertexPrevs.find( idx );
-		assert( it != vertexPrevs.end() );
-		const TIntVector& vprev = it->second;
-
-		int notSharedCount = 0;
-
-		n = vnext.size();
-		for( i = 0; i < n; ++i ) {
-			int pidx = vnext[i];
-			if( std::find( vprev.begin(), vprev.end(), pidx ) == vprev.end() )
-				++notSharedCount;
-		}
-		n = vprev.size();
-		for( i = 0; i < n; ++i ) {
-			int pidx = vprev[i];
-			if( std::find( vnext.begin(), vnext.end(), pidx ) == vnext.end() )
-				++notSharedCount;
-		}
-
-		assert( notSharedCount >= 2 );
-		return notSharedCount != 2;
-	}
 
 
 	void	markVertexTypes()
 	{
 		TIntSet::const_iterator vit, vitEnd = vertices.end();
-		int nnn = vertices.size();
 
 		// first pass: mark all interior and single-border vertices
 		for( vit = vertices.begin(); vit != vitEnd; ++vit ) {
@@ -278,21 +237,12 @@ namespace polygon_merger {
 				vertexTypes[idx] = VTYPE_INTERIOR;
 		}
 
-		// now, the unmarked vertices are all on border: most should be
-		// shared, some can form complex polygons
+		// now, the unmarked vertices are all shared and on border
 		for( vit = vertices.begin(); vit != vitEnd; ++vit ) {
 			int idx = *vit;
-			if( vertexTypes[idx] != VTYPE_NONE ) // already marked
-				continue;
-			borderVertexIndex = idx;
-			if( isVertexComplex( idx ) ) {
-				vertexTypes[idx] = VTYPE_COMPLEX;
-				verticesComplex.insert( idx );
-				// just fail now
-				assert( false );
-				throw 0;
-			} else {
+			if( vertexTypes[idx] != VTYPE_NONE ) {
 				vertexTypes[idx] = VTYPE_MULTI;
+				borderVertexIndex = idx;
 			}
 		}
 	}
@@ -300,56 +250,82 @@ namespace polygon_merger {
 	
 	void	traceBorder( int idx0, const TWallVertexVector& vb, TIntVector& polygon, TIntVector& ib )
 	{
+		static int traceID = 0;
+		++traceID;
+
 		assert( idx0 >= 0 && idx0 < vertexTypes.size() );
 		
+		ib.resize( 0 );
 		polygon.resize( 0 );
 		polygon.reserve( vertices.size()/2 );
+
+		TIntVector localPolygon;
+		localPolygon.reserve( 128 );
+		TIntVector localIB;
+		localIB.reserve( 128 );
 
 		int idxPrev = idx0;
 		int idx = idx0;
 		int debugCounter = 0;
+
 		do {
-			polygon.push_back( idx );
 
-			// Next vertex is the neighbor of current, that is not interior
-			// and that is not the previous one.
-			// When there are many possible ones, trace based on angle.
-			int idxNext = -1;
-			if( idx == 2816 )
-				int aaa = 13;
+			localPolygon.resize( 0 );
+			localIB.resize( 0 );
 
-			SVector2 prevToCurr = vb[idx] - vb[idxPrev];
-			if( prevToCurr.lengthSq() < 1.0e-6f )
-				prevToCurr.set( 0.01f, 0.01f );
+			do{
 
-			TIntIntsMap::const_iterator it;
-			it = vertexNexts.find( idx );
-			assert( it != vertexNexts.end() );
-			const TIntVector& vnext = it->second;
-			int n = vnext.size();
-			float bestAngle = 100.0f;
-			for( int i = 0; i < n; ++i ) {
-				int idx1 = vnext[i];
-				if( idx1 != idxPrev && vertexTypes[idx1] != VTYPE_INTERIOR ) {
-					SVector2 currToNext = vb[idx1] - vb[idx];
-					float ang = signedAngle2D( prevToCurr, currToNext );
-					if( ang < bestAngle ) {
-						bestAngle = ang;
-						idxNext = idx1;
+				localPolygon.push_back( idx );
+				vertexTraceID[idx] = traceID;
+				assert( ++debugCounter <= vertices.size() );
+
+				// Next vertex is the neighbor of current, that is not interior
+				// and that is not the previous one.
+				// When there are many possible ones, trace based on angle.
+
+				int idxNext = -1;
+
+				SVector2 prevToCurr = vb[idx] - vb[idxPrev];
+				if( prevToCurr.lengthSq() < 1.0e-6f )
+					prevToCurr.set( 0.01f, 0.01f );
+
+				TIntIntsMap::const_iterator it;
+				it = vertexNexts.find( idx );
+				assert( it != vertexNexts.end() );
+				const TIntVector& vnext = it->second;
+				int n = vnext.size();
+				float bestAngle = 100.0f;
+				for( int i = 0; i < n; ++i ) {
+					int idx1 = vnext[i];
+					if( idx1 != idxPrev && vertexTypes[idx1] != VTYPE_INTERIOR ) {
+						SVector2 currToNext = vb[idx1] - vb[idx];
+						float ang = signedAngle2D( prevToCurr, currToNext );
+						if( ang < bestAngle ) {
+							bestAngle = ang;
+							idxNext = idx1;
+						}
 					}
 				}
+				assert( bestAngle > -4.0f && bestAngle < 4.0f );
+				assert( idxNext >= 0 );
+				idxPrev = idx;
+				idx = idxNext;
+
+			} while( vertexTraceID[idx] != traceID );
+
+			if( idx == idx0 ) {
+				// The polygon is simple or we found the last loop.
+				// Triangulate local and append to results.
+				triangulator::process( vb, localPolygon, localIB );
+				polygon.insert( polygon.end(), localPolygon.begin(), localPolygon.end() );
+				ib.insert( ib.end(), localIB.begin(), localIB.end() );
+				return;
 			}
-			assert( bestAngle > -4.0f && bestAngle < 4.0f );
-			assert( idxNext >= 0 );
-			idxPrev = idx;
-			idx = idxNext;
 
-			assert( ++debugCounter <= vertices.size() );
+			// The polygon must be complex, and we just found a closed loop.
+			// TBD
 
-		} while( idx != idx0 );
-
-
-		triangulator::process( vb, polygon, ib );
+		} while( true );
 	}
 
 
@@ -358,13 +334,15 @@ namespace polygon_merger {
 		polygons.clear();
 
 		vertices.clear();
-		verticesComplex.clear();
 		borderVertexIndex = -1;
 
 		vertexNexts.clear();
 		vertexPrevs.clear();
 		vertexUseCount.resize( 0 );
 		vertexUseCount.resize( totalVerts, 0 );
+
+		vertexTraceID.resize( totalVerts, -1 );
+
 		vertexTypes.resize( 0 );
 		vertexTypes.resize( totalVerts, VTYPE_NONE );
 	}
@@ -399,7 +377,7 @@ namespace polygon_merger {
 			// mark vertex types
 			markVertexTypes();
 
-			// trace and triangulate the polygon
+			// trace and triangulate the polygon(s)
 			traceBorder( borderVertexIndex, vb, polygon, ib );
 		}
 	}
