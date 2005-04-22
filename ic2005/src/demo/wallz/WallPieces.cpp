@@ -231,16 +231,17 @@ namespace polygon_merger {
 		// first pass: mark all interior and single-border vertices
 		for( vit = vertices.begin(); vit != vitEnd; ++vit ) {
 			int idx = *vit;
-			if( vertexUseCount[idx] == 1 )
+			if( vertexUseCount[idx] == 1 ) {
 				vertexTypes[idx] = VTYPE_SINGLE;
-			else if( isVertexInterior(idx) )
+				borderVertexIndex = idx;
+			} else if( isVertexInterior(idx) )
 				vertexTypes[idx] = VTYPE_INTERIOR;
 		}
 
 		// now, the unmarked vertices are all shared and on border
 		for( vit = vertices.begin(); vit != vitEnd; ++vit ) {
 			int idx = *vit;
-			if( vertexTypes[idx] != VTYPE_NONE ) {
+			if( vertexTypes[idx] == VTYPE_NONE ) {
 				vertexTypes[idx] = VTYPE_MULTI;
 				borderVertexIndex = idx;
 			}
@@ -268,16 +269,17 @@ namespace polygon_merger {
 		int idx = idx0;
 		int debugCounter = 0;
 
+		int debugLoopCounter = 0;
+
 		do {
 
-			localPolygon.resize( 0 );
 			localIB.resize( 0 );
 
 			do{
 
 				localPolygon.push_back( idx );
 				vertexTraceID[idx] = traceID;
-				assert( ++debugCounter <= vertices.size() );
+				assert( ++debugCounter <= vertices.size()*2 );
 
 				// Next vertex is the neighbor of current, that is not interior
 				// and that is not the previous one.
@@ -313,6 +315,13 @@ namespace polygon_merger {
 
 			} while( vertexTraceID[idx] != traceID );
 
+			assert( localPolygon.size() >= 3 );
+			//if( localPolygon.size() < 3 ) {
+			//	return;
+			//}
+
+			assert( ++debugLoopCounter < vertices.size() );
+
 			if( idx == idx0 ) {
 				// The polygon is simple or we found the last loop.
 				// Triangulate local and append to results.
@@ -323,7 +332,19 @@ namespace polygon_merger {
 			}
 
 			// The polygon must be complex, and we just found a closed loop.
-			// TBD
+			// Take only the loop, triangulate it, append to results, continue.
+			TIntVector::const_iterator itLoopStart = 
+				std::find( localPolygon.begin(), localPolygon.end(), idx );
+			assert( itLoopStart != localPolygon.end() );
+
+			// append to results
+			TIntVector loopPolygon( itLoopStart, localPolygon.end() );
+			triangulator::process( vb, loopPolygon, localIB );
+			polygon.insert( polygon.end(), loopPolygon.begin(), loopPolygon.end() );
+			ib.insert( ib.end(), localIB.begin(), localIB.end() );
+
+			// continue - remove the looped polygon from local
+			localPolygon.resize( itLoopStart - localPolygon.begin() );
 
 		} while( true );
 	}
@@ -471,7 +492,7 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 	}
 	// push vertices for another side (but no triangles)
 	int nverts = mVB.size();
-	assert( nverts == polygon.size() );
+	int npolygon = polygon.size();
 	for( i = 0; i < nverts; ++i ) {
 		SVertexXyzNormal vtx = mVB[i];
 		vtx.p -= vtx.n * (HALF_THICK*2);
@@ -481,7 +502,7 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 	// construct side caps
 	for( i = 0; i < nverts; ++i ) {
 		int oldIdx0 = polygon[i];
-		int oldIdx1 = polygon[(i+1)%nverts];
+		int oldIdx1 = polygon[(i+1)%npolygon];
 		int idx0 = vertRemap[oldIdx0];
 		int idx1 = vertRemap[oldIdx1];
 		assert( idx0 >= 0 && idx0 < nverts );
@@ -643,31 +664,9 @@ void CWall3D::initPieces()
 		for( int j = 0; j < npc; ++j )
 			wpc->initAddPiece( node.getData().leafs[j]->getLeafIndex() );
 		wpc->initEnd( mQuadtree );
-	}
 
-
-	/*
-	// TEST
-	CWallPieceCombined* wpc0 = new CWallPieceCombined();
-	wpc0->initBegin( *this, *mQuadtree );
-	for( i = 0; i < n; ++i ) {
-		mPieces3D[i].init( *this, i );
-		if( mWall2D.getPiece(i).getAABB().getMax().x > 2.0f )
-			wpc0->initAddPiece( i );
-		mFracturedPieces[i] = false;
+		mPiecesCombined.push_back( wpc );
 	}
-	wpc0->initEnd();
-	mPiecesCombined.push_back( wpc0 );
-
-	CWallPieceCombined* wpc1 = new CWallPieceCombined();
-	wpc1->initBegin( *this, *mQuadtree );
-	for( i = 0; i < n; ++i ) {
-		if( mWall2D.getPiece(i).getAABB().getMax().x <= 2.0f )
-			wpc1->initAddPiece( i );
-	}
-	wpc1->initEnd();
-	mPiecesCombined.push_back( wpc1 );
-	*/
 
 	mPiecesInited = true;
 	mNeedsRenderingIntoVB = true;
@@ -752,11 +751,13 @@ bool CWall3D::renderIntoVB()
 
 	// accumulate total vertex/index count
 	//int n = mPiecesCombined.size();
-	int n = mQuadtree[1].getData().leafs.size();
-	for( i = 0; i < n; ++i ) {
+	//int n = mQuadtree[1].getData().leafs.size();
+	//for( i = 0; i < n; ++i ) {
+	{
 		//if( mFracturedPieces[i] )
 		//	continue;
-		const CWallPieceCombined& pc = *mQuadtree[1].getData().leafs[i];
+		//const CWallPieceCombined& pc = *mQuadtree[1].getData().leafs[i];
+		const CWallPieceCombined& pc = *mQuadtree[1].getData().combined;
 		int nvb, nib;
 		pc.preRender( nvb, nib );
 		nverts += nvb;
@@ -773,11 +774,13 @@ bool CWall3D::renderIntoVB()
 	TPieceVertex* vb = (TPieceVertex*)mVBChunk->getData();
 	unsigned short* ib = (unsigned short*)mIBChunk->getData();
 	int baseIndex = 0;
-	for( i = 0; i < n; ++i ) {
+	//for( i = 0; i < n; ++i ) {
+	{
 		//if( mFracturedPieces[i] )
 		//	continue;
 		int nvb, nib;
-		const CWallPieceCombined& pc = *mQuadtree[1].getData().leafs[i];
+		//const CWallPieceCombined& pc = *mQuadtree[1].getData().leafs[i];
+		const CWallPieceCombined& pc = *mQuadtree[1].getData().combined;
 		pc.render( vb, ib, baseIndex, nvb, nib );
 		baseIndex += nvb;
 		vb += nvb;

@@ -167,8 +167,6 @@ int					gWallIDs[CFACE_COUNT];
 fastvector<CMeshEntity*>	gPieces;
 
 
-CRenderableMesh*	gQuadDilateX;
-CRenderableMesh*	gQuadDilateY;
 CRenderableMesh*	gQuadGaussX;
 CRenderableMesh*	gQuadGaussY;
 CRenderableMesh*	gQuadBlur;
@@ -390,9 +388,9 @@ void CDemo::initialize( IDingusAppContext& appContext )
 			SZ_SHADOWMAP, SZ_SHADOWMAP, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
 		stb.registerTexture( RT_SHADOWMAP, *shadowT );
 		stb.registerTexture( RT_SHADOWBLUR, *shadowTMip );
-		ssb.registerSurface( RT_SHADOWMAP, *new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP),0) );
-		ssb.registerSurface( RT_SHADOWBLUR, *new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWBLUR),0) );
-		ssb.registerSurface( RT_SHADOWZ, *new CFixedSurfaceCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,true,D3DFMT_D16) );
+		ssb.registerSurface( RT_SHADOWMAP, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP),0)) );
+		ssb.registerSurface( RT_SHADOWBLUR, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWBLUR),0)) );
+		ssb.registerSurface( RT_SHADOWZ, *(new CFixedSurfaceCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,true,D3DFMT_D16)) );
 
 		G_RENDERCTX->getGlobalParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
 	}
@@ -415,8 +413,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		stb.registerTexture( RT_REFL_TMP2, *rtcreatReflBlur );
 		ssb.registerSurface( RT_REFLRT, *rtcreatReflRT );
 		ssb.registerSurface( RT_REFLZ, *rtcreatReflZ );
-		ssb.registerSurface( RT_REFL_TMP1, *new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_REFL_TMP1),0) );
-		ssb.registerSurface( RT_REFL_TMP2, *new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_REFL_TMP2),0) );
+		ssb.registerSurface( RT_REFL_TMP1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_REFL_TMP1),0)) );
+		ssb.registerSurface( RT_REFL_TMP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_REFL_TMP2),0)) );
 	}
 
 	// --------------------------------
@@ -525,14 +523,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		// post processes
 		gPPReflBlur = new CPostProcess( RT_REFL_TMP1, RT_REFL_TMP2 );
 
-		// dilate shadowmap -> shadowblur
-		gQuadDilateX = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
-		gQuadDilateX->getParams().setEffect( *RGET_FX("filterDilateX") );
-		gQuadDilateX->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
-		// dilate shadowblur -> shadowmap
-		gQuadDilateY = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
-		gQuadDilateY->getParams().setEffect( *RGET_FX("filterDilateY") );
-		gQuadDilateY->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWBLUR) );
 		// gauss X shadowmap -> shadowblur
 		gQuadGaussX = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
 		gQuadGaussX->getParams().setEffect( *RGET_FX("filterGaussX") );

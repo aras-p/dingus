@@ -57,7 +57,6 @@ void CSystem::setupBundles( const std::string& dataPath, dingus::CReloadableBund
 	CEffectBundle::getInstance().addDirectory( dataPath + "fx/" );
 	CAnimationBundle::getInstance().addDirectory( dataPath + "anim/" );
 	CModelDescBundle::getInstance().addDirectory( dataPath + "model/" );
-	CFontBundle::getInstance().addDirectory( dataPath );
 
 	// TBD: decrease sizes, now for testing!
 	CDynamicVBManager::initialize( 16 * 1024 * 1024 );
@@ -114,6 +113,7 @@ void CSystem::destroyContexts()
 	safeDelete( G_RENDERCTX );
 
 	assert( G_INPUTCTX );
+	stl_utils::wipe( G_INPUTCTX->getDevices() );
 	safeDelete( G_INPUTCTX );
 }
 
@@ -125,7 +125,6 @@ void CSystem::destroyBundles()
 	CAnimationBundle::finalize();
 	CCubeTextureBundle::finalize();
 	CEffectBundle::finalize();
-	CFontBundle::finalize();
 	CIndexBufferBundle::finalize();
 	CMeshBundle::finalize();
 	CSkinMeshBundle::finalize();

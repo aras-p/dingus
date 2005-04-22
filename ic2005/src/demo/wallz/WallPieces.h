@@ -34,6 +34,8 @@ class CWallPiece2D {
 public:
 	CWallPiece2D()
 	{
+		mPolygon.reserve( 32 );
+		mTris.reserve( 32 );
 	}
 	CWallPiece2D( const CWallPiece2D& r )
 		: mPolygon(r.mPolygon)
@@ -173,6 +175,8 @@ public:
 		: mSize( size )
 		, mSmallestElemSize( smallestElemSize )
 	{
+		mVerts.reserve( 1024 );
+		mPieces.reserve( 512 );
 	}
 
 	void	addVertex( const SVector2& v ) {

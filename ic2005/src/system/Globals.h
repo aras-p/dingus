@@ -8,7 +8,7 @@
 #include <dingus/resource/AnimationBundle.h>
 #include <dingus/resource/CubeTextureBundle.h>
 #include <dingus/resource/EffectBundle.h>
-#include <dingus/resource/FontBundle.h>
+//#include <dingus/resource/FontBundle.h>
 #include <dingus/resource/IndexBufferBundle.h>
 #include <dingus/resource/MeshBundle.h>
 #include <dingus/resource/ModelDescBundle.h>
