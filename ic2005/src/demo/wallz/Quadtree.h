@@ -80,7 +80,7 @@ void CQuadTreeNode<T,DIVAX>::init( const SVector2& bmin, const SVector2& bmax, t
 	nodes += DIVS_TOTAL;
 
 	SVector2 childSize = (bmax-bmin) / DIVS_SIDE;
-	SVector3 childMin, childMax;
+	SVector2 childMin, childMax;
 
 	int index = 0;
 	childMin.y = bmin.y;

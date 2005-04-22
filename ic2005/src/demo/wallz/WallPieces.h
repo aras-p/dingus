@@ -120,6 +120,15 @@ private:
 
 // --------------------------------------------------------------------------
 
+struct SWallQuadData {
+	int dummy; // TBD
+};
+
+typedef CQuadTreeNode<SWallQuadData,2>	TWallQuadNode;
+
+
+// --------------------------------------------------------------------------
+
 
 /// Piece of precomputed fracture, with in-wall 3D representation constructed.
 /// May represent either leaf piece, or combined smaller pieces.
@@ -128,7 +137,7 @@ public:
 	typedef std::vector<SVertexXyzNormal>	TVertexVector;
 
 public:
-	void	initBegin( const CWall3D& w );
+	void	initBegin( const CWall3D& w, const TWallQuadNode& quadtree );
 	void	initAddPiece( int idx );
 	void	initEnd();
 
@@ -144,11 +153,12 @@ private:
 	TVertexVector	mVB;
 	TIntVector		mIB;
 	CAABox2			mBounds;
-	// TBD: quadtree node!
-	bool			mLeaf;
+	TIntVector		mCombinedPieces;
+	const TWallQuadNode*	mQuadNode;
 
-	static	CWallPieceCombined*	mInitPiece;
-	static	const CWall3D*		mInitWall;
+	static	CWallPieceCombined*		mInitPiece;
+	static	const CWall3D*			mInitWall;
+	static	const TWallQuadNode*	mInitQuadtree;
 };
 
 
@@ -236,6 +246,8 @@ private:
 	bool*			mFracturedPieces;
 	float			mLastFractureTime;
 
+	TWallQuadNode*	mQuadtree;
+	int				mQuadtreeNodeCount;
 	std::vector<CWallPieceCombined*>	mPiecesCombined;
 
 	CRenderableIndexedBuffer*	mRenderables[RMCOUNT];

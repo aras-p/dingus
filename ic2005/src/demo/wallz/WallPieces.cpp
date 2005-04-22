@@ -444,17 +444,21 @@ namespace polygon_merger {
 
 CWallPieceCombined* CWallPieceCombined::mInitPiece = NULL;
 const CWall3D* CWallPieceCombined::mInitWall = NULL;
+const TWallQuadNode* CWallPieceCombined::mInitQuadtree = NULL;
 
 
-void CWallPieceCombined::initBegin( const CWall3D& w )
+
+void CWallPieceCombined::initBegin( const CWall3D& w, const TWallQuadNode& quadtree )
 {
 	assert( !mInitPiece );
 	assert( !mInitWall );
+	assert( !mInitQuadtree );
 	assert( mVB.empty() );
 	assert( mIB.empty() );
 
 	mInitPiece = this;
 	mInitWall = &w;
+	mInitQuadtree = &quadtree;
 
 	polygon_merger::begin( w.getWall2D().getVerts().size() );
 }
@@ -462,10 +466,11 @@ void CWallPieceCombined::initBegin( const CWall3D& w )
 
 void CWallPieceCombined::initAddPiece( int idx )
 {
-	polygon_merger::addPolygon( mInitWall->getWall2D().getPiece(idx).getPolygonVector() );
+	const CWallPiece2D& piece = mInitWall->getWall2D().getPiece(idx);
+	polygon_merger::addPolygon( piece.getPolygonVector() );
 
-	// TBD: bounds!
-	//mSize.set( piece.getAABB().getSize().x, piece.getAABB().getSize().y, HALF_THICK*2 );
+	mBounds.extend( piece.getAABB() );
+
 }
 
 
@@ -558,6 +563,7 @@ void CWallPieceCombined::initEnd()
 
 	mInitPiece = NULL;
 	mInitWall = NULL;
+	mInitQuadtree = NULL;
 }
 
 
@@ -603,6 +609,7 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 , mVB(NULL)
 , mPieces3D(NULL)
 , mFracturedPieces(NULL)
+, mQuadtree(NULL)
 , mLastFractureTime( -100.0f )
 , mPiecesInited(false)
 , mNeedsRenderingIntoVB(false)
@@ -631,6 +638,8 @@ CWall3D::~CWall3D()
 	stl_utils::wipe( mPiecesCombined );
 	safeDeleteArray( mPieces3D );
 	safeDeleteArray( mFracturedPieces );
+
+	safeDeleteArray( mQuadtree );
 }
 
 void CWall3D::initPieces()
@@ -642,13 +651,16 @@ void CWall3D::initPieces()
 	
 	int n = mWall2D.getPieceCount();
 	
+	const int QUADTREE_DEPTH = 3;
+	mQuadtree = TWallQuadNode::create( SVector2(0,0), mWall2D.getSize(), QUADTREE_DEPTH, &mQuadtreeNodeCount );
+
 	mPieces3D = new CWallPiece3D[n];
 	mFracturedPieces = new bool[n];
 
 	// TEST
 	int i;
 	CWallPieceCombined* wpc0 = new CWallPieceCombined();
-	wpc0->initBegin( *this );
+	wpc0->initBegin( *this, *mQuadtree );
 	for( i = 0; i < n; ++i ) {
 		mPieces3D[i].init( *this, i );
 		if( mWall2D.getPiece(i).getAABB().getMax().x > 2.0f )
@@ -659,7 +671,7 @@ void CWall3D::initPieces()
 	mPiecesCombined.push_back( wpc0 );
 
 	CWallPieceCombined* wpc1 = new CWallPieceCombined();
-	wpc1->initBegin( *this );
+	wpc1->initBegin( *this, *mQuadtree );
 	for( i = 0; i < n; ++i ) {
 		if( mWall2D.getPiece(i).getAABB().getMax().x <= 2.0f )
 			wpc1->initAddPiece( i );
