@@ -559,7 +559,8 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	
 	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
-	mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
+	if( reflTextureID )
+		mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
 	
 	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallRefl") );

@@ -470,12 +470,12 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	{
 		const float ELEM_SIZE = 0.1f;
 
-		gWalls[CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, WALL_TEXS[CFACE_PX] );
-		gWalls[CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, WALL_TEXS[CFACE_NX] );
-		gWalls[CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE, WALL_TEXS[CFACE_PY] );
-		gWalls[CFACE_NY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE, WALL_TEXS[CFACE_NY] );
-		gWalls[CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE, WALL_TEXS[CFACE_PZ] );
-		gWalls[CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE, WALL_TEXS[CFACE_NZ] );
+		gWalls[CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PX] );
+		gWalls[CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NX] );
+		gWalls[CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PY] );
+		gWalls[CFACE_NY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NY] );
+		gWalls[CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PZ] );
+		gWalls[CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NZ] );
 
 		SMatrix4x4 wm;
 		wm.identify();
