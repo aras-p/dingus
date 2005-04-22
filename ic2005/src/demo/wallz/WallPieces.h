@@ -70,6 +70,7 @@ public:
 
 	int getTriCount() const { return mTris.size()/3; }
 	const int* getIB() const { return &mTris[0]; }
+	const TIntVector getPolygonVector() const { return mPolygon; }
 	int getVertexCount() const { return mPolygon.size(); }
 	const int* getPolygon() const { return &mPolygon[0]; }
 
@@ -131,7 +132,7 @@ public:
 	void	initEnd();
 
 	void	preRender( int& vbcount, int& ibcount ) const;
-	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
+	void	render( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
 
 	const TVertexVector& getVB() const { return mVB; }
 	const TIntVector& getIB() const { return mIB; }
@@ -233,6 +234,8 @@ private:
 	CWallPiece3D*	mPieces3D;
 	bool*			mFracturedPieces;
 	float			mLastFractureTime;
+
+	std::vector<CWallPieceCombined*>	mPiecesCombined;
 
 	CRenderableIndexedBuffer*	mRenderables[RMCOUNT];
 	TVBChunk::TSharedPtr		mVBChunk;
