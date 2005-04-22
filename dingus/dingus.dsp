@@ -395,54 +395,6 @@ SOURCE=.\dingus\gfx\gui\Gui.cpp
 
 SOURCE=.\dingus\gfx\gui\Gui.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIContainer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIContResizePolicies.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIFont.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIFont.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIObject.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIObjectRenderer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIObjects.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIObjects.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIRenderer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UIRenderer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UITextRenderer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\gfx\gui\UITextRenderer.h
-# End Source File
 # End Group
 # Begin Group "particles"
 

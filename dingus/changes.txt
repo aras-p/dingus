@@ -2,6 +2,7 @@
 Dingus codenamed "IC2005 demo"
 ========
 
+050422: Removed old unused GUI stuff from gfx/gui.
 050418: Dynamic index buffer manager added (CDynamicIBManager).
 		CVBChunk is now TVBChunk (typedef for CBufferChunk<CD3DVertexBuffer>).
 		gfx/geometry/VBChunk.h is no more, use gfx/geometry/BufferChunk.h now.
