@@ -70,6 +70,14 @@ static void gOptionsToDialog( HWND wnd, const SExportOptions& o )
 	ComboBox_AddString( comboUV, "UV2" );
 	ComboBox_AddString( comboUV, "UV3" );
 	ComboBox_SetCurSel( comboUV, o.mTangentsUseUV );
+
+	HWND comboSkin = GetDlgItem( wnd, IDC_CMB_SKINBONES );
+	ComboBox_ResetContent( comboSkin );
+	ComboBox_AddString( comboSkin, "1" );
+	ComboBox_AddString( comboSkin, "2" );
+	ComboBox_AddString( comboSkin, "3" );
+	ComboBox_AddString( comboSkin, "4" );
+	ComboBox_SetCurSel( comboSkin, o.mSkinBones-1 ); // bones start at 1, combo indices at 0
 }
 
 static void gOptionsFromDialog( HWND wnd, SExportOptions& o )
@@ -90,6 +98,11 @@ static void gOptionsFromDialog( HWND wnd, SExportOptions& o )
 
 	HWND comboUV = GetDlgItem( wnd, IDC_CMB_TANGENTUV );
 	o.mTangentsUseUV = ComboBox_GetCurSel( comboUV );
+	
+	HWND comboSkin = GetDlgItem( wnd, IDC_CMB_SKINBONES );
+	o.mSkinBones = ComboBox_GetCurSel( comboSkin ) + 1;
+	if( o.mSkinBones < 1 )
+		o.mSkinBones = 1;
 
 	char buf[200];
 	GetDlgItemText( wnd, IDC_EDIT_UNITMULT, buf, 200 );
@@ -182,7 +195,7 @@ const char* IGameExporter::gatherNode( IGameNode* node )
 				mNodes.Append( 1, &nodeInfo );
 				result = gatherMesh( *nodeInfo );
 			}
-			return result;
+			//return result;
 		}
 	}
 
@@ -198,7 +211,7 @@ const char* IGameExporter::gatherNode( IGameNode* node )
 
 const char* IGameExporter::gatherMesh( SNodeInfo& info )
 {
-	DEBUG_MSG( "gather mesh..." );
+	DEBUG_MSG( "gather mesh %s...", info.node->GetName() );
 
 	info.mesh->SetUseWeightedNormals();
 	bool okInited = info.mesh->InitializeData();
@@ -275,16 +288,21 @@ void IGameExporter::gatherSkin( SNodeInfo& info )
 {
 	info.maxBonesPerVert = -1;
 	int i;
+	
 	// not skinned?
 	if( !info.mesh->IsObjectSkinned() )
 		return;
+
+	DEBUG_MSG( "node %s is skinned...", info.node->GetName() );
 	
 	IGameSkin* skin = info.mesh->GetIGameSkin();
 	
 	// create skin info now
 	int nverts = info.mesh->GetNumberOfVerts();
 	info.weights = new D3DXVECTOR3[nverts];
+	memset( info.weights, 0, nverts*sizeof(info.weights[0]) );
 	info.indices = new DWORD[nverts];
+	memset( info.indices, 0, nverts*sizeof(info.indices[0]) );
 	info.bones = new Tab<IGameNode*>();
 
 	// go through all vertices and collect bone nodes
@@ -333,10 +351,10 @@ void IGameExporter::gatherSkin( SNodeInfo& info )
 		}
 		nb = allwhts.Count();
 		allwhts.Sort( gBoneInfoSortFn );
-		// trim to max
-		const int MAX_BONES_VERTEX = 4; // TBD: configurable
-		if( nb > MAX_BONES_VERTEX )
-			nb = MAX_BONES_VERTEX;
+		// trim to max. possible
+		const int MAX_BONES_POSSIBLE = 4;
+		if( nb > MAX_BONES_POSSIBLE )
+			nb = MAX_BONES_POSSIBLE;
 		if( nb > info.maxBonesPerVert )
 			info.maxBonesPerVert = nb;
 		D3DXVECTOR4 whts;
@@ -354,12 +372,15 @@ void IGameExporter::gatherSkin( SNodeInfo& info )
 		info.weights[i] = D3DXVECTOR3(whts.x,whts.y,whts.z);
 		info.indices[i] = idx;
 	}
+	DEBUG_MSG( "  skin: bone count %i, max bones per vert %i", info.bones->Count(), info.maxBonesPerVert );
 }
+
 
 
 // --------------------------------------------------------------------------
 //  Mesh construction and processing
 // --------------------------------------------------------------------------
+
 
 const char* IGameExporter::meshCreate()
 {
@@ -386,9 +407,10 @@ const char* IGameExporter::meshCreate()
 	return 0;
 }
 
+
 const char* IGameExporter::meshAddNode( SNodeInfo& info, int& vertOffset, int& triOffset )
 {
-	DEBUG_MSG( "mesh add node..." );
+	DEBUG_MSG( "mesh add node %s...", info.node->GetName() );
 	assert( mMesh.isValid() );
 
 	//
@@ -478,8 +500,9 @@ const char* IGameExporter::meshAddNode( SNodeInfo& info, int& vertOffset, int& t
 			for( int uvc = 0; uvc < mproc::UV_COUNT; ++uvc ) {
 				if( hasuvs[uvc] ) {
 					mesh.GetMapVertex( uvnumbers[uvc], mapfaceidx[uvc][i], uv3 );
-					// NOTE: need to negate V coordinate
-					v->uv[uvc].x = uv3.x; v->uv[uvc].y = -uv3.y;
+					v->uv[uvc].x = uv3.x;
+					// NOTE: need to output 1-V coordinate
+					v->uv[uvc].y = 1.0f-uv3.y;
 				} else {
 					v->uv[uvc].x = v->uv[uvc].y = 0.0f;
 				}
@@ -507,7 +530,6 @@ const char* IGameExporter::meshAddNode( SNodeInfo& info, int& vertOffset, int& t
 	mMesh.getMesh().UnlockVertexBuffer();
 	mMesh.getMesh().UnlockIndexBuffer();
 	mMesh.getMesh().UnlockAttributeBuffer();
-
 
 	if( info.bones )
 		mMeshBones.Append( info.bones->Count(), &(*info.bones)[0] );
@@ -667,20 +689,33 @@ const char* IGameExporter::meshWrite()
 	DEBUG_MSG( "  figure vertex format..." );
 
 	bool skinned = (mTotalMaxBonesPerVert > 0);
+	DEBUG_MSG( "    max bones per vert: %i", mTotalMaxBonesPerVert );
+	DEBUG_MSG( "    exporting bones per vert: %i", mOptions.mSkinBones );
 
 	DWORD formatBits = 0;
 	if( mOptions.mDoPositions )
 		formatBits |= CVertexFormat::V_POSITION;
-	if( mOptions.mDoNormals )
-		formatBits |= CVertexFormat::V_NORMAL; // TBD: other normal encodings
-	if( mOptions.mDoTangents )
-		formatBits |= CVertexFormat::V_TANGENT; // TBD: other normal encodings
-	if( mOptions.mDoBinormals )
-		formatBits |= CVertexFormat::V_BINORM; // TBD: other normal encodings
+	if( mOptions.mColorEncodeNTB ) {
+		// color encoded normal/tangent/binormal
+		if( mOptions.mDoNormals )
+			formatBits |= CVertexFormat::V_NORMALCOL;
+		if( mOptions.mDoTangents )
+			formatBits |= CVertexFormat::V_TANGENTCOL;
+		if( mOptions.mDoBinormals )
+			formatBits |= CVertexFormat::V_BINORMCOL;
+	} else {
+		// plain float3 normal/tangent/binormal
+		if( mOptions.mDoNormals )
+			formatBits |= CVertexFormat::V_NORMAL;
+		if( mOptions.mDoTangents )
+			formatBits |= CVertexFormat::V_TANGENT;
+		if( mOptions.mDoBinormals )
+			formatBits |= CVertexFormat::V_BINORM;
+	}
 	if( mOptions.mDoSkin && skinned ) {
 		formatBits |= CVertexFormat::V_SKIN_WHT; // TBD: other weight encodings
 		DWORD bb[4] = { CVertexFormat::V_SKIN_1, CVertexFormat::V_SKIN_2, CVertexFormat::V_SKIN_3, CVertexFormat::V_SKIN_4 };
-		formatBits |= bb[mTotalMaxBonesPerVert-1];
+		formatBits |= bb[mOptions.mSkinBones-1];
 	}
 	for( int f = 0; f < mproc::UV_COUNT; ++f ) {
 		if( mMeshHasUVs[f] )
@@ -695,7 +730,7 @@ const char* IGameExporter::meshWrite()
 	const char* writeErr = writeMeshData( mMesh.getMesh(), formatBits );
 	const char* writeSkinErr = 0;
 	if( skinned )
-		writeSkinErr = writeSkinData( mMeshBones, mTotalMaxBonesPerVert );
+		writeSkinErr = writeSkinData( mMeshBones, mOptions.mSkinBones );
 
 	if( writeErr )
 		return writeErr;
@@ -703,6 +738,7 @@ const char* IGameExporter::meshWrite()
 		return writeSkinErr;
 	return 0;
 }
+
 
 const char* IGameExporter::cleanupMem()
 {
@@ -723,6 +759,16 @@ const char* IGameExporter::cleanupMem()
 // --------------------------------------------------------------------------
 //   File writing
 // --------------------------------------------------------------------------
+
+static DWORD gVectorToColor( const D3DXVECTOR3& v ) {
+	float vx = (v.x + 1.0f) * 127.5f;
+	float vy = (v.y + 1.0f) * 127.5f;
+	float vz = (v.z + 1.0f) * 127.5f;
+	int nx = int(vx) & 255;
+	int ny = int(vy) & 255;
+	int nz = int(vz) & 255;
+	return (nx<<16) | (ny<<8) | (nz<<0);
+}
 
 
 const char* IGameExporter::writeMeshData( ID3DXMesh& mesh, DWORD formatBits )
@@ -773,12 +819,29 @@ const char* IGameExporter::writeMeshData( ID3DXMesh& mesh, DWORD formatBits )
 			fwrite( &v.i, 1, 4, mFile );
 		}
 		// normal/tangent/binormal
-		if( format.getNormalMode() == CVertexFormat::FLT3_FLOAT3 ) // TBD: other encodings
+		CVertexFormat::eFloat3Mode modeN = format.getNormalMode();
+		CVertexFormat::eFloat3Mode modeT = format.getTangentMode();
+		CVertexFormat::eFloat3Mode modeB = format.getBinormMode();
+		// plain float3 n/t/b?
+		if( modeN == CVertexFormat::FLT3_FLOAT3 )
 			fwrite( &v.n, 1, 4*3, mFile );
-		if( format.getTangentMode() == CVertexFormat::FLT3_FLOAT3 ) // TBD: other encodings
+		if( modeT == CVertexFormat::FLT3_FLOAT3 )
 			fwrite( &v.t, 1, 4*3, mFile );
-		if( format.getBinormMode() == CVertexFormat::FLT3_FLOAT3 ) // TBD: other encodings
+		if( modeB == CVertexFormat::FLT3_FLOAT3 )
 			fwrite( &v.b, 1, 4*3, mFile );
+		// color encoded n/t/b?
+		if( modeN == CVertexFormat::FLT3_COLOR ) {
+			DWORD col = gVectorToColor( v.n );
+			fwrite( &col, 1, 4, mFile );
+		}
+		if( modeT == CVertexFormat::FLT3_COLOR ) {
+			DWORD col = gVectorToColor( v.t );
+			fwrite( &col, 1, 4, mFile );
+		}
+		if( modeB == CVertexFormat::FLT3_COLOR ) {
+			DWORD col = gVectorToColor( v.b );
+			fwrite( &col, 1, 4, mFile );
+		}
 		// UV?
 		for( int k = 0; k < mproc::UV_COUNT; ++k ) {
 			if( format.getUVMode(k) == CVertexFormat::UV_2D )
@@ -1013,9 +1076,11 @@ int IGameExporter::DoExport( const TCHAR *name, ExpInterface *ei, Interface *i, 
 	}
 	// if all not skinned: optionally convert into 1-bone skinned.
 	if( ok && mTotalMaxBonesPerVert <= 0 && mOptions.mCreate1BoneSkin ) {
+		DEBUG_MSG( "creating 1-bone skin..." );
 		for( int j = 0; j < mNodes.Count(); ++j ) {
 			mNodes[j]->createSelfSkin( j );
 		}
+		mTotalMaxBonesPerVert = 1;
 	}
 
 	//

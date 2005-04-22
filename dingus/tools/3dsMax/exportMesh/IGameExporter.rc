@@ -26,47 +26,50 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_PANEL DIALOG DISCARDABLE  0, 0, 177, 226
+IDD_PANEL DIALOG DISCARDABLE  0, 0, 177, 210
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "IM mesh exporter"
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        "General Options",IDC_STATIC,5,0,165,40
+    GROUPBOX        "General Options",IDC_STATIC,5,0,165,25
     LTEXT           "Coord unit multiplier",IDC_STATIC,10,10,62,8
     EDITTEXT        IDC_EDIT_UNITMULT,80,10,50,12,ES_AUTOHSCROLL
-    GROUPBOX        "Mesh components",IDC_STATIC,5,40,165,160
+    GROUPBOX        "Mesh components",IDC_STATIC,5,30,165,155
     CONTROL         "Positions",IDC_CHK_POSITIONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,50,44,10
-    GROUPBOX        "Normals",IDC_STATIC,10,65,90,75
+                    WS_TABSTOP,10,40,44,10
+    GROUPBOX        "Normals",IDC_STATIC,10,55,90,75
     CONTROL         "Normals",IDC_CHK_NORMALS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,75,41,10
+                    WS_TABSTOP,15,65,41,10
     CONTROL         "Tangents",IDC_CHK_TANGENTS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,85,46,10
+                    WS_TABSTOP,15,75,46,10
     CONTROL         "Binormals",IDC_CHK_BINORMALS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,95,46,10
-    LTEXT           "From UV",IDC_STATIC,15,110,28,8
-    COMBOBOX        IDC_CMB_TANGENTUV,50,110,43,55,CBS_DROPDOWNLIST | 
+                    WS_TABSTOP,15,85,46,10
+    LTEXT           "From UV",IDC_STATIC,15,100,28,8
+    COMBOBOX        IDC_CMB_TANGENTUV,50,100,43,55,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Color encoded",IDC_CHK_NORMALSCOLOR,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,15,125,62,10
-    GROUPBOX        "Texture UVs",IDC_STATIC,105,65,60,55
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,115,62,10
+    GROUPBOX        "Texture UVs",IDC_STATIC,105,55,60,55
     CONTROL         "Base",IDC_CHK_UV0,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    111,75,32,10
+                    111,65,32,10
     CONTROL         "UV1",IDC_CHK_UV1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    111,86,30,10
+                    111,76,30,10
     CONTROL         "UV2",IDC_CHK_UV2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    111,95,30,10
+                    111,85,30,10
     CONTROL         "UV3",IDC_CHK_UV3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    111,105,30,10
-    GROUPBOX        "Skinning",IDC_STATIC,10,145,115,45
+                    111,95,30,10
+    GROUPBOX        "Skinning",IDC_STATIC,10,135,135,45
     CONTROL         "Skinning",IDC_CHK_SKIN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,15,155,43,10
+                    WS_TABSTOP,15,145,43,10
     CONTROL         "Create 1-bone skin",IDC_CHK_1BONESKIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,165,75,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,155,75,10
     CONTROL         "Strip ""Bip??"" from bones",IDC_CHK_STRIP_BIP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,15,175,93,10
-    PUSHBUTTON      "OK",IDOK,65,205,50,15
-    PUSHBUTTON      "Cancel",IDCANCEL,120,205,50,15
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,165,93,10
+    PUSHBUTTON      "OK",IDOK,65,190,50,15
+    PUSHBUTTON      "Cancel",IDCANCEL,120,190,50,15
+    COMBOBOX        IDC_CMB_SKINBONES,110,145,30,55,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Bones/vert",IDC_STATIC,70,145,36,8
 END
 
 
@@ -83,7 +86,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 170
         TOPMARGIN, 7
-        BOTTOMMARGIN, 219
+        BOTTOMMARGIN, 203
     END
 END
 #endif    // APSTUDIO_INVOKED

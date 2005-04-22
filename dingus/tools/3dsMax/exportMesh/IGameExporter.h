@@ -21,13 +21,13 @@
 
 struct SExportOptions {
 public:
-	enum { OPTIONS_VERSION = 20040816 };
+	enum { OPTIONS_VERSION = 20050127 };
 public:
 	SExportOptions()
 	:	mUnitMultiplier(0.001f), //mUseLocalSpace(0),
 		mDoPositions(1), mDoNormals(1), mDoTangents(0), mDoBinormals(0),
 		mTangentsUseUV(0), mColorEncodeNTB(0),
-		mDoSkin(1), mCreate1BoneSkin(1), mStripBipFromBones(1)
+		mDoSkin(1), mCreate1BoneSkin(1), mStripBipFromBones(1), mSkinBones(4)
 	{
 		mDoUVs[0] = 1;
 		for( int i = 1; i < mproc::UV_COUNT; ++i )
@@ -45,9 +45,11 @@ public:
 	int		mTangentsUseUV; // use UVs for tangents (0=base, 1=next active, etc.)
 	int		mColorEncodeNTB; // encode normals/tangents/binormals as colors?
 	int		mDoUVs[mproc::UV_COUNT]; // base UV, next active, etc.
+	
 	int		mDoSkin; // export skin weights and skeleton?
 	int		mCreate1BoneSkin; // Create 1-bone skin if there's no skinning info?
 	int		mStripBipFromBones; // strip "Bip??" from bone names?
+	int		mSkinBones; // how many bones/vert
 };
 
 

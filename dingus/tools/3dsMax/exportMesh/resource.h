@@ -28,6 +28,7 @@
 #define IDC_EDIT_UNITMULT               1034
 #define IDC_CHK_STRIP_BIP               1035
 #define IDC_CMB_TANGENTUV               1036
+#define IDC_CMB_SKINBONES               1037
 
 // Next default values for new objects
 // 

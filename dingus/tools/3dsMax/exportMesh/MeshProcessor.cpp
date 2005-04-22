@@ -161,8 +161,7 @@ HRESULT mproc::cleanMesh( CMesh& src, CMesh& dst )
 
 	ID3DXMesh* resmesh = 0;
 	ID3DXBuffer* cleanErrors = 0;
-	HRESULT hr = D3DXCleanMesh( &src.getMesh(), src.getAdjacency(), &resmesh, adj, &cleanErrors );
-	//hr = D3DXCleanMesh( D3DXCLEAN_OPTIMIZATION, dxmesh, adj, &resmesh, adj, &cleanErrors );
+	HRESULT hr = D3DXCleanMesh( D3DXCLEAN_OPTIMIZATION, &src.getMesh(), src.getAdjacency(), &resmesh, adj, &cleanErrors );
 	if( cleanErrors )
 		cleanErrors->Release();
 	if( FAILED(hr) ) {
