@@ -466,7 +466,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	// walls
 	{
-		const float ELEM_SIZE = 0.1f;
+		const float ELEM_SIZE = 0.2f; // 0.1f
 
 		gWalls[CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PX] );
 		gWalls[CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NX] );

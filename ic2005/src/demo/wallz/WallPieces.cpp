@@ -3,6 +3,7 @@
 #include <dingus/math/Plane.h>
 #include <dingus/math/MathUtils.h>
 #include <dingus/renderer/RenderableBuffer.h>
+#include <dingus/utils/CpuTimer.h>
 
 
 const float HALF_THICK = 0.02f;
@@ -385,8 +386,9 @@ namespace polygon_merger {
 		}
 	}
 
-	void	end( const TWallVertexVector& vb, TIntVector& polygon, TIntVector& ib )
+	void end( const TWallVertexVector& vb, TIntVector& polygon, TIntVector& ib )
 	{
+		assert( !polygons.empty() );
 		if( polygons.size() == 1 ) {
 			
 			// trivial case, just output input polygon
@@ -628,14 +630,18 @@ CWall3D::~CWall3D()
 
 void CWall3D::initPieces()
 {
+	cputimer::debug_interval tt0( "w3d init" );
+
 	assert( !mPiecesInited );
 	assert( !mFracturedPieces );
 	assert( !mPieces3D );
 	assert( mPiecesCombined.empty() );
 	
-	
-	const int QUADTREE_DEPTH = 3;
-	mQuadtree = TWallQuadNode::create( SVector2(0,0), mWall2D.getSize(), QUADTREE_DEPTH, &mQuadtreeNodeCount );
+	{	
+		cputimer::debug_interval tt1( "w3d quadtree create" );
+		const int QUADTREE_DEPTH = 3;
+		mQuadtree = TWallQuadNode::create( SVector2(0,0), mWall2D.getSize(), QUADTREE_DEPTH, &mQuadtreeNodeCount );
+	}
 
 	int i;
 	int n = mWall2D.getPieceCount();
@@ -644,30 +650,42 @@ void CWall3D::initPieces()
 	mFracturedPieces = new bool[n];
 
 	// init the leaf pieces
-	for( i = 0; i < n; ++i ) {
-		mPieces3D[i].init( *this, i );
-		mFracturedPieces[i] = false;
+	{	
+		cputimer::debug_interval tt1( "w3d init leafs" );
+		for( i = 0; i < n; ++i ) {
+			mPieces3D[i].init( *this, i );
+			mFracturedPieces[i] = false;
 
-		CWallPieceCombined* wpc = new CWallPieceCombined();
-		wpc->initBegin( *this, NULL );
-		wpc->initAddPiece( i );
-		wpc->initEnd( mQuadtree );
-		mPiecesCombined.push_back( wpc );
+			CWallPieceCombined* wpc = new CWallPieceCombined();
+			wpc->initBegin( *this, NULL );
+			wpc->initAddPiece( i );
+			wpc->initEnd( mQuadtree );
+			mPiecesCombined.push_back( wpc );
+		}
 	}
 
 	// go through quadtree nodes and merge the pieces
-	n = mQuadtreeNodeCount;
-	for( i = 0; i < n; ++i ) {
-		TWallQuadNode& node = mQuadtree[i];
-		assert( !node.getData().combined );
-		CWallPieceCombined* wpc = new CWallPieceCombined();
-		wpc->initBegin( *this, &node );
-		int npc = node.getData().leafs.size();
-		for( int j = 0; j < npc; ++j )
-			wpc->initAddPiece( node.getData().leafs[j]->getLeafIndex() );
-		wpc->initEnd( mQuadtree );
+	{
+		cputimer::debug_interval tt1( "w3d merge" );
+		n = mQuadtreeNodeCount;
+		for( i = 0; i < n; ++i ) {
+			//char buf[100];
+			//sprintf( buf, "w3d merge %i/%i", i, n );
+			//cputimer::debug_interval tt2( buf );
 
-		mPiecesCombined.push_back( wpc );
+			TWallQuadNode& node = mQuadtree[i];
+			assert( !node.getData().combined );
+			int npc = node.getData().leafs.size();
+			if( npc > 0 ) {
+				CWallPieceCombined* wpc = new CWallPieceCombined();
+				wpc->initBegin( *this, &node );
+				for( int j = 0; j < npc; ++j )
+					wpc->initAddPiece( node.getData().leafs[j]->getLeafIndex() );
+				wpc->initEnd( mQuadtree );
+
+				mPiecesCombined.push_back( wpc );
+			}
+		}
 	}
 
 	mPiecesInited = true;
@@ -777,6 +795,10 @@ bool CWall3D::renderIntoVB()
 		if( data.fracturedOutCounter > 0 )
 			continue;
 
+		// if we have no combined, skip
+		if( !data.combined )
+			continue;
+
 		// if parent already rendered the combined piece, skip
 		bool parentRendered = false;
 		const TWallQuadNode* nodePar = node.getParent();
@@ -785,14 +807,15 @@ bool CWall3D::renderIntoVB()
 				parentRendered = true;
 				break;
 			}
+			nodePar = nodePar->getParent();
 		}
-		if( parentRendered ) {
-			data.alreadyRendered = true; // mark self as rendered so that childs will skip faster
+		data.alreadyRendered = true;
+		if( parentRendered )
 			continue;
-		}
 
 		// render the combined piece
 		piecesToRender.push_back( data.combined );
+		data.alreadyRendered = true;
 
 		// mark the combined pieces as rendered
 		int npcs = data.leafs.size();
