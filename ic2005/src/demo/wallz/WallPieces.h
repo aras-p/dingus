@@ -12,6 +12,7 @@
 
 
 typedef std::vector<SVector2>	TWallVertexVector;
+typedef std::vector<int>		TIntVector;
 
 namespace dingus {
 	//class CDebugRenderer;
@@ -56,7 +57,7 @@ public:
 	void	finish( const TWallVertexVector& verts ) {
 		// triangulate polygon
 		assert( mTris.empty() );
-		std::vector<int>	polygonIB;
+		TIntVector	polygonIB;
 		bool trisOk = triangulator::process( verts, mPolygon, mTris );
 		assert( trisOk );
 
@@ -75,9 +76,9 @@ public:
 	const CAABox2& getAABB() const { return mAABB; }
 
 private:
-	std::vector<int>	mPolygon;	///< Polygon vertex indices of the piece
-	std::vector<int>	mTris;		///< Triangulated piece, 3 indices/tri
-	CAABox2				mAABB;		///< 2D AABB of the piece
+	TIntVector	mPolygon;	///< Polygon vertex indices of the piece
+	TIntVector	mTris;		///< Triangulated piece, 3 indices/tri
+	CAABox2		mAABB;		///< 2D AABB of the piece
 };
 
 
@@ -85,11 +86,10 @@ private:
 // --------------------------------------------------------------------------
 
 
-/// Single piece of precomputed fracture, with 3D representation constructed.
+/// Single piece of precomputed fracture, with full 3D representation constructed.
 class CWallPiece3D : public boost::noncopyable {
 public:
 	typedef std::vector<SVertexXyzNormal>	TVertexVector;
-	typedef std::vector<int>				TIntVector;
 
 public:
 	void	init( const CWall3D& w, int idx );
@@ -112,6 +112,41 @@ private:
 	int				mVertsInWall;
 	int				mIndicesInWall;
 	SVector3		mSize;
+};
+
+
+
+// --------------------------------------------------------------------------
+
+
+/// Piece of precomputed fracture, with in-wall 3D representation constructed.
+/// May represent either leaf piece, or combined smaller pieces.
+class CWallPieceCombined : public boost::noncopyable {
+public:
+	typedef std::vector<SVertexXyzNormal>	TVertexVector;
+
+public:
+	void	initBegin( const CWall3D& w );
+	void	initAddPiece( int idx );
+	void	initEnd();
+
+	void	preRender( int& vbcount, int& ibcount ) const;
+	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
+
+	const TVertexVector& getVB() const { return mVB; }
+	const TIntVector& getIB() const { return mIB; }
+
+	const CAABox2& getBounds() const { return mBounds; }
+
+private:
+	TVertexVector	mVB;
+	TIntVector		mIB;
+	CAABox2			mBounds;
+	// TBD: quadtree node!
+	bool			mLeaf;
+
+	static	CWallPieceCombined*	mInitPiece;
+	static	const CWall3D*		mInitWall;
 };
 
 
@@ -142,7 +177,7 @@ public:
 	float getSmallestElemSize() const { return mSmallestElemSize; }
 
 	//void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const bool* fractured );
-	//void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const std::vector<int>& pieces );
+	//void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const TIntVector& pieces );
 	
 private:
 	TWallVertexVector			mVerts;
@@ -177,10 +212,10 @@ public:
 	void	update( float t );
 
 	bool	intersectRay( const SLine3& ray, float& t ) const;
-	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, std::vector<int>& pcs );
+	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, TIntVector& pcs );
 
 	//void	debugRender( CDebugRenderer& renderer );
-	//void	debugRender( CDebugRenderer& renderer, const std::vector<int>& pieces );
+	//void	debugRender( CDebugRenderer& renderer, const TIntVector& pieces );
 
 	void	render( eRenderMode rm );
 
