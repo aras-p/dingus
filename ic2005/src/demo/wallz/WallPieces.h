@@ -239,6 +239,9 @@ private:
 	void	initPieces();
 	bool	renderIntoVB();
 
+	void	fractureOutPiece( int index );
+	void	fractureInPiece( int index );
+
 private:
 	CWall2D		mWall2D;
 

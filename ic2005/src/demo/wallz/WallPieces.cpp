@@ -735,13 +735,41 @@ void CWall3D::fracturePiecesInSphere( float t, bool fractureOut, const SVector3&
 		if( tocenter.lengthSq() < radius*radius ) {
 			pcs.push_back( i );
 			if( fractureOut ) {
-				mFracturedPieces[i] = true;
+				fractureOutPiece( i );
 				mNeedsRenderingIntoVB = true;
 			}
 		}
 	}
 }
 
+void CWall3D::fractureOutPiece( int index )
+{
+	assert( index >= 0 && index < mWall2D.getPieceCount() );
+	assert( !mFracturedPieces[index] );
+	mFracturedPieces[index] = true;
+
+	// mark as fractured in quadtree
+	TWallQuadNode* node = mQuadtree->getNode( mWall2D.getPiece(index).getAABB() );
+	while( node ) {
+		++node->getData().fracturedOutCounter;
+		node = node->getParent();
+	}
+}
+
+void CWall3D::fractureInPiece( int index )
+{
+	assert( index >= 0 && index < mWall2D.getPieceCount() );
+	assert( mFracturedPieces[index] );
+	mFracturedPieces[index] = false;
+
+	// mark as non fractured in quadtree
+	TWallQuadNode* node = mQuadtree->getNode( mWall2D.getPiece(index).getAABB() );
+	while( node ) {
+		--node->getData().fracturedOutCounter;
+		assert( node->getData().fracturedOutCounter >= 0 );
+		node = node->getParent();
+	}
+}
 
 void CWall3D::update( float t )
 {
@@ -753,7 +781,8 @@ void CWall3D::update( float t )
 		// TODO: optimize!
 		int n = mWall2D.getPieceCount();
 		for( int i = 0; i < n; ++i ) {
-			mFracturedPieces[i] = false;
+			if( mFracturedPieces[i] )
+				fractureInPiece( i );
 		}
 	}
 }
@@ -790,6 +819,7 @@ bool CWall3D::renderIntoVB()
 	{
 		TWallQuadNode& node = mQuadtree[i];
 		SWallQuadData& data = node.getData();
+		data.alreadyRendered = false;
 
 		// if we have fractured out pieces somewhere inside, skip
 		if( data.fracturedOutCounter > 0 )
