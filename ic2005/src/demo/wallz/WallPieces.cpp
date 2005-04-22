@@ -429,6 +429,8 @@ void CWallPieceCombined::initBegin( const CWall3D& w, TWallQuadNode* quadnode )
 
 	mQuadNode = quadnode;
 
+	mRenderID = -1;
+
 	polygon_merger::begin( w.getWall2D().getVerts().size() );
 }
 
@@ -749,15 +751,75 @@ bool CWall3D::renderIntoVB()
 
 	int i;
 
-	// accumulate total vertex/index count
-	//int n = mPiecesCombined.size();
-	//int n = mQuadtree[1].getData().leafs.size();
-	//for( i = 0; i < n; ++i ) {
+	// render process:
+	//
+	// 1) go through quadtree, for each node that has no fractured out
+	// pieces inside (or it's children), render the combined piece and
+	// mark the node and all combined leaf pieces as rendered. Skip the nodes
+	// that have their parent rendered.
+	//
+	// 2) render the remaining leaf pieces.
+
+	static int renderID = 0;
+	++renderID;
+
+	std::vector<const CWallPieceCombined*>	piecesToRender;
+	piecesToRender.reserve( 256 );
+
+
+	int nnodes = mQuadtreeNodeCount;
+	for( i = 0; i < nnodes; ++i )
 	{
-		//if( mFracturedPieces[i] )
-		//	continue;
-		//const CWallPieceCombined& pc = *mQuadtree[1].getData().leafs[i];
-		const CWallPieceCombined& pc = *mQuadtree[1].getData().combined;
+		TWallQuadNode& node = mQuadtree[i];
+		SWallQuadData& data = node.getData();
+
+		// if we have fractured out pieces somewhere inside, skip
+		if( data.fracturedOutCounter > 0 )
+			continue;
+
+		// if parent already rendered the combined piece, skip
+		bool parentRendered = false;
+		const TWallQuadNode* nodePar = node.getParent();
+		while( nodePar ) {
+			if( nodePar->getData().alreadyRendered ) {
+				parentRendered = true;
+				break;
+			}
+		}
+		if( parentRendered ) {
+			data.alreadyRendered = true; // mark self as rendered so that childs will skip faster
+			continue;
+		}
+
+		// render the combined piece
+		piecesToRender.push_back( data.combined );
+
+		// mark the combined pieces as rendered
+		int npcs = data.leafs.size();
+		for( int j = 0; j < npcs; ++j ) {
+			CWallPieceCombined* pcleaf = data.leafs[j];
+			pcleaf->markRendered( renderID );
+		}
+	}
+
+	int npieces = mWall2D.getPieceCount();
+	for( i = 0; i < npieces; ++i )
+	{
+		if( mFracturedPieces[i] )
+			continue;
+		CWallPieceCombined* pcleaf = mPiecesCombined[i];
+		if( pcleaf->isRendered( renderID ) )
+			continue;
+		// not rendered yet, add to render list
+		piecesToRender.push_back( pcleaf );
+		pcleaf->markRendered( renderID );
+	}
+
+	// accumulate total vertex/index count
+	int n = piecesToRender.size();
+	for( i = 0; i < n; ++i )
+	{
+		const CWallPieceCombined& pc = *piecesToRender[i];
 		int nvb, nib;
 		pc.preRender( nvb, nib );
 		nverts += nvb;
@@ -774,13 +836,9 @@ bool CWall3D::renderIntoVB()
 	TPieceVertex* vb = (TPieceVertex*)mVBChunk->getData();
 	unsigned short* ib = (unsigned short*)mIBChunk->getData();
 	int baseIndex = 0;
-	//for( i = 0; i < n; ++i ) {
-	{
-		//if( mFracturedPieces[i] )
-		//	continue;
+	for( i = 0; i < n; ++i ) {
 		int nvb, nib;
-		//const CWallPieceCombined& pc = *mQuadtree[1].getData().leafs[i];
-		const CWallPieceCombined& pc = *mQuadtree[1].getData().combined;
+		const CWallPieceCombined& pc = *piecesToRender[i];
 		pc.render( vb, ib, baseIndex, nvb, nib );
 		baseIndex += nvb;
 		vb += nvb;
@@ -790,7 +848,8 @@ bool CWall3D::renderIntoVB()
 	mIBChunk->unlock();
 
 	// setup renderables
-	for( i = 0; i < RMCOUNT; ++i ) {
+	for( i = 0; i < RMCOUNT; ++i )
+	{
 		if( !mRenderables[i] )
 			continue;
 		mRenderables[i]->resetVBs();

@@ -120,10 +120,12 @@ class CWallPieceCombined;
 
 
 struct SWallQuadData {
-	SWallQuadData() : combined(NULL), leafs() { }
+	SWallQuadData() : combined(NULL), leafs(), fracturedOutCounter(0), alreadyRendered(false) { }
 
 	CWallPieceCombined*		combined;
-	std::vector<const CWallPieceCombined*>	leafs;
+	std::vector<CWallPieceCombined*>	leafs;
+	int		fracturedOutCounter;
+	bool	alreadyRendered;
 };
 
 typedef CQuadTreeNode<SWallQuadData,2>	TWallQuadNode;
@@ -153,12 +155,17 @@ public:
 
 	const CAABox2& getBounds() const { return mBounds; }
 
+	bool	isRendered( int renderID ) const { return mRenderID == renderID; }
+	void	markRendered( int renderID ) { mRenderID = renderID; }
+
 private:
 	TVertexVector	mVB;
 	TIntVector		mIB;
 	CAABox2			mBounds;
 	TIntVector		mCombinedPieces;
 	TWallQuadNode*	mQuadNode;
+
+	int				mRenderID;
 
 	static	CWallPieceCombined*	mInitPiece;
 	static	const CWall3D*		mInitWall;
