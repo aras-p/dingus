@@ -590,30 +590,6 @@ SOURCE=.\dingus\gfx\VSKeyframeMeshRenderer.cpp
 SOURCE=.\dingus\gfx\VSKeyframeMeshRenderer.h
 # End Source File
 # End Group
-# Begin Group "hierarchy"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\dingus\hierarchy\Hierarchable.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\hierarchy\HierarchyContext.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\hierarchy\HierarchyNode.cpp
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\dingus\hierarchy\HierarchyNode.h
-# PROP Exclude_From_Build 1
-# End Source File
-# End Group
 # Begin Group "input"
 
 # PROP Default_Filter ""
