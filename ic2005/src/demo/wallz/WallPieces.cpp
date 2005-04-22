@@ -193,6 +193,7 @@ namespace polygon_merger {
 	typedef std::set<int>	TIntSet;
 	TIntSet			vertices;
 	TIntSet			verticesComplex;
+	int				borderVertexIndex;
 	
 	typedef std::map< int, TIntVector > TIntIntsMap;
 	TIntIntsMap		vertexNexts;
@@ -206,6 +207,7 @@ namespace polygon_merger {
 		VTYPE_SINGLE,	///< On the border, belongs to single polygon
 		VTYPE_MULTI,	///< On the border, belongs to multiple polygons
 		VTYPE_COMPLEX,	///< On the border, belongs to multiple polygons, in a complex polygon forming way
+		VTYPE_DONE,		///< Already fully processed (traced into result polygon)
 	};
 	TIntVector		vertexTypes;
 
@@ -248,7 +250,28 @@ namespace polygon_merger {
 	
 	bool isVertexComplex( int idx )
 	{
-		return true;
+		assert( idx >= 0 && idx < vertexUseCount.size() );
+		assert( vertexTypes[idx] == VTYPE_NONE );
+
+		// a vertex is simple-shared if of all it's neighbors exactly two
+		// vertices are not interior. One non-interior vertex is a bug,
+		// all other cases are a complex vertex.
+		
+		int borderNeighborCount = 0;
+
+		TIntIntsMap::const_iterator it;
+
+		it = vertexNexts.find( idx );
+		assert( it != vertexNexts.end() );
+		const TIntVector& vnext = it->second;
+		int n = vnext.size();
+		for( int i = 0; i < n; ++i ) {
+			if( vertexTypes[vnext[i]] != VTYPE_INTERIOR )
+				++borderNeighborCount;
+		}
+		assert( borderNeighborCount >= 2 );
+
+		return borderNeighborCount != 2;
 	}
 
 
@@ -267,6 +290,63 @@ namespace polygon_merger {
 
 		// now, the unmarked vertices are all on border: most should be
 		// shared, some can form complex polygons
+		for( vit = vertices.begin(); vit != vitEnd; ++vit ) {
+			int idx = *vit;
+			if( vertexTypes[idx] != VTYPE_NONE ) // already marked
+				continue;
+			borderVertexIndex = idx;
+			if( isVertexComplex( idx ) ) {
+				vertexTypes[idx] = VTYPE_COMPLEX;
+				verticesComplex.insert( idx );
+				// just fail now
+				assert( false );
+				throw 0;
+			} else {
+				vertexTypes[idx] = VTYPE_MULTI;
+			}
+		}
+	}
+
+	
+	void	traceBorder( int idx0, const TWallVertexVector& vb, TIntVector& ib )
+	{
+		assert( idx0 >= 0 && idx0 < vertexTypes.size() );
+		
+		TIntVector	polygon;
+		polygon.reserve( vertices.size()/2 );
+
+		int idxPrev = idx0;
+		int idx = idx0;
+		int debugCounter = 0;
+		do {
+			polygon.push_back( idx );
+
+			// next vertex is the neighbor of current, that is not interior
+			// and that is not the previous one
+			int idxNext = -1;
+
+			TIntIntsMap::const_iterator it;
+			it = vertexNexts.find( idx );
+			assert( it != vertexNexts.end() );
+			const TIntVector& vnext = it->second;
+			int n = vnext.size();
+			for( int i = 0; i < n; ++i ) {
+				int idx1 = vnext[i];
+				if( idx1 != idxPrev && vertexTypes[idx1] != VTYPE_INTERIOR ) {
+					idxNext = idx1;
+					break;
+				}
+			}
+			assert( idxNext >= 0 );
+			idxPrev = idx;
+			idx = idxNext;
+
+			assert( ++debugCounter <= vertices.size() );
+
+		} while( idx != idx0 );
+
+
+		triangulator::process( vb, polygon, ib );
 	}
 
 
@@ -276,6 +356,7 @@ namespace polygon_merger {
 
 		vertices.clear();
 		verticesComplex.clear();
+		borderVertexIndex = -1;
 
 		vertexNexts.clear();
 		vertexPrevs.clear();
@@ -302,8 +383,13 @@ namespace polygon_merger {
 		}
 	}
 
-	void	end()
+	void	end( const TWallVertexVector& vb, TIntVector& ib )
 	{
+		// mark vertex types
+		markVertexTypes();
+
+		// trace and triangulate the polygon
+		traceBorder( borderVertexIndex, vb, ib );
 	}
 };
 
