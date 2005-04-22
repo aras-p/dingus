@@ -1,0 +1,4 @@
+Installing exporters for 3dsMax:
+1. copy IGame/3dsmax?/IGame.dll to {3dsMaxDir}
+2. copy IGame/IGameProp.xml to {3dsMaxDir}/plugcfg
+3. copy exporter's *.dle file to {3dsMaxDir}/stdplugs

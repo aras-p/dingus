@@ -1,0 +1,188 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PANEL DIALOG DISCARDABLE  0, 0, 287, 207
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "IM animations exporter"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Coord unit multiplier",IDC_STATIC,5,5,62,8
+    EDITTEXT        IDC_EDIT_COORDMULT,70,5,45,12,ES_AUTOHSCROLL
+    GROUPBOX        "Animation options",IDC_STATIC,5,20,185,40
+    LTEXT           "Frames/smp",IDC_STATIC,10,30,40,8
+    CONTROL         "",IDC_SAMPLE_FRAME,"CustEdit",WS_TABSTOP,50,30,25,10
+    CONTROL         "",IDC_SAMPLE_FRAME_SPIN,"SpinnerControl",0x0,80,30,6,10
+    CONTROL         "Discard last sample",IDC_CHK_DISCARDLAST,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,110,30,75,10
+    CONTROL         "Clamp",IDC_RAD_CLAMP,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,15,46,35,10
+    CONTROL         "Loop",IDC_RAD_LOOP,"Button",BS_AUTORADIOBUTTON,55,46,32,
+                    10
+    CONTROL         "LoopLast",IDC_RAD_LOOP2,"Button",BS_AUTORADIOBUTTON,90,
+                    46,45,10
+    GROUPBOX        "Export filter",IDC_STATIC,5,65,105,75
+    LTEXT           "Name must start",IDC_STATIC,10,74,55,8
+    EDITTEXT        IDC_EDIT_NAME_START,70,75,35,12,ES_AUTOHSCROLL
+    LTEXT           "Name can't end",IDC_STATIC,10,89,55,8
+    EDITTEXT        IDC_EDIT_NAME_END,70,90,35,12,ES_AUTOHSCROLL
+    CONTROL         "Strip ""Bip??"" from names",IDC_CHK_STRIPBIP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,105,95,10
+    CONTROL         "Export leaf nodes",IDC_CHK_LEAFS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,115,71,10
+    CONTROL         "Export root nodes",IDC_CHK_ROOTS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,125,71,10
+    GROUPBOX        "Components",IDC_STATIC,115,65,165,75
+    CONTROL         "Position",IDC_CHK_POSITION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,120,75,41,10
+    CONTROL         "Rotation",IDC_CHK_ROTATION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,120,85,43,10
+    CONTROL         "Scale",IDC_CHK_SCALE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,120,95,34,10
+    CONTROL         "Camera N/F/Fov",IDC_CHK_CAMERA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,120,105,70,10
+    GROUPBOX        "Collapse tolerances",IDC_STATIC,5,145,125,55
+    LTEXT           "Coords",IDC_STATIC,10,156,23,8
+    CONTROL         "",IDC_TOL_POS,"CustEdit",WS_TABSTOP,50,156,30,10
+    CONTROL         "",IDC_TOL_POS_SPIN,"SpinnerControl",0x0,85,156,6,10
+    LTEXT           "eg. 0.001",IDC_STATIC,95,156,31,8
+    LTEXT           "Rotation",IDC_STATIC,10,170,30,8
+    CONTROL         "",IDC_TOL_ROT,"CustEdit",WS_TABSTOP,50,170,30,10
+    CONTROL         "",IDC_TOL_ROT_SPIN,"SpinnerControl",0x0,85,170,6,10
+    LTEXT           "eg. 0.001",IDC_STATIC,95,170,31,8
+    LTEXT           "Scale/color",IDC_STATIC,10,185,38,8
+    CONTROL         "",IDC_TOL_SCALE,"CustEdit",WS_TABSTOP,50,185,30,10
+    CONTROL         "",IDC_TOL_SCALE_SPIN,"SpinnerControl",0x0,85,185,6,10
+    LTEXT           "eg. 0.01",IDC_STATIC,95,185,27,8
+    PUSHBUTTON      "OK",IDOK,230,165,50,15
+    PUSHBUTTON      "Cancel",IDCANCEL,230,185,50,15
+    CONTROL         "float16",IDC_CHK_ROT_F16,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,195,85,37,10
+    CONTROL         "float16",IDC_CHK_SCALE_F16,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,195,95,37,10
+    CONTROL         "scalar",IDC_CHK_SCALE_1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,240,95,35,10
+    CONTROL         "Diffuse/Opacity",IDC_CHK_COLOR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,120,115,65,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_PANEL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 200
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_LIBDESCRIPTION      "IM animations exporter"
+    IDS_CATEGORY            "Sparks3d"
+    IDS_CLASS_NAME          "IGameExporter"
+    IDS_PARAMS              "Parameters"
+    IDS_SPIN                "Spin"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
