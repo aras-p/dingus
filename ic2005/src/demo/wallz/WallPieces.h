@@ -8,6 +8,7 @@
 #include <dingus/gfx/geometry/DynamicIBManager.h>
 #include "AABox2.h"
 #include "Triangulate.h"
+#include "Quadtree.h"
 #include "../DemoResources.h"
 
 

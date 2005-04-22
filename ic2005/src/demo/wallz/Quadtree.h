@@ -12,12 +12,14 @@ public:
 	enum { DIVS_SIDE = DIVAX, DIVS_TOTAL = DIVAX*DIVAX };
 
 public:
-	static this_type* create( const SVector2& bmin, const SVector2& bmax, int depth );
+	static this_type* create( const SVector2& bmin, const SVector2& bmax, int depth, int* outNodeCount = NULL );
 
 	void	init( const SVector2& bmin, const SVector2& bmax, this_type* parent, int depth, this_type*& nodes );
-
 	
 	this_type*	getBlock( const CAABox2& aabb );
+
+	const T& getData() const { return mData; }
+	T& getData() { return mData; }
 
 private:
 	bool		enclosesBox( const CAABox2& aabb ) const;
@@ -28,6 +30,8 @@ private:
 	SVector2	mMax;
 	this_type*	mParent;
 	this_type*	mChildren;
+
+	T			mData;
 };
 
 
@@ -36,7 +40,7 @@ private:
 
 
 template<typename T, int DIVAX>
-CQuadTreeNode<T,DIVAX>* CQuadTreeNode<T,DIVAX>::create( const SVector2& bmin, const SVector2& bmax, int depth )
+CQuadTreeNode<T,DIVAX>* CQuadTreeNode<T,DIVAX>::create( const SVector2& bmin, const SVector2& bmax, int depth, int* outNodeCount )
 {
 	assert( depth > 0 );
 
@@ -44,6 +48,9 @@ CQuadTreeNode<T,DIVAX>* CQuadTreeNode<T,DIVAX>::create( const SVector2& bmin, co
 	for( int i = 0; i <= depth; ++i ) {
 		nodeCount += (int)pow( DIVS_TOTAL, i );
 	}
+
+	if( outNodeCount )
+		*outNodeCount = nodeCount;
 
 	this_type* nodes = new this_type[ nodeCount ];
 	assert( nodes );

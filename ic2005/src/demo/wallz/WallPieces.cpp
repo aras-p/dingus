@@ -2,6 +2,7 @@
 #include "WallPieces.h"
 //#include <dingus/gfx/DebugRenderer.h>
 #include <dingus/math/Plane.h>
+#include <dingus/math/MathUtils.h>
 #include <dingus/renderer/RenderableBuffer.h>
 
 
@@ -47,6 +48,14 @@ void CWall2D::debugRender( const SVector3* vb, CDebugRenderer& renderer, const T
 }
 */
 
+static inline float signedAngle2D( const SVector2& a, const SVector2& b )
+{
+	float sgn = a.x*b.y > b.x*a.y ? 1.0f : -1.0f;
+	float dotp = a.dot( b ) / (a.length()*b.length());
+	dotp = clamp( dotp, -1.0f, 1.0f );
+	float ang = acosf( dotp );
+	return sgn * ang;
+}
 
 // --------------------------------------------------------------------------
 
@@ -259,38 +268,41 @@ namespace polygon_merger {
 	
 	bool isVertexComplex( int idx )
 	{
+		if( idx == 2765 )
+			int aaa = 13;
 		assert( idx >= 0 && idx < vertexUseCount.size() );
 		assert( vertexTypes[idx] == VTYPE_NONE );
 
-		// a vertex is simple-shared if of all it's neighbors exactly two
-		// vertices are not interior. One non-interior vertex is a bug,
-		// all other cases are a complex vertex.
+		// a vertex is complex if it has exactly two neighbors that are not
+		// shared in 'next' and 'prev'
 		
-		int borderNeighborCount = 0;
-
 		TIntIntsMap::const_iterator it;
 		int i, n;
 
 		it = vertexNexts.find( idx );
 		assert( it != vertexNexts.end() );
 		const TIntVector& vnext = it->second;
-		n = vnext.size();
-		for( i = 0; i < n; ++i ) {
-			if( vertexTypes[vnext[i]] != VTYPE_INTERIOR )
-				++borderNeighborCount;
-		}
 		it = vertexPrevs.find( idx );
 		assert( it != vertexPrevs.end() );
 		const TIntVector& vprev = it->second;
+
+		int notSharedCount = 0;
+
+		n = vnext.size();
+		for( i = 0; i < n; ++i ) {
+			int pidx = vnext[i];
+			if( std::find( vprev.begin(), vprev.end(), pidx ) == vprev.end() )
+				++notSharedCount;
+		}
 		n = vprev.size();
 		for( i = 0; i < n; ++i ) {
-			if( vertexTypes[vprev[i]] != VTYPE_INTERIOR )
-				++borderNeighborCount;
+			int pidx = vprev[i];
+			if( std::find( vnext.begin(), vnext.end(), pidx ) == vnext.end() )
+				++notSharedCount;
 		}
-		
-		assert( borderNeighborCount >= 2 );
 
-		return borderNeighborCount != 2;
+		assert( notSharedCount >= 2 );
+		return notSharedCount != 2;
 	}
 
 
@@ -341,22 +353,35 @@ namespace polygon_merger {
 		do {
 			polygon.push_back( idx );
 
-			// next vertex is the neighbor of current, that is not interior
-			// and that is not the previous one
+			// Next vertex is the neighbor of current, that is not interior
+			// and that is not the previous one.
+			// When there are many possible ones, trace based on angle.
 			int idxNext = -1;
+			if( idx == 2816 )
+				int aaa = 13;
+
+			SVector2 prevToCurr = vb[idx] - vb[idxPrev];
+			if( prevToCurr.lengthSq() < 1.0e-6f )
+				prevToCurr.set( 0.01f, 0.01f );
 
 			TIntIntsMap::const_iterator it;
 			it = vertexNexts.find( idx );
 			assert( it != vertexNexts.end() );
 			const TIntVector& vnext = it->second;
 			int n = vnext.size();
+			float bestAngle = 100.0f;
 			for( int i = 0; i < n; ++i ) {
 				int idx1 = vnext[i];
 				if( idx1 != idxPrev && vertexTypes[idx1] != VTYPE_INTERIOR ) {
-					idxNext = idx1;
-					break;
+					SVector2 currToNext = vb[idx1] - vb[idx];
+					float ang = signedAngle2D( prevToCurr, currToNext );
+					if( ang < bestAngle ) {
+						bestAngle = ang;
+						idxNext = idx1;
+					}
 				}
 			}
+			assert( bestAngle > -4.0f && bestAngle < 4.0f );
 			assert( idxNext >= 0 );
 			idxPrev = idx;
 			idx = idxNext;
@@ -438,83 +463,6 @@ void CWallPieceCombined::initBegin( const CWall3D& w )
 void CWallPieceCombined::initAddPiece( int idx )
 {
 	polygon_merger::addPolygon( mInitWall->getWall2D().getPiece(idx).getPolygonVector() );
-
-	/*
-	assert( mInitPiece == this );
-	assert( mInitWall );
-
-	const CWallPiece2D& piece = mInitWall->getWall2D().getPiece(idx);
-
-	static TIntVector	vertRemap;
-	vertRemap.resize(0);
-	vertRemap.resize( mInitWall->getWall2D().getVerts().size(), -1 );
-
-	int i;
-
-	int nidx = piece.getTriCount()*3;
-	mIB.reserve( nidx * 2 + piece.getVertexCount()*6 );
-	mVB.reserve( piece.getVertexCount()*6 );
-
-	// construct one side
-	for( i = 0; i < nidx; ++i ) {
-		int oldIdx = piece.getIB()[i];
-		int newIdx = vertRemap[oldIdx];
-		if( newIdx < 0 ) {
-			newIdx = mVB.size();
-			vertRemap[oldIdx] = newIdx;
-
-			SVector2 pos = mInitWall->getWall2D().getVerts()[oldIdx];
-			SVector3 pos3( pos.x, pos.y, HALF_THICK );
-			D3DXVec3TransformCoord( &pos3, &pos3, &mInitWall->getMatrix() );
-			SVertexXyzNormal vtx;
-			vtx.p = pos3;
-			vtx.n = mInitWall->getMatrix().getAxisZ();
-			mVB.push_back( vtx );
-		}
-		mIB.push_back( newIdx );
-	}
-	for( i = 0; i < nidx/3; ++i ) {
-		int iii = mIB[i*3+1];
-		mIB[i*3+1] = mIB[i*3+2];
-		mIB[i*3+2] = iii;
-	}
-	// push vertices for another side (but no triangles)
-	int nverts = mVB.size();
-	for( i = 0; i < nverts; ++i ) {
-		SVertexXyzNormal vtx = mVB[i];
-		vtx.p -= vtx.n * (HALF_THICK*2);
-		vtx.n = -vtx.n;
-		mVB.push_back( vtx );
-	}
-	// construct side caps
-	assert( nverts == piece.getVertexCount() );
-	for( i = 0; i < nverts; ++i ) {
-		int oldIdx0 = piece.getPolygon()[i];
-		int oldIdx1 = piece.getPolygon()[(i+1)%nverts];
-		int idx0 = vertRemap[oldIdx0];
-		int idx1 = vertRemap[oldIdx1];
-		assert( idx0 >= 0 && idx0 < nverts );
-		assert( idx1 >= 0 && idx1 < nverts );
-		SVertexXyzNormal v0 = mVB[idx0];
-		SVertexXyzNormal v1 = mVB[idx1];
-		SVertexXyzNormal v2 = mVB[idx0+nverts];
-		SVertexXyzNormal v3 = mVB[idx1+nverts];
-		SVector3 edge01 = v1.p - v0.p;
-		SVector3 edge02 = v2.p - v0.p;
-		SVector3 normal = edge01.cross( edge02 ).getNormalized();
-		v0.n = v1.n = v2.n = v3.n = -normal;
-		mVB.push_back( v0 );
-		mVB.push_back( v1 );
-		mVB.push_back( v2 );
-		mVB.push_back( v3 );
-		mIB.push_back( nverts*2 + i*4 + 0 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
-		mIB.push_back( nverts*2 + i*4 + 3 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
-	}
-	*/
 
 	// TBD: bounds!
 	//mSize.set( piece.getAABB().getSize().x, piece.getAABB().getSize().y, HALF_THICK*2 );
@@ -698,15 +646,26 @@ void CWall3D::initPieces()
 	mFracturedPieces = new bool[n];
 
 	// TEST
-	CWallPieceCombined* wpc = new CWallPieceCombined();
-	wpc->initBegin( *this );
-	for( int i = 0; i < n; ++i ) {
-		wpc->initAddPiece( i );
+	int i;
+	CWallPieceCombined* wpc0 = new CWallPieceCombined();
+	wpc0->initBegin( *this );
+	for( i = 0; i < n; ++i ) {
 		mPieces3D[i].init( *this, i );
+		if( mWall2D.getPiece(i).getAABB().getMax().x > 2.0f )
+			wpc0->initAddPiece( i );
 		mFracturedPieces[i] = false;
 	}
-	wpc->initEnd();
-	mPiecesCombined.push_back( wpc );
+	wpc0->initEnd();
+	mPiecesCombined.push_back( wpc0 );
+
+	CWallPieceCombined* wpc1 = new CWallPieceCombined();
+	wpc1->initBegin( *this );
+	for( i = 0; i < n; ++i ) {
+		if( mWall2D.getPiece(i).getAABB().getMax().x <= 2.0f )
+			wpc1->initAddPiece( i );
+	}
+	wpc1->initEnd();
+	mPiecesCombined.push_back( wpc1 );
 
 	mPiecesInited = true;
 	mNeedsRenderingIntoVB = true;
