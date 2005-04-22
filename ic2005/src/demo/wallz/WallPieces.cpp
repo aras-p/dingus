@@ -60,9 +60,6 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 		mIB[i*3+1] = mIB[i*3+2];
 		mIB[i*3+2] = iii;
 	}
-	// remember the count at current state
-	mVertsInWall = mVB.size();
-	mIndicesInWall = mIB.size();
 	// construct another side
 	int nverts = mVB.size();
 	for( i = 0; i < nverts; ++i ) {
@@ -118,19 +115,19 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 }
 
 
-void CWallPiece3D::preRender( int& vbcount, int& ibcount, bool inWall ) const
+void CWallPiece3D::preRender( int& vbcount, int& ibcount ) const
 {
-	vbcount = inWall ? mVertsInWall : mVB.size();
-	ibcount = inWall ? mIndicesInWall : mIB.size();
+	vbcount = mVB.size();
+	ibcount = mIB.size();
 }
 
-void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount, bool inWall ) const
+void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
 {
 	int i;
 	
 	// VB
 	const SVertexXyzNormal* srcVB = &mVB[0];
-	vbcount = inWall ? mVertsInWall : mVB.size();
+	vbcount = mVB.size();
 	for( i = 0; i < vbcount; ++i ) {
 		SVector3 p, n;
 		D3DXVec3TransformCoord( &p, &srcVB->p, &matrix );
@@ -144,7 +141,7 @@ void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned 
 
 	// IB
 	const int* srcIB = &mIB[0];
-	ibcount = inWall ? mIndicesInWall : mIB.size();
+	ibcount = mIB.size();
 	for( i = 0; i < ibcount; ++i ) {
 		int idx = *srcIB + baseIndex;
 		assert( idx >= 0 && idx < 64000 );
@@ -391,11 +388,20 @@ namespace polygon_merger {
 
 	void	end( const TWallVertexVector& vb, TIntVector& polygon, TIntVector& ib )
 	{
-		// mark vertex types
-		markVertexTypes();
+		if( polygons.size() == 1 ) {
+			
+			// trivial case, just output input polygon
+			polygon = polygons[0];
+			triangulator::process( vb, polygon, ib );
 
-		// trace and triangulate the polygon
-		traceBorder( borderVertexIndex, vb, polygon, ib );
+		} else {
+			
+			// mark vertex types
+			markVertexTypes();
+
+			// trace and triangulate the polygon
+			traceBorder( borderVertexIndex, vb, polygon, ib );
+		}
 	}
 
 }; // namespace polygon_merger
@@ -403,23 +409,26 @@ namespace polygon_merger {
 
 
 
+// --------------------------------------------------------------------------
+
+
+
 CWallPieceCombined* CWallPieceCombined::mInitPiece = NULL;
 const CWall3D* CWallPieceCombined::mInitWall = NULL;
-const TWallQuadNode* CWallPieceCombined::mInitQuadtree = NULL;
 
 
 
-void CWallPieceCombined::initBegin( const CWall3D& w, const TWallQuadNode& quadtree )
+void CWallPieceCombined::initBegin( const CWall3D& w, TWallQuadNode* quadnode )
 {
 	assert( !mInitPiece );
 	assert( !mInitWall );
-	assert( !mInitQuadtree );
 	assert( mVB.empty() );
 	assert( mIB.empty() );
 
 	mInitPiece = this;
 	mInitWall = &w;
-	mInitQuadtree = &quadtree;
+
+	mQuadNode = quadnode;
 
 	polygon_merger::begin( w.getWall2D().getVerts().size() );
 }
@@ -430,12 +439,13 @@ void CWallPieceCombined::initAddPiece( int idx )
 	const CWallPiece2D& piece = mInitWall->getWall2D().getPiece(idx);
 	polygon_merger::addPolygon( piece.getPolygonVector() );
 
-	mBounds.extend( piece.getAABB() );
+	mCombinedPieces.push_back( idx );
 
+	mBounds.extend( piece.getAABB() );
 }
 
 
-void CWallPieceCombined::initEnd()
+void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 {
 	assert( mInitPiece == this );
 	assert( mInitWall );
@@ -518,13 +528,28 @@ void CWallPieceCombined::initEnd()
 		mIB.push_back( nverts*2 + i*4 + 2 );
 	}
 
-	// TBD: bounds!
-	//mSize.set( piece.getAABB().getSize().x, piece.getAABB().getSize().y, HALF_THICK*2 );
+
+	if( !mQuadNode ) {
+		
+		assert( mCombinedPieces.size()==1 );
+
+		TWallQuadNode* node = quadtree->getNode( mBounds );
+		assert( node );
+		while( node ) {
+			node->getData().leafs.push_back( this );
+			node = node->getParent();
+		}
+
+	} else {
+
+		// record ourselves in the quadtree
+		assert( !mQuadNode->getData().combined );
+		mQuadNode->getData().combined = this;
+	}
 
 
 	mInitPiece = NULL;
 	mInitWall = NULL;
-	mInitQuadtree = NULL;
 }
 
 
@@ -567,7 +592,6 @@ void CWallPieceCombined::render( TPieceVertex* vb, unsigned short* ib, int baseI
 
 CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* reflTextureID )
 : mWall2D(size,smallestElemSize)
-, mVB(NULL)
 , mPieces3D(NULL)
 , mFracturedPieces(NULL)
 , mQuadtree(NULL)
@@ -594,8 +618,6 @@ CWall3D::~CWall3D()
 	for( int i = 0; i < RMCOUNT; ++i )
 		safeDelete( mRenderables[i] );
 
-	if( mVB ) delete[] mVB;
-
 	stl_utils::wipe( mPiecesCombined );
 	safeDeleteArray( mPieces3D );
 	safeDeleteArray( mFracturedPieces );
@@ -610,16 +632,44 @@ void CWall3D::initPieces()
 	assert( !mPieces3D );
 	assert( mPiecesCombined.empty() );
 	
-	int n = mWall2D.getPieceCount();
 	
 	const int QUADTREE_DEPTH = 3;
 	mQuadtree = TWallQuadNode::create( SVector2(0,0), mWall2D.getSize(), QUADTREE_DEPTH, &mQuadtreeNodeCount );
 
+	int i;
+	int n = mWall2D.getPieceCount();
+
 	mPieces3D = new CWallPiece3D[n];
 	mFracturedPieces = new bool[n];
 
+	// init the leaf pieces
+	for( i = 0; i < n; ++i ) {
+		mPieces3D[i].init( *this, i );
+		mFracturedPieces[i] = false;
+
+		CWallPieceCombined* wpc = new CWallPieceCombined();
+		wpc->initBegin( *this, NULL );
+		wpc->initAddPiece( i );
+		wpc->initEnd( mQuadtree );
+		mPiecesCombined.push_back( wpc );
+	}
+
+	// go through quadtree nodes and merge the pieces
+	n = mQuadtreeNodeCount;
+	for( i = 0; i < n; ++i ) {
+		TWallQuadNode& node = mQuadtree[i];
+		assert( !node.getData().combined );
+		CWallPieceCombined* wpc = new CWallPieceCombined();
+		wpc->initBegin( *this, &node );
+		int npc = node.getData().leafs.size();
+		for( int j = 0; j < npc; ++j )
+			wpc->initAddPiece( node.getData().leafs[j]->getLeafIndex() );
+		wpc->initEnd( mQuadtree );
+	}
+
+
+	/*
 	// TEST
-	int i;
 	CWallPieceCombined* wpc0 = new CWallPieceCombined();
 	wpc0->initBegin( *this, *mQuadtree );
 	for( i = 0; i < n; ++i ) {
@@ -639,23 +689,12 @@ void CWall3D::initPieces()
 	}
 	wpc1->initEnd();
 	mPiecesCombined.push_back( wpc1 );
+	*/
 
 	mPiecesInited = true;
 	mNeedsRenderingIntoVB = true;
 }
 
-void CWall3D::calcVB()
-{
-	if( mVB )
-		return;
-
-	int nvb = mWall2D.getVerts().size();
-	mVB = new SVector3[nvb];
-	for( int i = 0; i < nvb; ++i ) {
-		SVector3 p( mWall2D.getVerts()[i].x, mWall2D.getVerts()[i].y, 0 );
-		D3DXVec3TransformCoord( &mVB[i], &p, &mMatrix );
-	}
-}
 
 
 bool CWall3D::intersectRay( const SLine3& ray, float& t ) const
@@ -734,13 +773,12 @@ bool CWall3D::renderIntoVB()
 	int i;
 
 	// accumulate total vertex/index count
-	//int n = mWall2D.getPieceCount();
-	int n = mPiecesCombined.size();
+	//int n = mPiecesCombined.size();
+	int n = mQuadtree[1].getData().leafs.size();
 	for( i = 0; i < n; ++i ) {
 		//if( mFracturedPieces[i] )
 		//	continue;
-		//const CWallPiece3D& pc = mPieces3D[i];
-		const CWallPieceCombined& pc = *mPiecesCombined[i];
+		const CWallPieceCombined& pc = *mQuadtree[1].getData().leafs[i];
 		int nvb, nib;
 		pc.preRender( nvb, nib );
 		nverts += nvb;
@@ -761,8 +799,7 @@ bool CWall3D::renderIntoVB()
 		//if( mFracturedPieces[i] )
 		//	continue;
 		int nvb, nib;
-		//const CWallPiece3D& pc = mPieces3D[i];
-		const CWallPieceCombined& pc = *mPiecesCombined[i];
+		const CWallPieceCombined& pc = *mQuadtree[1].getData().leafs[i];
 		pc.render( vb, ib, baseIndex, nvb, nib );
 		baseIndex += nvb;
 		vb += nvb;

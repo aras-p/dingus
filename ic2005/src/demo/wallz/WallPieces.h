@@ -94,14 +94,11 @@ public:
 
 public:
 	void	init( const CWall3D& w, int idx );
-	void	preRender( int& vbcount, int& ibcount, bool inWall ) const;
-	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount, bool inWall ) const;
+	void	preRender( int& vbcount, int& ibcount ) const;
+	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
 
 	const TVertexVector& getVB() const { return mVB; }
 	const TIntVector& getIB() const { return mIB; }
-
-	int getVertsInWall() const { return mVertsInWall; }
-	int getIndicesInWall() const { return mIndicesInWall; }
 
 	const SMatrix4x4& getMatrix() const { return mMatrix; }
 	const SVector3& getSize() const { return mSize; }
@@ -110,8 +107,6 @@ private:
 	SMatrix4x4		mMatrix; // Initial matrix
 	TVertexVector	mVB;
 	TIntVector		mIB;
-	int				mVertsInWall;
-	int				mIndicesInWall;
 	SVector3		mSize;
 };
 
@@ -123,7 +118,10 @@ class CWallPieceCombined;
 
 
 struct SWallQuadData {
-	std::vector<const CWallPieceCombined*>	pieces;
+	SWallQuadData() : combined(NULL), leafs() { }
+
+	CWallPieceCombined*		combined;
+	std::vector<const CWallPieceCombined*>	leafs;
 };
 
 typedef CQuadTreeNode<SWallQuadData,2>	TWallQuadNode;
@@ -139,9 +137,11 @@ public:
 	typedef std::vector<SVertexXyzNormal>	TVertexVector;
 
 public:
-	void	initBegin( const CWall3D& w, const TWallQuadNode& quadtree );
+	void	initBegin( const CWall3D& w, TWallQuadNode* quadnode );
 	void	initAddPiece( int idx );
-	void	initEnd();
+	void	initEnd( TWallQuadNode* quadtree );
+
+	int		getLeafIndex() const { assert(mCombinedPieces.size()==1); return mCombinedPieces[0]; }
 
 	void	preRender( int& vbcount, int& ibcount ) const;
 	void	render( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
@@ -156,11 +156,10 @@ private:
 	TIntVector		mIB;
 	CAABox2			mBounds;
 	TIntVector		mCombinedPieces;
-	const TWallQuadNode*	mQuadNode;
+	TWallQuadNode*	mQuadNode;
 
-	static	CWallPieceCombined*		mInitPiece;
-	static	const CWall3D*			mInitWall;
-	static	const TWallQuadNode*	mInitQuadtree;
+	static	CWallPieceCombined*	mInitPiece;
+	static	const CWall3D*		mInitWall;
 };
 
 
@@ -218,8 +217,6 @@ public:
 	const SMatrix4x4& getMatrix() const { return mMatrix; }
 	void setMatrix( const SMatrix4x4& m ) { mMatrix = m; mInvMatrix = m; mInvMatrix.invert(); }
 
-	void	calcVB();
-
 	void	update( float t );
 
 	bool	intersectRay( const SLine3& ray, float& t ) const;
@@ -236,7 +233,6 @@ private:
 
 	SMatrix4x4	mMatrix;
 	SMatrix4x4	mInvMatrix;
-	SVector3*	mVB;
 
 	CWallPiece3D*	mPieces3D;
 	bool*			mFracturedPieces;

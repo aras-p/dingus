@@ -87,13 +87,13 @@ bool CPhysPiece::update()
 
 void CPhysPiece::preRender( int& vbcount, int& ibcount ) const
 {
-	mRestPiece->preRender( vbcount, ibcount, false );
+	mRestPiece->preRender( vbcount, ibcount );
 }
 
 
 void CPhysPiece::render( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
 {
-	mRestPiece->render( mMatrix, vb, ib, baseIndex, vbcount, ibcount, false );
+	mRestPiece->render( mMatrix, vb, ib, baseIndex, vbcount, ibcount );
 }
 
 
