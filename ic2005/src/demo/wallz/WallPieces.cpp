@@ -189,17 +189,100 @@ void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned 
 namespace polygon_merger {
 
 	std::vector<TIntVector>	polygons;
+
+	typedef std::set<int>	TIntSet;
+	TIntSet			vertices;
+	TIntSet			verticesComplex;
 	
 	typedef std::map< int, TIntVector > TIntIntsMap;
 	TIntIntsMap		vertexNexts;
 	TIntIntsMap		vertexPrevs;
 
+	TIntVector		vertexUseCount;
 
-	void	begin()
+	enum eVertexType {
+		VTYPE_NONE,		///< Not computed yet
+		VTYPE_INTERIOR,	///< Completely interior
+		VTYPE_SINGLE,	///< On the border, belongs to single polygon
+		VTYPE_MULTI,	///< On the border, belongs to multiple polygons
+		VTYPE_COMPLEX,	///< On the border, belongs to multiple polygons, in a complex polygon forming way
+	};
+	TIntVector		vertexTypes;
+
+
+	
+	bool isVertexInterior( int idx )
+	{
+		assert( idx >= 0 && idx < vertexUseCount.size() );
+
+		// vertex is interior if it's use count is >1, AND
+		// it's all neighbors' use counts are >1
+		assert( vertexUseCount[idx] >= 1 );
+		if( vertexUseCount[idx] < 2 )
+			return false;
+
+		TIntIntsMap::const_iterator it;
+		int i, n;
+
+		it = vertexNexts.find( idx );
+		assert( it != vertexNexts.end() );
+		const TIntVector& vnext = it->second;
+		n = vnext.size();
+		for( i = 0; i < n; ++i ) {
+			if( vertexUseCount[vnext[i]] < 2 )
+				return false;
+		}
+
+		it = vertexPrevs.find( idx );
+		assert( it != vertexPrevs.end() );
+		const TIntVector& vprev = it->second;
+		n = vprev.size();
+		for( i = 0; i < n; ++i ) {
+			if( vertexUseCount[vprev[i]] < 2 )
+				return false;
+		}
+
+		return true; // fall through: must be interior
+	}
+
+	
+	bool isVertexComplex( int idx )
+	{
+		return true;
+	}
+
+
+	void	markVertexTypes()
+	{
+		TIntSet::const_iterator vit, vitEnd = vertices.end();
+
+		// first pass: mark all interior and single-border vertices
+		for( vit = vertices.begin(); vit != vitEnd; ++vit ) {
+			int idx = *vit;
+			if( vertexUseCount[idx] == 1 )
+				vertexTypes[idx] = VTYPE_SINGLE;
+			else if( isVertexInterior(idx) )
+				vertexTypes[idx] = VTYPE_INTERIOR;
+		}
+
+		// now, the unmarked vertices are all on border: most should be
+		// shared, some can form complex polygons
+	}
+
+
+	void	begin( int totalVerts )
 	{
 		polygons.clear();
+
+		vertices.clear();
+		verticesComplex.clear();
+
 		vertexNexts.clear();
 		vertexPrevs.clear();
+		vertexUseCount.resize( 0 );
+		vertexUseCount.resize( totalVerts, 0 );
+		vertexTypes.resize( 0 );
+		vertexTypes.resize( totalVerts, VTYPE_NONE );
 	}
 
 	void	addPolygon( const TIntVector& ib )
@@ -209,6 +292,9 @@ namespace polygon_merger {
 		TIntVector::const_iterator vit, vitEnd = ib.end();
 		for( vit = ib.begin(); vit != vitEnd; ++vit ) {
 			int idx = *vit;
+			assert( idx >= 0 && idx < vertexUseCount.size() );
+			vertices.insert( idx );
+			++vertexUseCount[idx];
 			int idxNext = (vit==vitEnd-1) ? ib.front() : *(vit+1);
 			int idxPrev = (vit==ib.begin()) ? ib.back() : *(vit-1);
 			vertexNexts[idx].push_back( idxNext );
