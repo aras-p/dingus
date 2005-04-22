@@ -16,7 +16,6 @@ typedef std::vector<SVector2>	TWallVertexVector;
 typedef std::vector<int>		TIntVector;
 
 namespace dingus {
-	//class CDebugRenderer;
 	class CRenderableIndexedBuffer;
 };
 
@@ -120,8 +119,11 @@ private:
 
 // --------------------------------------------------------------------------
 
+class CWallPieceCombined;
+
+
 struct SWallQuadData {
-	int dummy; // TBD
+	std::vector<const CWallPieceCombined*>	pieces;
 };
 
 typedef CQuadTreeNode<SWallQuadData,2>	TWallQuadNode;
@@ -188,9 +190,6 @@ public:
 	const SVector2& getSize() const { return mSize; }
 	float getSmallestElemSize() const { return mSmallestElemSize; }
 
-	//void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const bool* fractured );
-	//void	debugRender( const SVector3* vb, CDebugRenderer& renderer, const TIntVector& pieces );
-	
 private:
 	TWallVertexVector			mVerts;
 	std::vector<CWallPiece2D>	mPieces;
@@ -225,9 +224,6 @@ public:
 
 	bool	intersectRay( const SLine3& ray, float& t ) const;
 	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, TIntVector& pcs );
-
-	//void	debugRender( CDebugRenderer& renderer );
-	//void	debugRender( CDebugRenderer& renderer, const TIntVector& pieces );
 
 	void	render( eRenderMode rm );
 

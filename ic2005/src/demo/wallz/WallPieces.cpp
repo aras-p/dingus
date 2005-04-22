@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "WallPieces.h"
-//#include <dingus/gfx/DebugRenderer.h>
 #include <dingus/math/Plane.h>
 #include <dingus/math/MathUtils.h>
 #include <dingus/renderer/RenderableBuffer.h>
@@ -9,44 +8,6 @@
 const float HALF_THICK = 0.02f;
 
 
-/*
-void CWall2D::debugRender( const SVector3* vb, CDebugRenderer& renderer, const bool* fractured )
-{
-	renderer.beginDebug();
-
-	int npcs = getPieceCount();
-	for( int i = 0; i < npcs; ++i ) {
-		if( fractured[i] )
-			continue;
-		D3DCOLOR color;
-		color = i * (71*65536+43*256+29);
-		color &= 0x00ffffff;
-		color |= 0xC0f0f0f0;
-		const CWallPiece2D& pc = getPiece(i);
-		renderer.renderTris( vb, sizeof(vb[0]), pc.getIB(), pc.getTriCount(), color );
-	}
-
-	renderer.endDebug();
-}
-
-void CWall2D::debugRender( const SVector3* vb, CDebugRenderer& renderer, const TIntVector& pieces )
-{
-	renderer.beginDebug();
-
-	int n = pieces.size();
-	for( int i = 0; i < n; ++i ) {
-		D3DCOLOR color;
-		int idx = pieces[i];
-		color = idx * (71*65536+43*256+29);
-		color &= 0x00ffffff;
-		color |= 0xff808080;
-		const CWallPiece2D& pc = getPiece(idx);
-		renderer.renderTris( vb, sizeof(vb[0]), pc.getIB(), pc.getTriCount(), color );
-	}
-
-	renderer.endDebug();
-}
-*/
 
 static inline float signedAngle2D( const SVector2& a, const SVector2& b )
 {
@@ -696,21 +657,6 @@ void CWall3D::calcVB()
 	}
 }
 
-/*
-void CWall3D::debugRender( CDebugRenderer& renderer )
-{
-	if( !mVB )
-		calcVB();
-	mWall2D.debugRender( mVB, renderer, mFracturedPieces );
-}
-
-void CWall3D::debugRender( CDebugRenderer& renderer, const TIntVector& pieces )
-{
-	if( !mVB )
-		calcVB();
-	mWall2D.debugRender( mVB, renderer, pieces );
-}
-*/
 
 bool CWall3D::intersectRay( const SLine3& ray, float& t ) const
 {

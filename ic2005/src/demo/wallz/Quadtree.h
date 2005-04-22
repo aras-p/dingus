@@ -16,14 +16,17 @@ public:
 
 	void	init( const SVector2& bmin, const SVector2& bmax, this_type* parent, int depth, this_type*& nodes );
 	
-	this_type*	getBlock( const CAABox2& aabb );
+	this_type*	getNode( const CAABox2& aabb );
 
 	const T& getData() const { return mData; }
 	T& getData() { return mData; }
 
+	const this_type* getParent() const { return mParent; }
+	this_type* getParent() { return mParent; }
+
 private:
 	bool		enclosesBox( const CAABox2& aabb ) const;
-	this_type*	getBlockNoUp( const CAABox2& aabb );
+	this_type*	getNodeNoUp( const CAABox2& aabb );
 
 private:
 	SVector2	mMin;
@@ -114,12 +117,12 @@ bool  CQuadTreeNode<T,DIVAX>::enclosesBox( const CAABox2& aabb ) const
 
 
 template<typename T, int DIVAX>
-CQuadTreeNode<T,DIVAX>*	CQuadTreeNode<T,DIVAX>::getBlockNoUp( const CAABox2& aabb )
+CQuadTreeNode<T,DIVAX>*	CQuadTreeNode<T,DIVAX>::getNodeNoUp( const CAABox2& aabb )
 {
 	if( mChildren ) {
 		for( int i = 0; i < DIVS_TOTAL; ++i ) {
 			if( mChildren[i].enclosesBox( aabb ) )
-				return mChildren[i].getBlockNoUp( aabb ); // child will have good node
+				return mChildren[i].getNodeNoUp( aabb ); // child will have good node
 		}
 	}
 	return this; // we are the best node
@@ -127,12 +130,12 @@ CQuadTreeNode<T,DIVAX>*	CQuadTreeNode<T,DIVAX>::getBlockNoUp( const CAABox2& aab
 
 
 template<typename T, int DIVAX>
-CQuadTreeNode<T,DIVAX>*	CQuadTreeNode<T,DIVAX>::getBlock( const CAABox2& aabb )
+CQuadTreeNode<T,DIVAX>*	CQuadTreeNode<T,DIVAX>::getNode( const CAABox2& aabb )
 {
 	if( enclosesBox( aabb ) ) {
-		return getBlockNoUp( aabb ); // this or children will have a good node
+		return getNodeNoUp( aabb ); // this or children will have a good node
 	} else if( mParent ) {
-		return mParent->getBlock( aabb ); // parent has a good block
+		return mParent->getNode( aabb ); // parent has a good block
 	} else
 		return this; // we are the root, no other choice
 }
