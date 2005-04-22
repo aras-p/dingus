@@ -982,10 +982,12 @@ SOURCE=.\dingus\resource\EffectBundle.h
 # Begin Source File
 
 SOURCE=.\dingus\resource\FontBundle.cpp
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\dingus\resource\FontBundle.h
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
