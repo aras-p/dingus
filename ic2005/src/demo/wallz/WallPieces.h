@@ -141,7 +141,7 @@ public:
 	typedef std::vector<SVertexXyzNormal>	TVertexVector;
 
 public:
-	void	initBegin( const CWall3D& w, TWallQuadNode* quadnode );
+	void	initBegin( const CWall3D& w, TWallQuadNode* quadnode, bool root );
 	void	initAddPiece( int idx );
 	void	initEnd( TWallQuadNode* quadtree );
 
@@ -169,6 +169,7 @@ private:
 
 	static	CWallPieceCombined*	mInitPiece;
 	static	const CWall3D*		mInitWall;
+	static	bool				mInitRoot;
 };
 
 

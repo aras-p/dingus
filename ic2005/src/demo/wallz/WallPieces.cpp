@@ -158,7 +158,7 @@ void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned 
 
 namespace polygon_merger {
 
-	std::vector<TIntVector>	polygons;
+	int				polygonCount;
 
 	typedef std::set<int>	TIntSet;
 	TIntSet			vertices;
@@ -374,7 +374,7 @@ namespace polygon_merger {
 
 	void	begin( int totalVerts )
 	{
-		polygons.clear();
+		polygonCount = 0;
 
 		vertices.clear();
 		borderVertices.clear();
@@ -392,7 +392,7 @@ namespace polygon_merger {
 
 	void	addPolygon( const TIntVector& ib )
 	{
-		polygons.push_back( ib );
+		++polygonCount;
 
 		TIntVector::const_iterator vit, vitEnd = ib.end();
 		for( vit = ib.begin(); vit != vitEnd; ++vit ) {
@@ -409,11 +409,22 @@ namespace polygon_merger {
 
 	void end( const TWallVertexVector& vb, TIntVector& polygon, TIntVector& ib )
 	{
-		assert( !polygons.empty() );
-		if( polygons.size() == 1 ) {
+		assert( polygonCount );
+		if( polygonCount == 1 ) {
 			
 			// trivial case, just output input polygon
-			polygon = polygons[0];
+			polygon.resize( 0 );
+			polygon.reserve( vertices.size() );
+			int idx0 = *vertices.begin();
+			int idx = idx0;
+			do {
+				polygon.push_back( idx );
+				const TIntVector& vnext = vertexNexts[idx];
+				assert( vnext.size() == 1 );
+				idx = vnext[0];
+			} while( idx != idx0 );
+
+
 			triangulator::process( vb, polygon, ib );
 
 		} else {
@@ -437,10 +448,10 @@ namespace polygon_merger {
 
 CWallPieceCombined* CWallPieceCombined::mInitPiece = NULL;
 const CWall3D* CWallPieceCombined::mInitWall = NULL;
+bool CWallPieceCombined::mInitRoot = false;
 
 
-
-void CWallPieceCombined::initBegin( const CWall3D& w, TWallQuadNode* quadnode )
+void CWallPieceCombined::initBegin( const CWall3D& w, TWallQuadNode* quadnode, bool root )
 {
 	assert( !mInitPiece );
 	assert( !mInitWall );
@@ -449,23 +460,33 @@ void CWallPieceCombined::initBegin( const CWall3D& w, TWallQuadNode* quadnode )
 
 	mInitPiece = this;
 	mInitWall = &w;
+	mInitRoot = root;
 
 	mQuadNode = quadnode;
 
 	mRenderID = -1;
 
-	polygon_merger::begin( w.getWall2D().getVerts().size() );
+	if( !mInitRoot )
+		polygon_merger::begin( w.getWall2D().getVerts().size() );
+	else {
+		mBounds.getMin().set( 0, 0 );
+		mBounds.getMax() = w.getWall2D().getSize();
+		mCombinedPieces.reserve( w.getWall2D().getPieceCount() );
+	}
 }
 
 
 void CWallPieceCombined::initAddPiece( int idx )
 {
-	const CWallPiece2D& piece = mInitWall->getWall2D().getPiece(idx);
-	polygon_merger::addPolygon( piece.getPolygonVector() );
-
 	mCombinedPieces.push_back( idx );
 
-	mBounds.extend( piece.getAABB() );
+	if( !mInitRoot ) {
+
+		const CWallPiece2D& piece = mInitWall->getWall2D().getPiece(idx);
+		polygon_merger::addPolygon( piece.getPolygonVector() );
+
+		mBounds.extend( piece.getAABB() );
+	}
 }
 
 
@@ -474,82 +495,133 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 	assert( mInitPiece == this );
 	assert( mInitWall );
 
-	const TWallVertexVector& wallVerts = mInitWall->getWall2D().getVerts();
+	// if we're root, just construct the full-wall quad
+	if( mInitRoot ) {
+		assert( mQuadNode == quadtree );
+		mVB.resize( 4 );
+		mIB.resize( 6 );
+		const SVector2& bmin = mBounds.getMin();
+		const SVector2& bmax = mBounds.getMax();
 
-	// merge the polygons
-	TIntVector polygon;
-	TIntVector ibFront;
-	polygon_merger::end( wallVerts, polygon, ibFront );
-
-
-	static TIntVector	vertRemap;
-	vertRemap.resize(0);
-	vertRemap.resize( wallVerts.size(), -1 );
-
-	int i;
-
-	int nidx = ibFront.size();
-	mIB.reserve( nidx + polygon.size()*6 );
-	mVB.reserve( polygon.size()*5 );
-
-	// construct the front side
-	for( i = 0; i < nidx; ++i ) {
-		int oldIdx = ibFront[i];
-		int newIdx = vertRemap[oldIdx];
-		if( newIdx < 0 ) {
-			newIdx = mVB.size();
-			vertRemap[oldIdx] = newIdx;
-
-			SVector2 pos = wallVerts[oldIdx];
-			SVector3 pos3( pos.x, pos.y, 0.0f );
-			D3DXVec3TransformCoord( &pos3, &pos3, &mInitWall->getMatrix() );
+		// VB
+		const SMatrix4x4& mat = mInitWall->getMatrix();
+		{
 			SVertexXyzNormal vtx;
-			vtx.p = pos3;
-			vtx.n = mInitWall->getMatrix().getAxisZ();
-			mVB.push_back( vtx );
+			vtx.p.set( bmin.x, bmin.y, 0 );
+			vtx.n = mat.getAxisZ();
+			D3DXVec3TransformCoord( &vtx.p, &vtx.p, &mat );
+			mVB[0] = vtx;
+			vtx.p.set( bmin.x, bmax.y, 0 );
+			vtx.n = mat.getAxisZ();
+			D3DXVec3TransformCoord( &vtx.p, &vtx.p, &mat );
+			mVB[1] = vtx;
+			vtx.p.set( bmax.x, bmin.y, 0 );
+			vtx.n = mat.getAxisZ();
+			D3DXVec3TransformCoord( &vtx.p, &vtx.p, &mat );
+			mVB[2] = vtx;
+			vtx.p.set( bmax.x, bmax.y, 0 );
+			vtx.n = mat.getAxisZ();
+			D3DXVec3TransformCoord( &vtx.p, &vtx.p, &mat );
+			mVB[3] = vtx;
 		}
-		mIB.push_back( newIdx );
-	}
-	for( i = 0; i < nidx/3; ++i ) {
-		int iii = mIB[i*3+1];
-		mIB[i*3+1] = mIB[i*3+2];
-		mIB[i*3+2] = iii;
-	}
-	// push vertices for another side (but no triangles)
-	int nverts = mVB.size();
-	int npolygon = polygon.size();
-	for( i = 0; i < nverts; ++i ) {
-		SVertexXyzNormal vtx = mVB[i];
-		vtx.p -= vtx.n * (HALF_THICK*2);
-		vtx.n = -vtx.n;
-		mVB.push_back( vtx );
-	}
-	// construct side caps
-	for( i = 0; i < nverts; ++i ) {
-		int oldIdx0 = polygon[i];
-		int oldIdx1 = polygon[(i+1)%npolygon];
-		int idx0 = vertRemap[oldIdx0];
-		int idx1 = vertRemap[oldIdx1];
-		assert( idx0 >= 0 && idx0 < nverts );
-		assert( idx1 >= 0 && idx1 < nverts );
-		SVertexXyzNormal v0 = mVB[idx0];
-		SVertexXyzNormal v1 = mVB[idx1];
-		SVertexXyzNormal v2 = mVB[idx0+nverts];
-		SVertexXyzNormal v3 = mVB[idx1+nverts];
-		SVector3 edge01 = v1.p - v0.p;
-		SVector3 edge02 = v2.p - v0.p;
-		SVector3 normal = edge01.cross( edge02 ).getNormalized();
-		v0.n = v1.n = v2.n = v3.n = -normal;
-		mVB.push_back( v0 );
-		mVB.push_back( v1 );
-		mVB.push_back( v2 );
-		mVB.push_back( v3 );
-		mIB.push_back( nverts*2 + i*4 + 0 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
-		mIB.push_back( nverts*2 + i*4 + 3 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
+		// IB
+		{
+			mIB[0] = 0;
+			mIB[1] = 1;
+			mIB[2] = 2;
+			mIB[3] = 1;
+			mIB[4] = 3;
+			mIB[5] = 2;
+		}
+
+	} else {
+
+		// for non-roots, construct proper polygon
+
+		const TWallVertexVector& wallVerts = mInitWall->getWall2D().getVerts();
+
+		// merge the polygons
+		TIntVector polygon;
+		TIntVector ibFront;
+		polygon_merger::end( wallVerts, polygon, ibFront );
+
+
+		static TIntVector	vertRemap;
+		vertRemap.resize(0);
+		vertRemap.resize( wallVerts.size(), -1 );
+
+		int i;
+
+		int nidx = ibFront.size();
+		mIB.reserve( nidx + polygon.size()*6 );
+		mVB.reserve( polygon.size()*5 );
+
+		// construct the front side
+		for( i = 0; i < nidx; ++i ) {
+			int oldIdx = ibFront[i];
+			int newIdx = vertRemap[oldIdx];
+			if( newIdx < 0 ) {
+				newIdx = mVB.size();
+				vertRemap[oldIdx] = newIdx;
+
+				SVector2 pos = wallVerts[oldIdx];
+				SVector3 pos3( pos.x, pos.y, 0.0f );
+				D3DXVec3TransformCoord( &pos3, &pos3, &mInitWall->getMatrix() );
+				SVertexXyzNormal vtx;
+				vtx.p = pos3;
+				vtx.n = mInitWall->getMatrix().getAxisZ();
+				mVB.push_back( vtx );
+			}
+			mIB.push_back( newIdx );
+		}
+		for( i = 0; i < nidx/3; ++i ) {
+			int iii = mIB[i*3+1];
+			mIB[i*3+1] = mIB[i*3+2];
+			mIB[i*3+2] = iii;
+		}
+
+		// Don't construct the side caps for non-leaf pieces.
+		// I think they never can be seen (not sure)
+		if( !mQuadNode ) {
+			
+			// push vertices for another side (but no triangles)
+			int nverts = mVB.size();
+			int npolygon = polygon.size();
+			for( i = 0; i < nverts; ++i ) {
+				SVertexXyzNormal vtx = mVB[i];
+				vtx.p -= vtx.n * (HALF_THICK*2);
+				vtx.n = -vtx.n;
+				mVB.push_back( vtx );
+			}
+			// construct side caps
+			for( i = 0; i < nverts; ++i ) {
+				int oldIdx0 = polygon[i];
+				int oldIdx1 = polygon[(i+1)%npolygon];
+				int idx0 = vertRemap[oldIdx0];
+				int idx1 = vertRemap[oldIdx1];
+				assert( idx0 >= 0 && idx0 < nverts );
+				assert( idx1 >= 0 && idx1 < nverts );
+				SVertexXyzNormal v0 = mVB[idx0];
+				SVertexXyzNormal v1 = mVB[idx1];
+				SVertexXyzNormal v2 = mVB[idx0+nverts];
+				SVertexXyzNormal v3 = mVB[idx1+nverts];
+				SVector3 edge01 = v1.p - v0.p;
+				SVector3 edge02 = v2.p - v0.p;
+				SVector3 normal = edge01.cross( edge02 ).getNormalized();
+				v0.n = v1.n = v2.n = v3.n = -normal;
+				mVB.push_back( v0 );
+				mVB.push_back( v1 );
+				mVB.push_back( v2 );
+				mVB.push_back( v3 );
+				mIB.push_back( nverts*2 + i*4 + 0 );
+				mIB.push_back( nverts*2 + i*4 + 1 );
+				mIB.push_back( nverts*2 + i*4 + 2 );
+				mIB.push_back( nverts*2 + i*4 + 1 );
+				mIB.push_back( nverts*2 + i*4 + 3 );
+				mIB.push_back( nverts*2 + i*4 + 2 );
+			}
+		}
+
 	}
 
 
@@ -658,12 +730,9 @@ void CWall3D::initPieces()
 	assert( !mPieces3D );
 	assert( mPiecesCombined.empty() );
 	
-	{	
-		cputimer::debug_interval tt1( "w3d quadtree create" );
-		const int QUADTREE_DEPTH = 2;
-		//const int QUADTREE_DEPTH = 3;
-		mQuadtree = TWallQuadNode::create( SVector2(0,0), mWall2D.getSize(), QUADTREE_DEPTH, &mQuadtreeNodeCount );
-	}
+	const int QUADTREE_DEPTH = 2;
+	//const int QUADTREE_DEPTH = 3;
+	mQuadtree = TWallQuadNode::create( SVector2(0,0), mWall2D.getSize(), QUADTREE_DEPTH, &mQuadtreeNodeCount );
 
 	int i;
 	int n = mWall2D.getPieceCount();
@@ -672,37 +741,31 @@ void CWall3D::initPieces()
 	mFracturedPieces = new bool[n];
 
 	// init the leaf pieces
-	{	
-		cputimer::debug_interval tt1( "w3d init leafs" );
-		for( i = 0; i < n; ++i ) {
-			mPieces3D[i].init( *this, i );
-			mFracturedPieces[i] = false;
+	for( i = 0; i < n; ++i ) {
+		mPieces3D[i].init( *this, i );
+		mFracturedPieces[i] = false;
 
-			CWallPieceCombined* wpc = new CWallPieceCombined();
-			wpc->initBegin( *this, NULL );
-			wpc->initAddPiece( i );
-			wpc->initEnd( mQuadtree );
-			mPiecesCombined.push_back( wpc );
-		}
+		CWallPieceCombined* wpc = new CWallPieceCombined();
+		wpc->initBegin( *this, NULL, false );
+		wpc->initAddPiece( i );
+		wpc->initEnd( mQuadtree );
+		mPiecesCombined.push_back( wpc );
 	}
 
 	// go through quadtree nodes and merge the pieces
-	{
-		cputimer::debug_interval tt1( "w3d merge" );
-		n = mQuadtreeNodeCount;
-		for( i = 0; i < n; ++i ) {
-			TWallQuadNode& node = mQuadtree[i];
-			assert( !node.getData().combined );
-			int npc = node.getData().leafs.size();
-			if( npc > 0 ) {
-				CWallPieceCombined* wpc = new CWallPieceCombined();
-				wpc->initBegin( *this, &node );
-				for( int j = 0; j < npc; ++j )
-					wpc->initAddPiece( node.getData().leafs[j]->getLeafIndex() );
-				wpc->initEnd( mQuadtree );
+	n = mQuadtreeNodeCount;
+	for( i = 0; i < n; ++i ) {
+		TWallQuadNode& node = mQuadtree[i];
+		assert( !node.getData().combined );
+		int npc = node.getData().leafs.size();
+		if( npc > 0 ) {
+			CWallPieceCombined* wpc = new CWallPieceCombined();
+			wpc->initBegin( *this, &node, i==0 );
+			for( int j = 0; j < npc; ++j )
+				wpc->initAddPiece( node.getData().leafs[j]->getLeafIndex() );
+			wpc->initEnd( mQuadtree );
 
-				mPiecesCombined.push_back( wpc );
-			}
+			mPiecesCombined.push_back( wpc );
 		}
 	}
 
