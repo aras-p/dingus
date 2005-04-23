@@ -162,7 +162,7 @@ namespace polygon_merger {
 
 	typedef std::set<int>	TIntSet;
 	TIntSet			vertices;
-	int				borderVertexIndex;
+	TIntSet			borderVertices;
 	
 	typedef std::map< int, TIntVector > TIntIntsMap;
 	TIntIntsMap		vertexNexts;
@@ -234,7 +234,7 @@ namespace polygon_merger {
 			int idx = *vit;
 			if( vertexUseCount[idx] == 1 ) {
 				vertexTypes[idx] = VTYPE_SINGLE;
-				borderVertexIndex = idx;
+				borderVertices.insert( idx );
 			} else if( isVertexInterior(idx) )
 				vertexTypes[idx] = VTYPE_INTERIOR;
 		}
@@ -244,17 +244,24 @@ namespace polygon_merger {
 			int idx = *vit;
 			if( vertexTypes[idx] == VTYPE_NONE ) {
 				vertexTypes[idx] = VTYPE_MULTI;
-				borderVertexIndex = idx;
+				borderVertices.insert( idx );
 			}
 		}
 	}
 
+	int		getBorderIndex()
+	{
+		if( borderVertices.empty() )
+			return -1;
+		return *borderVertices.begin();
+	}
 	
-	void	traceBorder( int idx0, const TWallVertexVector& vb, TIntVector& polygon, TIntVector& ib )
+	void	traceBorder( const TWallVertexVector& vb, TIntVector& polygon, TIntVector& ib )
 	{
 		static int traceID = 0;
 		++traceID;
 
+		int idx0 = getBorderIndex();
 		assert( idx0 >= 0 && idx0 < vertexTypes.size() );
 		
 		ib.resize( 0 );
@@ -279,6 +286,7 @@ namespace polygon_merger {
 			do{
 
 				localPolygon.push_back( idx );
+				borderVertices.erase( idx );
 				vertexTraceID[idx] = traceID;
 				assert( ++debugCounter <= vertices.size()*2 );
 
@@ -290,7 +298,7 @@ namespace polygon_merger {
 
 				SVector2 prevToCurr = vb[idx] - vb[idxPrev];
 				if( prevToCurr.lengthSq() < 1.0e-6f )
-					prevToCurr.set( 0.01f, 0.01f );
+					prevToCurr.set( -0.01f, -0.01f );
 
 				TIntIntsMap::const_iterator it;
 				it = vertexNexts.find( idx );
@@ -300,7 +308,8 @@ namespace polygon_merger {
 				float bestAngle = 100.0f;
 				for( int i = 0; i < n; ++i ) {
 					int idx1 = vnext[i];
-					if( idx1 != idxPrev && vertexTypes[idx1] != VTYPE_INTERIOR ) {
+					//if( idx1 != idxPrev && vertexTypes[idx1] != VTYPE_INTERIOR ) {
+					if( idx1 != idxPrev ) {
 						SVector2 currToNext = vb[idx1] - vb[idx];
 						float ang = signedAngle2D( prevToCurr, currToNext );
 						if( ang < bestAngle ) {
@@ -329,23 +338,35 @@ namespace polygon_merger {
 				triangulator::process( vb, localPolygon, localIB );
 				polygon.insert( polygon.end(), localPolygon.begin(), localPolygon.end() );
 				ib.insert( ib.end(), localIB.begin(), localIB.end() );
-				return;
+
+				// We can have separated other loops. Try fetching them as well.
+				idx0 = getBorderIndex();
+				if( idx0 == -1 ) {
+					return;
+				} else {
+					localPolygon.resize( 0 );
+					idxPrev = idx0;
+					idx = idx0;
+				}
+				
+			} else {
+
+				// The polygon must be complex, and we just found a closed loop.
+				// Take only the loop, triangulate it, append to results, continue.
+				TIntVector::const_iterator itLoopStart = 
+					std::find( localPolygon.begin(), localPolygon.end(), idx );
+				assert( itLoopStart != localPolygon.end() );
+
+				// append to results
+				TIntVector loopPolygon( itLoopStart, localPolygon.end() );
+				triangulator::process( vb, loopPolygon, localIB );
+				polygon.insert( polygon.end(), loopPolygon.begin(), loopPolygon.end() );
+				ib.insert( ib.end(), localIB.begin(), localIB.end() );
+
+				// continue - remove the looped polygon from local
+				localPolygon.resize( itLoopStart - localPolygon.begin() );
+
 			}
-
-			// The polygon must be complex, and we just found a closed loop.
-			// Take only the loop, triangulate it, append to results, continue.
-			TIntVector::const_iterator itLoopStart = 
-				std::find( localPolygon.begin(), localPolygon.end(), idx );
-			assert( itLoopStart != localPolygon.end() );
-
-			// append to results
-			TIntVector loopPolygon( itLoopStart, localPolygon.end() );
-			triangulator::process( vb, loopPolygon, localIB );
-			polygon.insert( polygon.end(), loopPolygon.begin(), loopPolygon.end() );
-			ib.insert( ib.end(), localIB.begin(), localIB.end() );
-
-			// continue - remove the looped polygon from local
-			localPolygon.resize( itLoopStart - localPolygon.begin() );
 
 		} while( true );
 	}
@@ -356,7 +377,7 @@ namespace polygon_merger {
 		polygons.clear();
 
 		vertices.clear();
-		borderVertexIndex = -1;
+		borderVertices.clear();
 
 		vertexNexts.clear();
 		vertexPrevs.clear();
@@ -401,7 +422,7 @@ namespace polygon_merger {
 			markVertexTypes();
 
 			// trace and triangulate the polygon(s)
-			traceBorder( borderVertexIndex, vb, polygon, ib );
+			traceBorder( vb, polygon, ib );
 		}
 	}
 
@@ -639,7 +660,8 @@ void CWall3D::initPieces()
 	
 	{	
 		cputimer::debug_interval tt1( "w3d quadtree create" );
-		const int QUADTREE_DEPTH = 3;
+		const int QUADTREE_DEPTH = 2;
+		//const int QUADTREE_DEPTH = 3;
 		mQuadtree = TWallQuadNode::create( SVector2(0,0), mWall2D.getSize(), QUADTREE_DEPTH, &mQuadtreeNodeCount );
 	}
 
@@ -669,10 +691,6 @@ void CWall3D::initPieces()
 		cputimer::debug_interval tt1( "w3d merge" );
 		n = mQuadtreeNodeCount;
 		for( i = 0; i < n; ++i ) {
-			//char buf[100];
-			//sprintf( buf, "w3d merge %i/%i", i, n );
-			//cputimer::debug_interval tt2( buf );
-
 			TWallQuadNode& node = mQuadtree[i];
 			assert( !node.getData().combined );
 			int npc = node.getData().leafs.size();
@@ -736,7 +754,6 @@ void CWall3D::fracturePiecesInSphere( float t, bool fractureOut, const SVector3&
 			pcs.push_back( i );
 			if( fractureOut ) {
 				fractureOutPiece( i );
-				mNeedsRenderingIntoVB = true;
 			}
 		}
 	}
@@ -747,6 +764,7 @@ void CWall3D::fractureOutPiece( int index )
 	assert( index >= 0 && index < mWall2D.getPieceCount() );
 	assert( !mFracturedPieces[index] );
 	mFracturedPieces[index] = true;
+	mNeedsRenderingIntoVB = true;
 
 	// mark as fractured in quadtree
 	TWallQuadNode* node = mQuadtree->getNode( mWall2D.getPiece(index).getAABB() );
@@ -761,6 +779,7 @@ void CWall3D::fractureInPiece( int index )
 	assert( index >= 0 && index < mWall2D.getPieceCount() );
 	assert( mFracturedPieces[index] );
 	mFracturedPieces[index] = false;
+	mNeedsRenderingIntoVB = true;
 
 	// mark as non fractured in quadtree
 	TWallQuadNode* node = mQuadtree->getNode( mWall2D.getPiece(index).getAABB() );

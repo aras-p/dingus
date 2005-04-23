@@ -335,7 +335,7 @@ void gRenderWallReflections()
 		CD3DDevice& dx = CD3DDevice::getInstance();
 		dx.setRenderTarget( RGET_S_SURF(RT_REFLRT) );
 		dx.setZStencil( RGET_S_SURF(RT_REFLZ) );
-		dx.clearTargets( true, true, false, 0xFFa0a0a0, 1.0f );
+		dx.clearTargets( true, true, false, 0xFF000020, 1.0f );
 		dx.sceneBegin();
 		G_RENDERCTX->applyGlobalEffect();
 		gRenderScene( RM_REFLECTED );
@@ -466,7 +466,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	// walls
 	{
-		const float ELEM_SIZE = 0.2f; // 0.1f
+		const float ELEM_SIZE = 0.1f; // 0.1f
 
 		gWalls[CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PX] );
 		gWalls[CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NX] );
@@ -587,6 +587,9 @@ static void gFetchMousePieces( bool fractureOut )
 	const float MOUSE_RADIUS = 0.6f;
 
 	double t = CSystemTimer::getInstance().getTimeS();
+	if( fractureOut ) {
+		CConsole::CON_WARNING << mousePos << endl;
+	}
 	for( i = 0; i < CFACE_COUNT; ++i ) {
 		gWalls[i]->fracturePiecesInSphere( t, fractureOut, mousePos, MOUSE_RADIUS, gMousePieces[i] );
 	}
