@@ -22,8 +22,19 @@ namespace dingus {
 class CWall3D;
 
 
-typedef SVertexXyzNormalDiffuse TPieceVertex;
-static const DWORD WALL_VERTEX_FVF = FVF_XYZ_NORMAL_DIFFUSE;
+typedef SVertexXyzDiffuse TPieceVertex;
+static const DWORD WALL_VERTEX_FVF = FVF_XYZ_DIFFUSE;
+
+
+static DWORD gVectorToColor( const SVector3& v ) {
+	float vx = (v.x + 1.0f) * 127.5f;
+	float vy = (v.y + 1.0f) * 127.5f;
+	float vz = (v.z + 1.0f) * 127.5f;
+	int nx = int(vx) & 255;
+	int ny = int(vy) & 255;
+	int nz = int(vz) & 255;
+	return (nx<<16) | (ny<<8) | (nz<<0);
+}
 
 
 
@@ -138,7 +149,7 @@ typedef CQuadTreeNode<SWallQuadData,2>	TWallQuadNode;
 /// May represent either leaf piece, or combined smaller pieces.
 class CWallPieceCombined : public boost::noncopyable {
 public:
-	typedef std::vector<SVertexXyzNormal>	TVertexVector;
+	typedef std::vector<SVertexXyzDiffuse>	TVertexVector;
 
 public:
 	void	initBegin( const CWall3D& w, TWallQuadNode* quadnode, bool root );

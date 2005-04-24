@@ -893,6 +893,14 @@ void CDemo::perform()
 	
 	CConsole::getChannel("system") << "wall geom: verts=" << gWallVertCount << " tris=" << gWallTriCount << endl;
 	CConsole::getChannel("system") << "phys geom: verts=" << stats.vertexCount << " tris=" << stats.triCount << endl;
+
+	static int maxVerts = 0;
+	if( gWallVertCount + stats.vertexCount > maxVerts )
+		maxVerts = gWallVertCount + stats.vertexCount;
+	static int maxTris = 0;
+	if( gWallTriCount + stats.triCount > maxTris )
+		maxTris = gWallTriCount + stats.triCount;
+	CConsole::getChannel("system") << "max: verts=" << maxVerts << " (" << int(maxVerts*sizeof(SVertexXyzDiffuse)) << ")  tris=" << maxTris << " (" << maxTris*2*3 << ")" << endl;
 }
 
 

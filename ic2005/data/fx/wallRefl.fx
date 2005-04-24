@@ -2,14 +2,14 @@
 #include "lib/structs.fx"
 
 
-SPosColTexp vsMain( SPosN i ) {
+SPosColTexp vsMain( SPosCol i ) {
 	SPosColTexp o;
 	float3 tolight = normalize( vLightPos - i.pos.xyz );
 	o.pos = mul( i.pos, mViewProj );
 
 	o.uvp = mul( i.pos, mShadowProj );
 
-	float diffuse = max( 0.0, dot( tolight, i.normal ) );
+	float diffuse = max( 0.0, dot( tolight, i.color.xyz*2-1 ) );
 	o.color = diffuse * 0.4 + 0.3;
 	return o;
 }
@@ -25,7 +25,7 @@ technique tec0
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_2_0 psMain();
-		FVF = Xyz | Normal | Diffuse;
+		FVF = Xyz | Diffuse;
 	}
 	pass PLast {
 		Texture[0] = NULL;

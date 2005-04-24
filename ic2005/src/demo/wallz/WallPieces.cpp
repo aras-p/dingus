@@ -69,7 +69,7 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 	for( i = 0; i < nverts; ++i ) {
 		SVertexXyzNormal vtx = mVB[i];
 		vtx.p.z = -vtx.p.z;
-		vtx.n.z = -vtx.n.z;
+		vtx.n.set( 0,0, -1 );
 		mVB.push_back( vtx );
 	}
 	for( i = 0; i < nidx/3; ++i ) {
@@ -137,8 +137,7 @@ void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned 
 		D3DXVec3TransformCoord( &p, &srcVB->p, &matrix );
 		D3DXVec3TransformNormal( &n, &srcVB->n, &matrix );
 		vb->p = p;
-		vb->n = n;
-		vb->diffuse = 0xFFff8000; // TBD
+		vb->diffuse = gVectorToColor( n );
 		++srcVB;
 		++vb;
 	}
@@ -519,22 +518,24 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 		// VB
 		const SMatrix4x4& mat = mInitWall->getMatrix();
 		{
-			SVertexXyzNormal vtx;
+			DWORD nrmCol = gVectorToColor( mat.getAxisZ() );
+
+			SVertexXyzDiffuse vtx;
 			vtx.p.set( bmin.x, bmin.y, 0 );
-			vtx.n = mat.getAxisZ();
 			D3DXVec3TransformCoord( &vtx.p, &vtx.p, &mat );
+			vtx.diffuse = nrmCol;
 			mVB[0] = vtx;
 			vtx.p.set( bmin.x, bmax.y, 0 );
-			vtx.n = mat.getAxisZ();
 			D3DXVec3TransformCoord( &vtx.p, &vtx.p, &mat );
+			vtx.diffuse = nrmCol;
 			mVB[1] = vtx;
 			vtx.p.set( bmax.x, bmin.y, 0 );
-			vtx.n = mat.getAxisZ();
 			D3DXVec3TransformCoord( &vtx.p, &vtx.p, &mat );
+			vtx.diffuse = nrmCol;
 			mVB[2] = vtx;
 			vtx.p.set( bmax.x, bmax.y, 0 );
-			vtx.n = mat.getAxisZ();
 			D3DXVec3TransformCoord( &vtx.p, &vtx.p, &mat );
+			vtx.diffuse = nrmCol;
 			mVB[3] = vtx;
 		}
 		// IB
@@ -580,9 +581,9 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 				SVector2 pos = wallVerts[oldIdx];
 				SVector3 pos3( pos.x, pos.y, 0.0f );
 				D3DXVec3TransformCoord( &pos3, &pos3, &mInitWall->getMatrix() );
-				SVertexXyzNormal vtx;
+				SVertexXyzDiffuse vtx;
 				vtx.p = pos3;
-				vtx.n = mInitWall->getMatrix().getAxisZ();
+				vtx.diffuse = gVectorToColor( mInitWall->getMatrix().getAxisZ() );
 				mVB.push_back( vtx );
 			}
 			mIB.push_back( newIdx );
@@ -613,19 +614,18 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 				assert( idx0 >= 0 && idx0 < nverts );
 				assert( idx1 >= 0 && idx1 < nverts );
 				assert( idx2 >= 0 && idx2 < nverts );
-				SVertexXyzNormal v0 = mVB[idx0];
-				SVertexXyzNormal v1 = v0;
-				v1.p -= v1.n * (HALF_THICK*2);
+				SVertexXyzDiffuse v0 = mVB[idx0];
+				SVertexXyzDiffuse v1 = v0;
+				v1.p -= mInitWall->getMatrix().getAxisZ() * (HALF_THICK*2);
 
-
-				SVertexXyzNormal vnear1 = mVB[idx1];
-				SVertexXyzNormal vnear2 = mVB[idx2];
+				SVertexXyzDiffuse vnear1 = mVB[idx1];
+				SVertexXyzDiffuse vnear2 = mVB[idx2];
 
 				SVector3 edge1 = vnear2.p - vnear1.p;
 				SVector3 edge2 = v1.p - v0.p;
 				SVector3 normal = edge1.cross( edge2 ).getNormalized();
 
-				v0.n = v1.n = normal;
+				v0.diffuse = v1.diffuse = gVectorToColor( normal );
 				
 				mVB.push_back( v0 );
 				mVB.push_back( v1 );
@@ -681,12 +681,11 @@ void CWallPieceCombined::render( TPieceVertex* vb, unsigned short* ib, int baseI
 	int i;
 	
 	// VB
-	const SVertexXyzNormal* srcVB = &mVB[0];
+	const SVertexXyzDiffuse* srcVB = &mVB[0];
 	vbcount = mVB.size();
 	for( i = 0; i < vbcount; ++i ) {
 		vb->p = srcVB->p;
-		vb->n = srcVB->n;
-		vb->diffuse = 0xFFff8000; // TBD
+		vb->diffuse = srcVB->diffuse;
 		++srcVB;
 		++vb;
 	}

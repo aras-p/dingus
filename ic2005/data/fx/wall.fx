@@ -10,15 +10,16 @@ sampler2D	smpRefl = sampler_state {
 };
 
 
-SPosColTexp2 vsMain( SPosN i ) {
+SPosColTexp2 vsMain( SPosCol i ) {
 	SPosColTexp2 o;
+
 	float3 tolight = normalize( vLightPos - i.pos.xyz );
 	o.pos = mul( i.pos, mViewProj );
 
 	o.uvp[0] = mul( i.pos, mShadowProj );
 	o.uvp[1] = mul( i.pos, mViewTexProj );
 
-	float diffuse = max( 0.0, dot( tolight, i.normal ) );
+	float diffuse = max( 0.0, dot( tolight, i.color.xyz*2-1 ) );
 	o.color = diffuse * 0.6 + 0.4;
 	return o;
 }
@@ -35,7 +36,7 @@ technique tec0
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_2_0 psMain();
-		FVF = Xyz | Normal | Diffuse;
+		FVF = Xyz | Diffuse;
 
 		//FillMode = Wireframe;
 	}
