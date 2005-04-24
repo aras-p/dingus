@@ -192,6 +192,9 @@ bool renderIntoVB()
 		nindices += nib;
 	}
 
+	stats.vertexCount = nverts;
+	stats.triCount = nindices/3;
+
 	if( !nverts || !nindices )
 		return false;
 

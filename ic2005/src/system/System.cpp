@@ -58,10 +58,9 @@ void CSystem::setupBundles( const std::string& dataPath, dingus::CReloadableBund
 	CAnimationBundle::getInstance().addDirectory( dataPath + "anim/" );
 	CModelDescBundle::getInstance().addDirectory( dataPath + "model/" );
 
-	// TBD: decrease sizes, now for testing!
-	CDynamicVBManager::initialize( 16 * 1024 * 1024 );
+	CDynamicVBManager::initialize( 6 * 1024 * 1024 );
 	CDynamicVBManager& vbManager = CDynamicVBManager::getInstance();
-	CDynamicIBManager::initialize( 16 * 1024 * 1024 );
+	CDynamicIBManager::initialize( 2 * 1024 * 1024 );
 	CDynamicIBManager& ibManager = CDynamicIBManager::getInstance();
 
 	//

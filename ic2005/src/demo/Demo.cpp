@@ -162,6 +162,7 @@ CWall3D*			gWalls[CFACE_COUNT];
 std::vector<int>	gMousePieces[CFACE_COUNT];
 int					gWallIDs[CFACE_COUNT];
 
+int		gWallVertCount, gWallTriCount;
 
 
 fastvector<CMeshEntity*>	gPieces;
@@ -801,8 +802,10 @@ void CDemo::perform()
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 	gTimeParam = float(t);
 
-	//CDynamicVBManager::getInstance().discard();
-	//CDynamicIBManager::getInstance().discard();
+	CDynamicVBManager::getInstance().discard();
+	CDynamicIBManager::getInstance().discard();
+
+	gWallVertCount = gWallTriCount = 0;
 	
 	gBicas->update();
 	gBicasUser->update();
@@ -853,7 +856,6 @@ void CDemo::perform()
 		stats.pieceCount
 	);
 	gUILabFPS->setText( buf );
-	//gUILabFPS->setText( gMoveDebugBuf );
 
 	gFetchMousePieces( false );
 
@@ -887,6 +889,10 @@ void CDemo::perform()
 	// render GUI
 	gUIDlg->onRender( dt );
 	dx.sceneEnd();
+
+	
+	CConsole::getChannel("system") << "wall geom: verts=" << gWallVertCount << " tris=" << gWallTriCount << endl;
+	CConsole::getChannel("system") << "phys geom: verts=" << stats.vertexCount << " tris=" << stats.triCount << endl;
 }
 
 

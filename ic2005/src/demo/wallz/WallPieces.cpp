@@ -9,6 +9,9 @@
 const float HALF_THICK = 0.02f;
 
 
+extern int		gWallVertCount, gWallTriCount;
+
+
 
 static inline float signedAngle2D( const SVector2& a, const SVector2& b )
 {
@@ -283,6 +286,7 @@ namespace polygon_merger {
 
 			localIB.resize( 0 );
 
+			bool willFormLoop;
 			do{
 
 				localPolygon.push_back( idx );
@@ -320,10 +324,19 @@ namespace polygon_merger {
 				}
 				assert( bestAngle > -4.0f && bestAngle < 4.0f );
 				assert( idxNext >= 0 );
+
+				willFormLoop = (vertexTraceID[idxNext] == traceID);
+
+				// Optimization: if best angle is zero, then we're walking
+				// in a straight line. Optimize out the current vertex.
+				if( bestAngle == 0.0f && idx != idx0 && !willFormLoop ) {
+					localPolygon.pop_back();
+				}
+
 				idxPrev = idx;
 				idx = idxNext;
 
-			} while( vertexTraceID[idx] != traceID );
+			} while( !willFormLoop );
 
 			assert( localPolygon.size() >= 3 );
 			//if( localPolygon.size() < 3 ) {
@@ -584,15 +597,8 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 		// I think they never can be seen (not sure)
 		if( !mQuadNode ) {
 			
-			// push vertices for another side (but no triangles)
 			int nverts = mVB.size();
 			int npolygon = polygon.size();
-			for( i = 0; i < nverts; ++i ) {
-				SVertexXyzNormal vtx = mVB[i];
-				vtx.p -= vtx.n * (HALF_THICK*2);
-				vtx.n = -vtx.n;
-				mVB.push_back( vtx );
-			}
 			// construct side caps
 			for( i = 0; i < nverts; ++i ) {
 				int oldIdx0 = polygon[i];
@@ -603,8 +609,12 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 				assert( idx1 >= 0 && idx1 < nverts );
 				SVertexXyzNormal v0 = mVB[idx0];
 				SVertexXyzNormal v1 = mVB[idx1];
-				SVertexXyzNormal v2 = mVB[idx0+nverts];
-				SVertexXyzNormal v3 = mVB[idx1+nverts];
+				SVertexXyzNormal v2 = v0;
+				SVertexXyzNormal v3 = v1;
+				v2.p -= v2.n * (HALF_THICK*2);
+				v3.p -= v3.n * (HALF_THICK*2);
+				v2.n = -v2.n;
+				v3.n = -v3.n;
 				SVector3 edge01 = v1.p - v0.p;
 				SVector3 edge02 = v2.p - v0.p;
 				SVector3 normal = edge01.cross( edge02 ).getNormalized();
@@ -613,12 +623,12 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 				mVB.push_back( v1 );
 				mVB.push_back( v2 );
 				mVB.push_back( v3 );
-				mIB.push_back( nverts*2 + i*4 + 0 );
-				mIB.push_back( nverts*2 + i*4 + 1 );
-				mIB.push_back( nverts*2 + i*4 + 2 );
-				mIB.push_back( nverts*2 + i*4 + 1 );
-				mIB.push_back( nverts*2 + i*4 + 3 );
-				mIB.push_back( nverts*2 + i*4 + 2 );
+				mIB.push_back( nverts + i*4 + 0 );
+				mIB.push_back( nverts + i*4 + 1 );
+				mIB.push_back( nverts + i*4 + 2 );
+				mIB.push_back( nverts + i*4 + 1 );
+				mIB.push_back( nverts + i*4 + 3 );
+				mIB.push_back( nverts + i*4 + 2 );
 			}
 		}
 
@@ -858,7 +868,7 @@ void CWall3D::update( float t )
 	if( !mPiecesInited )
 		initPieces();
 
-	const float RESTORE_TIME = 5.0f;
+	const float RESTORE_TIME = 500.0f;
 	if( t > mLastFractureTime + RESTORE_TIME ) {
 		// TODO: optimize!
 		int n = mWall2D.getPieceCount();
@@ -960,6 +970,9 @@ bool CWall3D::renderIntoVB()
 		nverts += nvb;
 		nindices += nib;
 	}
+
+	gWallVertCount += nverts;
+	gWallTriCount += nindices/3;
 
 	if( !nverts || !nindices )
 		return false;

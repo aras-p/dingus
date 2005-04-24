@@ -16,6 +16,8 @@ namespace wall_phys {
 		float	msColl;
 		float	msUpdate;
 		int		pieceCount;
+		int		vertexCount;
+		int		triCount;
 	};
 
 	void	initialize( float updDT, const SVector3& boundMin, const SVector3& boundMax );
