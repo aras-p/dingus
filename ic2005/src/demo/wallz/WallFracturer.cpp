@@ -6,6 +6,12 @@
 
 #include <dingus/utils/Random.h>
 
+
+static const int FRAC_RANDOM_SEED = 64827;
+static CRandom	gFracRandom;
+static bool		gFracRandomInited = false;
+
+
 // --------------------------------------------------------------------------
 
 
@@ -111,12 +117,12 @@ void CFracGrid::distort() {
 
 	int n = mRows * mCols;
 	for( int i = 0; i < n; ++ i ) {
-		int r = gRandom.getInt( 1, mRows-1 );
-		int c = gRandom.getInt( 1, mCols-1 );
+		int r = gFracRandom.getInt( 1, mRows-1 );
+		int c = gFracRandom.getInt( 1, mCols-1 );
 		int idx = r*mCols+c;
 		SVector2 pos = mNodes[idx] + SVector2(
-			gRandom.getFloat( -xmax, xmax ),
-			gRandom.getFloat( -ymax, ymax )
+			gFracRandom.getFloat( -xmax, xmax ),
+			gFracRandom.getFloat( -ymax, ymax )
 		);
 		changeNodePos( idx, pos );
 	}
@@ -129,9 +135,9 @@ void CFracGrid::combine()
 
 	int cmbn = n * 5;
 	for( int i = 0; i < cmbn; ++i ) {
-		int r = gRandom.getInt( 1, mElRows-1 );
+		int r = gFracRandom.getInt( 1, mElRows-1 );
 		assert( r >= 1 && r < mElRows-1 );
-		int c = gRandom.getInt( 1, mElCols-1 );
+		int c = gFracRandom.getInt( 1, mElCols-1 );
 		assert( c >= 1 && c < mElCols-1 );
 
 		int idx = r*mElCols+c;
@@ -144,7 +150,7 @@ void CFracGrid::combine()
 
 		// attach 2 elements to this
 		for( int z = 0; z < 2; ++z ) {
-			int dir = gRandom.getInt() & 3;
+			int dir = gFracRandom.getInt() & 3;
 			static int dr[4] = { -1, 0, 1, 0 };
 			static int dc[4] = { 0, -1, 0, 1 };
 			int idx2 = idx + dr[dir]*mElCols + dc[dir];
@@ -344,6 +350,11 @@ void CFracGrid::elemToPiece( int er, int ec, int eidx, CWall2D& pieces, int* ver
 
 void wallFractureCompute( CWall2D& wall )
 {
+	if( !gFracRandomInited ) {
+		gFracRandom.seed( FRAC_RANDOM_SEED );
+		gFracRandomInited = true;
+	}
+
 	CFracGrid* fracGrid = 0;
 	int cols = wall.getSize().x / wall.getSmallestElemSize();
 	int rows = wall.getSize().y / wall.getSmallestElemSize();
