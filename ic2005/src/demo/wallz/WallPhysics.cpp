@@ -115,12 +115,11 @@ void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector
 }
 
 
-int wall_phys::addWall( const CWall3D& wall )
+void wall_phys::addWall( const CWall3D& wall )
 {
 	physics::addPlane( wall.getMatrix() );
 
 	walls.push_back( &wall );
-	return walls.size()-1;
 }
 
 

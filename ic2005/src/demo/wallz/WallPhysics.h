@@ -22,8 +22,7 @@ namespace wall_phys {
 
 	void	initialize( float updDT, const SVector3& boundMin, const SVector3& boundMax );
 
-	/// @return wall's ID
-	int		addWall( const CWall3D& wall );
+	void	addWall( const CWall3D& wall );
 
 	void	shutdown();
 

@@ -158,13 +158,8 @@ CPostProcess*	gPPReflBlur;
 
 
 
-const bool WALLS_ACTIVE[CFACE_COUNT] = {
-	//true, true, false, false, true, true,
-	true, true, true, true, true, true,
-};
 CWall3D*			gWalls[CFACE_COUNT];
 std::vector<int>	gMousePieces[CFACE_COUNT];
-int					gWallIDs[CFACE_COUNT];
 
 int		gWallVertCount, gWallTriCount;
 
@@ -514,19 +509,19 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		wm.getOrigin().set( ROOM_MIN.x, ROOM_MIN.y, ROOM_MIN.z );
 		gWalls[CFACE_NZ]->setMatrix( wm );
 
+		gReadFractureScenario( "data/fractures.txt" );
+
 		for( i = 0; i < CFACE_COUNT; ++i )
 			wallFractureCompute( gWalls[i]->getWall2D() );
 
 		wall_phys::initialize( PHYS_UPDATE_DT, ROOM_MIN-SVector3(1.0f,1.0f,1.0f), ROOM_MAX+SVector3(1.0f,1.0f,1.0f) );
 
 		for( i = 0; i < CFACE_COUNT; ++i ) {
-			gWallIDs[i] = wall_phys::addWall( *gWalls[i] );
+			wall_phys::addWall( *gWalls[i] );
 		}
 
 		for( i = 0; i < CFACE_COUNT; ++i )
 			gWalls[i]->update( 0.0f );
-
-		gReadFractureScenario( "data/fractures.txt" );
 	}
 
 	if( !gNoPixelShaders ) {
@@ -622,11 +617,9 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 	if( msg == WM_LBUTTONDOWN ) {
 		gFetchMousePieces( true );
 		for( int i = 0; i < CFACE_COUNT; ++i ) {
-			if( !WALLS_ACTIVE[i] )
-				continue;
 			int n = gMousePieces[i].size();
 			for( int j = 0; j < n; ++j ) {
-				wall_phys::spawnPiece( gWallIDs[i], gMousePieces[i][j] );
+				wall_phys::spawnPiece( i, gMousePieces[i][j] );
 			}
 		}
 	}
@@ -821,11 +814,10 @@ void CDemo::perform()
 	
 	gBicas->update();
 	gBicasUser->update();
-	gUpdateFractureScenario( gCurrAnimFrame );
+	gUpdateFractureScenario( gCurrAnimFrame, animPlayTime, gWalls );
 
 	for( i = 0; i < CFACE_COUNT; ++i ) {
-		if( WALLS_ACTIVE[i] )
-			gWalls[i]->update( t );
+		gWalls[i]->update( animPlayTime );
 	}
 	
 	
@@ -860,8 +852,9 @@ void CDemo::perform()
 		maxMsColl = stats.msColl;
 	if( stats.msPhys > maxMsPhys && stats.pieceCount < MAGIC_COUNT )
 		maxMsPhys = stats.msPhys;
-	sprintf( buf, "fps=%.1f  phys: c=%.1f (%.1f) p=%.1f (%.1f) u=%.1f ms  pieces: %i",
+	sprintf( buf, "fps=%.1f  frame=%.1f  phys: c=%.1f (%.1f) p=%.1f (%.1f) u=%.1f ms  pieces: %i",
 		dx.getStats().getFPS(),
+		gCurrAnimFrame,
 		stats.msColl,
 		maxMsColl,
 		stats.msPhys,
@@ -905,16 +898,18 @@ void CDemo::perform()
 	dx.sceneEnd();
 
 	
-	CConsole::getChannel("system") << "wall geom: verts=" << gWallVertCount << " tris=" << gWallTriCount << endl;
-	CConsole::getChannel("system") << "phys geom: verts=" << stats.vertexCount << " tris=" << stats.triCount << endl;
-
 	static int maxVerts = 0;
 	if( gWallVertCount + stats.vertexCount > maxVerts )
 		maxVerts = gWallVertCount + stats.vertexCount;
 	static int maxTris = 0;
 	if( gWallTriCount + stats.triCount > maxTris )
 		maxTris = gWallTriCount + stats.triCount;
-	CConsole::getChannel("system") << "max: verts=" << maxVerts << " (" << int(maxVerts*sizeof(SVertexXyzDiffuse)) << ")  tris=" << maxTris << " (" << maxTris*2*3 << ")" << endl;
+
+	if( gShowStats ) {
+		CConsole::getChannel("system") << "wall geom: verts=" << gWallVertCount << " tris=" << gWallTriCount << endl;
+		CConsole::getChannel("system") << "phys geom: verts=" << stats.vertexCount << " tris=" << stats.triCount << endl;
+		CConsole::getChannel("system") << "max: verts=" << maxVerts << " (" << int(maxVerts*sizeof(SVertexXyzDiffuse)) << ")  tris=" << maxTris << " (" << maxTris*2*3 << ")" << endl;
+	}
 }
 
 
