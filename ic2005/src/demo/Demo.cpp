@@ -542,15 +542,21 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		gQuadBlur->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
 	}
 
+	double curTime = anim_time();
+	const double HACK_OFFSET_ANIM = -35.0;
+
+	gBicas->getAnimator().playDefaultAnim( curTime + HACK_OFFSET_ANIM );
+
 	gCamera.mWorldMat.identify();
-	gCameraAnimStartTime = anim_time();
+	gCameraAnimStartTime = curTime + HACK_OFFSET_ANIM;
 	gCameraAnim = RGET_ANIM("Camera");
 	gCameraAnimDuration = gGetAnimDuration( *gCameraAnim, false );
 
 	gCameraAnimPos = gCameraAnim->findVector3Anim("pos");
 	gCameraAnimRot = gCameraAnim->findQuatAnim("rot");
 	gCameraAnimParams = gCameraAnim->findVector3Anim("cam");
-	gAnimFrameCount = gCameraAnimPos->getLength() - 1;
+	
+	gAnimFrameCount = gCameraAnimPos->getLength();
 }
 
 
