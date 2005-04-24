@@ -312,8 +312,8 @@ namespace polygon_merger {
 				float bestAngle = 100.0f;
 				for( int i = 0; i < n; ++i ) {
 					int idx1 = vnext[i];
-					//if( idx1 != idxPrev && vertexTypes[idx1] != VTYPE_INTERIOR ) {
-					if( idx1 != idxPrev ) {
+					if( idx1 != idxPrev && vertexTypes[idx1] != VTYPE_INTERIOR ) {
+					//if( idx1 != idxPrev ) {
 						SVector2 currToNext = vb[idx1] - vb[idx];
 						float ang = signedAngle2D( prevToCurr, currToNext );
 						if( ang < bestAngle ) {
@@ -567,7 +567,7 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 
 		int nidx = ibFront.size();
 		mIB.reserve( nidx + polygon.size()*6 );
-		mVB.reserve( polygon.size()*5 );
+		mVB.reserve( polygon.size()*3 );
 
 		// construct the front side
 		for( i = 0; i < nidx; ++i ) {
@@ -587,6 +587,7 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 			}
 			mIB.push_back( newIdx );
 		}
+		// reverse the ordering of triangles
 		for( i = 0; i < nidx/3; ++i ) {
 			int iii = mIB[i*3+1];
 			mIB[i*3+1] = mIB[i*3+2];
@@ -599,36 +600,46 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 			
 			int nverts = mVB.size();
 			int npolygon = polygon.size();
-			// construct side caps
+			
+			// Construct side caps. To conserve the geometry amount,
+			// treat them as a single smoothing group.
 			for( i = 0; i < nverts; ++i ) {
 				int oldIdx0 = polygon[i];
 				int oldIdx1 = polygon[(i+1)%npolygon];
+				int oldIdx2 = polygon[(i+nverts-1)%npolygon];
 				int idx0 = vertRemap[oldIdx0];
 				int idx1 = vertRemap[oldIdx1];
+				int idx2 = vertRemap[oldIdx2];
 				assert( idx0 >= 0 && idx0 < nverts );
 				assert( idx1 >= 0 && idx1 < nverts );
+				assert( idx2 >= 0 && idx2 < nverts );
 				SVertexXyzNormal v0 = mVB[idx0];
-				SVertexXyzNormal v1 = mVB[idx1];
-				SVertexXyzNormal v2 = v0;
-				SVertexXyzNormal v3 = v1;
-				v2.p -= v2.n * (HALF_THICK*2);
-				v3.p -= v3.n * (HALF_THICK*2);
-				v2.n = -v2.n;
-				v3.n = -v3.n;
-				SVector3 edge01 = v1.p - v0.p;
-				SVector3 edge02 = v2.p - v0.p;
-				SVector3 normal = edge01.cross( edge02 ).getNormalized();
-				v0.n = v1.n = v2.n = v3.n = -normal;
+				SVertexXyzNormal v1 = v0;
+				v1.p -= v1.n * (HALF_THICK*2);
+
+
+				SVertexXyzNormal vnear1 = mVB[idx1];
+				SVertexXyzNormal vnear2 = mVB[idx2];
+
+				SVector3 edge1 = vnear2.p - vnear1.p;
+				SVector3 edge2 = v1.p - v0.p;
+				SVector3 normal = edge1.cross( edge2 ).getNormalized();
+
+				v0.n = v1.n = normal;
+				
 				mVB.push_back( v0 );
 				mVB.push_back( v1 );
-				mVB.push_back( v2 );
-				mVB.push_back( v3 );
-				mIB.push_back( nverts + i*4 + 0 );
-				mIB.push_back( nverts + i*4 + 1 );
-				mIB.push_back( nverts + i*4 + 2 );
-				mIB.push_back( nverts + i*4 + 1 );
-				mIB.push_back( nverts + i*4 + 3 );
-				mIB.push_back( nverts + i*4 + 2 );
+
+				int ibidx0 = nverts + i*2 + 0;
+				int ibidx1 = nverts + i*2 + 1;
+				int ibidx2 = nverts + ((i+1)%nverts)*2 + 0;
+				int ibidx3 = nverts + ((i+1)%nverts)*2 + 1;
+				mIB.push_back( ibidx0 );
+				mIB.push_back( ibidx2 );
+				mIB.push_back( ibidx1 );
+				mIB.push_back( ibidx1 );
+				mIB.push_back( ibidx2 );
+				mIB.push_back( ibidx3 );
 			}
 		}
 

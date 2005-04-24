@@ -50,6 +50,7 @@ namespace {
 	CRenderableIndexedBuffer*	renderable;
 	TVBChunk::TSharedPtr		vbChunk;
 	TIBChunk::TSharedPtr		ibChunk;
+	bool	needsRendering = false;
 	bool	renderIntoVB();
 
 
@@ -171,12 +172,14 @@ void wall_phys::update()
 	stats.msColl = physics::getStats().msColl;
 	stats.msPhys = physics::getStats().msPhys;
 	
-	renderIntoVB();
+	needsRendering = true;
 }
 
 namespace {
 bool renderIntoVB()
 {
+	needsRendering = false;
+
 	int nverts = 0, nindices = 0;
 	vbChunk = NULL;
 	ibChunk = NULL;
@@ -240,7 +243,8 @@ void wall_phys::render( eRenderMode rm )
 	if( rm != RM_NORMAL /*&& rm != RM_REFLECTED*/ )
 		return;
 
-	if( !vbChunk || !vbChunk->isValid() ||
+	if( needsRendering ||
+		!vbChunk || !vbChunk->isValid() ||
 		!ibChunk || !ibChunk->isValid() )
 	{
 		renderIntoVB();
