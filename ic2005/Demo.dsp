@@ -100,6 +100,14 @@ SOURCE=.\src\demo\wallz\AABox2.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\demo\wallz\FractureScenario.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\wallz\FractureScenario.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\demo\wallz\Physics.cpp
 # End Source File
 # Begin Source File

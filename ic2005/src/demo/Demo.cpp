@@ -28,6 +28,7 @@
 #include "wallz/WallPieces.h"
 #include "wallz/WallFracturer.h"
 #include "wallz/WallPhysics.h"
+#include "wallz/FractureScenario.h"
 
 
 // --------------------------------------------------------------------------
@@ -119,6 +120,9 @@ CAnimationBunch::TVector3Animation*	gCameraAnimPos;
 CAnimationBunch::TQuatAnimation*	gCameraAnimRot;
 CAnimationBunch::TVector3Animation*	gCameraAnimParams;
 
+double			gAnimFrameCount;
+double			gCurrAnimFrame;
+double			gCurrAnimAlpha;
 
 bool			gInteractiveMode;
 
@@ -518,6 +522,11 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		for( i = 0; i < CFACE_COUNT; ++i ) {
 			gWallIDs[i] = wall_phys::addWall( *gWalls[i] );
 		}
+
+		for( i = 0; i < CFACE_COUNT; ++i )
+			gWalls[i]->update( 0.0f );
+
+		gReadFractureScenario( "data/fractures.txt" );
 	}
 
 	if( !gNoPixelShaders ) {
@@ -546,6 +555,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gCameraAnimPos = gCameraAnim->findVector3Anim("pos");
 	gCameraAnimRot = gCameraAnim->findQuatAnim("rot");
 	gCameraAnimParams = gCameraAnim->findVector3Anim("cam");
+	gAnimFrameCount = gCameraAnimPos->getLength() - 1;
 }
 
 
@@ -732,35 +742,30 @@ static void gAnimateCamera()
 	gCamera.mWorldMat.identify();
 	gCamera.mWorldMat.getOrigin().set( 0, 1.0f, -3.0f );
 
-	double animPlayTime = anim_time() - gCameraAnimStartTime;
-	double t = animPlayTime / gCameraAnimDuration;
 
 	SVector3 camPos;
 	SQuaternion camRot;
 	SVector3 camParams;
 
-	double animLen = (gCameraAnimPos->getLength()-1);
-	double animFrame = t * animLen;
-
 	int c0idx = -1;
 	for( int i = 0; i < CAM_C0_FRAMES_SIZE; ++i ) {
 		float fr = CAM_C0_FRAMES[i]+CAM_C0_ADD;
-		if( animFrame >= fr-2 && animFrame <= fr ) {
+		if( gCurrAnimFrame >= fr-2 && gCurrAnimFrame <= fr ) {
 			c0idx = i;
 			break;
 		}
 	}
 	if( c0idx < 0 ) {
-		gCameraAnimPos->sample( t, 0, 1, &camPos );
-		gCameraAnimRot->sample( t, 0, 1, &camRot );
-		gCameraAnimParams->sample( t, 0, 1, &camParams );
+		gCameraAnimPos->sample( gCurrAnimAlpha, 0, 1, &camPos );
+		gCameraAnimRot->sample( gCurrAnimAlpha, 0, 1, &camRot );
+		gCameraAnimParams->sample( gCurrAnimAlpha, 0, 1, &camParams );
 	} else {
 		SVector3 pos1, pos2;
 		SQuaternion rot1, rot2;
 		SVector3 params1, params2;
-		double a1 = t - (3.0/animLen);
-		double a2 = t - (2.5/animLen);
-		double lerper = (t-a1) / (a2-a1);
+		double a1 = gCurrAnimAlpha - (3.0/gAnimFrameCount);
+		double a2 = gCurrAnimAlpha - (2.5/gAnimFrameCount);
+		double lerper = (gCurrAnimAlpha-a1) / (a2-a1);
 		gCameraAnimPos->sample( a1, 0, 1, &pos1 );
 		gCameraAnimPos->sample( a2, 0, 1, &pos2 );
 		gCameraAnimRot->sample( a1, 0, 1, &rot1 );
@@ -794,6 +799,9 @@ void CDemo::perform()
 	int i;
 	char buf[1000];
 
+	CDynamicVBManager::getInstance().discard();
+	CDynamicIBManager::getInstance().discard();
+
 	gPhysProcess.perform();
 	
 	G_INPUTCTX->perform();
@@ -802,19 +810,25 @@ void CDemo::perform()
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 	gTimeParam = float(t);
 
-	CDynamicVBManager::getInstance().discard();
-	CDynamicIBManager::getInstance().discard();
+
+	double animPlayTime = anim_time() - gCameraAnimStartTime;
+	gCurrAnimAlpha = animPlayTime / gCameraAnimDuration;
+	gCurrAnimFrame = gCurrAnimAlpha * gAnimFrameCount;
+
+
 
 	gWallVertCount = gWallTriCount = 0;
 	
 	gBicas->update();
 	gBicasUser->update();
+	gUpdateFractureScenario( gCurrAnimFrame );
+
 	for( i = 0; i < CFACE_COUNT; ++i ) {
 		if( WALLS_ACTIVE[i] )
 			gWalls[i]->update( t );
 	}
 	
-
+	
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 	
