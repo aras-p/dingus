@@ -38,7 +38,7 @@ technique tec0
 		PixelShader = compile ps_2_0 psMain();
 		FVF = Xyz | Diffuse;
 
-		//FillMode = Wireframe;
+		FillMode = Wireframe;
 	}
 	pass PLast {
 		FillMode = Solid;

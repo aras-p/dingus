@@ -58,9 +58,9 @@ void CSystem::setupBundles( const std::string& dataPath, dingus::CReloadableBund
 	CAnimationBundle::getInstance().addDirectory( dataPath + "anim/" );
 	CModelDescBundle::getInstance().addDirectory( dataPath + "model/" );
 
-	CDynamicVBManager::initialize( 6 * 1024 * 1024 );
+	CDynamicVBManager::initialize( 3 * 1024 * 1024 );
 	CDynamicVBManager& vbManager = CDynamicVBManager::getInstance();
-	CDynamicIBManager::initialize( 2 * 1024 * 1024 );
+	CDynamicIBManager::initialize( (1024+512) * 1024 );
 	CDynamicIBManager& ibManager = CDynamicIBManager::getInstance();
 
 	//

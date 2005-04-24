@@ -269,14 +269,6 @@ SOURCE=.\data\fx\filterBloom.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\filterDilateX.fx
-# End Source File
-# Begin Source File
-
-SOURCE=.\data\fx\filterDilateY.fx
-# End Source File
-# Begin Source File
-
 SOURCE=.\data\fx\filterGaussX.fx
 # End Source File
 # Begin Source File
@@ -286,10 +278,6 @@ SOURCE=.\data\fx\filterGaussY.fx
 # Begin Source File
 
 SOURCE=.\data\fx\filterPoisson.fx
-# End Source File
-# Begin Source File
-
-SOURCE=.\data\fx\floor.fx
 # End Source File
 # Begin Source File
 
@@ -306,10 +294,6 @@ SOURCE=.\data\fx\skinCasterSimple.fx
 # Begin Source File
 
 SOURCE=.\data\fx\skinRefl.fx
-# End Source File
-# Begin Source File
-
-SOURCE=.\data\fx\skinZFill.fx
 # End Source File
 # Begin Source File
 
