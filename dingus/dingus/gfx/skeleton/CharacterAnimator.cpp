@@ -173,10 +173,10 @@ void CCharacterAnimator::setDefaultAnim( const CAnimationBunch& anim, float dura
 	mDefaultFadeInTime = fadeInTime;
 }
 
-void CCharacterAnimator::playDefaultAnim()
+void CCharacterAnimator::playDefaultAnim( double startTime )
 {
 	assert( mDefaultBunch );
-	playAnim( *mDefaultBunch, mDefaultDuration, mDefaultFadeInTime, false );
+	playAnim( *mDefaultBunch, mDefaultDuration, mDefaultFadeInTime, false, startTime );
 }
 
 bool CCharacterAnimator::isPlayingDefaultAnim() const

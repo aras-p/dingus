@@ -25,7 +25,7 @@ public:
 
 	void	playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot, double startTime = anim_time() );
 
-	void	playDefaultAnim();
+	void	playDefaultAnim( double startTime = anim_time() );
 
 	bool	isPlayingDefaultAnim() const;
 	bool	isPlayingOneShotAnim() const;
