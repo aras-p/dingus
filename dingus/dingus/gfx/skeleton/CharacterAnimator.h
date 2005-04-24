@@ -21,9 +21,9 @@ public:
 	~CCharacterAnimator();
 
 
-	void	playSynchAnims( const CAnimationBunch& bunch1, const CAnimationBunch& bunch2, float duration, float lerper, float fadeInTime );
+	void	playSynchAnims( const CAnimationBunch& bunch1, const CAnimationBunch& bunch2, float duration, float lerper, float fadeInTime, double startTime = anim_time() );
 
-	void	playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot );
+	void	playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot, double startTime = anim_time() );
 
 	void	playDefaultAnim();
 

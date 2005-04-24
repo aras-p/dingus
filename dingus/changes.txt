@@ -3,6 +3,7 @@ Dingus codenamed "IC2005 demo"
 ========
 
 050424: Dynamic geometry buffers issue warning when reached full capacity.
+		Character animator can start anims not only from current time.
 050422: Removed old unused GUI stuff from gfx/gui.
 		Removed hierarchy context/nodes. Unused crap :)
 		3dsMax 5/6 mesh/animation exporters added to the repository.

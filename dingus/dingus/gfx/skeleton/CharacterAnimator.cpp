@@ -70,7 +70,7 @@ void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, float
 
 
 
-void CCharacterAnimator::playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot )
+void CCharacterAnimator::playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot, double startTime )
 {
 	setNumCurves( bunch.getCurveCount() );
 
@@ -80,7 +80,6 @@ void CCharacterAnimator::playAnim( const CAnimationBunch& bunch, float duration,
 
 	// setup current state to play single anim and push it
 	SSynchAnimState as;
-	float startTime = anim_time();
 	as.anims[0].setupState( &bunch, startTime, duration, mNumCurves, mHasScale3 );
 	as.anims[1].setupState( NULL, startTime, duration, mNumCurves, mHasScale3 );
 	as.fadeIn = fadeInTime;
@@ -91,7 +90,7 @@ void CCharacterAnimator::playAnim( const CAnimationBunch& bunch, float duration,
 }
 
 
-void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CAnimationBunch& bunch2, float duration, float lerper, float fadeInTime )
+void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CAnimationBunch& bunch2, float duration, float lerper, float fadeInTime, double startTime )
 {
 	assert( bunch1.getCurveCount() == bunch2.getCurveCount() );
 	setNumCurves( bunch1.getCurveCount() );
@@ -149,13 +148,11 @@ void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CA
 
 	} else {
 		// both anims are new, setup them
-		float t = anim_time();
-		float startTime;
 		if( wasPlayingSynch ) {
+			float t = anim_time();
 			float relPlayTime = asCurr->anims[0].posStream->getRelTime( t );
 			startTime = t - relPlayTime * duration;
-		} else
-			startTime = t;
+		}
 		asCurr->anims[0].setupState( &bunch1, startTime, duration, mNumCurves, mHasScale3 );
 		asCurr->anims[1].setupState( &bunch2, startTime, duration, mNumCurves, mHasScale3 );
 
