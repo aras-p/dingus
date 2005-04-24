@@ -543,7 +543,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	}
 
 	double curTime = anim_time();
-	const double HACK_OFFSET_ANIM = -35.0;
+	//const double HACK_OFFSET_ANIM = -40.0;
+	const double HACK_OFFSET_ANIM = 0.0;
 
 	gBicas->getAnimator().playDefaultAnim( curTime + HACK_OFFSET_ANIM );
 
@@ -723,7 +724,8 @@ void CDemo::onInputStage()
 
 
 static const float CAM_C0_FRAMES[] = {
-	-14, 372, 502, 630, 1056, 1144, 1287,
+	-619-150, -476-150, -79-150, 
+	372, 502, 630, 1056, 1144, 1287,
 	1390, 1680, 2070,
 	2162, 2433, 2497, 2562, 2669, 2722,
 	2836, 3018, 3152, 3216, 3247, 3339,
@@ -732,8 +734,7 @@ static const float CAM_C0_FRAMES[] = {
 	5154, 5252, 5347, 5554, 
 };
 static const int CAM_C0_FRAMES_SIZE = sizeof(CAM_C0_FRAMES) / sizeof(CAM_C0_FRAMES[0]);
-static const int CAM_C0_ADD = 100;
-
+static const int CAM_C0_ADD = 950;
 
 
 static void gAnimateCamera()

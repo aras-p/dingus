@@ -27,6 +27,9 @@ double	lastUpdateFrame = -1.0;
 };
 
 
+static const int ANIM_FRAME_OFFSET = 950;
+
+
 void gReadFractureScenario( const char* fileName )
 {
 	FILE* f = fopen( fileName, "rt" );
@@ -43,7 +46,7 @@ void gReadFractureScenario( const char* fileName )
 				SFracParams ep;
 				int frm;
 				fscanf( f, "%i %f %f %f %f\n", &frm, &ep.pos.x, &ep.pos.y, &ep.pos.z, &ep.radius );
-				ep.frame = frm + 100; // TBD
+				ep.frame = frm + ANIM_FRAME_OFFSET;
 				fracParams.push_back( ep );
 			}
 			break;
@@ -53,8 +56,8 @@ void gReadFractureScenario( const char* fileName )
 				SRestoreParams ep;
 				int frm0, frm1;
 				fscanf( f, "%i %i\n", &frm0, &frm1 );
-				ep.frame0 = frm0 + 100;
-				ep.frame1 = frm1 + 100;
+				ep.frame0 = frm0 + ANIM_FRAME_OFFSET;
+				ep.frame1 = frm1 + ANIM_FRAME_OFFSET;
 			}
 			break;
 		default:
