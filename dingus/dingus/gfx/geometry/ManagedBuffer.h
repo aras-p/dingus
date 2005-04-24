@@ -42,12 +42,16 @@ public:
 			CConsoleChannel& ch = CConsole::CON_WARNING;
 			ch << "DynaBuffer: too much requested for lock" << endl;
 			ch << "req bytes=" << byteCount << ", capacity bytes=" << mCapacityBytes << endl;
-			ch << "req verts=" << count << ", capacity verts=" << mCapacityBytes/stride << endl;
+			ch << "req elems=" << count << ", capacity elems=" << mCapacityBytes/stride << endl;
 			return TChunkPtr();
 		}
 		int modulo = mUsedBytes%stride;
 		int byteStart = mUsedBytes + (modulo ? (stride-modulo) : 0);
 		if( byteStart + byteCount > mCapacityBytes ) {
+			CConsoleChannel& ch = CConsole::CON_WARNING;
+			ch << "DynaBuffer: filled, discarding" << endl;
+			ch << "req bytes=" << byteCount << ", capacity bytes=" << mCapacityBytes << endl;
+			ch << "req elems=" << count << ", capacity elems=" << mCapacityBytes/stride << endl;
 			discard();
 			byteStart = 0;
 		}
