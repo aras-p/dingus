@@ -364,6 +364,18 @@ void gRenderWallReflections()
 // Initialization
 
 
+static void gStartDemoAnim()
+{
+	double curTime = anim_time();
+	//const double HACK_OFFSET_ANIM = -40.0;
+	const double HACK_OFFSET_ANIM = 0.0;
+
+	gBicas->getAnimator().playDefaultAnim( curTime + HACK_OFFSET_ANIM );
+
+	gCameraAnimStartTime = curTime + HACK_OFFSET_ANIM;
+}
+
+
 void CDemo::initialize( IDingusAppContext& appContext )
 {
 	int i;
@@ -542,14 +554,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		gQuadBlur->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
 	}
 
-	double curTime = anim_time();
-	//const double HACK_OFFSET_ANIM = -40.0;
-	const double HACK_OFFSET_ANIM = 0.0;
-
-	gBicas->getAnimator().playDefaultAnim( curTime + HACK_OFFSET_ANIM );
-
 	gCamera.mWorldMat.identify();
-	gCameraAnimStartTime = curTime + HACK_OFFSET_ANIM;
 	gCameraAnim = RGET_ANIM("Camera");
 	gCameraAnimDuration = gGetAnimDuration( *gCameraAnim, false );
 
@@ -558,6 +563,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gCameraAnimParams = gCameraAnim->findVector3Anim("cam");
 	
 	gAnimFrameCount = gCameraAnimPos->getLength();
+
+	gStartDemoAnim();
 }
 
 
@@ -724,7 +731,7 @@ void CDemo::onInputStage()
 
 
 static const float CAM_C0_FRAMES[] = {
-	-619-150, -476-150, -79-150, 
+	-619-150, -476-150, -82-150, 
 	372, 502, 630, 1056, 1144, 1287,
 	1390, 1680, 2070,
 	2162, 2433, 2497, 2562, 2669, 2722,
@@ -916,6 +923,17 @@ void CDemo::perform()
 		CConsole::getChannel("system") << "wall geom: verts=" << gWallVertCount << " tris=" << gWallTriCount << endl;
 		CConsole::getChannel("system") << "phys geom: verts=" << stats.vertexCount << " tris=" << stats.triCount << endl;
 		CConsole::getChannel("system") << "max: verts=" << maxVerts << " (" << int(maxVerts*sizeof(SVertexXyzDiffuse)) << ")  tris=" << maxTris << " (" << maxTris*2*3 << ")" << endl;
+	}
+
+
+	static bool animActuallyStarted = false;
+	if( !animActuallyStarted ) {
+		gStartDemoAnim();
+		animActuallyStarted = true;
+	}
+
+	if( gCurrAnimAlpha >= 1.0 ) {
+		gFinished = true;
 	}
 }
 
