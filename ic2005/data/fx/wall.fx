@@ -52,7 +52,7 @@ technique tecFFP
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = NULL;
-		FVF = Xyz | Normal | Diffuse;
+		FVF = Xyz | Diffuse;
 
 		FillMode = Wireframe;
 
