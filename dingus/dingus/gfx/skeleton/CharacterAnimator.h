@@ -9,6 +9,7 @@
 #include "../../animator/AnimationBunch.h"
 #include "../../animator/AnimStream.h"
 #include "../../animator/AnimImmediateMixer.h"
+#include "../../utils/Timer.h"
 #include "../../utils/ringdeque.h"
 
 namespace dingus {
@@ -21,11 +22,11 @@ public:
 	~CCharacterAnimator();
 
 
-	void	playSynchAnims( const CAnimationBunch& bunch1, const CAnimationBunch& bunch2, float duration, float lerper, float fadeInTime, double startTime = anim_time() );
+	void	playSynchAnims( const CAnimationBunch& bunch1, const CAnimationBunch& bunch2, float duration, float lerper, float fadeInTime, time_value startTime, time_value curTime );
 
-	void	playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot, double startTime = anim_time() );
+	void	playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot, time_value startTime );
 
-	void	playDefaultAnim( double startTime = anim_time() );
+	void	playDefaultAnim( time_value startTime );
 
 	bool	isPlayingDefaultAnim() const;
 	bool	isPlayingOneShotAnim() const;
@@ -41,7 +42,7 @@ public:
 	/**
 	 *  Evaluates animations, computes local transforms.
 	 */
-	void	updateLocal();
+	void	updateLocal( time_value curTime );
 	/**
 	 *  Computes world transforms from current local transforms.
 	 */
@@ -76,7 +77,7 @@ private:
 	struct SAnimState {
 		SAnimState() : bunch(0), posStream(0), rotStream(0), scale3Stream(0) { }
 
-		void	setupState( const CAnimationBunch* b, float startTime, float duration, float numCurves, bool& hasScale );
+		void	setupState( const CAnimationBunch* b, time_value startTime, float duration, float numCurves, bool& hasScale );
 		void	resetState() { bunch = NULL; posStream=0; rotStream=0; scale3Stream=0; }
 
 		const CAnimationBunch*			bunch;
@@ -99,10 +100,11 @@ private:
 	typedef ringdeque<SSynchAnimState,4>		TAnimHistoryDeque;
 
 private:
-	/// Root matrix
+	/// Root matrix.
 	SMatrix4x4	mRootMatrix;
 
 	TAnimHistoryDeque	mAnims;
+
 
 	const CAnimationBunch*	mDefaultBunch;
 	float			mDefaultDuration;

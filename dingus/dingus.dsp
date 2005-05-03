@@ -116,10 +116,6 @@ SOURCE=.\dingus\animator\AnimStream.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\dingus\animator\AnimTime.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\dingus\animator\SampledAnimation.h
 # End Source File
 # End Group

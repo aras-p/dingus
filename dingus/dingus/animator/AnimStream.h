@@ -5,7 +5,10 @@
 #ifndef __ANIMATION_STREAM_H
 #define __ANIMATION_STREAM_H
 
-#include "AnimTime.h"
+#include "../utils/Timer.h"
+#include "Animation.h"
+#include "../math/Vector3.h"
+#include "../math/Quaternion.h"
 
 
 namespace dingus {
@@ -32,7 +35,7 @@ public:
 	typedef IAnimation<value_type> animation_type;
 	
 public:
-	CAnimStream( const animation_type& animation, float duration, int firstCurveIdx, int numCurves, float startTime = anim_time() )
+	CAnimStream( const animation_type& animation, float duration, int firstCurveIdx, int numCurves, time_value startTime )
 		: mAnimation( &animation )
 		, mDuration(duration)
 		, mOneOverDuration(1.0f/duration)
@@ -46,8 +49,8 @@ public:
 
 
 	float	getDuration() const { return mDuration; }
-	float	getStartTime() const { return mStartTime; }
-	float	getRelTime( float timenow = anim_time() ) const { return (timenow-mStartTime) * mOneOverDuration; }
+	time_value	getStartTime() const { return mStartTime; }
+	float	getRelTime( time_value timenow ) const { return (timenow-mStartTime).tosec() * mOneOverDuration; }
 	float	getOneOverDuration() const { return mOneOverDuration; }
 
 	int		getFirstCurveIndex() const { return mFirstCurveIndex; }
@@ -56,13 +59,12 @@ public:
 	void	setDuration( float d ) { mDuration = d; mOneOverDuration = 1.0f / d; }
 
 	/// Alters duration in such way so that animation keeps playing smoothly from current position.
-	void	adjustDuration( float d ) {
+	void	adjustDuration( float d, time_value timenow ) {
 		if( mDuration == d )
 			return;
-		float t = anim_time();
-		float relt = getRelTime( t );
+		float relt = getRelTime( timenow );
 		setDuration( d );
-		mStartTime = t - relt * d;
+		mStartTime = timenow - time_value::fromsec( relt * d );
 	}
 
 
@@ -71,18 +73,18 @@ public:
 	 *  @param dest Start of destination space.
 	 *  @param destStride Stride between adjacent values in bytes.
 	 */
-	void update( value_type* dest, int destStride = sizeof(value_type) ) const
+	void update( time_value timenow, value_type* dest, int destStride = sizeof(value_type) ) const
 	{
 		assert( mAnimation );
-		float t = getRelTime();
+		float t = getRelTime( timenow );
 		mAnimation->sample( t, mFirstCurveIndex, mNumCurves, dest, destStride );
 	}
 
 private:
 	const animation_type*	mAnimation;
+	time_value	mStartTime;
 	float	mDuration;
 	float	mOneOverDuration;
-	float	mStartTime;
 	int		mFirstCurveIndex;
 	int		mNumCurves;
 };

@@ -26,8 +26,10 @@ public:
 public:
 	explicit time_value( value_type v = 0 ) : value(v) { }
 
-	static time_value fromsec( float seconds ) { return time_value( value_type((double)seconds)*FREQ ); }
+	static time_value fromsec( float seconds ) { return time_value( value_type(((double)seconds)*FREQ) ); }
 	float tosec() const { return (float)value / FREQ; }
+
+	void	zero() { value = 0; }
 
 	void operator+=( const time_value& t ) { value += t.value; }
 	void operator-=( const time_value& t ) { value -= t.value; }

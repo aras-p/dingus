@@ -46,7 +46,7 @@ public:
 	void clearStreams() { mStreams.clear(); }
 
 	/// Blend the streams into provided destination array.
-	void update( int numCurves, value_type* dest, bool normalizeWeights, int destStride = sizeof(value_type) ) {
+	void update( time_value timenow, int numCurves, value_type* dest, bool normalizeWeights, int destStride = sizeof(value_type) ) {
 		int i, n = mStreams.size();
 
 		// no streams?
@@ -76,7 +76,7 @@ public:
 			if( streamWeight <= 0.0f )
 				continue;
 			// sample stream into scratch
-			s.mStream->update( &mScratchValues[0], sizeof(value_type) );
+			s.mStream->update( timenow, &mScratchValues[0], sizeof(value_type) );
 			// blend all or a subset of curves
 			char* destVal = reinterpret_cast<char*>(dest);
 			int ncrv = numCurves;

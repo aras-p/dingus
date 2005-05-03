@@ -45,7 +45,7 @@ void CCharacterAnimator::setNumCurves( int n )
 
 
 
-void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, float startTime, float duration, float numCurves, bool& hasScale )
+void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, time_value startTime, float duration, float numCurves, bool& hasScale )
 {
 	bunch = b;
 	if( b == NULL )
@@ -70,7 +70,7 @@ void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, float
 
 
 
-void CCharacterAnimator::playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot, double startTime )
+void CCharacterAnimator::playAnim( const CAnimationBunch& bunch, float duration, float fadeInTime, bool oneShot, time_value startTime )
 {
 	setNumCurves( bunch.getCurveCount() );
 
@@ -90,7 +90,7 @@ void CCharacterAnimator::playAnim( const CAnimationBunch& bunch, float duration,
 }
 
 
-void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CAnimationBunch& bunch2, float duration, float lerper, float fadeInTime, double startTime )
+void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CAnimationBunch& bunch2, float duration, float lerper, float fadeInTime, time_value startTime, time_value curTime )
 {
 	assert( bunch1.getCurveCount() == bunch2.getCurveCount() );
 	setNumCurves( bunch1.getCurveCount() );
@@ -115,43 +115,40 @@ void CCharacterAnimator::playSynchAnims( const CAnimationBunch& bunch1, const CA
 	if( asCurr->anims[0].bunch == &bunch1 && asCurr->anims[1].bunch == &bunch2 )
 	{
 		// if both bunches are still the same, then only adjust the duration
-		asCurr->anims[0].posStream->adjustDuration( duration );
-		asCurr->anims[0].rotStream->adjustDuration( duration );
-		asCurr->anims[1].posStream->adjustDuration( duration );
-		asCurr->anims[1].rotStream->adjustDuration( duration );
+		asCurr->anims[0].posStream->adjustDuration( duration, curTime );
+		asCurr->anims[0].rotStream->adjustDuration( duration, curTime );
+		asCurr->anims[1].posStream->adjustDuration( duration, curTime );
+		asCurr->anims[1].rotStream->adjustDuration( duration, curTime );
 
 	} else if( asCurr->anims[0].bunch == &bunch2 ) {
 		// previously 1st anim now is 2nd
 		// copy it to the to 2nd slot
 		asCurr->anims[1] = asCurr->anims[0];
-		asCurr->anims[1].posStream->adjustDuration( duration );
-		asCurr->anims[1].rotStream->adjustDuration( duration );
+		asCurr->anims[1].posStream->adjustDuration( duration, curTime );
+		asCurr->anims[1].rotStream->adjustDuration( duration, curTime );
 
 		// setup 1st slot
-		float t = anim_time();
-		float relPlayTime = asCurr->anims[1].posStream->getRelTime( t );
-		float startTime = t - relPlayTime * duration;
+		float relPlayTime = asCurr->anims[1].posStream->getRelTime( curTime );
+		startTime = curTime - time_value::fromsec( relPlayTime * duration );
 		asCurr->anims[0].setupState( &bunch1, startTime, duration, mNumCurves, mHasScale3 );
 
 	} else if( asCurr->anims[1].bunch == &bunch1 ) {
 		// previously 2nd anim now is 1st
 		// copy it to the to 1st slot
 		asCurr->anims[0] = asCurr->anims[1];
-		asCurr->anims[0].posStream->adjustDuration( duration );
-		asCurr->anims[0].rotStream->adjustDuration( duration );
+		asCurr->anims[0].posStream->adjustDuration( duration, curTime );
+		asCurr->anims[0].rotStream->adjustDuration( duration, curTime );
 
 		// setup 2nd slot
-		float t = anim_time();
-		float relPlayTime = asCurr->anims[0].posStream->getRelTime( t );
-		float startTime = t - relPlayTime * duration;
+		float relPlayTime = asCurr->anims[0].posStream->getRelTime( curTime );
+		startTime = curTime - time_value::fromsec( relPlayTime * duration );
 		asCurr->anims[1].setupState( &bunch2, startTime, duration, mNumCurves, mHasScale3 );
 
 	} else {
 		// both anims are new, setup them
 		if( wasPlayingSynch ) {
-			float t = anim_time();
-			float relPlayTime = asCurr->anims[0].posStream->getRelTime( t );
-			startTime = t - relPlayTime * duration;
+			float relPlayTime = asCurr->anims[0].posStream->getRelTime( curTime );
+			startTime = curTime - time_value::fromsec( relPlayTime * duration );
 		}
 		asCurr->anims[0].setupState( &bunch1, startTime, duration, mNumCurves, mHasScale3 );
 		asCurr->anims[1].setupState( &bunch2, startTime, duration, mNumCurves, mHasScale3 );
@@ -173,7 +170,7 @@ void CCharacterAnimator::setDefaultAnim( const CAnimationBunch& anim, float dura
 	mDefaultFadeInTime = fadeInTime;
 }
 
-void CCharacterAnimator::playDefaultAnim( double startTime )
+void CCharacterAnimator::playDefaultAnim( time_value startTime )
 {
 	assert( mDefaultBunch );
 	playAnim( *mDefaultBunch, mDefaultDuration, mDefaultFadeInTime, false, startTime );
@@ -190,7 +187,7 @@ bool CCharacterAnimator::isPlayingOneShotAnim() const
 }
 
 
-void CCharacterAnimator::updateLocal()
+void CCharacterAnimator::updateLocal( time_value curTime )
 {
 	// if no animation - bail out
 	if( !mCurrAnim )
@@ -205,16 +202,15 @@ void CCharacterAnimator::updateLocal()
 	mScale3Mixer->clearStreams();
 
 
-	float curTime = anim_time();
-
 	const SSynchAnimState* stateCurr = &mAnims.back();
 
 	if( stateCurr->oneShot ) {
-		float curPlayTime = curTime - stateCurr->anims[0].posStream->getStartTime();
+		time_value curPlayTime = curTime - stateCurr->anims[0].posStream->getStartTime();
+		float curPlayTimeS = curPlayTime.tosec();
 		float curDuration = stateCurr->anims[0].posStream->getDuration();
-		if( curPlayTime >= curDuration - mDefaultFadeInTime ) {
-			playDefaultAnim();
-			curPlayTime = 0.0f;
+		if( curPlayTimeS >= curDuration - mDefaultFadeInTime ) {
+			playDefaultAnim( curTime );
+			curPlayTime.zero();
 			stateCurr = &mAnims.back();
 		}
 	}
@@ -229,9 +225,10 @@ void CCharacterAnimator::updateLocal()
 		float baseWeight = accumWeight;
 		if( animIdx > 0 ) {
 			const SSynchAnimState& asprev = mAnims[animIdx-1];
-			float curPlayTime = curTime - ascurr.anims[0].posStream->getStartTime();
+			time_value curPlayTime = curTime - ascurr.anims[0].posStream->getStartTime();
+			float curPlayTimeS = curPlayTime.tosec();
 			float fadeInTime = ascurr.fadeIn;
-			float fadeLerp = curPlayTime / fadeInTime;
+			float fadeLerp = curPlayTimeS / fadeInTime;
 			if( fadeLerp >= 1.0f ) {
 				fadeLerp = 1.0f;
 				if( animIdx == nhistory-1 ) {
@@ -269,10 +266,10 @@ void CCharacterAnimator::updateLocal()
 	}
 
 	// mix the streams
-	mPosMixer->update( mNumCurves, &mBoneLocalPos[0], true );
-	mRotMixer->update( mNumCurves, &mBoneLocalRot[0], true );
+	mPosMixer->update( curTime, mNumCurves, &mBoneLocalPos[0], true );
+	mRotMixer->update( curTime, mNumCurves, &mBoneLocalRot[0], true );
 	if( mHasScale3 )
-		mScale3Mixer->update( mNumCurves, &mBoneLocalScale[0], true );
+		mScale3Mixer->update( curTime, mNumCurves, &mBoneLocalScale[0], true );
 
 	
 	//
