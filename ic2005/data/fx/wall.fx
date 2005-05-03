@@ -1,6 +1,6 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
-
+#include "lib/commonWalls.fx"
 
 texture		tRefl;
 sampler2D	smpRefl = sampler_state {
@@ -12,21 +12,16 @@ sampler2D	smpRefl = sampler_state {
 
 SPosColTexp2 vsMain( SPosCol i ) {
 	SPosColTexp2 o;
-
-	float3 tolight = normalize( vLightPos - i.pos.xyz );
 	o.pos = mul( i.pos, mViewProj );
-
 	o.uvp[0] = mul( i.pos, mShadowProj );
 	o.uvp[1] = mul( i.pos, mViewTexProj );
-
-	float diffuse = max( 0.0, dot( tolight, i.color.xyz*2-1 ) );
-	o.color = diffuse * 0.6 + 0.4;
+	o.color = gWallLight( i.pos.xyz, i.color.xyz*2-1 );
 	return o;
 }
 
 half4 psMain( SPosColTexp2 i ) : COLOR {
 	half3 col = tex2Dproj( smpShadow, i.uvp[0] ) * i.color;
-	col += tex2Dproj( smpRefl, i.uvp[1] ) * 0.2;
+	col += tex2Dproj( smpRefl, i.uvp[1] ) * 0.15;
 	return half4( col, 1 );
 }
 

@@ -1,6 +1,7 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
 #include "lib/skinning.fx"
+#include "lib/commonWalls.fx"
 
 int			iBones;
 
@@ -21,13 +22,8 @@ SPosColTexp vsMain0( SInput0 i ) {
 	o.pos.xyz = mul( i.pos, skin ); // world pos
 	float3 n = mul( i.normal*2-1, (float3x3)skin );
 
-	float3 tolight = normalize( vLightPos - o.pos.xyz );
-
 	o.uvp = mul( i.pos, mShadowProj );
-
-	float diffuse = max( 0.0, dot( tolight, n ) );
-	o.color = diffuse * 0.6 + 0.4;
-
+	o.color = gWallLight( o.pos.xyz, n );
 	o.pos = mul( o.pos, mViewProj );
 
 	return o;

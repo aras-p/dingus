@@ -1,16 +1,13 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
+#include "lib/commonWalls.fx"
 
 
 SPosColTexp vsMain( SPosN i ) {
 	SPosColTexp o;
-	float3 tolight = normalize( vLightPos - i.pos.xyz );
 	o.pos = mul( i.pos, mViewProj );
-
 	o.uvp = mul( i.pos, mShadowProj );
-
-	float diffuse = max( 0.0, dot( tolight, i.normal*2-1 ) );
-	o.color = diffuse * 0.6 + 0.4;
+	o.color = gWallLight( i.pos.xyz, i.normal*2-1 );
 	return o;
 }
 
