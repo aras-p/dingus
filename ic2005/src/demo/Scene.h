@@ -10,7 +10,6 @@ class CControllableCharacter;
 class CThirdPersonCameraController;
 class CSceneSharedStuff;
 
-
 // --------------------------------------------------------------------------
 
 class CScene : public boost::noncopyable {
@@ -77,6 +76,9 @@ private:
 	// bed
 	CMeshEntity*			mBedStatic;
 	CComplexStuffEntity*	mBedAnim;
+
+	// outside room
+	TEntityVector			mRoom;
 };
 
 

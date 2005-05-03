@@ -296,6 +296,10 @@ SOURCE=.\src\system\System.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\data\fx\lib\commonWalls.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\lib\defines.fx
 # End Source File
 # Begin Source File

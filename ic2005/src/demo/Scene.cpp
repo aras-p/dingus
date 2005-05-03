@@ -45,6 +45,40 @@ void CScene::update( time_value demoTime, float dt )
 
 // --------------------------------------------------------------------------
 
+#include <dingus/lua/LuaSingleton.h>
+#include <dingus/lua/LuaHelper.h>
+#include <dingus/lua/LuaIterator.h>
+
+
+static bool gReadScene( const char* fileName, std::vector<CMeshEntity*> scene )
+{
+	CLuaSingleton& lua = CLuaSingleton::getInstance();
+	int errorCode = lua.doFile( fileName, false );
+	if( errorCode )
+		return false;
+	
+	// iterate scene table
+	CLuaValue luaScene = lua.getGlobal("scene");
+	CLuaArrayIterator itScene( luaScene );
+	while( itScene.hasNext() ) {
+		CLuaValue& luaObj = itScene.next();
+
+		std::string name = CLuaHelper::getString( luaObj, "name" );
+		SVector3 pos = CLuaHelper::getVector3( luaObj, "pos" );
+		SQuaternion rot = CLuaHelper::getQuaternion( luaObj, "rot" );
+
+		CMeshEntity* obj = new CMeshEntity( name );
+		obj->mWorldMat = SMatrix4x4( pos, rot );
+		scene.push_back( obj );
+	}
+	luaScene.discard();
+
+	return true;
+}
+
+
+// --------------------------------------------------------------------------
+
 static const float BED_FRACTURE_FRAME = 831 + 800;
 
 
@@ -60,11 +94,16 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
 
+	// bed
 	mBedStatic = new CMeshEntity( "Bed" );
 	addEntity( *mBedStatic );
 	mBedAnim = new CComplexStuffEntity( "BedPieces", "BedAnim" );
 	addAnimEntity( *mBedAnim );
 
+	// room
+	gReadScene( "data/scene.lua", mRoom );
+
+	// fracture scenario
 	gReadFractureScenario( "data/fractures.txt" );
 
 	// camera anim
@@ -86,6 +125,7 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 
 CSceneMain::~CSceneMain()
 {
+	stl_utils::wipe( mRoom );
 }
 
 
@@ -182,6 +222,12 @@ void CSceneMain::render( eRenderMode renderMode )
 	mSharedStuff->renderWalls( renderMode );
 
 	mCharacter->render( renderMode );
+
+	int i, n;
+	n = mRoom.size();
+	for( i = 0; i < n; ++i ) {
+		mRoom[i]->render( renderMode );
+	}
 
 	if( mCurrAnimFrame < BED_FRACTURE_FRAME )
 		mBedStatic->render( renderMode );
