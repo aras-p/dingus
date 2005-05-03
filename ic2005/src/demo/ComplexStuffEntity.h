@@ -26,7 +26,7 @@ public:
 	~CComplexStuffEntity();
 
 	void	render( eRenderMode renderMode );
-	void	update();
+	void	update( time_value timenow );
 
 	const SMatrix4x4& getWorldMatrix() const { return mAnimator->getRootMatrix(); }
 	SMatrix4x4& getWorldMatrix() { return mAnimator->getRootMatrix(); }

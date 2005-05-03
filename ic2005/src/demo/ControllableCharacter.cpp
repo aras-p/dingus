@@ -80,7 +80,7 @@ CControllableCharacter::CControllableCharacter( float minX, float minZ, float ma
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03c"), 0 ) );
 
 	getAnimator().setDefaultAnim( *mAnimsIdle[0].anim, mAnimsIdle[0].duration, 0.5f );
-	getAnimator().playDefaultAnim();
+	getAnimator().playDefaultAnim( CSystemTimer::getInstance().getTime() );
 }
 
 
@@ -102,7 +102,7 @@ notes:
 
 */
 
-void	CControllableCharacter::move( float accel, char* debugBuf )
+void	CControllableCharacter::move( float accel, time_value timenow )
 {
 	if( getAnimator().isPlayingOneShotAnim() )
 		return;
@@ -176,10 +176,9 @@ void	CControllableCharacter::move( float accel, char* debugBuf )
 	SAnimParams *anim1, *anim2;
 
 	if( anim1Idx < 0 || anim2Idx < 0 ) {
-		sprintf( debugBuf, "spd=%.2f (%.2f)", realVelocity, mMoveVelocity );
 
 		if( !getAnimator().isPlayingDefaultAnim() )
-			getAnimator().playDefaultAnim();
+			getAnimator().playDefaultAnim( timenow );
 
 	} else {
 
@@ -198,10 +197,7 @@ void	CControllableCharacter::move( float accel, char* debugBuf )
 			lerper = 0.0f;
 		duration = anim1->duration + lerper * (anim2->duration - anim1->duration);
 
-		sprintf( debugBuf, "spd=%.2f (%.2f), a1=%i a2=%i, lerp=%.2f,  dur=%.2f (a1=%.2f a2=%.2f)",
-			realVelocity, mMoveVelocity, anim1Idx, anim2Idx, lerper, duration, anim1->duration, anim2->duration );
-
-		getAnimator().playSynchAnims( *anim1->anim, *anim2->anim, duration, lerper, 0.3f );
+		getAnimator().playSynchAnims( *anim1->anim, *anim2->anim, duration, lerper, 0.3f, timenow, timenow );
 	}
 }
 
@@ -222,13 +218,13 @@ void	CControllableCharacter::rotate( float targetSpeed )
 	getWorldMatrix() = mr * getWorldMatrix();
 }
 
-void CControllableCharacter::attack()
+void CControllableCharacter::attack( time_value timenow )
 {
 	if( getAnimator().isPlayingOneShotAnim() )
 		return;
 
 	int idx = gRandom.getInt() % mAnimsAttack.size();
-	getAnimator().playAnim( *mAnimsAttack[idx].anim, mAnimsAttack[idx].duration, 0.2f, true );
+	getAnimator().playAnim( *mAnimsAttack[idx].anim, mAnimsAttack[idx].duration, 0.2f, true, timenow );
 
 	mMoveVelocity = mMoveAccel = 0.0f;
 }

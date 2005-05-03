@@ -11,7 +11,7 @@ CComplexStuffEntity::CComplexStuffEntity( const char* name, const char* defaultA
 	CAnimationBunch& anim = *RGET_ANIM(defaultAnim);
 	float animDuration = gGetAnimDuration(anim,false);
 	mAnimator->setDefaultAnim( anim, animDuration, 0.1f );
-	mAnimator->playDefaultAnim();
+	mAnimator->playDefaultAnim( CSystemTimer::getInstance().getTime() );
 
 	CSkinMesh* skinMesh = RGET_SKIN( name );
 	mSkinUpdater = new CSkinUpdater( skinMesh->getSkeleton(), *mAnimator );
@@ -52,11 +52,9 @@ void CComplexStuffEntity::render( eRenderMode renderMode )
 		G_RENDERCTX->attach( *mMesh[renderMode] );
 }
 
-void CComplexStuffEntity::update()
+void CComplexStuffEntity::update( time_value timenow )
 {
-	// animate
-	mAnimator->updateLocal();
-	// any local animations here
+	mAnimator->updateLocal( timenow );
 	mAnimator->updateWorld();
 	mSkinUpdater->update();
 }

@@ -16,11 +16,19 @@ enum eRenderMode {
 	RMCOUNT
 };
 extern const char* RMODE_PREFIX[RMCOUNT];
+extern bool gNoPixelShaders;
 
 
 enum eCubeFaces {
 	CFACE_PX = 0, CFACE_NX, CFACE_PY, CFACE_NY, CFACE_PZ, CFACE_NZ, CFACE_COUNT
 };
+
+
+static const SVector3 ROOM_MIN = SVector3( -4.907f, 0.000f, -3.096f );
+static const SVector3 ROOM_MAX = SVector3(  4.820f, 3.979f,  4.726f );
+static const SVector3 ROOM_MID = (ROOM_MIN + ROOM_MAX)*0.5f;
+static const SVector3 ROOM_SIZE = (ROOM_MAX - ROOM_MIN);
+static const SVector3 ROOM_HSIZE = ROOM_SIZE*0.5f;
 
 
 // --------------------------------------------------------------------------
@@ -58,6 +66,9 @@ const float SZ_REFLBLUR_REL = 0.25f;
 #define RT_REFL_NY "reflny"
 #define RT_REFL_PZ "reflpz"
 #define RT_REFL_NZ "reflnz"
+
+
+static const char* WALL_TEXS[CFACE_COUNT] = { RT_REFL_PX, RT_REFL_NX, RT_REFL_PY, RT_REFL_NY, RT_REFL_PZ, RT_REFL_NZ };
 
 
 #endif

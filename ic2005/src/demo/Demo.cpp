@@ -6,29 +6,17 @@
 #include "Demo.h"
 #include "DemoResources.h"
 #include "Entity.h"
-#include "MeshEntity.h"
-#include "ComplexStuffEntity.h"
-#include "ControllableCharacter.h"
-#include "ThirdPersonCamera.h"
+#include "Scene.h"
+#include "SceneShared.h"
 
 #include <dingus/gfx/DebugRenderer.h>
 #include <dingus/gfx/GfxUtils.h>
 #include <dingus/utils/Random.h>
 #include <dingus/gfx/gui/Gui.h>
 #include <dingus/math/MathUtils.h>
-#include <dingus/math/Interpolation.h>
-#include <dingus/resource/MeshCreator.h>
 #include <dingus/gfx/geometry/DynamicVBManager.h>
 #include <dingus/gfx/geometry/DynamicIBManager.h>
 #include "PostProcess.h"
-
-#include <dingus/utils/FixedRateProcess.h>
-
-
-#include "wallz/WallPieces.h"
-#include "wallz/WallFracturer.h"
-#include "wallz/WallPhysics.h"
-#include "wallz/FractureScenario.h"
 
 
 // --------------------------------------------------------------------------
@@ -45,7 +33,7 @@ CDebugRenderer*	gDebugRenderer;
 int			gGlobalCullMode;	// global cull mode
 int			gGlobalFillMode;	// global fill mode
 SVector4	gScreenFixUVs;		// UV fixes for fullscreen quads
-float		gTimeParam;			// time parameter for effects
+//float		gTimeParam;			// time parameter for effects
 
 bool	gNoPixelShaders = false;
 
@@ -111,64 +99,43 @@ static void	gSetupGUI()
 // --------------------------------------------------------------------------
 // Demo variables
 
+// now THAT is a name :)
+enum eDemoScene {
+	SCENE_MAIN,
+	//SCENE_SCROLLER,
+	SCENE_INTERACTIVE,
+	SCENECOUNT
+};
 
-CCameraEntity		gCamera;
-CAnimationBunch*	gCameraAnim;
-double				gCameraAnimStartTime;
-double				gCameraAnimDuration;
-CAnimationBunch::TVector3Animation*	gCameraAnimPos;
-CAnimationBunch::TQuatAnimation*	gCameraAnimRot;
-CAnimationBunch::TVector3Animation*	gCameraAnimParams;
+CSceneSharedStuff*	gSceneShared;
 
-double			gAnimFrameCount;
-double			gCurrAnimFrame;
-double			gCurrAnimAlpha;
+// The Scenes (tm)
+CSceneMain*			gSceneMain;
+CSceneInteractive*	gSceneInt;
 
-bool			gInteractiveMode;
+int			gCurScene = SCENE_MAIN;
 
-CComplexStuffEntity*	gBicas;
-CControllableCharacter*	gBicasUser;
-int						gBicasSpineBone;
+
+// normally system timer, but controllable for debugging
+CTimer			gDemoTimer; 
+
 
 
 float		gMouseX; // from -1 to 1
 float		gMouseY; // from -1 to 1
 SVector3	gMouseRay;
 
-CThirdPersonCameraController*	gCameraController;
 
 
-const float PHYS_UPDATE_FREQ = 60.0f;
-const float PHYS_UPDATE_DT = 1.0f / PHYS_UPDATE_FREQ;
-
-
-
-static const SVector3 ROOM_MIN = SVector3( -4.907f, 0.000f, -3.096f );
-static const SVector3 ROOM_MAX = SVector3(  4.820f, 3.979f,  4.726f );
-static const SVector3 ROOM_MID = (ROOM_MIN + ROOM_MAX)*0.5f;
-static const SVector3 ROOM_SIZE = (ROOM_MAX - ROOM_MIN);
-static const SVector3 ROOM_HSIZE = ROOM_SIZE*0.5f;
-
-const char*		WALL_TEXS[CFACE_COUNT] = { RT_REFL_PX, RT_REFL_NX, RT_REFL_PY, RT_REFL_NY, RT_REFL_PZ, RT_REFL_NZ };
-
-CCameraEntity	gWallCamera;
 SMatrix4x4		gCameraViewProjMatrix;
 SMatrix4x4		gViewTexProjMatrix;
 CPostProcess*	gPPReflBlur;
 
 
-
-CWall3D*			gWalls[CFACE_COUNT];
-std::vector<int>	gMousePieces[CFACE_COUNT];
+//std::vector<int>	gMousePieces[CFACE_COUNT];
 
 int		gWallVertCount, gWallTriCount;
 
-
-fastvector<CMeshEntity*>	gPieces;
-
-static const float BED_FRACTURE_FRAME = 831 + 800;
-CMeshEntity*				gBedStatic;
-CComplexStuffEntity*		gBedAnim;
 
 
 CRenderableMesh*	gQuadGaussX;
@@ -193,28 +160,6 @@ public:
 };
 
 
-static void gRenderScene( eRenderMode rm )
-{
-	int i;
-	if( gInteractiveMode )
-		gBicasUser->render( rm );
-	else
-		gBicas->render( rm );
-	for( i = 0; i < gPieces.size(); ++i )
-		gPieces[i]->render( rm );
-
-	if( gCurrAnimFrame < BED_FRACTURE_FRAME )
-		gBedStatic->render( rm );
-	else
-		gBedAnim->render( rm );
-
-	for( i = 0; i < CFACE_COUNT; ++i ) {
-		gWalls[i]->render( rm );
-	}
-	
-	wall_phys::render( rm );
-}
-
 
 // --------------------------------------------------------------------------
 // Shadow mapping
@@ -228,17 +173,16 @@ SMatrix4x4		gSShadowProj;
 SVector3		gSLightPos = LIGHT_POS;
 
 
-
-void gShadowRender()
+void gShadowRender( CScene& scene )
 {
+	const SMatrix4x4* lightTargetMat = scene.getLightTargetMatrix();
+	if( !lightTargetMat )
+		return;
+
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
-	// target light at the guy
-	CComplexStuffEntity* targetEntity = gInteractiveMode ? gBicasUser : gBicas;
-
-	SVector3 lookAt = targetEntity->getAnimator().getBoneWorldMatrices()[gBicasSpineBone].getOrigin();
-	gSLight.initialize( LIGHT_POS, lookAt );
-
+	// target the light where needed
+	gSLight.initialize( LIGHT_POS, lightTargetMat->getOrigin() );
 
 	// Leave one texel padding...
 	D3DVIEWPORT9 vp;
@@ -260,7 +204,7 @@ void gShadowRender()
 	dx.getDevice().SetViewport( &vp );
 
 	dx.sceneBegin();
-	targetEntity->render( RM_CASTERSIMPLE );
+	scene.render( RM_CASTERSIMPLE );
 	G_RENDERCTX->applyGlobalEffect();
 
 	dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_GREATER );
@@ -272,20 +216,6 @@ void gShadowRender()
 	// process shadowmap
 	dx.setZStencil( NULL );
 
-	/*
-	// dilate shadowmap -> shadowblur
-	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
-	dx.sceneBegin();
-	G_RENDERCTX->attach( *gQuadDilateX );
-	G_RENDERCTX->perform();
-	dx.sceneEnd();
-	// dilate shadowblur -> shadowmap
-	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
-	dx.sceneBegin();
-	G_RENDERCTX->attach( *gQuadDilateY );
-	G_RENDERCTX->perform();
-	dx.sceneEnd();
-	*/
 	// gaussX shadowmap -> shadowblur
 	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
 	dx.sceneBegin();
@@ -308,12 +238,10 @@ void gShadowRender()
 	dx.sceneEnd();
 }
 
-
 // --------------------------------------------------------------------------
 // reflective walls
 
-
-void gRenderWallReflections()
+void gRenderWallReflections( CScene& scene )
 {
 	SVector3 planePos[CFACE_COUNT] = {
 		SVector3(ROOM_MAX.x,0,0), SVector3(ROOM_MIN.x,0,0),
@@ -328,6 +256,11 @@ void gRenderWallReflections()
 
 	int oldCull = gGlobalCullMode;
 	gGlobalCullMode = D3DCULL_CCW;
+
+
+	CCameraEntity& wallCam = gSceneShared->getWallCamera();
+	const CCameraEntity& camera = scene.getCamera();
+
 	
 	for( int currWall = 0; currWall < CFACE_COUNT; ++currWall ) {
 		//gWallMeshes[currWall]->updateWVPMatrices();
@@ -338,9 +271,9 @@ void gRenderWallReflections()
 		SMatrix4x4 reflectMat;
 		D3DXMatrixReflect( &reflectMat, &reflPlane );
 		
-		gWallCamera.mWorldMat = gCamera.mWorldMat * reflectMat;
-		gWallCamera.setProjFrom( gCamera );
-		gWallCamera.setOntoRenderContext();
+		wallCam.mWorldMat = camera.mWorldMat * reflectMat;
+		wallCam.setProjFrom( camera );
+		wallCam.setOntoRenderContext();
 
 		CD3DDevice& dx = CD3DDevice::getInstance();
 		dx.setRenderTarget( RGET_S_SURF(RT_REFLRT) );
@@ -348,7 +281,7 @@ void gRenderWallReflections()
 		dx.clearTargets( true, true, false, 0xFF000020, 1.0f );
 		dx.sceneBegin();
 		G_RENDERCTX->applyGlobalEffect();
-		gRenderScene( RM_REFLECTED );
+		scene.render( RM_REFLECTED );
 		G_RENDERCTX->perform();
 
 		dx.sceneEnd();
@@ -369,28 +302,12 @@ void gRenderWallReflections()
 	gGlobalCullMode = oldCull;
 }
 
-
 // --------------------------------------------------------------------------
 // Initialization
 
 
-static void gStartDemoAnim()
-{
-	double curTime = anim_time();
-	//const double HACK_OFFSET_ANIM = -40.0;
-	const double HACK_OFFSET_ANIM = 0.0;
-
-	gBicas->getAnimator().playDefaultAnim( curTime + HACK_OFFSET_ANIM );
-	gBedAnim->getAnimator().playDefaultAnim( curTime + BED_FRACTURE_FRAME/30.0 + HACK_OFFSET_ANIM );
-
-	gCameraAnimStartTime = curTime + HACK_OFFSET_ANIM;
-}
-
-
 void CDemo::initialize( IDingusAppContext& appContext )
 {
-	int i;
-	
 	CSharedTextureBundle& stb = CSharedTextureBundle::getInstance();
 	CSharedSurfaceBundle& ssb = CSharedSurfaceBundle::getInstance();
 
@@ -447,7 +364,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gGlobalFillMode = D3DFILL_SOLID;
 	G_RENDERCTX->getGlobalParams().addIntRef( "iCull", &gGlobalCullMode );
 	G_RENDERCTX->getGlobalParams().addIntRef( "iFill", &gGlobalFillMode );
-	G_RENDERCTX->getGlobalParams().addFloatRef( "fTime", &gTimeParam );
+	//G_RENDERCTX->getGlobalParams().addFloatRef( "fTime", &gTimeParam );
 
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mViewTexProj", gViewTexProjMatrix );
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj", gSShadowProj );
@@ -467,94 +384,16 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gSetupGUI();
 
 	// --------------------------------
-	// scene
+	// scenes
 
-	// guy
-	gBicas = new CComplexStuffEntity( "Bicas", "BicasAnim" );
+	gSceneShared = new CSceneSharedStuff();
+	gSceneMain = new CSceneMain( gSceneShared );
+	gSceneInt = new CSceneInteractive( gSceneShared );
 
-	const float WALK_BOUNDS = 0.9f;
-	gBicasUser = new CControllableCharacter( ROOM_MIN.x+WALK_BOUNDS, ROOM_MIN.z+WALK_BOUNDS, ROOM_MAX.x-WALK_BOUNDS, ROOM_MAX.z-WALK_BOUNDS );
-	gBicasSpineBone = gBicasUser->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
-
-	const float CAMERA_BOUND = 0.15f;
-	SVector3 CAMERA_BOUND_MIN = ROOM_MIN + SVector3(CAMERA_BOUND,CAMERA_BOUND,CAMERA_BOUND);
-	SVector3 CAMERA_BOUND_MAX = ROOM_MAX - SVector3(CAMERA_BOUND,CAMERA_BOUND,CAMERA_BOUND);
-	gCameraController = new CThirdPersonCameraController( gBicasUser->getWorldMatrix(), gCamera.mWorldMat, CAMERA_BOUND_MIN, CAMERA_BOUND_MAX );
-
-	// test objects
-	//gPieces.push_back( new CMeshEntity("Box10") );
-	//gPieces.push_back( new CMeshEntity("SmallRozete") );
-	//gPieces.push_back( new CMeshEntity("BigRosette") );
-	//gPieces.push_back( new CMeshEntity("FrontRosette") );
-
-	// bed
-	gBedStatic = new CMeshEntity( "Bed" );
-	gBedAnim = new CComplexStuffEntity( "BedPieces", "BedAnim" );
-
-	// walls
-	{
-		const float ELEM_SIZE = 0.1f; // 0.1f
-
-		gWalls[CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PX] );
-		gWalls[CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NX] );
-		gWalls[CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PY] );
-		gWalls[CFACE_NY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NY] );
-		gWalls[CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PZ] );
-		gWalls[CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NZ] );
-
-		SMatrix4x4 wm;
-		wm.identify();
-		
-		wm.getAxisX().set( 0, 0, 1 );
-		wm.getAxisY().set( 0, 1, 0 );
-		wm.getAxisZ().set( -1, 0, 0 );
-		wm.getOrigin().set( ROOM_MAX.x, ROOM_MIN.y, ROOM_MIN.z );
-		gWalls[CFACE_PX]->setMatrix( wm );
-		wm.getAxisX().set( 0, 0, -1 );
-		wm.getAxisY().set( 0, 1, 0 );
-		wm.getAxisZ().set( 1, 0, 0 );
-		wm.getOrigin().set( ROOM_MIN.x, ROOM_MIN.y, ROOM_MAX.z );
-		gWalls[CFACE_NX]->setMatrix( wm );
-		wm.getAxisX().set( 1, 0, 0 );
-		wm.getAxisY().set( 0, 0, 1 );
-		wm.getAxisZ().set( 0, -1, 0 );
-		wm.getOrigin().set( ROOM_MIN.x, ROOM_MAX.y, ROOM_MIN.z );
-		gWalls[CFACE_PY]->setMatrix( wm );
-		wm.getAxisX().set( 1, 0, 0 );
-		wm.getAxisY().set( 0, 0, -1 );
-		wm.getAxisZ().set( 0, 1, 0 );
-		wm.getOrigin().set( ROOM_MIN.x, ROOM_MIN.y, ROOM_MAX.z );
-		gWalls[CFACE_NY]->setMatrix( wm );
-		wm.getAxisX().set( -1, 0, 0 );
-		wm.getAxisY().set( 0, 1, 0 );
-		wm.getAxisZ().set( 0, 0, -1 );
-		wm.getOrigin().set( ROOM_MAX.x, ROOM_MIN.y, ROOM_MAX.z );
-		gWalls[CFACE_PZ]->setMatrix( wm );
-		wm.getAxisX().set( 1, 0, 0 );
-		wm.getAxisY().set( 0, 1, 0 );
-		wm.getAxisZ().set( 0, 0, 1 );
-		wm.getOrigin().set( ROOM_MIN.x, ROOM_MIN.y, ROOM_MIN.z );
-		gWalls[CFACE_NZ]->setMatrix( wm );
-
-		gReadFractureScenario( "data/fractures.txt" );
-
-		for( i = 0; i < CFACE_COUNT; ++i )
-			wallFractureCompute( gWalls[i]->getWall2D() );
-
-		wall_phys::initialize( PHYS_UPDATE_DT, ROOM_MIN-SVector3(1.0f,1.0f,1.0f), ROOM_MAX+SVector3(1.0f,1.0f,1.0f) );
-
-		for( i = 0; i < CFACE_COUNT; ++i ) {
-			wall_phys::addWall( *gWalls[i] );
-		}
-
-		for( i = 0; i < CFACE_COUNT; ++i )
-			gWalls[i]->update( 0.0f );
-	}
 
 	if( !gNoPixelShaders ) {
 		// post processes
 		gPPReflBlur = new CPostProcess( RT_REFL_TMP1, RT_REFL_TMP2 );
-
 		// gauss X shadowmap -> shadowblur
 		gQuadGaussX = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
 		gQuadGaussX->getParams().setEffect( *RGET_FX("filterGaussX") );
@@ -568,18 +407,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		gQuadBlur->getParams().setEffect( *RGET_FX("filterPoisson") );
 		gQuadBlur->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
 	}
-
-	gCamera.mWorldMat.identify();
-	gCameraAnim = RGET_ANIM("Camera");
-	gCameraAnimDuration = gGetAnimDuration( *gCameraAnim, false );
-
-	gCameraAnimPos = gCameraAnim->findVector3Anim("pos");
-	gCameraAnimRot = gCameraAnim->findQuatAnim("rot");
-	gCameraAnimParams = gCameraAnim->findVector3Anim("cam");
-	
-	gAnimFrameCount = gCameraAnimPos->getLength();
-
-	gStartDemoAnim();
 }
 
 
@@ -588,18 +415,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 // Perform code (main loop)
 
 
-class CPhysicsProcess : public CFixedRateProcess {
-public:
-	CPhysicsProcess() : CFixedRateProcess( PHYS_UPDATE_FREQ, 50 ) { }
-protected:
-	virtual void performProcess() {
-		wall_phys::update();
-	};
-};
 
-CPhysicsProcess	gPhysProcess;
-
-
+/*
 static void gFetchMousePieces( bool fractureOut )
 {
 	int i;
@@ -629,7 +446,7 @@ static void gFetchMousePieces( bool fractureOut )
 		gWalls[i]->fracturePiecesInSphere( t, fractureOut, mousePos, MOUSE_RADIUS, gMousePieces[i] );
 	}
 }
-
+*/
 
 bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
@@ -644,6 +461,7 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 	
 	// track mouse...
 	if( msg == WM_LBUTTONDOWN ) {
+		/*
 		gFetchMousePieces( true );
 		for( int i = 0; i < CFACE_COUNT; ++i ) {
 			int n = gMousePieces[i].size();
@@ -651,6 +469,7 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 				wall_phys::spawnPiece( i, gMousePieces[i][j] );
 			}
 		}
+		*/
 	}
 	if( msg == WM_MOUSEMOVE ) {
 		CD3DDevice& dx = CD3DDevice::getInstance();
@@ -663,10 +482,12 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 
 static float	gInputTargetMoveSpeed = 0.0f;
 static float	gInputTargetRotpeed = 0.0f;
+static bool		gInputAttack = false;
 
 
 void CDemo::onInputEvent( const CInputEvent& event )
 {
+	time_value animTime = gDemoTimer.getTime();
 	static bool shiftPressed = false;
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 
@@ -684,32 +505,56 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			break;
 		case DIK_RETURN:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
-				gInteractiveMode = !gInteractiveMode;
+				++gCurScene;
+				gCurScene %= SCENECOUNT;
 			}
 			break;
 		case DIK_SPACE:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
-				if( gInteractiveMode )
-					gBicasUser->attack();
+				if( gCurScene == SCENE_INTERACTIVE ) {
+					gInputAttack = true;
+				}
 			}
 			break;
 		case DIK_LEFT:
-			if( gInteractiveMode )
+			if( gCurScene == SCENE_INTERACTIVE )
 				gInputTargetRotpeed -= 3.0f;
 			break;
 		case DIK_RIGHT:
-			if( gInteractiveMode )
+			if( gCurScene == SCENE_INTERACTIVE )
 				gInputTargetRotpeed += 3.0f;
 			break;
 		case DIK_UP:
-			if( gInteractiveMode ) {
+			if( gCurScene == SCENE_INTERACTIVE ) {
 				gInputTargetMoveSpeed += shiftPressed ? 0.8f : 0.2f;
 			}
 			break;
 		case DIK_DOWN:
-			if( gInteractiveMode ) {
+			if( gCurScene == SCENE_INTERACTIVE ) {
 				gInputTargetMoveSpeed -= 0.2f;
 			}
+			break;
+
+		case DIK_1:
+			gDemoTimer.update( time_value::fromsec(-dt*10) );
+			break;
+		case DIK_2:
+			gDemoTimer.update( time_value::fromsec(-dt*2) );
+			break;
+		case DIK_3:
+			gDemoTimer.update( time_value::fromsec(-dt) );
+			break;
+		case DIK_4:
+			gDemoTimer.update( time_value::fromsec(-dt*0.8f) );
+			break;
+		case DIK_5:
+			gDemoTimer.update( time_value::fromsec(dt*4) );
+			break;
+		case DIK_6:
+			gDemoTimer.update( time_value::fromsec(dt*20) );
+			break;
+		case DIK_7:
+			gDemoTimer.update( time_value::fromsec(dt*100) );
 			break;
 		/*
 		case DIK_A:
@@ -737,142 +582,56 @@ static char gMoveDebugBuf[1000];
 
 void CDemo::onInputStage()
 {
-	gBicasUser->move( gInputTargetMoveSpeed, gMoveDebugBuf );
-	gBicasUser->rotate( gInputTargetRotpeed );
+	if( gCurScene == SCENE_INTERACTIVE ) {
+		time_value animTime = gDemoTimer.getTime();
+		gSceneInt->processInput( gInputTargetMoveSpeed, gInputTargetRotpeed, gInputAttack, animTime );
+	}
+
+
+	gInputAttack = false;
 	gInputTargetRotpeed = 0.0f;
 	gInputTargetMoveSpeed = 0.0f;
 }
 
 
 
-static const float CAM_C0_FRAMES[] = {
-	-619-150, -476-150, -82-150, 
-	372, 502, 630, 1056, 1144, 1287,
-	1390, 1680, 2070,
-	2162, 2433, 2497, 2562, 2669, 2722,
-	2836, 3018, 3152, 3216, 3247, 3339,
-	3519, 3609, 3801, 3883, 4027, 4160,
-	4331, 4471, 4700, 4885, 4955, 5063,
-	5154, 5252, 5347, 5554, 
-};
-static const int CAM_C0_FRAMES_SIZE = sizeof(CAM_C0_FRAMES) / sizeof(CAM_C0_FRAMES[0]);
-static const int CAM_C0_ADD = 950;
 
-
-static void gAnimateCamera()
-{
-	gCamera.mWorldMat.identify();
-	gCamera.mWorldMat.getOrigin().set( 0, 1.0f, -3.0f );
-
-
-	SVector3 camPos;
-	SQuaternion camRot;
-	SVector3 camParams;
-
-	int c0idx = -1;
-	for( int i = 0; i < CAM_C0_FRAMES_SIZE; ++i ) {
-		float fr = CAM_C0_FRAMES[i]+CAM_C0_ADD;
-		if( gCurrAnimFrame >= fr-2 && gCurrAnimFrame <= fr ) {
-			c0idx = i;
-			break;
-		}
-	}
-	if( c0idx < 0 ) {
-		gCameraAnimPos->sample( gCurrAnimAlpha, 0, 1, &camPos );
-		gCameraAnimRot->sample( gCurrAnimAlpha, 0, 1, &camRot );
-		gCameraAnimParams->sample( gCurrAnimAlpha, 0, 1, &camParams );
-	} else {
-		SVector3 pos1, pos2;
-		SQuaternion rot1, rot2;
-		SVector3 params1, params2;
-		double a1 = gCurrAnimAlpha - (3.0/gAnimFrameCount);
-		double a2 = gCurrAnimAlpha - (2.5/gAnimFrameCount);
-		double lerper = (gCurrAnimAlpha-a1) / (a2-a1);
-		gCameraAnimPos->sample( a1, 0, 1, &pos1 );
-		gCameraAnimPos->sample( a2, 0, 1, &pos2 );
-		gCameraAnimRot->sample( a1, 0, 1, &rot1 );
-		gCameraAnimRot->sample( a2, 0, 1, &rot2 );
-		gCameraAnimParams->sample( a1, 0, 1, &params1 );
-		gCameraAnimParams->sample( a2, 0, 1, &params2 );
-		camPos = math_lerp<SVector3>( pos1, pos2, lerper );
-		camRot = math_lerp<SQuaternion>( rot1, rot2, lerper );
-		camParams = math_lerp<SVector3>( params1, params2, lerper );
-	}
-
-	const float fov = camParams.z;
-
-	SMatrix4x4 mr;
-	D3DXMatrixRotationX( &mr, D3DX_PI/2 );
-	gCamera.mWorldMat = mr * SMatrix4x4( camPos, camRot );
-
-	const float camnear = 0.1f; // not from animation, just hardcoded
-	const float camfar = 50.0f;
-
-	float aspect = CD3DDevice::getInstance().getBackBufferAspect();
-	gCamera.setProjectionParams( fov / aspect, aspect, camnear, camfar );
-}
-
-
-/**
- *  Main loop code.
- */
+//  Main loop code.
 void CDemo::perform()
 {
-	int i;
 	char buf[1000];
 
 	CDynamicVBManager::getInstance().discard();
 	CDynamicIBManager::getInstance().discard();
 
-	gPhysProcess.perform();
-	
 	G_INPUTCTX->perform();
-	
-	double t = CSystemTimer::getInstance().getTimeS();
+
+	// timing
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
-	gTimeParam = float(t);
+	gDemoTimer.update( CSystemTimer::getInstance().getDeltaTime() );
+	time_value demoTime = gDemoTimer.getTime();
 
+	// figure out current scene
+	CScene* curScene = NULL;
+	switch( gCurScene ) {
+	case SCENE_MAIN:		curScene = gSceneMain; break;
+	case SCENE_INTERACTIVE:	curScene = gSceneInt; break;
+	}
+	assert( curScene );
 
-	double animPlayTime = anim_time() - gCameraAnimStartTime;
-	gCurrAnimAlpha = animPlayTime / gCameraAnimDuration;
-	gCurrAnimFrame = gCurrAnimAlpha * gAnimFrameCount;
-
+	// update scene
+	curScene->update( demoTime, dt );
 
 
 	gWallVertCount = gWallTriCount = 0;
-	
-	gBicas->update();
-	gBicasUser->update();
-	gBedAnim->update();
-	gUpdateFractureScenario( gCurrAnimFrame, animPlayTime, gWalls );
-
-	for( i = 0; i < CFACE_COUNT; ++i ) {
-		gWalls[i]->update( animPlayTime );
-	}
-	
-	
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 	
 	gScreenFixUVs.set( 0.5f/dx.getBackBufferWidth(), 0.5f/dx.getBackBufferHeight(), 0.0f, 0.0f );
 	
-	if( gInteractiveMode ) {
-
-		gCameraController->update( dt );
-
-		const float camnear = 0.1f;
-		const float camfar = 50.0f;
-		const float camfov = D3DX_PI/4;
-		gCamera.setProjectionParams( camfov, dx.getBackBufferAspect(), camnear, camfar );
-
-	} else {
-
-		gAnimateCamera();
-
-	}
-
 	
 	// FPS
+	/*
 	static float maxMsColl = 0;
 	static float maxMsPhys = 0;
 	static const int MAGIC_COUNT = 1550;
@@ -892,19 +651,24 @@ void CDemo::perform()
 		stats.msUpdate,
 		stats.pieceCount
 	);
+	*/
+	sprintf( buf, "fps=%.1f  time=%.1f",
+		dx.getStats().getFPS(),
+		demoTime.tosec()
+	);
 	gUILabFPS->setText( buf );
 
-	gFetchMousePieces( false );
+	//gFetchMousePieces( false );
 
 	
 	if( !gNoPixelShaders ) {
 		// render shadow map
-		gShadowRender();
+		gShadowRender( *curScene );
 		// render wall reflections
-		gRenderWallReflections();
+		gRenderWallReflections( *curScene );
 	}
 
-	gCamera.setOntoRenderContext();
+	curScene->getCamera().setOntoRenderContext();
 	gCameraViewProjMatrix = G_RENDERCTX->getCamera().getViewProjMatrix();
 	gfx::textureProjectionWorld( gCameraViewProjMatrix, 1000.0f, 1000.0f, gViewTexProjMatrix );
 
@@ -914,20 +678,15 @@ void CDemo::perform()
 
 	dx.sceneBegin();
 	G_RENDERCTX->applyGlobalEffect();
-	gRenderScene( RM_NORMAL );
-
+	curScene->render( RM_NORMAL );
 	G_RENDERCTX->perform();
 	
-	//for( i = 0; i < CFACE_COUNT; ++i ) {
-		//gWalls[i]->debugRender( *gDebugRenderer );
-		//gWalls[i]->debugRender( *gDebugRenderer, gMousePieces[i] );
-	//}
-
 	// render GUI
 	gUIDlg->onRender( dt );
 	dx.sceneEnd();
 
-	
+
+	/*
 	static int maxVerts = 0;
 	if( gWallVertCount + stats.vertexCount > maxVerts )
 		maxVerts = gWallVertCount + stats.vertexCount;
@@ -940,17 +699,11 @@ void CDemo::perform()
 		CConsole::getChannel("system") << "phys geom: verts=" << stats.vertexCount << " tris=" << stats.triCount << endl;
 		CConsole::getChannel("system") << "max: verts=" << maxVerts << " (" << int(maxVerts*sizeof(SVertexXyzDiffuse)) << ")  tris=" << maxTris << " (" << maxTris*2*3 << ")" << endl;
 	}
+	*/
 
-
-	static bool animActuallyStarted = false;
-	if( !animActuallyStarted ) {
-		gStartDemoAnim();
-		animActuallyStarted = true;
-	}
-
-	if( gCurrAnimAlpha >= 1.0 ) {
-		gFinished = true;
-	}
+	//if( gCurrAnimAlpha >= 1.0 ) {
+	//	gFinished = true;
+	//}
 }
 
 
@@ -961,20 +714,11 @@ void CDemo::perform()
 
 void CDemo::shutdown()
 {
-	int i;
-
-	wall_phys::shutdown();
-	
-	for( i = 0; i < CFACE_COUNT; ++i )
-		delete gWalls[i];
-
 	delete gDebugRenderer;
 
 	safeDelete( gUIDlg );
 	safeDelete( gPPReflBlur );
-	delete gBedAnim;
-	delete gBedStatic;
-	delete gBicas;
-	delete gBicasUser;
-	delete gCameraController;
+	delete gSceneMain;
+	delete gSceneInt;
+	delete gSceneShared;
 }

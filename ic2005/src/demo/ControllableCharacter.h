@@ -11,9 +11,9 @@ public:
 	CControllableCharacter( float minX, float minZ, float maxX, float maxZ );
 	~CControllableCharacter();
 
-	void	move( float accel, char* debugBuf );
+	void	move( float accel, time_value timenow );
 	void	rotate( float targetSpeed );
-	void	attack();
+	void	attack( time_value timenow );
 	
 private:
 	struct SAnimParams {

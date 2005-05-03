@@ -121,6 +121,15 @@ SOURCE=.\src\demo\wallz\Quadtree.h
 # Begin Source File
 
 SOURCE=.\src\demo\wallz\Triangulate.cpp
+
+!IF  "$(CFG)" == "Demo - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Demo - Win32 Debug"
+
+# ADD CPP /Od
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -129,6 +138,15 @@ SOURCE=.\src\demo\wallz\Triangulate.h
 # Begin Source File
 
 SOURCE=.\src\demo\wallz\WallFracturer.cpp
+
+!IF  "$(CFG)" == "Demo - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Demo - Win32 Debug"
+
+# ADD CPP /Od
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -137,6 +155,15 @@ SOURCE=.\src\demo\wallz\WallFracturer.h
 # Begin Source File
 
 SOURCE=.\src\demo\wallz\WallPhysics.cpp
+
+!IF  "$(CFG)" == "Demo - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Demo - Win32 Debug"
+
+# ADD CPP /Od
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -145,6 +172,15 @@ SOURCE=.\src\demo\wallz\WallPhysics.h
 # Begin Source File
 
 SOURCE=.\src\demo\wallz\WallPieces.cpp
+
+!IF  "$(CFG)" == "Demo - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Demo - Win32 Debug"
+
+# ADD CPP /Od
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -202,6 +238,22 @@ SOURCE=.\src\demo\PostProcess.cpp
 # Begin Source File
 
 SOURCE=.\src\demo\PostProcess.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\Scene.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\Scene.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\SceneShared.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\SceneShared.h
 # End Source File
 # Begin Source File
 
