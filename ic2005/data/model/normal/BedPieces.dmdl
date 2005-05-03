@@ -1,0 +1,8 @@
+name = 'BedPieces'
+groups = {
+{
+  fx = 'bedanim', pri = 0,
+  params = {
+  },
+},
+}
