@@ -166,6 +166,10 @@ int		gWallVertCount, gWallTriCount;
 
 fastvector<CMeshEntity*>	gPieces;
 
+static const float BED_FRACTURE_FRAME = 831 + 800;
+CMeshEntity*				gBedStatic;
+CComplexStuffEntity*		gBedAnim;
+
 
 CRenderableMesh*	gQuadGaussX;
 CRenderableMesh*	gQuadGaussY;
@@ -198,6 +202,12 @@ static void gRenderScene( eRenderMode rm )
 		gBicas->render( rm );
 	for( i = 0; i < gPieces.size(); ++i )
 		gPieces[i]->render( rm );
+
+	if( gCurrAnimFrame < BED_FRACTURE_FRAME )
+		gBedStatic->render( rm );
+	else
+		gBedAnim->render( rm );
+
 	for( i = 0; i < CFACE_COUNT; ++i ) {
 		gWalls[i]->render( rm );
 	}
@@ -371,6 +381,7 @@ static void gStartDemoAnim()
 	const double HACK_OFFSET_ANIM = 0.0;
 
 	gBicas->getAnimator().playDefaultAnim( curTime + HACK_OFFSET_ANIM );
+	gBedAnim->getAnimator().playDefaultAnim( curTime + BED_FRACTURE_FRAME/30.0 + HACK_OFFSET_ANIM );
 
 	gCameraAnimStartTime = curTime + HACK_OFFSET_ANIM;
 }
@@ -459,7 +470,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// scene
 
 	// guy
-	gBicas = new CComplexStuffEntity( "BicasAnim" );
+	gBicas = new CComplexStuffEntity( "Bicas", "BicasAnim" );
 
 	const float WALK_BOUNDS = 0.9f;
 	gBicasUser = new CControllableCharacter( ROOM_MIN.x+WALK_BOUNDS, ROOM_MIN.z+WALK_BOUNDS, ROOM_MAX.x-WALK_BOUNDS, ROOM_MAX.z-WALK_BOUNDS );
@@ -475,6 +486,10 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	//gPieces.push_back( new CMeshEntity("SmallRozete") );
 	//gPieces.push_back( new CMeshEntity("BigRosette") );
 	//gPieces.push_back( new CMeshEntity("FrontRosette") );
+
+	// bed
+	gBedStatic = new CMeshEntity( "Bed" );
+	gBedAnim = new CComplexStuffEntity( "BedPieces", "BedAnim" );
 
 	// walls
 	{
@@ -828,6 +843,7 @@ void CDemo::perform()
 	
 	gBicas->update();
 	gBicasUser->update();
+	gBedAnim->update();
 	gUpdateFractureScenario( gCurrAnimFrame, animPlayTime, gWalls );
 
 	for( i = 0; i < CFACE_COUNT; ++i ) {
@@ -956,6 +972,8 @@ void CDemo::shutdown()
 
 	safeDelete( gUIDlg );
 	safeDelete( gPPReflBlur );
+	delete gBedAnim;
+	delete gBedStatic;
 	delete gBicas;
 	delete gBicasUser;
 	delete gCameraController;

@@ -22,7 +22,7 @@ inline static double gGetAnimDuration( CAnimationBunch& b, bool loopLast )
 
 class CComplexStuffEntity : public boost::noncopyable {
 public:
-	CComplexStuffEntity( const char* defaultAnim );
+	CComplexStuffEntity( const char* name, const char* defaultAnim );
 	~CComplexStuffEntity();
 
 	void	render( eRenderMode renderMode );

@@ -40,9 +40,9 @@ SAppStartupParams CSystem::getStartupParams()
 
 IConsoleRenderingContext* CSystem::createStdConsoleCtx( HWND hwnd )
 {
-	//if( DEV_MODE )
-	//	return new CW32StdConsoleRenderingContext();
-	//else
+	if( DEV_MODE )
+		return new CW32StdConsoleRenderingContext();
+	else
 		return NULL;
 }
 

@@ -49,7 +49,7 @@ CControllableCharacter::SAnimParams::SAnimParams( CAnimationBunch* anm, float mo
 
 
 CControllableCharacter::CControllableCharacter( float minX, float minZ, float maxX, float maxZ )
-:	CComplexStuffEntity( "Idle_v01" )
+:	CComplexStuffEntity( "Bicas", "Idle_v01" )
 ,	mMinX(minX), mMaxX(maxX), mMinZ(minZ), mMaxZ(maxZ)
 ,	mMoveVelocity( 0.0f )
 ,	mRotateVelocity( 0.0f )

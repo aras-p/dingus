@@ -269,6 +269,14 @@ SOURCE=.\data\fx\lib\structs.fx
 # End Group
 # Begin Source File
 
+SOURCE=.\data\fx\bed.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\bedanim.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\debug.fx
 # End Source File
 # Begin Source File

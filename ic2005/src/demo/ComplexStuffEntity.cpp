@@ -5,7 +5,7 @@
 // --------------------------------------------------------------------------
 
 
-CComplexStuffEntity::CComplexStuffEntity( const char* defaultAnim )
+CComplexStuffEntity::CComplexStuffEntity( const char* name, const char* defaultAnim )
 {
 	mAnimator = new CCharacterAnimator();
 	CAnimationBunch& anim = *RGET_ANIM(defaultAnim);
@@ -13,13 +13,13 @@ CComplexStuffEntity::CComplexStuffEntity( const char* defaultAnim )
 	mAnimator->setDefaultAnim( anim, animDuration, 0.1f );
 	mAnimator->playDefaultAnim();
 
-	CSkinMesh* skinMesh = RGET_SKIN( "BicasLow" );
+	CSkinMesh* skinMesh = RGET_SKIN( name );
 	mSkinUpdater = new CSkinUpdater( skinMesh->getSkeleton(), *mAnimator );
 	
 	for( int i = 0; i < RMCOUNT; ++i ) {
 		mMesh[i] = NULL;
 		// some objects don't get all rendermodes
-		CModelDesc* desc = RTRYGET_MDESC( RMODE_PREFIX[i] + std::string("Bicas") );
+		CModelDesc* desc = RTRYGET_MDESC( RMODE_PREFIX[i] + std::string(name) );
 		if( !desc )
 			continue;
 
