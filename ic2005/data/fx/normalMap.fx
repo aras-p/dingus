@@ -72,9 +72,11 @@ half4 psMain( SOutput i ) : COLOR {
 	// sample diffuse/gloss map
 	half4 cBase = tex2D( smpBase, i.uv );
 	half3 cDiff = cBase.rgb;
+	
+	half3 cSpec = lerp( cDiff, half3(1,1,1), 0.5 );
 	spec *= cBase.a;
 
-	half3 col = cDiff * diffuse + spec + amb;
+	half3 col = cDiff * diffuse + cSpec * spec + amb;
 
 	//col = normal*0.5+0.5;
 	//col = i.tolight.xyz;
