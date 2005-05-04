@@ -607,8 +607,15 @@ void CDemo::perform()
 	G_INPUTCTX->perform();
 
 	// timing
-	float dt = CSystemTimer::getInstance().getDeltaTimeS();
-	gDemoTimer.update( CSystemTimer::getInstance().getDeltaTime() );
+	double dt;
+	static bool firstPerform = true;
+	if( firstPerform ) {
+		dt = 0.0;
+		firstPerform = false;
+	} else {
+		dt = CSystemTimer::getInstance().getDeltaTimeS();
+		gDemoTimer.update( CSystemTimer::getInstance().getDeltaTime() );
+	}
 	time_value demoTime = gDemoTimer.getTime();
 
 	// figure out current scene
@@ -652,9 +659,10 @@ void CDemo::perform()
 		stats.pieceCount
 	);
 	*/
-	sprintf( buf, "fps=%.1f  time=%.1f",
+	sprintf( buf, "fps=%.1f  time=%.1f (%.1f)",
 		dx.getStats().getFPS(),
-		demoTime.tosec()
+		demoTime.tosec(),
+		demoTime.tosec()*30.0f
 	);
 	gUILabFPS->setText( buf );
 
