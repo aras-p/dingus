@@ -1,0 +1,10 @@
+name = 'uvFrontRosette'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/FrontRosette' },
+	  { 'tex', 'tNormalAO', 'rm/FrontRosetteLo.NMF.NPRT' },
+  },
+},
+}

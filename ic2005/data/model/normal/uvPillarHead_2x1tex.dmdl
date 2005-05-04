@@ -1,0 +1,10 @@
+name = 'uvPillarHead_2x1tex'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/PillarHead' },
+	  { 'tex', 'tNormalAO', 'rm/PillarHeadLo.NMF.NPRT' },
+  },
+},
+}

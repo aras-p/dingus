@@ -1,0 +1,10 @@
+name = 'uvSideCenterBackPlane'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/SideCenterBackPlane' },
+	  { 'tex', 'tNormalAO', 'rm/SideCenterBackPlaneLo.NMF.NPRT' },
+  },
+},
+}

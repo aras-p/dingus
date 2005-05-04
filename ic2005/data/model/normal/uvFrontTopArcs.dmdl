@@ -1,0 +1,10 @@
+name = 'uvFrontTopArcs'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/dummy' },
+	  { 'tex', 'tNormalAO', 'rm/TopArcsLo.NMF.NPRT' },
+  },
+},
+}

@@ -1,0 +1,10 @@
+name = 'uvSmallRosette'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/SmallRosette' },
+	  { 'tex', 'tNormalAO', 'rm/SmallRosetteLo.NMF.NPRT' },
+  },
+},
+}

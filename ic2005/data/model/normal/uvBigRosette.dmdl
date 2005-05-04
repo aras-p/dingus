@@ -1,0 +1,10 @@
+name = 'uvBigRosette'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/BigRosette' },
+	  { 'tex', 'tNormalAO', 'rm/BigRosetteLo.NMF.NPRT' },
+  },
+},
+}

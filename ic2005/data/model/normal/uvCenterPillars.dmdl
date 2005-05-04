@@ -1,0 +1,10 @@
+name = 'uvCenterPillars'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/CenterPillars' },
+	  { 'tex', 'tNormalAO', 'rm/CenterPillarsLo.NMF.NPRT' },
+  },
+},
+}

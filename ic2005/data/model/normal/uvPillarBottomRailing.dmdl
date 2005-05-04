@@ -1,0 +1,10 @@
+name = 'uvPillarBottomRailing'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/PillarBottomRailing' },
+	  { 'tex', 'tNormalAO', 'rm/PillarBottomRailingLo.NMF.NPRT' },
+  },
+},
+}

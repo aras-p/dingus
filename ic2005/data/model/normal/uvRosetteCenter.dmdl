@@ -1,0 +1,10 @@
+name = 'uvRosetteCenter'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/RosetteCenter' },
+	  { 'tex', 'tNormalAO', 'rm/RosetteCenterLo.NMF.NPRT' },
+  },
+},
+}
