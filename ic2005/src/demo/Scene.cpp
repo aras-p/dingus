@@ -50,7 +50,7 @@ void CScene::update( time_value demoTime, float dt )
 #include <dingus/lua/LuaIterator.h>
 
 
-static bool gReadScene( const char* fileName, std::vector<CMeshEntity*> scene )
+static bool gReadScene( const char* fileName, std::vector<CMeshEntity*>& scene )
 {
 	CLuaSingleton& lua = CLuaSingleton::getInstance();
 	int errorCode = lua.doFile( fileName, false );
@@ -66,6 +66,9 @@ static bool gReadScene( const char* fileName, std::vector<CMeshEntity*> scene )
 		std::string name = CLuaHelper::getString( luaObj, "name" );
 		SVector3 pos = CLuaHelper::getVector3( luaObj, "pos" );
 		SQuaternion rot = CLuaHelper::getQuaternion( luaObj, "rot" );
+
+		pos.x += ROOM_MID.x;
+		pos.z += ROOM_MID.z;
 
 		CMeshEntity* obj = new CMeshEntity( name );
 		obj->mWorldMat = SMatrix4x4( pos, rot );
@@ -252,6 +255,9 @@ CSceneInteractive::CSceneInteractive( CSceneSharedStuff* sharedStuff )
 
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
 
+	// room
+	gReadScene( "data/scene.lua", mRoom );
+
 	const float CAMERA_BOUND = 0.15f;
 	SVector3 CAMERA_BOUND_MIN = ROOM_MIN + SVector3(CAMERA_BOUND,CAMERA_BOUND,CAMERA_BOUND);
 	SVector3 CAMERA_BOUND_MAX = ROOM_MAX - SVector3(CAMERA_BOUND,CAMERA_BOUND,CAMERA_BOUND);
@@ -260,6 +266,7 @@ CSceneInteractive::CSceneInteractive( CSceneSharedStuff* sharedStuff )
 
 CSceneInteractive::~CSceneInteractive()
 {
+	stl_utils::wipe( mRoom );
 	delete mCamController;
 }
 
@@ -284,8 +291,15 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 void CSceneInteractive::render( eRenderMode renderMode )
 {
-	mSharedStuff->renderWalls( renderMode );
+	//mSharedStuff->renderWalls( renderMode );
+	
 	mCharacter->render( renderMode );
+	
+	int i, n;
+	n = mRoom.size();
+	for( i = 0; i < n; ++i ) {
+		mRoom[i]->render( renderMode );
+	}
 }
 
 

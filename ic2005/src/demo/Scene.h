@@ -101,6 +101,9 @@ private:
 	CControllableCharacter*			mCharacter;
 	int								mSpineBoneIndex;
 	CThirdPersonCameraController*	mCamController;
+	
+	// outside room
+	TEntityVector			mRoom;
 };
 
 

@@ -5,6 +5,17 @@ float4x4	mWorld;
 float4x4	mWorldView;
 float4x4	mWVP;
 
+/*
+todo fix:
+FrontRosetteBricks - why lighting diffs?
+*/
+
+texture		tBase;
+sampler2D	smpBase = sampler_state {
+	Texture = (tBase);
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+	AddressU = Wrap; AddressV = Wrap;
+};
 
 texture		tNormalAO;
 sampler2D	smpNormalAO = sampler_state {
@@ -15,9 +26,9 @@ sampler2D	smpNormalAO = sampler_state {
 
 struct SOutput {
 	float4 pos		: POSITION;
-	float4 tolight	: COLOR0;		// skin space
-	float4 toview	: COLOR1;		// skin space
+	float4 tolight	: COLOR0;		// object space
 	float2 uv		: TEXCOORD0;
+	float3 halfang	: TEXCOORD1;	// object space
 };
 
 
@@ -30,17 +41,16 @@ SOutput vsMain( SPosTex i ) {
 	float3x3 wT = transpose( (float3x3)mWorld );
 	
 	float3 tolight = vLightPos - wpos;
-	//tolight.y *= 0.8; // make light more horizontal :)
 	tolight = normalize( tolight );
 	tolight = mul( tolight, wT );
 	o.tolight = float4( tolight*0.5+0.5, 1 );
 
 	float3 toview = normalize( vEye - wpos );
 	toview = mul( toview, wT );
-	o.toview = float4( toview*0.5+0.5, 1 );
+	o.halfang = normalize( tolight + toview );
 
 	o.uv = i.uv;
-
+	
 	return o;
 }
 
@@ -48,18 +58,27 @@ half4 psMain( SOutput i ) : COLOR {
 	// sample normal+AO map
 	half4 normalAO = tex2D( smpNormalAO, i.uv );
 	half3 normal = normalAO.rgb*2-1;
-	normal.z = -normal.z;
-	half occ = normalAO.a * 1.0 + 0.0;
-	
-	half diffuse = saturate( dot( normal, i.tolight.xyz*2-1 ) );
-	half rim = (1-saturate( dot( normal, i.toview.xyz*2-1 ) ));
-	rim *= 0.3;
+	normal = normalize( normal );
 
-	const half3 cDiff = half3( 1.05, 1.1, 1.2 );
-	const half3 cRim = half3( 0.99, 0.98, 0.96 );
-	half3 col = cDiff * diffuse + cRim * rim;
+	half amb = 0.1;
+	half ambBias = 0.2;
+	half ambMul = 0.8;
+	half occ = normalAO.a * ambMul;
 
-	col = col * 0.5 + 0.5 * occ;
+	// calc lighting
+	half diffuse = saturate( dot( normal, i.tolight.xyz*2-1 ) ) * occ + ambBias;
+	float spec = pow( saturate( dot( normal, i.halfang ) ), 16 );
+
+	// sample diffuse/gloss map
+	half4 cBase = tex2D( smpBase, i.uv );
+	half3 cDiff = cBase.rgb;
+	spec *= cBase.a;
+
+	half3 col = cDiff * diffuse + spec + amb;
+
+	//col = normal*0.5+0.5;
+	//col = i.tolight.xyz;
+
 	return half4( col, 1 );
 }
 
@@ -73,6 +92,6 @@ technique tec0
 		//FillMode = Wireframe;
 	}
 	pass PLast {
-		FillMode = Solid;
+		//FillMode = Solid;
 	}
 }
