@@ -11,7 +11,6 @@
 
 inline static double gGetAnimDuration( CAnimationBunch& b, bool loopLast )
 {
-	const double ANIM_FPS = 30.0f;
 	CAnimationBunch::TVector3Animation* a = b.findVector3Anim("pos");
 	assert( a );
 	return (a->getLength() - (loopLast ? 0 : 1)) / ANIM_FPS;

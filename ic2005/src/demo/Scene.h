@@ -73,9 +73,10 @@ private:
 	CComplexStuffEntity*	mCharacter;
 	int			mSpineBoneIndex;
 
-	// bed
+	// bed/stone
 	CMeshEntity*			mBedStatic;
 	CComplexStuffEntity*	mBedAnim;
+	CComplexStuffEntity*	mStone;
 
 	// outside room
 	TEntityVector			mRoom;

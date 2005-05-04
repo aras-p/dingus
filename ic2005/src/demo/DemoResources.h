@@ -31,6 +31,9 @@ static const SVector3 ROOM_SIZE = (ROOM_MAX - ROOM_MIN);
 static const SVector3 ROOM_HSIZE = ROOM_SIZE*0.5f;
 
 
+static const double ANIM_FPS = 30.0;
+
+
 // --------------------------------------------------------------------------
 
 /*

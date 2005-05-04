@@ -662,7 +662,7 @@ void CDemo::perform()
 	sprintf( buf, "fps=%.1f  time=%.1f (%.1f)",
 		dx.getStats().getFPS(),
 		demoTime.tosec(),
-		demoTime.tosec()*30.0f
+		demoTime.tosec()*ANIM_FPS
 	);
 	gUILabFPS->setText( buf );
 

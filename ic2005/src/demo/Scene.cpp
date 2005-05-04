@@ -84,6 +84,10 @@ static bool gReadScene( const char* fileName, std::vector<CMeshEntity*>& scene )
 
 static const float BED_FRACTURE_FRAME = 831 + 800;
 
+static const float STONE_SHOW_FRAME = 844 + 800;
+static const float STONE_BEGIN_FRAME = 1115 + 800;
+static const float STONE_HIDE_FRAME = 1710 + 800;
+
 static const float WALL_LOD1_FRAME = 3000 + 800;
 
 
@@ -99,11 +103,13 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
 
-	// bed
+	// bed/stone
 	mBedStatic = new CMeshEntity( "Bed" );
 	addEntity( *mBedStatic );
 	mBedAnim = new CComplexStuffEntity( "BedPieces", "BedAnim" );
 	addAnimEntity( *mBedAnim );
+	mStone = new CComplexStuffEntity( "Stone", "StoneAnim" );
+	addAnimEntity( *mStone );
 
 	// room
 	gReadScene( "data/scene.lua", mRoom );
@@ -124,7 +130,8 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	const time_value HACK_START_ANIM = time_value::fromsec( 0.0f );
 
 	mCharacter->getAnimator().playDefaultAnim( HACK_START_ANIM );
-	mBedAnim->getAnimator().playDefaultAnim( time_value::fromsec(BED_FRACTURE_FRAME/30.0) + HACK_START_ANIM );
+	mBedAnim->getAnimator().playDefaultAnim( time_value() );
+	mStone->getAnimator().playDefaultAnim( time_value() );
 }
 
 
@@ -213,7 +220,18 @@ void CSceneMain::update( time_value demoTime, float dt )
 	mCurrAnimFrame = mCurrAnimAlpha * mAnimFrameCount;
 
 	mCharacter->update( demoTime );
-	mBedAnim->update( demoTime );
+	if( mCurrAnimFrame >= BED_FRACTURE_FRAME ) {
+		double bedAnimS = (mCurrAnimFrame-BED_FRACTURE_FRAME)/ANIM_FPS;
+		time_value bedAnimTime = time_value::fromsec( bedAnimS );
+		mBedAnim->update( bedAnimTime );
+	}
+	if( mCurrAnimFrame >= STONE_SHOW_FRAME && mCurrAnimFrame <= STONE_HIDE_FRAME ) {
+		double stoneAnimS = (mCurrAnimFrame-STONE_BEGIN_FRAME)/ANIM_FPS;
+		if( stoneAnimS < 0.0 )
+			stoneAnimS = 0.0;
+		time_value stoneAnimTime = time_value::fromsec( stoneAnimS );
+		mStone->update( stoneAnimTime );
+	}
 
 	int wallsLod = mCurrAnimFrame < WALL_LOD1_FRAME ? 0 : 1;
 
@@ -238,10 +256,15 @@ void CSceneMain::render( eRenderMode renderMode )
 		mRoom[i]->render( renderMode );
 	}
 
+	// bed
 	if( mCurrAnimFrame < BED_FRACTURE_FRAME )
 		mBedStatic->render( renderMode );
 	else
 		mBedAnim->render( renderMode );
+
+	// stone
+	if( mCurrAnimFrame > STONE_SHOW_FRAME && mCurrAnimFrame < STONE_HIDE_FRAME )
+		mStone->render( renderMode );
 }
 
 const SMatrix4x4* CSceneMain::getLightTargetMatrix() const
