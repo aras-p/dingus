@@ -1,0 +1,10 @@
+name = 'uvCenterPlate'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/CenterPlate' },
+	  { 'tex', 'tNormalAO', 'rm/CenterPlateLo.NMF.NPRT' },
+  },
+},
+}
