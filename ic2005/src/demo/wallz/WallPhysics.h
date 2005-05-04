@@ -22,11 +22,11 @@ namespace wall_phys {
 
 	void	initialize( float updDT, const SVector3& boundMin, const SVector3& boundMax );
 
-	void	addWall( const CWall3D& wall );
+	void	addWall( int lodIndex, const CWall3D& wall );
 
 	void	shutdown();
 
-	void	spawnPiece( int wallID, int index );
+	void	spawnPiece( int lodIndex, int wallID, int index );
 
 	void	update();
 

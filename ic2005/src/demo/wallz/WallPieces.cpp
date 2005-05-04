@@ -842,6 +842,33 @@ void CWall3D::fracturePiecesInSphere( float t, bool fractureOut, const SVector3&
 	}
 }
 
+void CWall3D::fracturePiecesInYRange( float t, bool fractureOut, float y1, float y2, TIntVector& pcs )
+{
+	if( !mPiecesInited )
+		initPieces();
+
+	if( fractureOut )
+		mLastFractureTime = t;
+
+	// fetch the pieces
+	pcs.resize( 0 );
+
+	// TODO: optimize, right now linear search!
+	int n = mWall2D.getPieceCount();
+	for( int i = 0; i < n; ++i ) {
+		const CWallPiece2D& p = mWall2D.getPiece( i );
+		if( mFracturedPieces[i] )
+			continue;
+		SVector2 c = p.getAABB().getCenter();
+		if( c.y >= y1 && c.y <= y2 ) {
+			pcs.push_back( i );
+			if( fractureOut ) {
+				fractureOutPiece( i );
+			}
+		}
+	}
+}
+
 void CWall3D::fractureOutPiece( int index )
 {
 	assert( index >= 0 && index < mWall2D.getPieceCount() );

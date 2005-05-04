@@ -14,16 +14,16 @@ public:
 	CSceneSharedStuff();
 	~CSceneSharedStuff();
 
-	void	renderWalls( eRenderMode rm );
+	void	renderWalls( int lodIndex, eRenderMode rm );
 	void	updatePhysics();
-	void	updateFracture( float demoTimeS );
+	void	updateFracture( int lodIndex, float demoTimeS );
 
 	CCameraEntity& getWallCamera() { return mWallCamera; }
-	CWall3D** getWalls() { return mWalls; }
+	CWall3D** getWalls( int lodIndex ) { return mWalls[lodIndex]; }
 
 private:
 	CCameraEntity	mWallCamera;
-	CWall3D*		mWalls[CFACE_COUNT];
+	CWall3D*		mWalls[2][CFACE_COUNT];
 };
 
 

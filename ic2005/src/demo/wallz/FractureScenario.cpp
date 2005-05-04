@@ -7,12 +7,20 @@
 
 namespace {
 
-struct SFracParams {
+struct SFracSphParams {
 	double		frame;
 	SVector3	pos;
 	float		radius;
 };
-std::vector<SFracParams>	fracParams;
+std::vector<SFracSphParams>	fracSphParams;
+
+
+struct SFracYParams {
+	double		frame;
+	float		y1;
+	float		y2;
+};
+std::vector<SFracYParams>	fracYParams;
 
 
 struct SRestoreParams {
@@ -42,15 +50,25 @@ void gReadFractureScenario( const char* fileName )
 		switch( eventType ) {
 		case 0:
 			{
-				// fracture event
-				SFracParams ep;
+				// fracture sphere event
+				SFracSphParams ep;
 				int frm;
 				fscanf( f, "%i %f %f %f %f\n", &frm, &ep.pos.x, &ep.pos.y, &ep.pos.z, &ep.radius );
 				ep.frame = frm + ANIM_FRAME_OFFSET;
-				fracParams.push_back( ep );
+				fracSphParams.push_back( ep );
 			}
 			break;
 		case 1:
+			{
+				// fracture Y range event
+				SFracYParams ep;
+				int frm;
+				fscanf( f, "%i %f %f\n", &frm, &ep.y1, &ep.y2 );
+				ep.frame = frm + ANIM_FRAME_OFFSET;
+				fracYParams.push_back( ep );
+			}
+			break;
+		case 2:
 			{
 				// restore event
 				SRestoreParams ep;
@@ -70,22 +88,42 @@ void gReadFractureScenario( const char* fileName )
 }
 
 
-void gUpdateFractureScenario( double frame, double t, CWall3D** walls )
+void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** walls )
 {
 	// search last-current frame interval for any fracture/restore events
 	int i, n;
-	n = fracParams.size();
+
+	// fracture sphere events
+	n = fracSphParams.size();
 	for( i = 0; i < n; ++i ) {
-		const SFracParams& ep = fracParams[i];
+		const SFracSphParams& ep = fracSphParams[i];
 		if( ep.frame >= lastUpdateFrame && ep.frame < frame ) {
-			CConsole::CON_WARNING << "Event: fracture " << i << endl;
+			CConsole::CON_WARNING << "Event: fracture sph " << i << endl;
 			TIntVector pieces;
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
 				walls[j]->fracturePiecesInSphere( t, true, ep.pos, ep.radius, pieces );
 				int npc = pieces.size();
-				CConsole::CON_WARNING << "  fractured " << npc << " in wall " << j << endl;
 				for( int k = 0; k < npc; ++k ) {
-					wall_phys::spawnPiece( j, pieces[k] );
+					wall_phys::spawnPiece( lodIndex, j, pieces[k] );
+				}
+			}
+		}
+	}
+
+	// fracture sphere events
+	n = fracYParams.size();
+	for( i = 0; i < n; ++i ) {
+		const SFracYParams& ep = fracYParams[i];
+		if( ep.frame >= lastUpdateFrame && ep.frame < frame ) {
+			CConsole::CON_WARNING << "Event: fracture y " << i << endl;
+			TIntVector pieces;
+			for( int j = 0; j < CFACE_COUNT; ++j ) {
+				if( j == CFACE_NY || j == CFACE_PY ) // just skip floor/ceiling :)
+					continue;
+				walls[j]->fracturePiecesInYRange( t, true, ep.y1, ep.y2, pieces );
+				int npc = pieces.size();
+				for( int k = 0; k < npc; ++k ) {
+					wall_phys::spawnPiece( lodIndex, j, pieces[k] );
 				}
 			}
 		}

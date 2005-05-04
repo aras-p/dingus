@@ -244,6 +244,7 @@ public:
 
 	bool	intersectRay( const SLine3& ray, float& t ) const;
 	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, TIntVector& pcs );
+	void	fracturePiecesInYRange( float t, bool fractureOut, float y1, float y2, TIntVector& pcs );
 
 	void	render( eRenderMode rm );
 

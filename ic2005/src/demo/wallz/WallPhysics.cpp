@@ -20,7 +20,9 @@ namespace {
 
 
 
-	std::vector<const CWall3D*>	walls;
+	const int MAX_LODS = 2;
+
+	std::vector<const CWall3D*>	walls[MAX_LODS];
 
 
 
@@ -109,24 +111,28 @@ void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector
 	
 	updateDT = updDT;
 
-	walls.reserve( 6 );
+	walls[0].reserve( 6 );
+	walls[1].reserve( 6 );
 
 	physics::initialize( updDT, GRAVITY, boundMin, boundMax );
 }
 
 
-void wall_phys::addWall( const CWall3D& wall )
+void wall_phys::addWall( int lodIndex, const CWall3D& wall )
 {
-	physics::addPlane( wall.getMatrix() );
+	if( lodIndex == 0 )
+		physics::addPlane( wall.getMatrix() );
 
-	walls.push_back( &wall );
+	assert( lodIndex >= 0 && lodIndex < MAX_LODS );
+	walls[lodIndex].push_back( &wall );
 }
 
 
 void wall_phys::shutdown()
 {
 	stl_utils::wipe( pieces );
-	walls.clear();
+	walls[0].clear();
+	walls[1].clear();
 
 	physics::shutdown();
 
@@ -134,10 +140,11 @@ void wall_phys::shutdown()
 }
 
 
-void wall_phys::spawnPiece( int wallID, int index )
+void wall_phys::spawnPiece( int lodIndex, int wallID, int index )
 {
-	assert( wallID >= 0 && wallID < walls.size() );
-	CPhysPiece* p = new CPhysPiece( walls[wallID]->getPieces3D()[index] );
+	assert( lodIndex >= 0 && lodIndex < MAX_LODS );
+	assert( wallID >= 0 && wallID < walls[lodIndex].size() );
+	CPhysPiece* p = new CPhysPiece( walls[lodIndex][wallID]->getPieces3D()[index] );
 	pieces.push_back( p );
 }
 

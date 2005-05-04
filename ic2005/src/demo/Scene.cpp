@@ -84,6 +84,8 @@ static bool gReadScene( const char* fileName, std::vector<CMeshEntity*>& scene )
 
 static const float BED_FRACTURE_FRAME = 831 + 800;
 
+static const float WALL_LOD1_FRAME = 3000 + 800;
+
 
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 :	mSharedStuff( sharedStuff )
@@ -212,9 +214,12 @@ void CSceneMain::update( time_value demoTime, float dt )
 
 	mCharacter->update( demoTime );
 	mBedAnim->update( demoTime );
-	gUpdateFractureScenario( mCurrAnimFrame, demoTimeS, mSharedStuff->getWalls() );
 
-	mSharedStuff->updateFracture( demoTimeS );
+	int wallsLod = mCurrAnimFrame < WALL_LOD1_FRAME ? 0 : 1;
+
+	gUpdateFractureScenario( mCurrAnimFrame, demoTimeS, wallsLod, mSharedStuff->getWalls(wallsLod) );
+
+	mSharedStuff->updateFracture( wallsLod, demoTimeS );
 
 	animateCamera();
 }
@@ -222,7 +227,8 @@ void CSceneMain::update( time_value demoTime, float dt )
 
 void CSceneMain::render( eRenderMode renderMode )
 {
-	mSharedStuff->renderWalls( renderMode );
+	int wallsLod = mCurrAnimFrame < WALL_LOD1_FRAME ? 0 : 1;
+	mSharedStuff->renderWalls( wallsLod, renderMode );
 
 	mCharacter->render( renderMode );
 
@@ -279,7 +285,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 	mCharacter->update( demoTime );
 
-	mSharedStuff->updateFracture( demoTimeS );
+	mSharedStuff->updateFracture( 0, demoTimeS );
 
 	mCamController->update( dt );
 	const float camnear = 0.1f;
@@ -291,7 +297,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 void CSceneInteractive::render( eRenderMode renderMode )
 {
-	//mSharedStuff->renderWalls( renderMode );
+	//mSharedStuff->renderWalls( 0, renderMode );
 	
 	mCharacter->render( renderMode );
 	
