@@ -709,9 +709,9 @@ void CDemo::perform()
 	}
 	*/
 
-	//if( gCurrAnimAlpha >= 1.0 ) {
-	//	gFinished = true;
-	//}
+	if( gCurScene == SCENE_MAIN && gSceneMain->isEnded() ) { 
+		gFinished = true;
+	}
 }
 
 

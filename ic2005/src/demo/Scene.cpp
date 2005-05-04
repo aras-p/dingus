@@ -22,10 +22,10 @@ CScene::~CScene()
 	stl_utils::wipe( mAnimEntities );
 }
 
+// not used actually
+/*
 void CScene::render( eRenderMode renderMode )
 {
-	// not used actually
-	/*
 	int i, n;
 
 	n = mEntities.size();
@@ -35,12 +35,12 @@ void CScene::render( eRenderMode renderMode )
 	n = mAnimEntities.size();
 	for( i = 0; i < n; ++i )
 		mAnimEntities[i]->render( renderMode );
-	*/
 }
 
 void CScene::update( time_value demoTime, float dt )
 {
 }
+*/
 
 
 // --------------------------------------------------------------------------

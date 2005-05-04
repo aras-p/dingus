@@ -24,8 +24,8 @@ public:
 	void	addEntity( CMeshEntity& e ) { mEntities.push_back( &e ); }
 	void	addAnimEntity( CComplexStuffEntity& e ) { mAnimEntities.push_back( &e ); }
 
-	virtual void	update( time_value demoTime, float dt );
-	virtual void	render( eRenderMode renderMode );
+	virtual void	update( time_value demoTime, float dt ) = 0;
+	virtual void	render( eRenderMode renderMode ) = 0;
 
 	virtual const SMatrix4x4* getLightTargetMatrix() const { return NULL; }
 
@@ -50,6 +50,7 @@ public:
 	virtual void	update( time_value demoTime, float dt );
 	virtual void	render( eRenderMode renderMode );
 	virtual const SMatrix4x4* getLightTargetMatrix() const;
+	bool	isEnded() const { return mCurrAnimAlpha >= 1.0; }
 
 private:
 	void	animateCamera();
