@@ -4,7 +4,7 @@ groups = {
   fx = 'normalMap', pri = 0,
   params = {
 	  { 'tex', 'tBase', 'rm/PillarHead' },
-	  { 'tex', 'tNormalAO', 'rm/PillarHeadLo.NMF.NPRT' },
+	  { 'tex', 'tNormalAO', 'rm/PillarHeadLo.NMF.nao' },
   },
 },
 }

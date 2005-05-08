@@ -61,8 +61,8 @@ half4 psMain( SOutput i ) : COLOR {
 	normal = normalize( normal );
 
 	half amb = 0.1;
-	half ambBias = 0.2;
-	half ambMul = 0.8;
+	half ambBias = 0.1;
+	half ambMul = 0.9;
 	half occ = normalAO.a * ambMul;
 
 	// calc lighting
