@@ -1,7 +1,7 @@
 name = 'Bicas'
 groups = {
 {
-  fx = 'skinCasterSimple', pri = 0,
+  fx = 'skinCaster', pri = 0,
   params = {
   },
 },
