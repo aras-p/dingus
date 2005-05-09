@@ -26,6 +26,7 @@ const char* RMODE_PREFIX[RMCOUNT] = {
 	"normal/",
 	"reflected/",
 	"caster/",
+	"castersimple/",
 };
 
 CDebugRenderer*	gDebugRenderer;
@@ -117,7 +118,9 @@ int			gCurScene = SCENE_MAIN;
 
 
 // normally system timer, but controllable for debugging
-CTimer			gDemoTimer; 
+CTimer			gDemoTimer;
+bool			gPaused = false;
+bool			gSimpleShadows = false;
 
 
 
@@ -195,47 +198,66 @@ void gShadowRender( CScene& scene )
 	gSLightPos = gSLight.camera.mWorldMat.getOrigin();
 	gfx::textureProjectionWorld( gSLightVP, SZ_SHADOWMAP, SZ_SHADOWMAP, gSShadowProj );
 
-	// render shadow map
-	dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
-	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
-	//dx.clearTargets( true, true, false, 0xFFffffff, 0.0f ); // min based dilation
-	dx.clearTargets( true, true, false, 0xFFff00ff, 0.0f ); // gauss
+	if( !gSimpleShadows ) {
 
-	dx.getDevice().SetViewport( &vp );
+		// render soft shadow map
 
-	dx.sceneBegin();
-	scene.render( RM_CASTERSIMPLE );
-	G_RENDERCTX->applyGlobalEffect();
+		dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
+		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
+		//dx.clearTargets( true, true, false, 0xFFffffff, 0.0f ); // min based dilation
+		dx.clearTargets( true, true, false, 0xFFff00ff, 0.0f ); // gauss
 
-	dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_GREATER );
-	G_RENDERCTX->perform();
-	dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
+		dx.getDevice().SetViewport( &vp );
 
-	dx.sceneEnd();
+		dx.sceneBegin();
+		scene.render( RM_CASTER );
+		G_RENDERCTX->applyGlobalEffect();
 
-	// process shadowmap
-	dx.setZStencil( NULL );
+		dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_GREATER );
+		G_RENDERCTX->perform();
+		dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
 
-	// gaussX shadowmap -> shadowblur
-	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
-	dx.sceneBegin();
-	G_RENDERCTX->attach( *gQuadGaussX );
-	G_RENDERCTX->perform();
-	dx.sceneEnd();
-	// gaussY shadowblur -> shadowmap
-	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
-	dx.sceneBegin();
-	G_RENDERCTX->attach( *gQuadGaussY );
-	G_RENDERCTX->perform();
-	dx.sceneEnd();
-	// blur shadowmap -> shadowblur
-	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
-	dx.clearTargets( true, false, false, 0xFFffffff );
-	dx.getDevice().SetViewport( &vp );
-	dx.sceneBegin();
-	G_RENDERCTX->attach( *gQuadBlur );
-	G_RENDERCTX->perform();
-	dx.sceneEnd();
+		dx.sceneEnd();
+
+		// process shadowmap
+		dx.setZStencil( NULL );
+
+		// gaussX shadowmap -> shadowblur
+		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
+		dx.sceneBegin();
+		G_RENDERCTX->attach( *gQuadGaussX );
+		G_RENDERCTX->perform();
+		dx.sceneEnd();
+		// gaussY shadowblur -> shadowmap
+		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
+		dx.sceneBegin();
+		G_RENDERCTX->attach( *gQuadGaussY );
+		G_RENDERCTX->perform();
+		dx.sceneEnd();
+		// blur shadowmap -> shadowblur
+		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
+		dx.clearTargets( true, false, false, 0xFFffffff );
+		dx.getDevice().SetViewport( &vp );
+		dx.sceneBegin();
+		G_RENDERCTX->attach( *gQuadBlur );
+		G_RENDERCTX->perform();
+		dx.sceneEnd();
+
+	} else {
+
+		// render standard shadow map
+		dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
+		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
+		dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
+
+		dx.getDevice().SetViewport( &vp );
+
+		dx.sceneBegin();
+		scene.render( RM_CASTERSIMPLE );
+		G_RENDERCTX->applyGlobalEffect();
+		G_RENDERCTX->perform();
+		dx.sceneEnd();
+	}
 }
 
 // --------------------------------------------------------------------------
@@ -503,6 +525,15 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gShowStats = !gShowStats;
 			break;
+		case DIK_0:
+			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
+				gPaused = !gPaused;
+			break;
+		case DIK_F3:
+			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
+				gSimpleShadows = !gSimpleShadows;
+			break;
+
 		case DIK_RETURN:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
 				++gCurScene;
@@ -609,7 +640,7 @@ void CDemo::perform()
 	// timing
 	double dt;
 	static bool firstPerform = true;
-	if( firstPerform ) {
+	if( firstPerform || gPaused ) {
 		dt = 0.0;
 		firstPerform = false;
 	} else {
@@ -688,7 +719,7 @@ void CDemo::perform()
 	G_RENDERCTX->applyGlobalEffect();
 	curScene->render( RM_NORMAL );
 	G_RENDERCTX->perform();
-	
+
 	// render GUI
 	gUIDlg->onRender( dt );
 	dx.sceneEnd();

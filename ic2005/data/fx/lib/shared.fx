@@ -51,6 +51,7 @@ sampler2D	smpShadow = sampler_state {
 	AddressU = Clamp; AddressV = Clamp;
 };
 
+static const int SHADOW_MAP_SIZE = 256;
 
 
 // --------------------------------------------------------------------------

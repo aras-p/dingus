@@ -1,5 +1,6 @@
 #include "lib/structs.fx"
-  
+#include "lib/shared.fx"
+
 texture		tBase;
 sampler		smpBase = sampler_state {
     Texture   = (tBase);
@@ -7,13 +8,12 @@ sampler		smpBase = sampler_state {
     AddressU = Clamp; AddressV = Clamp;
 };
 
-static const int MAP_SIZE = 256;
 
 SPosTex vsMain11( SPosTex i )
 {
     SPosTex o;
 	o.pos = i.pos * float4(2,2,1,1);
-	o.uv = i.uv + 0.5/MAP_SIZE;
+	o.uv = i.uv + 0.5/SHADOW_MAP_SIZE;
 	return o;
 }
 
@@ -48,7 +48,7 @@ static const float COEFFS[25] = {
 half4 psMain20( float2 uv : TEXCOORD0 ) : COLOR {
 	half4 col = tex2D( smpBase, uv );
 	col.g = 0;
-	float texel = 1.0 / MAP_SIZE;
+	float texel = 1.0 / SHADOW_MAP_SIZE;
 	for( int r = -12; r <= 12; r+=1 ) {
 		col.g += tex2D( smpBase, uv + float2(0,texel*r) ).g * COEFFS[r+12];
 	}

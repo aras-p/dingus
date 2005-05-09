@@ -30,7 +30,7 @@ SAppStartupParams CSystem::getStartupParams()
 	sp.minStencilBits = 0;
 	sp.usesZBuffer = true;
 	sp.startFullscreen = !DEV_MODE;
-	sp.startFullscreen = true;
+	//sp.startFullscreen = true;
 	sp.showCursorFullscreen = true;
 	sp.vsyncFullscreen = !DEV_MODE;
 	sp.debugTimer = false;

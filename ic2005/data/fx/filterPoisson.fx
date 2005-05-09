@@ -1,5 +1,6 @@
 #include "lib/structs.fx"
-  
+#include "lib/shared.fx"
+
 texture		tBase;
 sampler		smpBase = sampler_state {
     Texture   = (tBase);
@@ -7,13 +8,12 @@ sampler		smpBase = sampler_state {
     AddressU = Clamp; AddressV = Clamp;
 };
 
-static const int MAP_SIZE = 256;
 
 SPosTex vsMain11( SPosTex i )
 {
     SPosTex o;
 	o.pos = i.pos * float4(2,2,1,1);
-	o.uv = i.uv + 0.5/MAP_SIZE;
+	o.uv = i.uv + 0.5/SHADOW_MAP_SIZE;
 	return o;
 }
 
@@ -38,14 +38,15 @@ half4 psMain20( float2 tc0 : TEXCOORD0 ) : COLOR
 {
 	half4 col = tex2D( smpBase, tc0 );
 
+	//return col;
 	//return col.r;
 	//return col.b;
-	//return col.r*0.4+0.6;
+	//return col.g;
 
 	half scaling = col.g + 0.02;
 	
 	half colorSum = col.b;
-	half scale = 12.0/MAP_SIZE;
+	half scale = 12.0/SHADOW_MAP_SIZE;
 	
 	for( int k = 0; k < NUM_TAPS; ++k ) {
 		float2 tapCoord = tc0 + filterTaps[k] * (scale * scaling);
