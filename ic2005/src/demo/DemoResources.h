@@ -18,6 +18,7 @@ enum eRenderMode {
 };
 extern const char* RMODE_PREFIX[RMCOUNT];
 extern bool gNoPixelShaders;
+extern SVector3	gSLightPos;
 
 
 enum eCubeFaces {

@@ -9,6 +9,8 @@ class CComplexStuffEntity;
 class CControllableCharacter;
 class CThirdPersonCameraController;
 class CSceneSharedStuff;
+class CRoomObjectEntity;
+
 
 // --------------------------------------------------------------------------
 
@@ -80,7 +82,7 @@ private:
 	CComplexStuffEntity*	mStone;
 
 	// outside room
-	TEntityVector			mRoom;
+	std::vector<CRoomObjectEntity*>	mRoom;
 };
 
 
@@ -105,7 +107,7 @@ private:
 	CThirdPersonCameraController*	mCamController;
 	
 	// outside room
-	TEntityVector			mRoom;
+	std::vector<CRoomObjectEntity*>	mRoom;
 };
 
 

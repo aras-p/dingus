@@ -5,10 +5,9 @@ float4x4	mWorld;
 float4x4	mWorldView;
 float4x4	mWVP;
 
-/*
-todo fix:
-FrontRosetteBricks - why lighting diffs?
-*/
+float3		vLightPosOS;
+float3		vEyeOS;
+
 
 texture		tBase;
 sampler2D	smpBase = sampler_state {
@@ -35,18 +34,13 @@ struct SOutput {
 SOutput vsMain( SPosTex i ) {
 	SOutput o;
 
-	float3 wpos = mul( i.pos, mWorld );
 	o.pos = mul( i.pos, mWVP );
 
-	float3x3 wT = transpose( (float3x3)mWorld );
-	
-	float3 tolight = vLightPos - wpos;
+	float3 tolight = vLightPosOS - i.pos.xyz;
 	tolight = normalize( tolight );
-	tolight = mul( tolight, wT );
 	o.tolight = float4( tolight*0.5+0.5, 1 );
 
-	float3 toview = normalize( vEye - wpos );
-	toview = mul( toview, wT );
+	float3 toview = normalize( vEyeOS - i.pos.xyz );
 	o.halfang = normalize( tolight + toview );
 
 	o.uv = i.uv;

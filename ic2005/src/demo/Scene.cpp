@@ -10,6 +10,50 @@
 
 // --------------------------------------------------------------------------
 
+class CRoomObjectEntity : public CMeshEntity {
+public:
+	CRoomObjectEntity( const std::string& name )
+		:	CMeshEntity(name), mMoved( true )
+	{
+		// add to effect parameters
+		for( int i = 0; i < RMCOUNT; ++i ) {
+			CRenderableMesh* rmesh = getRenderMesh( eRenderMode(i) );
+			if( !rmesh )
+				continue;
+			rmesh->getParams().addVector3Ref( "vLightPosOS", mLightPosOS );
+			rmesh->getParams().addVector3Ref( "vEyeOS", mEyePosOS );
+		}
+	}
+
+	void	setMoved() { mMoved = true; }
+	void	update() {
+		if( !mMoved )
+			return;
+		mMoved = false;
+
+		// TBD: don't do full inverse
+		D3DXMatrixInverse( &mInvWorld, NULL, &mWorldMat );
+	}
+
+	void	render( eRenderMode renderMode )
+	{
+		// update light/eye positions
+		D3DXVec3TransformCoord( &mLightPosOS, &gSLightPos, &mInvWorld );
+		D3DXVec3TransformCoord( &mEyePosOS, &G_RENDERCTX->getCamera().getEye3(), &mInvWorld );
+		
+		CMeshEntity::render( renderMode );
+	}
+
+
+private:
+	SMatrix4x4	mInvWorld;
+	SVector3	mLightPosOS;	// light pos in object space
+	SVector3	mEyePosOS;		// eye pos in object space
+	bool		mMoved;
+};
+
+// --------------------------------------------------------------------------
+
 CScene::CScene()
 {
 	mCamera.mWorldMat.identify();
@@ -22,26 +66,6 @@ CScene::~CScene()
 	stl_utils::wipe( mAnimEntities );
 }
 
-// not used actually
-/*
-void CScene::render( eRenderMode renderMode )
-{
-	int i, n;
-
-	n = mEntities.size();
-	for( i = 0; i < n; ++i )
-		mEntities[i]->render( renderMode, false );
-
-	n = mAnimEntities.size();
-	for( i = 0; i < n; ++i )
-		mAnimEntities[i]->render( renderMode );
-}
-
-void CScene::update( time_value demoTime, float dt )
-{
-}
-*/
-
 
 // --------------------------------------------------------------------------
 
@@ -50,7 +74,7 @@ void CScene::update( time_value demoTime, float dt )
 #include <dingus/lua/LuaIterator.h>
 
 
-static bool gReadScene( const char* fileName, std::vector<CMeshEntity*>& scene )
+static bool gReadScene( const char* fileName, std::vector<CRoomObjectEntity*>& scene )
 {
 	CLuaSingleton& lua = CLuaSingleton::getInstance();
 	int errorCode = lua.doFile( fileName, false );
@@ -70,8 +94,9 @@ static bool gReadScene( const char* fileName, std::vector<CMeshEntity*>& scene )
 		pos.x += ROOM_MID.x;
 		pos.z += ROOM_MID.z;
 
-		CMeshEntity* obj = new CMeshEntity( name );
+		CRoomObjectEntity* obj = new CRoomObjectEntity( name );
 		obj->mWorldMat = SMatrix4x4( pos, rot );
+		obj->setMoved();
 		scene.push_back( obj );
 	}
 	luaScene.discard();
@@ -215,6 +240,11 @@ void CSceneMain::update( time_value demoTime, float dt )
 {
 	mSharedStuff->updatePhysics();
 
+	int n = mRoom.size();
+	for( int i = 0; i < n; ++i ) {
+		mRoom[i]->update();
+	}
+
 	float demoTimeS = demoTime.tosec();
 	mCurrAnimAlpha = demoTimeS / mAnimDuration;
 	mCurrAnimFrame = mCurrAnimAlpha * mAnimFrameCount;
@@ -304,6 +334,11 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 {
 	mSharedStuff->updatePhysics();
 
+	int n = mRoom.size();
+	for( int i = 0; i < n; ++i ) {
+		mRoom[i]->update();
+	}
+	
 	float demoTimeS = demoTime.tosec();
 
 	mCharacter->update( demoTime );

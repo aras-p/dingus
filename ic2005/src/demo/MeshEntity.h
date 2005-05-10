@@ -35,7 +35,10 @@ public:
 	void	render( eRenderMode renderMode, bool direct = false );
 
 	CRenderableMesh* getRenderMesh( eRenderMode renderMode ) {
-		return mRenderMeshes[renderMode][0];
+		TMeshVector& rmv = mRenderMeshes[renderMode];
+		if( rmv.empty() )
+			return NULL;
+		return rmv[0];
 	}
 
 private:
