@@ -405,5 +405,9 @@ SOURCE=.\src\stdafx.cpp
 
 SOURCE=.\src\stdafx.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\todo.txt
+# End Source File
 # End Target
 # End Project
