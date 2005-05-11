@@ -40,7 +40,7 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 
 	int nidx = piece.getTriCount()*3;
 	mIB.reserve( nidx * 2 + piece.getVertexCount()*6 );
-	mVB.reserve( piece.getVertexCount()*6 );
+	mVB.reserve( piece.getVertexCount()*4 );
 
 	// construct one side
 	for( i = 0; i < nidx; ++i ) {
@@ -66,6 +66,7 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 	}
 	// construct another side
 	int nverts = mVB.size();
+	//int npolygon = piece.getPolygon().size();
 	for( i = 0; i < nverts; ++i ) {
 		SVertexXyzNormal vtx = mVB[i];
 		vtx.p.z = -vtx.p.z;
@@ -80,33 +81,43 @@ void CWallPiece3D::init( const CWall3D& w, int idx )
 		mIB.push_back( idx2 + nverts );
 		mIB.push_back( idx1 + nverts );
 	}
-	// construct side caps
+	// construct side caps. To conserve the geometry amount,
+	// treat them as a single smoothing group.
 	assert( nverts == piece.getVertexCount() );
 	for( i = 0; i < nverts; ++i ) {
 		int oldIdx0 = piece.getPolygon()[i];
 		int oldIdx1 = piece.getPolygon()[(i+1)%nverts];
+		int oldIdx2 = piece.getPolygon()[(i+nverts-1)%nverts];
 		int idx0 = vertRemap[oldIdx0];
 		int idx1 = vertRemap[oldIdx1];
+		int idx2 = vertRemap[oldIdx2];
 		assert( idx0 >= 0 && idx0 < nverts );
 		assert( idx1 >= 0 && idx1 < nverts );
+		assert( idx2 >= 0 && idx2 < nverts );
 		SVertexXyzNormal v0 = mVB[idx0];
-		SVertexXyzNormal v1 = mVB[idx1];
-		SVertexXyzNormal v2 = mVB[idx0+nverts];
-		SVertexXyzNormal v3 = mVB[idx1+nverts];
-		SVector3 edge01 = v1.p - v0.p;
-		SVector3 edge02 = v2.p - v0.p;
-		SVector3 normal = edge01.cross( edge02 ).getNormalized();
-		v0.n = v1.n = v2.n = v3.n = -normal;
+		SVertexXyzNormal v1 = v0;
+		v1.p.z = -v1.p.z;
+
+		const SVertexXyzNormal& vnear1 = mVB[idx1];
+		const SVertexXyzNormal& vnear2 = mVB[idx2];
+
+		SVector3 edge1 = vnear2.p - vnear1.p;
+		SVector3 edge2 = v1.p - v0.p;
+		SVector3 normal = edge1.cross( edge2 ).getNormalized();
+		v0.n = v1.n = normal;
+
 		mVB.push_back( v0 );
 		mVB.push_back( v1 );
-		mVB.push_back( v2 );
-		mVB.push_back( v3 );
-		mIB.push_back( nverts*2 + i*4 + 0 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
-		mIB.push_back( nverts*2 + i*4 + 1 );
-		mIB.push_back( nverts*2 + i*4 + 3 );
-		mIB.push_back( nverts*2 + i*4 + 2 );
+		int ibidx0 = nverts*2 + i*2 + 0;
+		int ibidx1 = nverts*2 + i*2 + 1;
+		int ibidx2 = nverts*2 + ((i+1)%nverts)*2 + 0;
+		int ibidx3 = nverts*2 + ((i+1)%nverts)*2 + 1;
+		mIB.push_back( ibidx0 );
+		mIB.push_back( ibidx2 );
+		mIB.push_back( ibidx1 );
+		mIB.push_back( ibidx1 );
+		mIB.push_back( ibidx2 );
+		mIB.push_back( ibidx3 );
 	}
 
 	// construct initial mMatrix
@@ -618,8 +629,8 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 				SVertexXyzDiffuse v1 = v0;
 				v1.p -= mInitWall->getMatrix().getAxisZ() * (HALF_THICK*2);
 
-				SVertexXyzDiffuse vnear1 = mVB[idx1];
-				SVertexXyzDiffuse vnear2 = mVB[idx2];
+				const SVertexXyzDiffuse& vnear1 = mVB[idx1];
+				const SVertexXyzDiffuse& vnear2 = mVB[idx2];
 
 				SVector3 edge1 = vnear2.p - vnear1.p;
 				SVector3 edge2 = v1.p - v0.p;

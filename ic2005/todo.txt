@@ -1,7 +1,8 @@
 CODE
 
 + Scroller scene
-. Single smooth group for physics pieces' caps
++ Single smooth group for physics pieces' caps
+. Restore walls (put back pieces, blend in wall, maybe blur)
 . Don't render wall caps for reflections
 . Cull walls for reflections
 . Frustum cull objects (not priority)
