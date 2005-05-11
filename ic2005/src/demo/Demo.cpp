@@ -7,6 +7,7 @@
 #include "DemoResources.h"
 #include "Entity.h"
 #include "Scene.h"
+#include "SceneScroller.h"
 #include "SceneShared.h"
 
 #include <dingus/gfx/DebugRenderer.h>
@@ -103,7 +104,7 @@ static void	gSetupGUI()
 // now THAT is a name :)
 enum eDemoScene {
 	SCENE_MAIN,
-	//SCENE_SCROLLER,
+	SCENE_SCROLLER,
 	SCENE_INTERACTIVE,
 	SCENECOUNT
 };
@@ -113,6 +114,8 @@ CSceneSharedStuff*	gSceneShared;
 // The Scenes (tm)
 CSceneMain*			gSceneMain;
 CSceneInteractive*	gSceneInt;
+CSceneScroller*		gSceneScroller;
+
 
 int			gCurScene = SCENE_MAIN;
 
@@ -411,6 +414,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gSceneShared = new CSceneSharedStuff();
 	gSceneMain = new CSceneMain( gSceneShared );
 	gSceneInt = new CSceneInteractive( gSceneShared );
+	gSceneScroller = new CSceneScroller();
 
 
 	if( !gNoPixelShaders ) {
@@ -538,6 +542,8 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
 				++gCurScene;
 				gCurScene %= SCENECOUNT;
+				if( gCurScene == SCENE_SCROLLER )
+					gSceneScroller->start( gDemoTimer.getTime() );
 			}
 			break;
 		case DIK_SPACE:
@@ -653,6 +659,7 @@ void CDemo::perform()
 	CScene* curScene = NULL;
 	switch( gCurScene ) {
 	case SCENE_MAIN:		curScene = gSceneMain; break;
+	case SCENE_SCROLLER:	curScene = gSceneScroller; break;
 	case SCENE_INTERACTIVE:	curScene = gSceneInt; break;
 	}
 	assert( curScene );
@@ -740,7 +747,16 @@ void CDemo::perform()
 	}
 	*/
 
+	if( gShowStats ) {
+		CConsole::getChannel("system") << "scene=" << gCurScene << endl;
+	}
+
+	// manage scene transitions
 	if( gCurScene == SCENE_MAIN && gSceneMain->isEnded() ) { 
+		gCurScene = SCENE_SCROLLER;
+		gSceneScroller->start( demoTime );
+	}
+	else if( gCurScene == SCENE_SCROLLER && gSceneScroller->isEnded() ) {
 		gFinished = true;
 	}
 }
@@ -758,6 +774,7 @@ void CDemo::shutdown()
 	safeDelete( gUIDlg );
 	safeDelete( gPPReflBlur );
 	delete gSceneMain;
+	delete gSceneScroller;
 	delete gSceneInt;
 	delete gSceneShared;
 }

@@ -248,6 +248,14 @@ SOURCE=.\src\demo\Scene.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\demo\SceneScroller.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\SceneScroller.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\demo\SceneShared.cpp
 # End Source File
 # Begin Source File
