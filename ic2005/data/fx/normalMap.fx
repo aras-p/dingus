@@ -79,7 +79,7 @@ half4 psMain( SOutput i ) : COLOR {
 }
 
 
-technique tec0
+technique tec20
 {
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
@@ -89,5 +89,63 @@ technique tec0
 	}
 	pass PLast {
 		//FillMode = Solid;
+	}
+}
+
+
+
+struct SOutputFFP {
+	float4 pos		: POSITION;
+	float4 tolight	: COLOR0;		// object space
+	float2 uv[2]	: TEXCOORD0;
+};
+
+
+SOutputFFP vsMainFFP( SPosTex i ) {
+	SOutputFFP o;
+
+	o.pos = mul( i.pos, mWVP );
+
+	float3 tolight = vLightPosOS - i.pos.xyz;
+	tolight = normalize( tolight );
+	o.tolight = float4( tolight*0.5+0.5, 1 );
+
+	o.uv[0] = i.uv;
+	o.uv[1] = i.uv;
+	
+	return o;
+}
+
+
+technique tecFFP
+{
+	pass P0 {
+		VertexShader = compile vs_1_1 vsMainFFP();
+		PixelShader = NULL;
+
+		Sampler[0] = (smpNormalAO);
+		ColorOp[0] = DotProduct3;
+		ColorArg1[0] = Texture;
+		ColorArg2[0] = Diffuse;
+		AlphaOp[0] = SelectArg1;
+		AlphaArg1[0] = Texture;
+
+		Sampler[1] = (smpBase);
+		ColorOp[1] = Modulate;
+		ColorArg1[1] = Texture;
+		ColorArg2[1] = Current;
+		AlphaOp[1] = SelectArg1;
+		AlphaArg1[1] = Texture;
+
+		//ColorOp[2] = SelectArg2;
+		//ColorArg1[2] = Current;
+		//ColorArg2[2] = Current | AlphaReplicate;
+		//AlphaOp[2] = SelectArg1;
+		//AlphaArg1[2] = Current;
+
+		ColorOp[2] = Disable;
+		AlphaOp[2] = Disable;
+	}
+	pass PLast {
 	}
 }
