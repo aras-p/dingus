@@ -559,6 +559,9 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 			mIB[5] = 2;
 		}
 
+		mVBSizeNoCaps = mVB.size();
+		mIBSizeNoCaps = mIB.size();
+
 	} else {
 
 		// for non-roots, construct proper polygon
@@ -606,6 +609,9 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 			mIB[i*3+2] = iii;
 		}
 
+		mVBSizeNoCaps = mVB.size();
+		mIBSizeNoCaps = mIB.size();
+
 		// Don't construct the side caps for non-leaf pieces.
 		// I think they never can be seen (not sure)
 		if( !mQuadNode ) {
@@ -641,10 +647,10 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 				mVB.push_back( v0 );
 				mVB.push_back( v1 );
 
-				int ibidx0 = nverts + i*2 + 0;
-				int ibidx1 = nverts + i*2 + 1;
-				int ibidx2 = nverts + ((i+1)%nverts)*2 + 0;
-				int ibidx3 = nverts + ((i+1)%nverts)*2 + 1;
+				int ibidx0 = i*2 + 0;
+				int ibidx1 = i*2 + 1;
+				int ibidx2 = ((i+1)%nverts)*2 + 0;
+				int ibidx3 = ((i+1)%nverts)*2 + 1;
 				mIB.push_back( ibidx0 );
 				mIB.push_back( ibidx2 );
 				mIB.push_back( ibidx1 );
@@ -681,19 +687,26 @@ void CWallPieceCombined::initEnd( TWallQuadNode* quadtree )
 }
 
 
-void CWallPieceCombined::preRender( int& vbcount, int& ibcount ) const
+void CWallPieceCombined::preRenderSides( int& vbcount, int& ibcount ) const
 {
-	vbcount = mVB.size();
-	ibcount = mIB.size();
+	vbcount = mVBSizeNoCaps;
+	ibcount = mIBSizeNoCaps;
 }
 
-void CWallPieceCombined::render( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
+void CWallPieceCombined::preRenderCaps( int& vbcount, int& ibcount ) const
+{
+	vbcount = mVB.size() - mVBSizeNoCaps;
+	ibcount = mIB.size() - mIBSizeNoCaps;
+}
+
+void CWallPieceCombined::renderSides( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
 {
 	int i;
+
+	preRenderSides( vbcount, ibcount );
 	
 	// VB
 	const SVertexXyzDiffuse* srcVB = &mVB[0];
-	vbcount = mVB.size();
 	for( i = 0; i < vbcount; ++i ) {
 		vb->p = srcVB->p;
 		vb->diffuse = srcVB->diffuse;
@@ -703,7 +716,32 @@ void CWallPieceCombined::render( TPieceVertex* vb, unsigned short* ib, int baseI
 
 	// IB
 	const int* srcIB = &mIB[0];
-	ibcount = mIB.size();
+	for( i = 0; i < ibcount; ++i ) {
+		int idx = *srcIB + baseIndex;
+		assert( idx >= 0 && idx < 64000 );
+		*ib = idx;
+		++srcIB;
+		++ib;
+	}
+}
+
+void CWallPieceCombined::renderCaps( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
+{
+	int i;
+
+	preRenderCaps( vbcount, ibcount );
+	
+	// VB
+	const SVertexXyzDiffuse* srcVB = &mVB[mVBSizeNoCaps];
+	for( i = 0; i < vbcount; ++i ) {
+		vb->p = srcVB->p;
+		vb->diffuse = srcVB->diffuse;
+		++srcVB;
+		++vb;
+	}
+
+	// IB
+	const int* srcIB = &mIB[mIBSizeNoCaps];
 	for( i = 0; i < ibcount; ++i ) {
 		int idx = *srcIB + baseIndex;
 		assert( idx >= 0 && idx < 64000 );
@@ -728,22 +766,32 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 {
 	mMatrix.identify();
 
-	for( int i = 0; i < RMCOUNT; ++i )
-		mRenderables[i] = NULL;
+	for( int i = 0; i < RMCOUNT; ++i ) {
+		mRenderablesFull[i] = NULL;
+		mRenderablesNoCaps[i] = NULL;
+	}
 	
-	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
-	if( reflTextureID )
-		mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
+	mRenderablesFull[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
+	mRenderablesNoCaps[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
+	mRenderablesFull[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
+	mRenderablesNoCaps[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
+	if( reflTextureID ) {
+		mRenderablesFull[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
+		mRenderablesNoCaps[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
+	}
 	
-	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallRefl") );
+	mRenderablesFull[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
+	mRenderablesNoCaps[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
+	mRenderablesFull[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallRefl") );
+	mRenderablesNoCaps[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallRefl") );
 }
 
 CWall3D::~CWall3D()
 {
-	for( int i = 0; i < RMCOUNT; ++i )
-		safeDelete( mRenderables[i] );
+	for( int i = 0; i < RMCOUNT; ++i ) {
+		safeDelete( mRenderablesFull[i] );
+		safeDelete( mRenderablesNoCaps[i] );
+	}
 
 	stl_utils::wipe( mPiecesCombined );
 	safeDeleteArray( mPieces3D );
@@ -1008,16 +1056,29 @@ bool CWall3D::renderIntoVB()
 		pcleaf->markRendered( renderID );
 	}
 
-	// accumulate total vertex/index count
+	//
+	// accumulate total vertex/index counts
+
 	int n = piecesToRender.size();
 	for( i = 0; i < n; ++i )
 	{
 		const CWallPieceCombined& pc = *piecesToRender[i];
 		int nvb, nib;
-		pc.preRender( nvb, nib );
+		pc.preRenderSides( nvb, nib );
 		nverts += nvb;
 		nindices += nib;
 	}
+	int nvertsNoCaps = nverts;
+	int nindicesNoCaps = nindices;
+	for( i = 0; i < n; ++i )
+	{
+		const CWallPieceCombined& pc = *piecesToRender[i];
+		int nvb, nib;
+		pc.preRenderCaps( nvb, nib );
+		nverts += nvb;
+		nindices += nib;
+	}
+
 
 	gWallVertCount += nverts;
 	gWallTriCount += nindices/3;
@@ -1035,7 +1096,15 @@ bool CWall3D::renderIntoVB()
 	for( i = 0; i < n; ++i ) {
 		int nvb, nib;
 		const CWallPieceCombined& pc = *piecesToRender[i];
-		pc.render( vb, ib, baseIndex, nvb, nib );
+		pc.renderSides( vb, ib, baseIndex, nvb, nib );
+		baseIndex += nvb;
+		vb += nvb;
+		ib += nib;
+	}
+	for( i = 0; i < n; ++i ) {
+		int nvb, nib;
+		const CWallPieceCombined& pc = *piecesToRender[i];
+		pc.renderCaps( vb, ib, baseIndex, nvb, nib );
 		baseIndex += nvb;
 		vb += nvb;
 		ib += nib;
@@ -1046,29 +1115,46 @@ bool CWall3D::renderIntoVB()
 	// setup renderables
 	for( i = 0; i < RMCOUNT; ++i )
 	{
-		if( !mRenderables[i] )
-			continue;
-		mRenderables[i]->resetVBs();
+		if( mRenderablesFull[i] ) {
+			mRenderablesFull[i]->resetVBs();
 
-		mRenderables[i]->setVB( mVBChunk->getBuffer(), 0 );
-		mRenderables[i]->setStride( mVBChunk->getStride(), 0 );
-		mRenderables[i]->setBaseVertex( mVBChunk->getOffset() );
-		mRenderables[i]->setMinVertex( 0 );
-		mRenderables[i]->setNumVertices( mVBChunk->getSize() );
+			mRenderablesFull[i]->setVB( mVBChunk->getBuffer(), 0 );
+			mRenderablesFull[i]->setStride( mVBChunk->getStride(), 0 );
+			mRenderablesFull[i]->setBaseVertex( mVBChunk->getOffset() );
+			mRenderablesFull[i]->setMinVertex( 0 );
+			mRenderablesFull[i]->setNumVertices( nverts );
 
-		mRenderables[i]->setIB( mIBChunk->getBuffer() );
-		mRenderables[i]->setStartIndex( mIBChunk->getOffset() );
-		mRenderables[i]->setPrimCount( mIBChunk->getSize() / 3 );
+			mRenderablesFull[i]->setIB( mIBChunk->getBuffer() );
+			mRenderablesFull[i]->setStartIndex( mIBChunk->getOffset() );
+			mRenderablesFull[i]->setPrimCount( nindices / 3 );
 
-		mRenderables[i]->setPrimType( D3DPT_TRIANGLELIST );
+			mRenderablesFull[i]->setPrimType( D3DPT_TRIANGLELIST );
+		}
+
+		if( mRenderablesNoCaps[i] ) {
+			mRenderablesNoCaps[i]->resetVBs();
+
+			mRenderablesNoCaps[i]->setVB( mVBChunk->getBuffer(), 0 );
+			mRenderablesNoCaps[i]->setStride( mVBChunk->getStride(), 0 );
+			mRenderablesNoCaps[i]->setBaseVertex( mVBChunk->getOffset() );
+			mRenderablesNoCaps[i]->setMinVertex( 0 );
+			mRenderablesNoCaps[i]->setNumVertices( nvertsNoCaps );
+
+			mRenderablesNoCaps[i]->setIB( mIBChunk->getBuffer() );
+			mRenderablesNoCaps[i]->setStartIndex( mIBChunk->getOffset() );
+			mRenderablesNoCaps[i]->setPrimCount( nindicesNoCaps / 3 );
+
+			mRenderablesNoCaps[i]->setPrimType( D3DPT_TRIANGLELIST );
+		}
 	}
 	return true;
 }
 
 
-void CWall3D::render( eRenderMode rm )
+void CWall3D::render( eRenderMode rm, bool noSideCaps )
 {
-	if( !mRenderables[rm] )
+	CRenderable* r = noSideCaps ? mRenderablesNoCaps[rm] : mRenderablesFull[rm];
+	if( !r )
 		return;
 
 	if( mNeedsRenderingIntoVB ||
@@ -1077,5 +1163,5 @@ void CWall3D::render( eRenderMode rm )
 	{
 		renderIntoVB();
 	}
-	G_RENDERCTX->attach( *mRenderables[rm] );
+	G_RENDERCTX->attach( *r );
 }

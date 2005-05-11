@@ -158,8 +158,11 @@ public:
 
 	int		getLeafIndex() const { assert(mCombinedPieces.size()==1); return mCombinedPieces[0]; }
 
-	void	preRender( int& vbcount, int& ibcount ) const;
-	void	render( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
+	void	preRenderSides( int& vbcount, int& ibcount ) const;
+	void	renderSides( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
+	
+	void	preRenderCaps( int& vbcount, int& ibcount ) const;
+	void	renderCaps( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
 
 	const TVertexVector& getVB() const { return mVB; }
 	const TIntVector& getIB() const { return mIB; }
@@ -172,6 +175,8 @@ public:
 private:
 	TVertexVector	mVB;
 	TIntVector		mIB;
+	int				mVBSizeNoCaps;
+	int				mIBSizeNoCaps;
 	CAABox2			mBounds;
 	TIntVector		mCombinedPieces;
 	TWallQuadNode*	mQuadNode;
@@ -246,7 +251,7 @@ public:
 	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, TIntVector& pcs );
 	void	fracturePiecesInYRange( float t, bool fractureOut, float y1, float y2, TIntVector& pcs );
 
-	void	render( eRenderMode rm );
+	void	render( eRenderMode rm, bool noSideCaps );
 
 private:
 	void	initPieces();
@@ -269,7 +274,8 @@ private:
 	int				mQuadtreeNodeCount;
 	std::vector<CWallPieceCombined*>	mPiecesCombined;
 
-	CRenderableIndexedBuffer*	mRenderables[RMCOUNT];
+	CRenderableIndexedBuffer*	mRenderablesFull[RMCOUNT];
+	CRenderableIndexedBuffer*	mRenderablesNoCaps[RMCOUNT];
 	TVBChunk::TSharedPtr		mVBChunk;
 	TIBChunk::TSharedPtr		mIBChunk;
 
