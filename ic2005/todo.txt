@@ -1,6 +1,6 @@
 CODE
 
-. Scroller scene
++ Scroller scene
 . Single smooth group for physics pieces' caps
 . Don't render wall caps for reflections
 . Cull walls for reflections
@@ -14,6 +14,7 @@ CODE
 
 * Fix lighting on some objects bug
 * Light pos in object space via fx params
+
 
 ART
 

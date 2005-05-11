@@ -20,12 +20,18 @@ public:
 
 private:
 	static const float SCROLLER_DURATION;
+	void	startScrollerAnim();
+
+private:
 
 	// timing
 	time_value	mStartTime;
 	time_value	mLocalTime; // time since started
 	float		mPlayedTime;
 	float		mByeAnimDuration;
+
+	float		mDefAnimPlayedTime;
+	float		mDefAnimPlayTime;
 
 	// anims
 	std::vector<CAnimationBunch*>	mAnims;

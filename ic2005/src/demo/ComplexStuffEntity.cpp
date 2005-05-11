@@ -5,12 +5,12 @@
 // --------------------------------------------------------------------------
 
 
-CComplexStuffEntity::CComplexStuffEntity( const char* name, const char* defaultAnim )
+CComplexStuffEntity::CComplexStuffEntity( const char* name, const char* defaultAnim, float defAnimFadeInTime )
 {
 	mAnimator = new CCharacterAnimator();
 	CAnimationBunch& anim = *RGET_ANIM(defaultAnim);
 	float animDuration = gGetAnimDuration(anim,false);
-	mAnimator->setDefaultAnim( anim, animDuration, 0.1f );
+	mAnimator->setDefaultAnim( anim, animDuration, defAnimFadeInTime );
 	mAnimator->playDefaultAnim( CSystemTimer::getInstance().getTime() );
 
 	CSkinMesh* skinMesh = RGET_SKIN( name );

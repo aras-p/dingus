@@ -9,9 +9,9 @@
 
 // --------------------------------------------------------------------------
 
-inline static double gGetAnimDuration( CAnimationBunch& b, bool loopLast )
+inline static double gGetAnimDuration( const CAnimationBunch& b, bool loopLast )
 {
-	CAnimationBunch::TVector3Animation* a = b.findVector3Anim("pos");
+	const CAnimationBunch::TVector3Animation* a = b.findVector3Anim("pos");
 	assert( a );
 	return (a->getLength() - (loopLast ? 0 : 1)) / ANIM_FPS;
 }
@@ -21,7 +21,7 @@ inline static double gGetAnimDuration( CAnimationBunch& b, bool loopLast )
 
 class CComplexStuffEntity : public boost::noncopyable {
 public:
-	CComplexStuffEntity( const char* name, const char* defaultAnim );
+	CComplexStuffEntity( const char* name, const char* defaultAnim, float defAnimFadeInTime = 0.1f );
 	~CComplexStuffEntity();
 
 	void	render( eRenderMode renderMode );
