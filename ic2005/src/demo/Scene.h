@@ -78,6 +78,10 @@ private:
 	CComplexStuffEntity*	mCharacter;
 	int			mSpineBoneIndex;
 
+	// other characters
+	CComplexStuffEntity*	mCharacter2;
+	CComplexStuffEntity*	mCharacter3;
+
 	// bed/stone
 	CMeshEntity*			mBedStatic;
 	CComplexStuffEntity*	mBedAnim;

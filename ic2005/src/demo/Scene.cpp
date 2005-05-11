@@ -115,6 +115,12 @@ static const float STONE_HIDE_FRAME = 1710 + 800;
 
 static const float WALL_LOD1_FRAME = 3000 + 800;
 
+static const float DOOR_BEGIN_FRAME = 5304 + 800;
+static const float DOOR_END_FRAME = 5400 + 800;
+
+static const float GUY2_BEGIN_FRAME = 5500;
+static const float GUY3_BEGIN_FRAME = 5639;
+
 
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 :	mSharedStuff( sharedStuff )
@@ -123,8 +129,13 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 ,	mCurrAnimFrame(0)
 ,	mCurrAnimAlpha(0)
 {
+	// characters
 	mCharacter = new CComplexStuffEntity( "Bicas", "BicasAnim" );
 	addAnimEntity( *mCharacter );
+	mCharacter2 = new CComplexStuffEntity( "Bicas", "Bicas2Anim" );
+	addAnimEntity( *mCharacter2 );
+	mCharacter3 = new CComplexStuffEntity( "Bicas", "Bicas3Anim" );
+	addAnimEntity( *mCharacter3 );
 
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
 
@@ -250,6 +261,21 @@ void CSceneMain::update( time_value demoTime, float dt )
 	mCurrAnimFrame = mCurrAnimAlpha * mAnimFrameCount;
 
 	mCharacter->update( demoTime );
+
+	if( mCurrAnimFrame >= GUY2_BEGIN_FRAME ) {
+		double animS = (mCurrAnimFrame-GUY2_BEGIN_FRAME)/ANIM_FPS;
+		if( animS < 0 ) animS = 0;
+		time_value animTime = time_value::fromsec( animS );
+		mCharacter2->update( animTime );
+	}
+	if( mCurrAnimFrame >= GUY3_BEGIN_FRAME ) {
+		double animS = (mCurrAnimFrame-GUY3_BEGIN_FRAME)/ANIM_FPS;
+		if( animS < 0 ) animS = 0;
+		time_value animTime = time_value::fromsec( animS );
+		mCharacter3->update( animTime );
+	}
+	
+
 	if( mCurrAnimFrame >= BED_FRACTURE_FRAME ) {
 		double bedAnimS = (mCurrAnimFrame-BED_FRACTURE_FRAME)/ANIM_FPS;
 		time_value bedAnimTime = time_value::fromsec( bedAnimS );
@@ -278,8 +304,14 @@ void CSceneMain::render( eRenderMode renderMode )
 	int wallsLod = mCurrAnimFrame < WALL_LOD1_FRAME ? 0 : 1;
 	mSharedStuff->renderWalls( wallsLod, renderMode );
 
+	// characters
 	mCharacter->render( renderMode );
+	if( mCurrAnimFrame >= DOOR_BEGIN_FRAME ) {
+		mCharacter2->render( renderMode );
+		mCharacter3->render( renderMode );
+	}
 
+	// room
 	int i, n;
 	n = mRoom.size();
 	for( i = 0; i < n; ++i ) {
@@ -355,7 +387,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 void CSceneInteractive::render( eRenderMode renderMode )
 {
-	//mSharedStuff->renderWalls( 0, renderMode );
+	mSharedStuff->renderWalls( 0, renderMode );
 	
 	mCharacter->render( renderMode );
 	

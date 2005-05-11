@@ -1,6 +1,7 @@
 CODE
 
 + Scroller scene
++ Other characters
 . Restore walls (put back pieces, blend in wall, maybe blur)
 . Optimize/hack physics for the massive fracture scene
 . Animate doors
