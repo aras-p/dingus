@@ -15,6 +15,8 @@ public:
 	virtual void	render( eRenderMode renderMode );
 	virtual const SMatrix4x4* getLightTargetMatrix() const;
 	
+	virtual bool	needsReflections() const { return false; }
+
 	void	start( time_value demoTime );
 	bool	isEnded() const { return mPlayedTime >= SCROLLER_DURATION; }
 

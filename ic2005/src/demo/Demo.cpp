@@ -268,12 +268,15 @@ void gShadowRender( CScene& scene )
 
 void gRenderWallReflections( CScene& scene )
 {
-	SVector3 planePos[CFACE_COUNT] = {
+	if( !scene.needsReflections() )
+		return;
+
+	static SVector3 planePos[CFACE_COUNT] = {
 		SVector3(ROOM_MAX.x,0,0), SVector3(ROOM_MIN.x,0,0),
 		SVector3(0,ROOM_MAX.y,0), SVector3(0,ROOM_MIN.y,0),
 		SVector3(0,0,ROOM_MAX.z), SVector3(0,0,ROOM_MIN.z),
 	};
-	SVector3 planeNrm[CFACE_COUNT] = {
+	static SVector3 planeNrm[CFACE_COUNT] = {
 		SVector3(-1,0,0), SVector3(1,0,0),
 		SVector3(0,-1,0), SVector3(0,1,0),
 		SVector3(0,0,-1), SVector3(0,0,1),

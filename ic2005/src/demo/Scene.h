@@ -29,7 +29,9 @@ public:
 	virtual void	update( time_value demoTime, float dt ) = 0;
 	virtual void	render( eRenderMode renderMode ) = 0;
 
-	virtual const SMatrix4x4* getLightTargetMatrix() const { return NULL; }
+	virtual const SMatrix4x4* getLightTargetMatrix() const = 0;
+
+	virtual bool	needsReflections() const { return true; }
 
 	// Camera
 	const CCameraEntity& getCamera() const { return mCamera; }
