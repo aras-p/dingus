@@ -1,0 +1,10 @@
+name = 'uvTopBricks'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/dummy' },
+	  { 'tex', 'tNormalAO', 'rm/BricksTopLo.NMF.nao' },
+  },
+},
+}
