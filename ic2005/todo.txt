@@ -4,7 +4,7 @@ CODE
 . Restore walls (put back pieces, blend in wall, maybe blur)
 . Tweak first attack's positions (lower)
 . Tweak last attack position (clear walls for doors)
-. Optimize/hack physics for the massive fracture scene
++ Optimize/hack physics for the massive fracture scene
 . Shadows for other guys (needed?)
 . Cull walls for reflections
 . Frustum cull objects (not priority)

@@ -83,6 +83,8 @@ bool CPhysPiece::update()
 	if( mTimeLeft < 0 )
 		return false;
 
+	if( isIdle() )
+		removeFromPhysics();
 	CPhysObject::update( mMatrix );
 	return true;
 }
