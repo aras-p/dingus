@@ -7,6 +7,7 @@
 
 CMeshEntity::CMeshEntity( const std::string& name )
 :	mMesh(0)
+,	mName( name )
 {
 	assert( !name.empty() );
 	std::string descName = name;

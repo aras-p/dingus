@@ -3,6 +3,10 @@
 
 #include "Scene.h"
 
+namespace dingus {
+	class CCharacterAnimator;
+};
+
 
 // --------------------------------------------------------------------------
 
@@ -41,6 +45,10 @@ private:
 	// other characters
 	CComplexStuffEntity*	mCharacter2;
 	CComplexStuffEntity*	mCharacter3;
+
+	// for animating doors
+	CCharacterAnimator*	mDoorsAnim;
+	std::vector<int>	mDoorAnim2RoomIdx;
 
 	// bed/stone
 	CMeshEntity*			mBedStatic;

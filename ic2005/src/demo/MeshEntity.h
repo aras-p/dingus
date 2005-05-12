@@ -41,11 +41,15 @@ public:
 		return rmv[0];
 	}
 
+	const std::string& getName() const { return mName; }
+
 private:
 	typedef std::vector<CRenderableMesh*>	TMeshVector;
 
 	CMesh*		mMesh;
 	TMeshVector	mRenderMeshes[RMCOUNT];
+
+	std::string	mName;
 };
 
 

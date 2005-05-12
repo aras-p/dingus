@@ -52,6 +52,45 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	// room
 	gReadScene( "data/scene.lua", mRoom );
 
+	// animating doors
+	CAnimationBunch* animDoors = RGET_ANIM("DoorsAnim");
+	mDoorsAnim = new CCharacterAnimator();
+	mDoorsAnim->setDefaultAnim( *animDoors, gGetAnimDuration(*animDoors,false), 0.1f );
+	mDoorsAnim->playDefaultAnim( time_value() );
+	mDoorsAnim->updateLocal( time_value() );
+	mDoorsAnim->updateWorld();
+	// find the room entity for each door animation curve
+	// we can't match by name because some names in entities are duplicated :)
+	// so we try to match by 'good enough' correspondence in transform
+	int ndoorEnts = animDoors->getCurveCount();
+	int nroomEnts = mRoom.size();
+	mDoorAnim2RoomIdx.resize( ndoorEnts, -1 );
+	for( int i = 0; i < ndoorEnts; ++i ) {
+		// we must match names, if we throw out last letter from anim name
+		std::string doorName = animDoors->getCurveName(i);
+		doorName.resize( doorName.size()-1 );
+
+		const SMatrix4x4& doorMat = mDoorsAnim->getBoneWorldMatrices()[i];
+
+		for( int j = 0; j < nroomEnts; ++j ) {
+			const CMeshEntity& re = *mRoom[j];
+			if( doorName != re.getName() )
+				continue;
+			
+			const SMatrix4x4& roomMat = re.mWorldMat;
+
+			// it's enough just to match position roughly
+			// name filter earlier rejected all the rest
+			const float MATCH_POS = 0.01f;
+			if( SVector3(roomMat.getOrigin()-doorMat.getOrigin()).lengthSq() < MATCH_POS )
+			{
+				// match!
+				mDoorAnim2RoomIdx[i] = j;
+				break;
+			}
+		}
+	}
+
 	// fracture scenario
 	gReadFractureScenario( "data/fractures.txt" );
 
@@ -75,6 +114,7 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 
 CSceneMain::~CSceneMain()
 {
+	delete mDoorsAnim;
 	stl_utils::wipe( mRoom );
 }
 
@@ -153,17 +193,13 @@ void CSceneMain::update( time_value demoTime, float dt )
 {
 	mSharedStuff->updatePhysics();
 
-	int n = mRoom.size();
-	for( int i = 0; i < n; ++i ) {
-		mRoom[i]->update();
-	}
-
 	float demoTimeS = demoTime.tosec();
 	mCurrAnimAlpha = demoTimeS / mAnimDuration;
 	mCurrAnimFrame = mCurrAnimAlpha * mAnimFrameCount;
 
 	mCharacter->update( demoTime );
 
+	// animate characters
 	if( mCurrAnimFrame >= GUY2_BEGIN_FRAME ) {
 		double animS = (mCurrAnimFrame-GUY2_BEGIN_FRAME)/ANIM_FPS;
 		if( animS < 0 ) animS = 0;
@@ -175,6 +211,24 @@ void CSceneMain::update( time_value demoTime, float dt )
 		if( animS < 0 ) animS = 0;
 		time_value animTime = time_value::fromsec( animS );
 		mCharacter3->update( animTime );
+	}
+
+	// animate doors
+	{
+		// evaluate animation
+		double animS = (mCurrAnimFrame-DOOR_BEGIN_FRAME)/ANIM_FPS;
+		if( animS < 0 ) animS = 0;
+		time_value animTime = time_value::fromsec( animS );
+		mDoorsAnim->updateLocal( animTime );
+		mDoorsAnim->updateWorld();
+		// update corresponding room entities
+		for( int i = 0; i < mDoorAnim2RoomIdx.size(); ++i ) {
+			int idx = mDoorAnim2RoomIdx[i];
+			if( idx < 0 )
+				continue;
+			mRoom[idx]->mWorldMat = mDoorsAnim->getBoneWorldMatrices()[i];
+			mRoom[idx]->setMoved();
+		}
 	}
 	
 
@@ -189,6 +243,12 @@ void CSceneMain::update( time_value demoTime, float dt )
 			stoneAnimS = 0.0;
 		time_value stoneAnimTime = time_value::fromsec( stoneAnimS );
 		mStone->update( stoneAnimTime );
+	}
+
+	// update room
+	int n = mRoom.size();
+	for( int i = 0; i < n; ++i ) {
+		mRoom[i]->update();
 	}
 
 	int wallsLod = mCurrAnimFrame < WALL_LOD1_FRAME ? 0 : 1;

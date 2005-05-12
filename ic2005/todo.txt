@@ -2,8 +2,9 @@ CODE
 
 + Scroller scene
 . Restore walls (put back pieces, blend in wall, maybe blur)
+. Tweak first attack's positions (lower)
+. Tweak last attack position (clear walls for doors)
 . Optimize/hack physics for the massive fracture scene
-. Animate doors
 . Shadows for other guys (needed?)
 . Cull walls for reflections
 . Frustum cull objects (not priority)
@@ -15,6 +16,7 @@ CODE
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
 
+* Animate doors
 * Other characters
 * Single smooth group for physics pieces' caps
 * Don't render wall caps for reflections
@@ -27,6 +29,6 @@ ART
 
 + NMap top/ceil/floor bricks
 . Low poly / UV / NMap 2nd gargoyle
+. Hand-make fractured floor/ceil meshes and 2nd room
 . (Antanas?) Animate camera target or dummy object for DoF focus distance
 + nvdxt all textures, experiment with mip filters
-
