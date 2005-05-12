@@ -2,6 +2,7 @@
 #define __SCENE_SCROLLER_H
 
 #include "Scene.h"
+#include <dingus/utils/Random.h>
 
 
 // --------------------------------------------------------------------------
@@ -25,6 +26,8 @@ private:
 	void	startScrollerAnim();
 
 private:
+	// random generator
+	CRandomFast	mRandom;
 
 	// timing
 	time_value	mStartTime;

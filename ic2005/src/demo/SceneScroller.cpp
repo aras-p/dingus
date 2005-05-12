@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "SceneScroller.h"
 #include "ComplexStuffEntity.h"
-#include <dingus/utils/Random.h>
+#include <time.h>
 
 
 
@@ -10,7 +10,6 @@
 const float CSceneScroller::SCROLLER_DURATION = 41; // seconds
 //const float CSceneScroller::SCROLLER_DURATION = 241; // seconds
 
-//const float SCROLLER_ANIM_SPEEDUP = 0.9f;
 
 
 static float gGetNextDefAnimPlayTime()
@@ -26,6 +25,8 @@ CSceneScroller::CSceneScroller()
 ,	mDefAnimPlayedTime(0.0f)
 ,	mDefAnimPlayTime( gGetNextDefAnimPlayTime() )
 {
+	mRandom.seed( time(NULL) );
+
 	mCharacter = new CComplexStuffEntity( "Bicas", "Idle_v01", 0.5f );
 	addAnimEntity( *mCharacter );
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
@@ -83,7 +84,7 @@ void CSceneScroller::startScrollerAnim()
 
 	int n = mAnims.size();
 	for( int i = 0; i < n; ++i ) {
-		int idx = gRandom.getUInt() % n;
+		int idx = mRandom.getByte() % n;
 		const CAnimationBunch* anim = mAnims[idx];
 		if( gGetAnimDuration(*anim,false) < availableTime ) {
 			if( mAnimPlayCount[idx] < bestPlayCount ) {
