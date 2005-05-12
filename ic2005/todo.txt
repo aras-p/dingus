@@ -1,10 +1,10 @@
 CODE
 
 + Scroller scene
-+ Other characters
 . Restore walls (put back pieces, blend in wall, maybe blur)
 . Optimize/hack physics for the massive fracture scene
 . Animate doors
+. Shadows for other guys (needed?)
 . Cull walls for reflections
 . Frustum cull objects (not priority)
 . Reflections into single RT, with stencil/Z masks for fast culling
@@ -15,7 +15,8 @@ CODE
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
 
-+ Single smooth group for physics pieces' caps
+* Other characters
+* Single smooth group for physics pieces' caps
 * Don't render wall caps for reflections
 * Fix lighting on some objects bug
 * Light pos in object space via fx params

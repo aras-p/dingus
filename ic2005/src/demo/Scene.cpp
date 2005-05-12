@@ -118,8 +118,9 @@ static const float WALL_LOD1_FRAME = 3000 + 800;
 static const float DOOR_BEGIN_FRAME = 5304 + 800;
 static const float DOOR_END_FRAME = 5400 + 800;
 
-static const float GUY2_BEGIN_FRAME = 5500;
-static const float GUY3_BEGIN_FRAME = 5639;
+static const float GUY2_BEGIN_FRAME = 5500 + 800;
+static const float GUY3_BEGIN_FRAME = 5639 + 800;
+
 
 
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
