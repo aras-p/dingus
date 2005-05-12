@@ -2,19 +2,23 @@ CODE
 
 + Scroller scene
 . Restore walls (put back pieces, blend in wall, maybe blur)
+. Fade out physics/bed/stone pieces
 . Tweak first attack's positions (lower)
-. Tweak last attack position (clear walls for doors)
-+ Optimize/hack physics for the massive fracture scene
 . Shadows for other guys (needed?)
-. Cull walls for reflections
-. Frustum cull objects (not priority)
-. Reflections into single RT, with stencil/Z masks for fast culling
 . DoF
 . Glow; render extra brightness to alpha
 . Fresnel for reflections?
 . Loading screen
+. Blur in/out in several places
+. Reflections into single RT, with stencil/Z masks for fast culling
+. Cull walls for reflections
+. Frustum cull objects (not priority)
+. Look at asm of the shaders, profile
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
+
++ Tweak last attack position (clear walls for doors)
++ Optimize/hack physics for the massive fracture scene
 
 * Animate doors
 * Other characters
