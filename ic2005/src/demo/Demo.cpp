@@ -7,6 +7,7 @@
 #include "DemoResources.h"
 #include "Entity.h"
 #include "Scene.h"
+#include "SceneMain.h"
 #include "SceneScroller.h"
 #include "SceneShared.h"
 

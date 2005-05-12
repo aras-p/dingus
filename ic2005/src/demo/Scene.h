@@ -9,7 +9,28 @@ class CComplexStuffEntity;
 class CControllableCharacter;
 class CThirdPersonCameraController;
 class CSceneSharedStuff;
-class CRoomObjectEntity;
+
+
+// --------------------------------------------------------------------------
+
+class CRoomObjectEntity : public CMeshEntity {
+public:
+	CRoomObjectEntity( const std::string& name );
+
+	void	setMoved() { mMoved = true; }
+	void	update();
+	void	render( eRenderMode renderMode );
+
+private:
+	SMatrix4x4	mInvWorld;
+	SVector3	mLightPosOS;	// light pos in object space
+	SVector3	mEyePosOS;		// eye pos in object space
+	bool		mMoved;
+};
+
+// --------------------------------------------------------------------------
+
+bool gReadScene( const char* fileName, std::vector<CRoomObjectEntity*>& scene );
 
 
 // --------------------------------------------------------------------------
@@ -41,54 +62,6 @@ private:
 	CCameraEntity		mCamera;		// Camera for the scene.
 	TEntityVector		mEntities;		// Owns entities.
 	TAnimEntityVector	mAnimEntities;	// Owns entities.
-};
-
-
-// --------------------------------------------------------------------------
-
-class CSceneMain : public CScene {
-public:
-	CSceneMain( CSceneSharedStuff* sharedStuff );
-	~CSceneMain();
-
-	virtual void	update( time_value demoTime, float dt );
-	virtual void	render( eRenderMode renderMode );
-	virtual const SMatrix4x4* getLightTargetMatrix() const;
-	bool	isEnded() const { return mCurrAnimAlpha >= 1.0; }
-
-private:
-	void	animateCamera();
-
-private:
-	CSceneSharedStuff*	mSharedStuff;
-
-	// camera anim
-	CAnimationBunch*	mCameraAnim;
-	CAnimationBunch::TVector3Animation*	mCameraAnimPos;
-	CAnimationBunch::TQuatAnimation*	mCameraAnimRot;
-	CAnimationBunch::TVector3Animation*	mCameraAnimParams;
-
-	// timing
-	double	mAnimFrameCount;
-	double	mAnimDuration;
-	double	mCurrAnimFrame;
-	double	mCurrAnimAlpha;
-
-	// main character
-	CComplexStuffEntity*	mCharacter;
-	int			mSpineBoneIndex;
-
-	// other characters
-	CComplexStuffEntity*	mCharacter2;
-	CComplexStuffEntity*	mCharacter3;
-
-	// bed/stone
-	CMeshEntity*			mBedStatic;
-	CComplexStuffEntity*	mBedAnim;
-	CComplexStuffEntity*	mStone;
-
-	// outside room
-	std::vector<CRoomObjectEntity*>	mRoom;
 };
 
 
