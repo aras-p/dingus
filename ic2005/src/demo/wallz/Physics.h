@@ -14,12 +14,6 @@ typedef dGeomID	TPhysCollidable;
 #endif
 
 
-#ifdef PHYSICS_NOVODEX
-#include <NxPhysics.h>
-typedef NxActor*	TPhysObject;
-typedef NxShape*	TPhysCollidable;
-#endif
-
 
 
 namespace physics {
@@ -34,6 +28,9 @@ namespace physics {
 		CPhysObject( const SMatrix4x4& matrix, const SVector3& size );
 		~CPhysObject();
 		void	update( SMatrix4x4& matrix );
+		void	removeFromPhysics();
+		bool	isRemoved() const { return !mObject || !mCollidable; }
+		bool	isIdle() const;
 	private:
 		TPhysObject		mObject;
 		TPhysCollidable	mCollidable;

@@ -67,12 +67,14 @@ CPhysObject::CPhysObject( const SMatrix4x4& matrix, const SVector3& size )
 
 CPhysObject::~CPhysObject()
 {
-	dBodyDestroy( mObject );
-	dGeomDestroy( mCollidable );
+	removeFromPhysics();
 }
 
 void CPhysObject::update( SMatrix4x4& matrix )
 {
+	if( isRemoved() )
+		return;
+
 	// decrease mObject's linear velocity
 	const float LVEL_FACTOR = 0.995f;
 	const dReal* lvel = dBodyGetLinearVel( mObject );
@@ -99,6 +101,22 @@ void CPhysObject::update( SMatrix4x4& matrix )
 	odemarshal::vec3FromVector3( pos, matrix.getOrigin() );
 }
 
+void CPhysObject::removeFromPhysics()
+{
+	if( !isRemoved() ) {
+		dBodyDestroy( mObject );
+		mObject = NULL;
+		dGeomDestroy( mCollidable );
+		mCollidable = NULL;
+	}
+}
+
+bool CPhysObject::isIdle() const
+{
+	if( isRemoved() )
+		return true;
+	return dBodyIsEnabled(mObject) ? false : true;
+}
 
 
 void physics::initialize( float updDT, float grav, const SVector3& boundMin, const SVector3& boundMax )
@@ -228,139 +246,3 @@ const physics::SStats& physics::getStats()
 
 
 #endif // PHYSICS_ODE
-
-
-
-// --------------------------------------------------------------------------
-//  NovodeX
-// --------------------------------------------------------------------------
-
-
-#ifdef PHYSICS_NOVODEX
-
-
-namespace {
-
-	NxPhysicsSDK*	world;
-	NxScene*		scene;
-
-	float			updateDT;
-
-	enum eColClass {
-		COLCLASS_WALL = (1<<0),
-		COLCLASS_PIECESTART = 1,
-		COLCLASS_PIECECOUNT = 8,
-	};
-
-	std::vector<NxShape*>	planes;
-
-
-}; // namespace
-
-
-
-CPhysObject::CPhysObject( const SMatrix4x4& matrix, const SVector3& size )
-{
-	// construct body and geom
-
-    NxBodyDesc bodyDesc;
-    bodyDesc.angularDamping = 0.2f;
-
-	NxBoxShapeDesc boxDesc;
-	boxDesc.dimensions.set( size.x/2, size.y/2, size.z/2 );
-
-    NxActorDesc actorDesc;
-    actorDesc.shapes.pushBack( &boxDesc );
-    actorDesc.body          = &bodyDesc;
-    actorDesc.density       = 1.0f / (size.x*size.y*size.z); // total mass is 1.0
-	actorDesc.globalPose.setColumnMajor44( matrix );
-
-	mObject = scene->createActor( actorDesc );
-
-	SVector3 force( gRandom.getFloat(-100,100), gRandom.getFloat(-10,10), gRandom.getFloat(-100,100) );
-	SVector3 fpos( gRandom.getFloat(-size.x,size.x), gRandom.getFloat(-size.y,size.y), gRandom.getFloat(-size.z,size.z) );
-	mObject->addForceAtLocalPos(
-		NxVec3(force.x,force.y,force.z), NxVec3(fpos.x,fpos.y,fpos.z), NX_FORCE );
-}
-
-CPhysObject::~CPhysObject()
-{
-	scene->releaseActor( *mObject );
-}
-
-void CPhysObject::update( SMatrix4x4& matrix )
-{
-	// get matrix
-	NxMat34 pose;
-	mObject->getGlobalPose( pose );
-	pose.getColumnMajor44( matrix );
-}
-
-
-
-void physics::initialize( float updDT, float grav )
-{
-	updateDT = updDT;
-
-	world = NxCreatePhysicsSDK( NX_PHYSICS_SDK_VERSION, NULL, NULL );
-
-    NxMaterial defMat;
-    defMat.restitution     = 0.0f;
-    defMat.staticFriction  = 0.5f;
-    defMat.dynamicFriction = 0.5f;
-	world->setMaterialAtIndex( 0, &defMat );
-
-    NxSceneDesc sceneDesc;
-    sceneDesc.gravity.set( 0, grav, 0 );
-    sceneDesc.broadPhase         = NX_BROADPHASE_COHERENT;
-    sceneDesc.collisionDetection = true;
-
-    scene = world->createScene( sceneDesc );
-
-	scene->setTiming( updDT, 8 );
-}
-
-
-void physics::addPlane( const SMatrix4x4& matrix )
-{
-	SPlane plane( matrix.getOrigin(), matrix.getAxisZ() );
-
-    NxPlaneShapeDesc planeDesc;
-	planeDesc.normal.set( plane.a, plane.b, plane.c );
-	planeDesc.d = -plane.d;
-
-    NxActorDesc actorDesc;
-    actorDesc.shapes.pushBack( &planeDesc );
-	NxActor* p = scene->createActor( actorDesc );
-}
-
-
-void physics::shutdown()
-{
-	//for( int i = 0; i < planes.size(); ++i )
-	//	dGeomDestroy( planes[i] );
-	//planes.clear();
-
-	//dSpaceDestroy( space );
-
-	world->release();
-}
-
-
-void physics::update1()
-{
-	scene->simulate( updateDT );
-	scene->flushStream();
-}
-
-void physics::update2()
-{
-    scene->fetchResults( NX_RIGID_BODY_FINISHED, true );
-}
-
-
-
-
-#endif // PHYSICS_NOVODEX
-
-
