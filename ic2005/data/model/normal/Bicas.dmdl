@@ -3,7 +3,7 @@ groups = {
 {
   fx = 'skin', pri = 0,
   params = {
-	  { 'tex', 'tNormalAO', 'BicasNAO' },
+	  { 'tex', 'tNormalAO', 'BicasLo.NMF.nao' },
   },
 },
 }
