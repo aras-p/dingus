@@ -10,18 +10,22 @@ sampler2D	smpRefl = sampler_state {
 };
 
 
-SPosColTexp2 vsMain( SPosN i ) {
-	SPosColTexp2 o;
+SPosColTexp3 vsMain( SPosN i ) {
+	SPosColTexp3 o;
 	o.pos = mul( i.pos, mViewProj );
 	o.uvp[0] = mul( i.pos, mShadowProj );
-	o.uvp[1] = mul( i.pos, mViewTexProj );
+	o.uvp[1] = mul( i.pos, mShadowProj2 );
+	o.uvp[2] = mul( i.pos, mViewTexProj );
 	o.color = gWallLight( i.pos.xyz, i.normal*2-1 );
 	return o;
 }
 
-half4 psMain( SPosColTexp2 i ) : COLOR {
-	half3 col = tex2Dproj( smpShadow, i.uvp[0] ) * i.color;
-	col += tex2Dproj( smpRefl, i.uvp[1] ) * 0.15;
+half4 psMain( SPosColTexp3 i ) : COLOR {
+	half sh1 = tex2Dproj( smpShadow, i.uvp[0] ).r;
+	half sh2 = tex2Dproj( smpShadow2, i.uvp[1] ).r;
+	half shadow = min( sh1, sh2 );
+	half3 col = i.color * shadow;
+	col += tex2Dproj( smpRefl, i.uvp[2] ) * 0.15;
 	return half4( col, 1 );
 }
 

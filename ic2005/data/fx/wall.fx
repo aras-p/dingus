@@ -31,12 +31,8 @@ technique tec0
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_2_0 psMain();
-		FVF = Xyz | Diffuse;
-
-		//FillMode = Wireframe;
 	}
 	pass PLast {
-		FillMode = Solid;
 		Texture[0] = NULL;
 	}
 }
@@ -47,9 +43,6 @@ technique tecFFP
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = NULL;
-		FVF = Xyz | Diffuse;
-
-		FillMode = Wireframe;
 
 		ColorOp[0] = SelectArg1;
 		ColorArg1[0] = Diffuse;
@@ -60,6 +53,5 @@ technique tecFFP
 		AlphaOp[1] = Disable;
 	}
 	pass PLast {
-		FillMode = Solid;
 	}
 }

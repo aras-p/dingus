@@ -124,7 +124,7 @@ int			gCurScene = SCENE_MAIN;
 // normally system timer, but controllable for debugging
 CTimer			gDemoTimer;
 bool			gPaused = false;
-bool			gSimpleShadows = false;
+//bool			gSimpleShadows = false;
 
 
 
@@ -160,7 +160,7 @@ struct SShadowLight {
 public:
 	void initialize( const SVector3& pos, const SVector3& lookAt, float fov ) {
 		SMatrix4x4 viewMat;
-		D3DXMatrixLookAtLH( &viewMat, &pos, &lookAt, &SVector3(1,0,0) );
+		D3DXMatrixLookAtLH( &viewMat, &pos, &lookAt, &SVector3(1,0.01f,0.01f) );
 		D3DXMatrixInverse( &camera.mWorldMat, NULL, &viewMat );
 		camera.setProjectionParams( fov, 1.0f, pos.y*0.1f, pos.y*2.0f );
 		viewProj = viewMat * camera.getProjectionMatrix();
@@ -176,7 +176,6 @@ const SVector3 LIGHT_POS = SVector3( ROOM_MID.x, ROOM_MAX.y*1.5f, ROOM_MID.z );
 
 // Main, tightly targeted at character. Soft shadows.
 SShadowLight	gSLight;
-SMatrix4x4		gSLightVP;
 SMatrix4x4		gSShadowProj;
 SVector3		gSLightPos = LIGHT_POS;
 
@@ -203,70 +202,51 @@ void gShadowRender( CScene& scene )
 
 	gSLight.camera.setOntoRenderContext();
 
-	gSLightVP = gSLight.viewProj;
 	gSLightPos = gSLight.camera.mWorldMat.getOrigin();
-	gfx::textureProjectionWorld( gSLightVP, SZ_SHADOWMAP, SZ_SHADOWMAP, gSShadowProj );
+	gfx::textureProjectionWorld( gSLight.viewProj, SZ_SHADOWMAP, SZ_SHADOWMAP, gSShadowProj );
 
-	if( !gSimpleShadows ) {
+	// render soft shadow map
 
-		// render soft shadow map
+	dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
+	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
+	//dx.clearTargets( true, true, false, 0xFFffffff, 0.0f ); // min based dilation
+	dx.clearTargets( true, true, false, 0xFFff00ff, 0.0f ); // gauss
 
-		dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
-		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
-		//dx.clearTargets( true, true, false, 0xFFffffff, 0.0f ); // min based dilation
-		dx.clearTargets( true, true, false, 0xFFff00ff, 0.0f ); // gauss
+	dx.getDevice().SetViewport( &vp );
 
-		dx.getDevice().SetViewport( &vp );
+	dx.sceneBegin();
+	scene.render( RM_CASTER );
+	G_RENDERCTX->applyGlobalEffect();
 
-		dx.sceneBegin();
-		scene.render( RM_CASTER );
-		G_RENDERCTX->applyGlobalEffect();
+	dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_GREATER );
+	G_RENDERCTX->perform();
+	dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
 
-		dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_GREATER );
-		G_RENDERCTX->perform();
-		dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
+	dx.sceneEnd();
 
-		dx.sceneEnd();
+	// process shadowmap
+	dx.setZStencil( NULL );
 
-		// process shadowmap
-		dx.setZStencil( NULL );
-
-		// gaussX shadowmap -> shadowblur
-		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
-		dx.sceneBegin();
-		G_RENDERCTX->attach( *gQuadGaussX );
-		G_RENDERCTX->perform();
-		dx.sceneEnd();
-		// gaussY shadowblur -> shadowmap
-		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
-		dx.sceneBegin();
-		G_RENDERCTX->attach( *gQuadGaussY );
-		G_RENDERCTX->perform();
-		dx.sceneEnd();
-		// blur shadowmap -> shadowblur
-		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
-		dx.clearTargets( true, false, false, 0xFFffffff );
-		dx.getDevice().SetViewport( &vp );
-		dx.sceneBegin();
-		G_RENDERCTX->attach( *gQuadBlur );
-		G_RENDERCTX->perform();
-		dx.sceneEnd();
-
-	} else {
-
-		// render standard shadow map
-		dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
-		dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
-		dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
-
-		dx.getDevice().SetViewport( &vp );
-
-		dx.sceneBegin();
-		scene.render( RM_CASTERSIMPLE );
-		G_RENDERCTX->applyGlobalEffect();
-		G_RENDERCTX->perform();
-		dx.sceneEnd();
-	}
+	// gaussX shadowmap -> shadowblur
+	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
+	dx.sceneBegin();
+	G_RENDERCTX->attach( *gQuadGaussX );
+	G_RENDERCTX->perform();
+	dx.sceneEnd();
+	// gaussY shadowblur -> shadowmap
+	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
+	dx.sceneBegin();
+	G_RENDERCTX->attach( *gQuadGaussY );
+	G_RENDERCTX->perform();
+	dx.sceneEnd();
+	// blur shadowmap -> shadowblur
+	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWBLUR) );
+	dx.clearTargets( true, false, false, 0xFFffffff );
+	dx.getDevice().SetViewport( &vp );
+	dx.sceneBegin();
+	G_RENDERCTX->attach( *gQuadBlur );
+	G_RENDERCTX->perform();
+	dx.sceneEnd();
 }
 
 
@@ -277,31 +257,34 @@ void gShadowRender2( CScene& scene )
 
 	// target the light where needed
 	const SVector3 LIGHT_TARGET_POS( ROOM_MID.x, ROOM_MIN.y, ROOM_MID.z );
-	gSLight2.initialize( LIGHT_POS, LIGHT_TARGET_POS, D3DX_PI/5 );
+	gSLight2.initialize( LIGHT_POS, LIGHT_TARGET_POS, D3DX_PI*0.45f );
 
 	// Leave one texel padding...
-	D3DVIEWPORT9 vp;
-	vp.X = vp.Y = 1; vp.Height = vp.Width = SZ_SHADOWMAP2-2;
-	vp.MinZ = 0.0f; vp.MaxZ = 1.0f;
+	//D3DVIEWPORT9 vp;
+	//vp.X = vp.Y = 1; vp.Height = vp.Width = SZ_SHADOWMAP2-2;
+	//vp.MinZ = 0.0f; vp.MaxZ = 1.0f;
 
 	gSLight2.camera.setOntoRenderContext();
 
-	//gSLightVP = gSLight2.viewProj;
-	//gSLightPos = gSLight2.camera.mWorldMat.getOrigin();
-	gfx::textureProjectionWorld( gSLight2.viewProj, SZ_SHADOWMAP2, SZ_SHADOWMAP2, gSShadowProj2 );
+	gfx::textureProjectionWorld( gSLight2.viewProj, SZ_SHADOWMAP2_SM, SZ_SHADOWMAP2_SM, gSShadowProj2 );
 
 	// render
 	dx.setZStencil( RGET_S_SURF(RT_SHADOWZ2) );
-	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP2) );
+	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP2_BIG) );
 	dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
 
-	dx.getDevice().SetViewport( &vp );
+	//dx.getDevice().SetViewport( &vp );
 
 	dx.sceneBegin();
 	scene.render( RM_CASTERSIMPLE );
 	G_RENDERCTX->applyGlobalEffect();
 	G_RENDERCTX->perform();
 	dx.sceneEnd();
+
+	dx.getDevice().StretchRect(
+		RGET_S_SURF(RT_SHADOWMAP2_BIG)->getObject(), NULL,
+		RGET_S_SURF(RT_SHADOWMAP2_SM)->getObject(), NULL,
+		dx.getCaps().getStretchFilter() );
 }
 
 
@@ -404,13 +387,14 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 		G_RENDERCTX->getGlobalParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
 
-		ITextureCreator* shadowT2 = new CFixedTextureCreator(
-			SZ_SHADOWMAP2, SZ_SHADOWMAP2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT );
-		stb.registerTexture( RT_SHADOWMAP2, *shadowT2 );
-		ssb.registerSurface( RT_SHADOWMAP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP2),0)) );
-		ssb.registerSurface( RT_SHADOWZ2, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2,SZ_SHADOWMAP2,true,D3DFMT_D16)) );
+		stb.registerTexture( RT_SHADOWMAP2_SM, *new CFixedTextureCreator(
+			SZ_SHADOWMAP2_SM, SZ_SHADOWMAP2_SM, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT ) );
+		ssb.registerSurface( RT_SHADOWMAP2_SM, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP2_SM),0)) );
 
-		G_RENDERCTX->getGlobalParams().addTexture( "tShadow2", *RGET_S_TEX(RT_SHADOWMAP2) );
+		ssb.registerSurface( RT_SHADOWMAP2_BIG, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2_BIG,SZ_SHADOWMAP2_BIG,false,D3DFMT_R5G6B5)) );
+		ssb.registerSurface( RT_SHADOWZ2, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2_BIG,SZ_SHADOWMAP2_BIG,true,D3DFMT_D16)) );
+
+		G_RENDERCTX->getGlobalParams().addTexture( "tShadow2", *RGET_S_TEX(RT_SHADOWMAP2_SM) );
 	}
 	
 	// reflections
@@ -446,7 +430,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mViewTexProj", gViewTexProjMatrix );
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj", gSShadowProj );
-	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mLightViewProj", gSLightVP );
+	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj2", gSShadowProj2 );
+	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mLightViewProj", gSLight.viewProj );
 	G_RENDERCTX->getGlobalParams().addVector3Ref( "vLightPos", gSLightPos );
 
 	gDebugRenderer = new CDebugRenderer( *G_RENDERCTX, *RGET_FX("debug") );
@@ -586,10 +571,12 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gPaused = !gPaused;
 			break;
+		/*
 		case DIK_F3:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gSimpleShadows = !gSimpleShadows;
 			break;
+		*/
 
 		case DIK_RETURN:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
@@ -763,6 +750,7 @@ void CDemo::perform()
 	if( !gNoPixelShaders ) {
 		// render shadow map
 		gShadowRender( *curScene );
+		gShadowRender2( *curScene );
 		// render wall reflections
 		gRenderWallReflections( *curScene );
 	}

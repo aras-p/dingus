@@ -348,6 +348,10 @@ SOURCE=.\data\fx\bedanim.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\casterSimple.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\debug.fx
 # End Source File
 # Begin Source File

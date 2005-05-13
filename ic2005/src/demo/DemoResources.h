@@ -12,8 +12,8 @@ extern SVector4			gScreenFixUVs;
 enum eRenderMode {
 	RM_NORMAL = 0,
 	RM_REFLECTED,		///< For reflections. Don't reflect anything, possibly use low LOD.
-	RM_CASTER,			///< Caster projected soft shadow map.
-	RM_CASTERSIMPLE,	///< Caster projected shadow map.
+	RM_CASTER,			///< Caster, projected soft shadow map.
+	RM_CASTERSIMPLE,	///< Caster, projected shadow map.
 	RMCOUNT
 };
 extern const char* RMODE_PREFIX[RMCOUNT];
@@ -44,8 +44,11 @@ const int SZ_SHADOWMAP = 256;
 #define RT_SHADOWBLUR "shadowBlur"
 #define RT_SHADOWZ "shadowZ"
 
-const int SZ_SHADOWMAP2 = 512;
-#define RT_SHADOWMAP2 "shadow2"
+const int SZ_SHADOWMAP2_BIG = 1024;
+#define RT_SHADOWMAP2_BIG "shadow2B"
+const int SZ_SHADOWMAP2_SM = 512;
+#define RT_SHADOWMAP2_SM "shadow2S"
+
 #define RT_SHADOWZ2 "shadowZ2"
 
 //

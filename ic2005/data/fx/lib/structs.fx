@@ -98,6 +98,11 @@ struct SPosColTexp2 {
 	half4  color 	: COLOR;
 	float4 uvp[2]	: TEXCOORD0;
 };
+struct SPosColTexp3 {
+	float4 pos		: POSITION;
+	half4  color 	: COLOR;
+	float4 uvp[3]	: TEXCOORD0;
+};
 struct SPosCol2Tex {
 	float4 pos		: POSITION;
 	half4  color[2]	: COLOR0;

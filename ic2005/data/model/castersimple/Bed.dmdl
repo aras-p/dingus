@@ -1,0 +1,8 @@
+name = 'Bed'
+groups = {
+{
+  fx = 'casterSimple', pri = 0,
+  params = {
+  },
+},
+}

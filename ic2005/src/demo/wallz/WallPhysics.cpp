@@ -49,7 +49,8 @@ namespace {
 	TPieceVector	pieces;
 
 
-	CRenderableIndexedBuffer*	renderable;
+	CRenderableIndexedBuffer*	renderables[RMCOUNT];
+
 	TVBChunk::TSharedPtr		vbChunk;
 	TIBChunk::TSharedPtr		ibChunk;
 	bool	needsRendering = false;
@@ -108,8 +109,13 @@ void CPhysPiece::render( TPieceVertex* vb, unsigned short* ib, int baseIndex, in
 
 void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector3& boundMax )
 {
-	renderable = new CRenderableIndexedBuffer( NULL, 0 );
-	renderable->getParams().setEffect( *RGET_FX("wallNoRefl") );
+	for( int i = 0; i < RMCOUNT; ++i )
+		renderables[i] = NULL;
+
+	renderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
+	renderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wallNoRefl") );
+	renderables[RM_CASTERSIMPLE] = new CRenderableIndexedBuffer( NULL, 0 );
+	renderables[RM_CASTERSIMPLE]->getParams().setEffect( *RGET_FX("casterSimple") );
 	
 	updateDT = updDT;
 
@@ -147,7 +153,8 @@ void wall_phys::shutdown()
 
 	physics::shutdown();
 
-	safeDelete( renderable );
+	for( int i = 0; i < RMCOUNT; ++i )
+		safeDelete( renderables[i] );
 }
 
 
@@ -235,20 +242,27 @@ bool renderIntoVB()
 	vbChunk->unlock();
 	ibChunk->unlock();
 
-	// setup renderable
-	renderable->resetVBs();
+	// setup renderables
+	CD3DVertexDecl* vdecl = RGET_VDECL( CVertexFormat( CVertexFormat::V_POSITION | CVertexFormat::COLOR_MASK ) );
+	for( i = 0; i < RMCOUNT; ++i ) {
+		if( !renderables[i] )
+			continue;
 
-	renderable->setVB( vbChunk->getBuffer(), 0 );
-	renderable->setStride( vbChunk->getStride(), 0 );
-	renderable->setBaseVertex( vbChunk->getOffset() );
-	renderable->setMinVertex( 0 );
-	renderable->setNumVertices( vbChunk->getSize() );
+		renderables[i]->resetVBs();
 
-	renderable->setIB( ibChunk->getBuffer() );
-	renderable->setStartIndex( ibChunk->getOffset() );
-	renderable->setPrimCount( ibChunk->getSize() / 3 );
+		renderables[i]->setVB( vbChunk->getBuffer(), 0 );
+		renderables[i]->setStride( vbChunk->getStride(), 0 );
+		renderables[i]->setBaseVertex( vbChunk->getOffset() );
+		renderables[i]->setMinVertex( 0 );
+		renderables[i]->setNumVertices( vbChunk->getSize() );
 
-	renderable->setPrimType( D3DPT_TRIANGLELIST );
+		renderables[i]->setIB( ibChunk->getBuffer() );
+		renderables[i]->setStartIndex( ibChunk->getOffset() );
+		renderables[i]->setPrimCount( ibChunk->getSize() / 3 );
+
+		renderables[i]->setPrimType( D3DPT_TRIANGLELIST );
+		renderables[i]->setVertexDecl( vdecl );
+	}
 	return true;
 }
 }
@@ -258,7 +272,7 @@ void wall_phys::render( eRenderMode rm )
 	if( pieces.empty() )
 		return;
 
-	if( rm != RM_NORMAL /*&& rm != RM_REFLECTED*/ )
+	if( !renderables[rm] )
 		return;
 
 	if( needsRendering ||
@@ -267,7 +281,8 @@ void wall_phys::render( eRenderMode rm )
 	{
 		renderIntoVB();
 	}
-	G_RENDERCTX->attach( *renderable );
+
+	G_RENDERCTX->attach( *renderables[rm] );
 }
 
 

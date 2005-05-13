@@ -1113,6 +1113,8 @@ bool CWall3D::renderIntoVB()
 	mIBChunk->unlock();
 
 	// setup renderables
+	CD3DVertexDecl* vdecl = RGET_VDECL( CVertexFormat( CVertexFormat::V_POSITION | CVertexFormat::COLOR_MASK ) );
+
 	for( i = 0; i < RMCOUNT; ++i )
 	{
 		if( mRenderablesFull[i] ) {
@@ -1129,6 +1131,7 @@ bool CWall3D::renderIntoVB()
 			mRenderablesFull[i]->setPrimCount( nindices / 3 );
 
 			mRenderablesFull[i]->setPrimType( D3DPT_TRIANGLELIST );
+			mRenderablesFull[i]->setVertexDecl( vdecl );
 		}
 
 		if( mRenderablesNoCaps[i] ) {
@@ -1145,6 +1148,7 @@ bool CWall3D::renderIntoVB()
 			mRenderablesNoCaps[i]->setPrimCount( nindicesNoCaps / 3 );
 
 			mRenderablesNoCaps[i]->setPrimType( D3DPT_TRIANGLELIST );
+			mRenderablesNoCaps[i]->setVertexDecl( vdecl );
 		}
 	}
 	return true;

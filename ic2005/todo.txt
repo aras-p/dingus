@@ -1,6 +1,5 @@
 CODE
 
-+ Shadows from bed/stone/wallpieces
 + Scroller scene
 . Restore walls (put back pieces, blend in wall, maybe blur)
 . Fade out physics/bed/stone pieces
@@ -21,6 +20,7 @@ CODE
 
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
++ Shadows from bed/wallpieces
 
 * Floor/ceil doesn't fracture, replace by fixed meshes
 * Reflect outer room
@@ -38,6 +38,6 @@ ART
 
 + NMap top/ceil/floor bricks
 . Low poly / UV / NMap 2nd gargoyle
-. (Antanas) Hand-make fractured floor/ceil meshes and 2nd room
 . (Antanas?) Animate camera target or dummy object for DoF focus distance
 + nvdxt all textures, experiment with mip filters
+. (Antanas) Hand-make fractured floor/ceil meshes and 2nd room

@@ -1,4 +1,4 @@
-name = 'Bicas'
+name = 'BedPieces'
 groups = {
 {
   fx = 'skinCasterSimple', pri = 0,
