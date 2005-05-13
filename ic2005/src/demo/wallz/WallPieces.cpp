@@ -782,8 +782,8 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	
 	mRenderablesFull[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderablesNoCaps[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderablesFull[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallRefl") );
-	mRenderablesNoCaps[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallRefl") );
+	mRenderablesFull[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
+	mRenderablesNoCaps[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
 }
 
 CWall3D::~CWall3D()

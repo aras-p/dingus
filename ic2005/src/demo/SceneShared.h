@@ -6,6 +6,7 @@
 
 
 class CWall3D;
+class CMeshEntity;
 
 
 
@@ -23,7 +24,9 @@ public:
 
 private:
 	CCameraEntity	mWallCamera;
-	CWall3D*		mWalls[2][CFACE_COUNT];
+	CWall3D*		mWalls[2][CFACE_COUNT]; // some can be NULL
+	
+	CMeshEntity*	mFixWallNY;
 };
 
 

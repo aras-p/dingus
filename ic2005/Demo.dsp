@@ -388,11 +388,15 @@ SOURCE=.\data\fx\wall.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\wallPieces.fx
+SOURCE=.\data\fx\wallFixed.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\wallRefl.fx
+SOURCE=.\data\fx\wallFixedNoRefl.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\wallNoRefl.fx
 # End Source File
 # End Group
 # Begin Source File

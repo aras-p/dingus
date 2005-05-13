@@ -43,6 +43,10 @@ const int SZ_SHADOWMAP = 256;
 #define RT_SHADOWBLUR "shadowBlur"
 #define RT_SHADOWZ "shadowZ"
 
+const int SZ_SHADOWMAP2 = 512;
+#define RT_SHADOWMAP2 "shadow2"
+#define RT_SHADOWZ2 "shadowZ2"
+
 //
 // walls reflections
 

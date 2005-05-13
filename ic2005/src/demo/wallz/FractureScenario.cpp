@@ -101,6 +101,8 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 			CConsole::CON_WARNING << "Event: fracture sph " << i << endl;
 			TIntVector pieces;
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
+				if( !walls[j] )
+					continue;
 				walls[j]->fracturePiecesInSphere( t, true, ep.pos, ep.radius, pieces );
 				int npc = pieces.size();
 				for( int k = 0; k < npc; ++k ) {
@@ -118,7 +120,7 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 			CConsole::CON_WARNING << "Event: fracture y " << i << endl;
 			TIntVector pieces;
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
-				if( j == CFACE_NY || j == CFACE_PY ) // just skip floor/ceiling :)
+				if( !walls[j] )
 					continue;
 				walls[j]->fracturePiecesInYRange( t, true, ep.y1, ep.y2, pieces );
 				int npc = pieces.size();

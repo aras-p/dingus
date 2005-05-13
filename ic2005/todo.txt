@@ -1,9 +1,13 @@
 CODE
 
++ Shadows from bed/stone/wallpieces
++ Floor/ceil doesn't fracture, replace by fixed meshes
 + Scroller scene
 . Restore walls (put back pieces, blend in wall, maybe blur)
 . Fade out physics/bed/stone pieces
+. Attack effects
 . Tweak first attack's positions (lower)
+. Time-blend character's texture
 . Shadows for other guys (needed?)
 . DoF
 . Glow; render extra brightness to alpha

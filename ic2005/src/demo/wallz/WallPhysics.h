@@ -23,6 +23,7 @@ namespace wall_phys {
 	void	initialize( float updDT, const SVector3& boundMin, const SVector3& boundMax );
 
 	void	addWall( int lodIndex, const CWall3D& wall );
+	void	addStaticWall( int lodIndex, const SMatrix4x4& matrix );
 
 	void	shutdown();
 

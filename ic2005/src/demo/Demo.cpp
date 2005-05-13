@@ -151,13 +151,17 @@ CRenderableMesh*	gQuadBlur;
 
 
 
+// --------------------------------------------------------------------------
+// Shadow mapping
+
+
 struct SShadowLight {
 public:
-	void initialize( const SVector3& pos, const SVector3& lookAt ) {
+	void initialize( const SVector3& pos, const SVector3& lookAt, float fov ) {
 		SMatrix4x4 viewMat;
 		D3DXMatrixLookAtLH( &viewMat, &pos, &lookAt, &SVector3(1,0,0) );
 		D3DXMatrixInverse( &camera.mWorldMat, NULL, &viewMat );
-		camera.setProjectionParams( D3DX_PI/5, 1.0f, pos.y*0.1f, pos.y*2.0f );
+		camera.setProjectionParams( fov, 1.0f, pos.y*0.1f, pos.y*2.0f );
 		viewProj = viewMat * camera.getProjectionMatrix();
 	}
 
@@ -167,17 +171,17 @@ public:
 };
 
 
-
-// --------------------------------------------------------------------------
-// Shadow mapping
-
-
 const SVector3 LIGHT_POS = SVector3( ROOM_MID.x, ROOM_MAX.y*1.5f, ROOM_MID.z );
 
+// Main, tightly targeted at character. Soft shadows.
 SShadowLight	gSLight;
 SMatrix4x4		gSLightVP;
 SMatrix4x4		gSShadowProj;
 SVector3		gSLightPos = LIGHT_POS;
+
+// Secondary, covers floor, misc. pieces render into it. Standard proj. shadows.
+SShadowLight	gSLight2;
+SMatrix4x4		gSShadowProj2;
 
 
 void gShadowRender( CScene& scene )
@@ -189,7 +193,7 @@ void gShadowRender( CScene& scene )
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
 	// target the light where needed
-	gSLight.initialize( LIGHT_POS, lightTargetMat->getOrigin() );
+	gSLight.initialize( LIGHT_POS, lightTargetMat->getOrigin(), D3DX_PI/5 );
 
 	// Leave one texel padding...
 	D3DVIEWPORT9 vp;
@@ -263,6 +267,42 @@ void gShadowRender( CScene& scene )
 		dx.sceneEnd();
 	}
 }
+
+
+void gShadowRender2( CScene& scene )
+{
+
+	CD3DDevice& dx = CD3DDevice::getInstance();
+
+	// target the light where needed
+	const SVector3 LIGHT_TARGET_POS( ROOM_MID.x, ROOM_MIN.y, ROOM_MID.z );
+	gSLight2.initialize( LIGHT_POS, LIGHT_TARGET_POS, D3DX_PI/5 );
+
+	// Leave one texel padding...
+	D3DVIEWPORT9 vp;
+	vp.X = vp.Y = 1; vp.Height = vp.Width = SZ_SHADOWMAP2-2;
+	vp.MinZ = 0.0f; vp.MaxZ = 1.0f;
+
+	gSLight2.camera.setOntoRenderContext();
+
+	//gSLightVP = gSLight2.viewProj;
+	//gSLightPos = gSLight2.camera.mWorldMat.getOrigin();
+	gfx::textureProjectionWorld( gSLight2.viewProj, SZ_SHADOWMAP2, SZ_SHADOWMAP2, gSShadowProj2 );
+
+	// render
+	dx.setZStencil( RGET_S_SURF(RT_SHADOWZ2) );
+	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP2) );
+	dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
+
+	dx.getDevice().SetViewport( &vp );
+
+	dx.sceneBegin();
+	scene.render( RM_CASTERSIMPLE );
+	G_RENDERCTX->applyGlobalEffect();
+	G_RENDERCTX->perform();
+	dx.sceneEnd();
+}
+
 
 // --------------------------------------------------------------------------
 // reflective walls
@@ -362,6 +402,14 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		ssb.registerSurface( RT_SHADOWZ, *(new CFixedSurfaceCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,true,D3DFMT_D16)) );
 
 		G_RENDERCTX->getGlobalParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
+
+		ITextureCreator* shadowT2 = new CFixedTextureCreator(
+			SZ_SHADOWMAP2, SZ_SHADOWMAP2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT );
+		stb.registerTexture( RT_SHADOWMAP2, *shadowT2 );
+		ssb.registerSurface( RT_SHADOWMAP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP2),0)) );
+		ssb.registerSurface( RT_SHADOWZ2, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2,SZ_SHADOWMAP2,true,D3DFMT_D16)) );
+
+		G_RENDERCTX->getGlobalParams().addTexture( "tShadow2", *RGET_S_TEX(RT_SHADOWMAP2) );
 	}
 	
 	// reflections

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "MeshEntity.h"
+#include <dingus/utils/StringHelper.h>
 
 
 // --------------------------------------------------------------------------
@@ -15,11 +16,13 @@ CMeshEntity::CMeshEntity( const std::string& name )
 
 	if( descName == "wall" )
 		meshName = "billboard";
+	if( CStringHelper::startsWith( name, "Room" ) )
+		descName = "Room";
 
 	mMesh = RGET_MESH(meshName);
 	for( int i = 0; i < RMCOUNT; ++i ) {
 		// some objects don't get all rendermodes
-		CModelDesc* desc = RTRYGET_MDESC( RMODE_PREFIX[i] + name );
+		CModelDesc* desc = RTRYGET_MDESC( RMODE_PREFIX[i] + descName );
 		if( !desc )
 			continue;
 		for( int j = 0; j < desc->getGroupCount(); ++j ) {

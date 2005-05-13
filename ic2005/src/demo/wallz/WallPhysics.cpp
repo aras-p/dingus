@@ -109,7 +109,7 @@ void CPhysPiece::render( TPieceVertex* vb, unsigned short* ib, int baseIndex, in
 void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector3& boundMax )
 {
 	renderable = new CRenderableIndexedBuffer( NULL, 0 );
-	renderable->getParams().setEffect( *RGET_FX("wallPieces") );
+	renderable->getParams().setEffect( *RGET_FX("wallNoRefl") );
 	
 	updateDT = updDT;
 
@@ -129,6 +129,15 @@ void wall_phys::addWall( int lodIndex, const CWall3D& wall )
 	walls[lodIndex].push_back( &wall );
 }
 
+void wall_phys::addStaticWall( int lodIndex, const SMatrix4x4& matrix )
+{
+	if( lodIndex == 0 )
+		physics::addPlane( matrix );
+
+	assert( lodIndex >= 0 && lodIndex < MAX_LODS );
+	walls[lodIndex].push_back( NULL );
+}
+
 
 void wall_phys::shutdown()
 {
@@ -146,6 +155,7 @@ void wall_phys::spawnPiece( int lodIndex, int wallID, int index )
 {
 	assert( lodIndex >= 0 && lodIndex < MAX_LODS );
 	assert( wallID >= 0 && wallID < walls[lodIndex].size() );
+	assert( walls[lodIndex][wallID] );
 	CPhysPiece* p = new CPhysPiece( walls[lodIndex][wallID]->getPieces3D()[index] );
 	pieces.push_back( p );
 }

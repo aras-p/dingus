@@ -2,17 +2,26 @@
 #include "lib/structs.fx"
 #include "lib/commonWalls.fx"
 
+texture		tRefl;
+sampler2D	smpRefl = sampler_state {
+	Texture = (tRefl);
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+	AddressU = Clamp; AddressV = Clamp;
+};
 
-SPosColTexp vsMain( SPosCol i ) {
-	SPosColTexp o;
+
+SPosColTexp2 vsMain( SPosN i ) {
+	SPosColTexp2 o;
 	o.pos = mul( i.pos, mViewProj );
-	o.uvp = mul( i.pos, mShadowProj );
-	o.color = gWallLight( i.pos.xyz, i.color.xyz*2-1 );
+	o.uvp[0] = mul( i.pos, mShadowProj );
+	o.uvp[1] = mul( i.pos, mViewTexProj );
+	o.color = gWallLight( i.pos.xyz, i.normal*2-1 );
 	return o;
 }
 
-half4 psMain( SPosColTexp i ) : COLOR {
-	half3 col = tex2Dproj( smpShadow, i.uvp ) * i.color;
+half4 psMain( SPosColTexp2 i ) : COLOR {
+	half3 col = tex2Dproj( smpShadow, i.uvp[0] ) * i.color;
+	col += tex2Dproj( smpRefl, i.uvp[1] ) * 0.15;
 	return half4( col, 1 );
 }
 
@@ -22,12 +31,11 @@ technique tec0
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_2_0 psMain();
-		FVF = Xyz | Diffuse;
 
 		//FillMode = Wireframe;
 	}
 	pass PLast {
-		//FillMode = Solid;
+		FillMode = Solid;
 		Texture[0] = NULL;
 	}
 }
@@ -38,7 +46,8 @@ technique tecFFP
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = NULL;
-		FVF = Xyz | Diffuse;
+
+		FillMode = Wireframe;
 
 		ColorOp[0] = SelectArg1;
 		ColorArg1[0] = Diffuse;
@@ -47,10 +56,8 @@ technique tecFFP
 
 		ColorOp[1] = Disable;
 		AlphaOp[1] = Disable;
-
-		CullMode = None;
 	}
 	pass PLast {
-		CullMode = <iCull>;
+		FillMode = Solid;
 	}
 }
