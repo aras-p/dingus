@@ -1,0 +1,10 @@
+name = 'uvDoorRosette_2x1tex'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/DoorRosette' },
+	  { 'tex', 'tNormalAO', 'rm/DoorRosetteLo.NMF.nao' },
+  },
+},
+}

@@ -1,0 +1,10 @@
+name = 'uvFrontRosEnd'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/FrontRosetteEnd' },
+	  { 'tex', 'tNormalAO', 'rm/FrontRosetteEndLo.NMF.nao' },
+  },
+},
+}

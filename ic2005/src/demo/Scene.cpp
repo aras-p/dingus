@@ -36,6 +36,14 @@ void CRoomObjectEntity::update()
 
 void CRoomObjectEntity::render( eRenderMode renderMode )
 {
+	// if reflection - check whether we're not in front of reflection plane
+	if( renderMode == RM_REFLECTED ) {
+		SVector3 centerPt;
+		D3DXVec3TransformCoord( &centerPt, &getMesh().getTotalAABB().getCenter(), &mWorldMat );
+		if( gReflPlane.distance( centerPt ) < 0.0f )
+			return;
+	}
+
 	// update light/eye positions
 	D3DXVec3TransformCoord( &mLightPosOS, &gSLightPos, &mInvWorld );
 	D3DXVec3TransformCoord( &mEyePosOS, &G_RENDERCTX->getCamera().getEye3(), &mInvWorld );
@@ -146,7 +154,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 void CSceneInteractive::render( eRenderMode renderMode )
 {
-	//mSharedStuff->renderWalls( 0, renderMode );
+	mSharedStuff->renderWalls( 0, renderMode );
 	
 	mCharacter->render( renderMode );
 	

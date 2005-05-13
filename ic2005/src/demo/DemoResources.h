@@ -2,7 +2,7 @@
 #define __MYDEMO_RES_H
 
 #include <dingus/math/Vector4.h>
-
+#include <dingus/math/Plane.h>
 
 extern SVector4			gScreenFixUVs;
 
@@ -19,6 +19,7 @@ enum eRenderMode {
 extern const char* RMODE_PREFIX[RMCOUNT];
 extern bool gNoPixelShaders;
 extern SVector3	gSLightPos;
+extern SPlane	gReflPlane;
 
 
 enum eCubeFaces {

@@ -1,0 +1,10 @@
+name = 'uvFrontRosBricksC'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/FrontRosetteBricks' },
+	  { 'tex', 'tNormalAO', 'rm/FrontRosetteBricksLo.NMF.nao' },
+  },
+},
+}

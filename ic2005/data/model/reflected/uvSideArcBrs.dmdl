@@ -1,0 +1,10 @@
+name = 'uvSideArcBrs'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/ArcBricks' },
+	  { 'tex', 'tNormalAO', 'rm/TopArcBricksLo.NMF.nao' },
+  },
+},
+}

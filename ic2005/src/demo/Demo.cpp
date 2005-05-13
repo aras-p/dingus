@@ -136,6 +136,7 @@ SVector3	gMouseRay;
 
 SMatrix4x4		gCameraViewProjMatrix;
 SMatrix4x4		gViewTexProjMatrix;
+SPlane			gReflPlane;
 CPostProcess*	gPPReflBlur;
 
 
@@ -336,9 +337,9 @@ void gRenderWallReflections( CScene& scene )
 		//if( gWallMeshes[currWall]->frustumCull(gCameraViewProjMatrix) )
 		//	continue;
 
-		SPlane reflPlane( planePos[currWall] + planeNrm[currWall]*0.05f, planeNrm[currWall] );
+		gReflPlane = SPlane( planePos[currWall] + planeNrm[currWall]*0.05f, planeNrm[currWall] );
 		SMatrix4x4 reflectMat;
-		D3DXMatrixReflect( &reflectMat, &reflPlane );
+		D3DXMatrixReflect( &reflectMat, &gReflPlane );
 		
 		wallCam.mWorldMat = camera.mWorldMat * reflectMat;
 		wallCam.setProjFrom( camera );

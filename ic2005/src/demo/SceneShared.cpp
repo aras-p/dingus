@@ -133,14 +133,17 @@ CSceneSharedStuff::CSceneSharedStuff()
 	}
 
 	// fixed walls
+	mFixWallPY = new CMeshEntity( "RoomCeil" );
 	mFixWallNY = new CMeshEntity( "RoomFloor" );
 	if( !gNoPixelShaders ) {
+		mFixWallPY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_PY) );
 		mFixWallNY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_NY) );
 	}
 }
 
 CSceneSharedStuff::~CSceneSharedStuff()
 {
+	delete mFixWallPY;
 	delete mFixWallNY;
 
 	wall_phys::shutdown();
@@ -161,6 +164,8 @@ void CSceneSharedStuff::renderWalls( int lodIndex, eRenderMode rm )
 		} else {
 			if( i == CFACE_NY )
 				mFixWallNY->render( rm );
+			else if( i == CFACE_PY )
+				mFixWallPY->render( rm );
 		}
 	}
 	wall_phys::render( rm );

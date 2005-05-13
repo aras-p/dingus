@@ -46,8 +46,8 @@ void CMeshEntity::render( eRenderMode renderMode, bool direct )
 		return;
 	updateWVPMatrices();
 	
-	//if( !direct && frustumCull() )
-	//	return;
+	if( !direct && frustumCull() )
+		return;
 
 	int n = mRenderMeshes[renderMode].size();
 	for( int i = 0; i < n; ++i ) {

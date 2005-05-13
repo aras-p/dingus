@@ -1,7 +1,6 @@
 CODE
 
 + Shadows from bed/stone/wallpieces
-+ Floor/ceil doesn't fracture, replace by fixed meshes
 + Scroller scene
 . Restore walls (put back pieces, blend in wall, maybe blur)
 . Fade out physics/bed/stone pieces
@@ -16,7 +15,6 @@ CODE
 . Blur in/out in several places
 . Reflections into single RT, with stencil/Z masks for fast culling
 . Cull walls for reflections
-. Frustum cull objects (not priority)
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
@@ -24,6 +22,9 @@ CODE
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
 
+* Floor/ceil doesn't fracture, replace by fixed meshes
+* Reflect outer room
+* Frustum cull objects
 * Animate doors
 * Other characters
 * Single smooth group for physics pieces' caps

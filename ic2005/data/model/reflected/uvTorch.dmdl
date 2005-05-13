@@ -1,0 +1,10 @@
+name = 'uvTorch'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/Torch' },
+	  { 'tex', 'tNormalAO', 'rm/TorchLo.NMF.nao' },
+  },
+},
+}

@@ -1,0 +1,10 @@
+name = 'uvDoorArc'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/DoorArc' },
+	  { 'tex', 'tNormalAO', 'rm/DoorArcLo.NMF.nao' },
+  },
+},
+}
