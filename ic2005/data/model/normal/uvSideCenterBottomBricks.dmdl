@@ -3,7 +3,7 @@ groups = {
 {
   fx = 'normalMap', pri = 0,
   params = {
-	  { 'tex', 'tBase', 'rm/dummy' },
+	  { 'tex', 'tBase', 'rm/BottomBricks' },
 	  { 'tex', 'tNormalAO', 'rm/BottomBricksLo.NMF.nao' },
   },
 },
