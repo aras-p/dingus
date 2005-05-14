@@ -14,7 +14,7 @@ CMeshEntity::CMeshEntity( const std::string& name )
 	std::string descName = name;
 	std::string meshName = name;
 
-	if( descName == "wall" )
+	if( descName == "ScrollerFloor" )
 		meshName = "billboard";
 	if( CStringHelper::startsWith( name, "Room" ) )
 		descName = "Room";

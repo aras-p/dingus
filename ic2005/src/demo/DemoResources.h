@@ -4,6 +4,7 @@
 #include <dingus/math/Vector4.h>
 #include <dingus/math/Plane.h>
 
+
 extern SVector4			gScreenFixUVs;
 
 // --------------------------------------------------------------------------

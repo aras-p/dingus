@@ -2,6 +2,7 @@
 #include "SceneScroller.h"
 #include "ComplexStuffEntity.h"
 #include <time.h>
+#include <dingus/gfx/gui/Gui.h>
 
 
 
@@ -42,6 +43,10 @@ CSceneScroller::CSceneScroller()
 
 	mByeAnim = RGET_ANIM("ScrollerRevB");
 	mByeAnimDuration = gGetAnimDuration( *mByeAnim, false );
+
+	// floor
+	mFloor = new CMeshEntity( "ScrollerFloor" );
+	addEntity( *mFloor );
 	
 	// position camera
 	SMatrix4x4 mr;
@@ -147,7 +152,36 @@ void CSceneScroller::update( time_value demoTime, float dt )
 void CSceneScroller::render( eRenderMode renderMode )
 {
 	mCharacter->render( renderMode );
+	mFloor->render( renderMode );
 }
+
+
+void CSceneScroller::renderUI( CUIDialog& dlg )
+{
+	static const char* scrText =
+		"Bah blah! Teh scroller!\n"
+		"\n"
+		"Hey, it's me, the scroller!\n"
+		"Aaa!\n"
+		"\n"
+		"Here I am!\n"
+		;
+
+	SUIElement textElem;
+	memset( &textElem, 0, sizeof(textElem) );
+	textElem.fontIdx = 1;
+	textElem.textFormat = DT_LEFT;
+	textElem.colorFont.current = 0xFF404040;
+	
+	SFRect textRC;
+	textRC.left = 0.1f * GUI_X;
+	textRC.right = 0.5f * GUI_X;
+	textRC.top = 0.1f * GUI_Y;
+	textRC.bottom = 0.9f * GUI_Y;
+
+	dlg.drawText( scrText, &textElem, &textRC, false );
+}
+
 
 const SMatrix4x4* CSceneScroller::getLightTargetMatrix() const
 {

@@ -10,6 +10,9 @@ class CControllableCharacter;
 class CThirdPersonCameraController;
 class CSceneSharedStuff;
 
+namespace dingus {
+	class CUIDialog;
+};
 
 // --------------------------------------------------------------------------
 
@@ -49,6 +52,7 @@ public:
 
 	virtual void	update( time_value demoTime, float dt ) = 0;
 	virtual void	render( eRenderMode renderMode ) = 0;
+	virtual void	renderUI( CUIDialog& dlg ) { }
 
 	virtual const SMatrix4x4* getLightTargetMatrix() const = 0;
 

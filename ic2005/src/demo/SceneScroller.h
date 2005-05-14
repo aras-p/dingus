@@ -14,6 +14,7 @@ public:
 
 	virtual void	update( time_value demoTime, float dt );
 	virtual void	render( eRenderMode renderMode );
+	virtual void	renderUI( CUIDialog& dlg );
 	virtual const SMatrix4x4* getLightTargetMatrix() const;
 	
 	virtual bool	needsReflections() const { return false; }
@@ -46,6 +47,9 @@ private:
 	// character
 	CComplexStuffEntity*	mCharacter;
 	int			mSpineBoneIndex;
+
+	// floor
+	CMeshEntity*	mFloor;
 };
 
 

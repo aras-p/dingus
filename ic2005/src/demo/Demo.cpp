@@ -209,7 +209,6 @@ void gShadowRender( CScene& scene )
 
 	dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
 	dx.setRenderTarget( RGET_S_SURF(RT_SHADOWMAP) );
-	//dx.clearTargets( true, true, false, 0xFFffffff, 0.0f ); // min based dilation
 	dx.clearTargets( true, true, false, 0xFFff00ff, 0.0f ); // gauss
 
 	dx.getDevice().SetViewport( &vp );
@@ -331,7 +330,7 @@ void gRenderWallReflections( CScene& scene )
 		CD3DDevice& dx = CD3DDevice::getInstance();
 		dx.setRenderTarget( RGET_S_SURF(RT_REFLRT) );
 		dx.setZStencil( RGET_S_SURF(RT_REFLZ) );
-		dx.clearTargets( true, true, false, 0xFF000020, 1.0f );
+		dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
 		dx.sceneBegin();
 		G_RENDERCTX->applyGlobalEffect();
 		scene.render( RM_REFLECTED );
@@ -357,6 +356,21 @@ void gRenderWallReflections( CScene& scene )
 
 // --------------------------------------------------------------------------
 // Initialization
+
+
+void CALLBACK gUIRenderCallback( CUIDialog& dlg )
+{
+	// figure out current scene
+	CScene* curScene = NULL;
+	switch( gCurScene ) {
+	case SCENE_MAIN:		curScene = gSceneMain; break;
+	case SCENE_SCROLLER:	curScene = gSceneScroller; break;
+	case SCENE_INTERACTIVE:	curScene = gSceneInt; break;
+	}
+	assert( curScene );
+	
+	curScene->renderUI( dlg );
+}
 
 
 void CDemo::initialize( IDingusAppContext& appContext )
@@ -442,9 +456,11 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg = new CUIDialog();
 	//gUIDlg->enableKeyboardInput( true );
 	gUIDlg->setCallback( gUICallback );
-	gUIDlg->setFont( 1, "Arial", 22, 50 );
+	gUIDlg->setFont( 1, "Arial", 24, 50 );
 
 	gSetupGUI();
+	gUIDlg->setRenderCallback( gUIRenderCallback );
+	
 
 	// --------------------------------
 	// scenes
@@ -672,7 +688,6 @@ void CDemo::onInputStage()
 
 
 
-
 //  Main loop code.
 void CDemo::perform()
 {
@@ -761,7 +776,7 @@ void CDemo::perform()
 
 	dx.setDefaultRenderTarget();
 	dx.setDefaultZStencil();
-	dx.clearTargets( true, true, false, 0xFF000080, 1.0f, 0L );
+	dx.clearTargets( true, true, false, 0xFFffffff, 1.0f, 0L );
 
 	dx.sceneBegin();
 	G_RENDERCTX->applyGlobalEffect();

@@ -376,6 +376,10 @@ SOURCE=.\data\fx\normalMap.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\scrollerFloor.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\skin.fx
 # End Source File
 # Begin Source File
