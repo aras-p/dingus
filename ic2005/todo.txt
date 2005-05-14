@@ -1,8 +1,13 @@
+. = todo
++ = in progress / not fully finished
+* = done
+
 CODE
 
 + Scroller scene
+. Fade out physics pieces
+. Don't shadow ceiling
 . Restore walls (put back pieces, blend in wall, maybe blur)
-. Fade out physics/bed/stone pieces
 . Attack effects
 . Tweak first attack's positions (lower)
 . Time-blend character's texture
@@ -22,6 +27,7 @@ CODE
 + Optimize/hack physics for the massive fracture scene
 + Shadows from bed/wallpieces
 
+* Fade out bed/stone pieces
 * Floor/ceil doesn't fracture, replace by fixed meshes
 * Reflect outer room
 * Frustum cull objects
@@ -36,8 +42,9 @@ CODE
 
 ART
 
-+ NMap top/ceil/floor bricks
 . Low poly / UV / NMap 2nd gargoyle
 . (Antanas?) Animate camera target or dummy object for DoF focus distance
-+ nvdxt all textures, experiment with mip filters
 . (Antanas) Hand-make fractured floor/ceil meshes and 2nd room
+
++ nvdxt all textures, experiment with mip filters
+* NMap top/ceil/floor bricks

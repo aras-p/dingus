@@ -32,6 +32,8 @@ public:
 	const CCharacterAnimator& getAnimator() const { return *mAnimator; }
 	CCharacterAnimator& getAnimator() { return *mAnimator; }
 
+	CRenderableSkin*		getMesh( eRenderMode rm ) { return mMesh[rm]; }
+
 protected:
 	CRenderableSkin*		mMesh[RMCOUNT];
 	CCharacterAnimator*		mAnimator;

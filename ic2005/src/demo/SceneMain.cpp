@@ -9,6 +9,7 @@
 // --------------------------------------------------------------------------
 
 static const float BED_FRACTURE_FRAME = 831 + 800;
+static const float BED_HIDE_FRAME = 1710 + 800;
 
 static const float STONE_SHOW_FRAME = 844 + 800;
 static const float STONE_BEGIN_FRAME = 1115 + 800;
@@ -232,8 +233,10 @@ void CSceneMain::update( time_value demoTime, float dt )
 	}
 	
 
-	if( mCurrAnimFrame >= BED_FRACTURE_FRAME ) {
+	if( mCurrAnimFrame >= BED_FRACTURE_FRAME && mCurrAnimFrame <= BED_HIDE_FRAME ) {
 		double bedAnimS = (mCurrAnimFrame-BED_FRACTURE_FRAME)/ANIM_FPS;
+		if( bedAnimS < 0.0 )
+			bedAnimS = 0.0;
 		time_value bedAnimTime = time_value::fromsec( bedAnimS );
 		mBedAnim->update( bedAnimTime );
 	}
@@ -283,7 +286,7 @@ void CSceneMain::render( eRenderMode renderMode )
 	// bed
 	if( mCurrAnimFrame < BED_FRACTURE_FRAME )
 		mBedStatic->render( renderMode );
-	else
+	else if( mCurrAnimFrame < BED_HIDE_FRAME )
 		mBedAnim->render( renderMode );
 
 	// stone

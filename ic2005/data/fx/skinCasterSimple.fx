@@ -18,7 +18,7 @@ SPos vsMain0( SInput0 i ) {
 }
 
 half4 psMain( SPosCol i ) : COLOR {
-	return 0.6;
+	return 0.7;
 }
 
 

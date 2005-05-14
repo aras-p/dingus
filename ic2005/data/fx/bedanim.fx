@@ -22,7 +22,7 @@ SPosColTexp vsMain0( SInput0 i ) {
 	o.pos.xyz = mul( i.pos, skin ); // world pos
 	float3 n = mul( i.normal*2-1, (float3x3)skin );
 
-	o.uvp = mul( i.pos, mShadowProj );
+	o.uvp = mul( o.pos, mShadowProj );
 	o.color = gWallLight( o.pos.xyz, n );
 	o.pos = mul( o.pos, mViewProj );
 

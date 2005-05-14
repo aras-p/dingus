@@ -7,8 +7,8 @@
 
 // --------------------------------------------------------------------------
 
-const float CSceneScroller::SCROLLER_DURATION = 41; // seconds
-//const float CSceneScroller::SCROLLER_DURATION = 241; // seconds
+//const float CSceneScroller::SCROLLER_DURATION = 41; // seconds
+const float CSceneScroller::SCROLLER_DURATION = 61; // seconds
 
 
 
@@ -34,6 +34,7 @@ CSceneScroller::CSceneScroller()
 	// preload anims
 	mAnims.push_back( RGET_ANIM("ScrollerClock") );
 	mAnims.push_back( RGET_ANIM("ScrollerDance") );
+	//mAnims.push_back( RGET_ANIM("ScrollerFly") ); // problems with exporter?
 	mAnims.push_back( RGET_ANIM("ScrollerJumpOut") );
 	mAnims.push_back( RGET_ANIM("ScrollerTins") );
 	mAnims.push_back( RGET_ANIM("ScrollerViewer") );
@@ -70,8 +71,6 @@ void CSceneScroller::start( time_value demoTime )
 
 void CSceneScroller::startScrollerAnim()
 {
-	CConsole::CON_WARNING << "Start scroller anim" << endl;
-
 	mDefAnimPlayTime = gGetNextDefAnimPlayTime();
 	mDefAnimPlayedTime = 0.0f;
 
@@ -96,8 +95,6 @@ void CSceneScroller::startScrollerAnim()
 
 	// if we have animation, play it
 	if( bestAnimIdx >= 0 ) {
-		CConsole::CON_WARNING << "Found one, play!" << endl;
-
 		++mAnimPlayCount[bestAnimIdx];
 		const CAnimationBunch* anim = mAnims[bestAnimIdx];
 		mCharacter->getAnimator().playAnim( *anim, gGetAnimDuration(*anim,false), 0.5f, true, mLocalTime );
