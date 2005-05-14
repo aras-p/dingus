@@ -35,7 +35,7 @@ CSceneScroller::CSceneScroller()
 	// preload anims
 	mAnims.push_back( RGET_ANIM("ScrollerClock") );
 	mAnims.push_back( RGET_ANIM("ScrollerDance") );
-	//mAnims.push_back( RGET_ANIM("ScrollerFly") ); // problems with exporter?
+	mAnims.push_back( RGET_ANIM("ScrollerFly") );
 	mAnims.push_back( RGET_ANIM("ScrollerJumpOut") );
 	mAnims.push_back( RGET_ANIM("ScrollerTins") );
 	mAnims.push_back( RGET_ANIM("ScrollerViewer") );

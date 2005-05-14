@@ -156,11 +156,9 @@ CSceneSharedStuff::~CSceneSharedStuff()
 
 void CSceneSharedStuff::renderWalls( int lodIndex, eRenderMode rm )
 {
-	bool noSideCaps = (rm == RM_REFLECTED);
-
 	for( int i = 0; i < CFACE_COUNT; ++i ) {
 		if( mWalls[lodIndex][i] ) {
-			mWalls[lodIndex][i]->render( rm, noSideCaps );
+			mWalls[lodIndex][i]->render( rm );
 		} else {
 			if( i == CFACE_NY )
 				mFixWallNY->render( rm );

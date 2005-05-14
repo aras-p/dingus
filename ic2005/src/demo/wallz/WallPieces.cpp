@@ -767,30 +767,23 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	mMatrix.identify();
 
 	for( int i = 0; i < RMCOUNT; ++i ) {
-		mRenderablesFull[i] = NULL;
-		mRenderablesNoCaps[i] = NULL;
+		mRenderables[i] = NULL;
 	}
 	
-	mRenderablesFull[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderablesNoCaps[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderablesFull[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
-	mRenderablesNoCaps[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
+	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
+	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
 	if( reflTextureID ) {
-		mRenderablesFull[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
-		mRenderablesNoCaps[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
+		mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
 	}
 	
-	mRenderablesFull[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderablesNoCaps[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderablesFull[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
-	mRenderablesNoCaps[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
+	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
+	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
 }
 
 CWall3D::~CWall3D()
 {
 	for( int i = 0; i < RMCOUNT; ++i ) {
-		safeDelete( mRenderablesFull[i] );
-		safeDelete( mRenderablesNoCaps[i] );
+		safeDelete( mRenderables[i] );
 	}
 
 	stl_utils::wipe( mPiecesCombined );
@@ -959,20 +952,23 @@ void CWall3D::fractureInPiece( int index )
 	}
 }
 
-void CWall3D::update( float t )
+void CWall3D::restorePieces( float t )
 {
 	if( !mPiecesInited )
 		initPieces();
 
-	const float RESTORE_TIME = 500.0f;
-	if( t > mLastFractureTime + RESTORE_TIME ) {
-		// TODO: optimize!
-		int n = mWall2D.getPieceCount();
-		for( int i = 0; i < n; ++i ) {
-			if( mFracturedPieces[i] )
-				fractureInPiece( i );
-		}
+	int n = mWall2D.getPieceCount();
+	for( int i = 0; i < n; ++i ) {
+		if( mFracturedPieces[i] )
+			fractureInPiece( i );
 	}
+}
+
+
+void CWall3D::update( float t )
+{
+	if( !mPiecesInited )
+		initPieces();
 }
 
 
@@ -1117,47 +1113,31 @@ bool CWall3D::renderIntoVB()
 
 	for( i = 0; i < RMCOUNT; ++i )
 	{
-		if( mRenderablesFull[i] ) {
-			mRenderablesFull[i]->resetVBs();
+		if( mRenderables[i] ) {
+			bool noSideCaps = (i == RM_REFLECTED);
+			mRenderables[i]->resetVBs();
 
-			mRenderablesFull[i]->setVB( mVBChunk->getBuffer(), 0 );
-			mRenderablesFull[i]->setStride( mVBChunk->getStride(), 0 );
-			mRenderablesFull[i]->setBaseVertex( mVBChunk->getOffset() );
-			mRenderablesFull[i]->setMinVertex( 0 );
-			mRenderablesFull[i]->setNumVertices( nverts );
+			mRenderables[i]->setVB( mVBChunk->getBuffer(), 0 );
+			mRenderables[i]->setStride( mVBChunk->getStride(), 0 );
+			mRenderables[i]->setBaseVertex( mVBChunk->getOffset() );
+			mRenderables[i]->setMinVertex( 0 );
+			mRenderables[i]->setNumVertices( noSideCaps ? nvertsNoCaps : nverts );
 
-			mRenderablesFull[i]->setIB( mIBChunk->getBuffer() );
-			mRenderablesFull[i]->setStartIndex( mIBChunk->getOffset() );
-			mRenderablesFull[i]->setPrimCount( nindices / 3 );
+			mRenderables[i]->setIB( mIBChunk->getBuffer() );
+			mRenderables[i]->setStartIndex( mIBChunk->getOffset() );
+			mRenderables[i]->setPrimCount( (noSideCaps ? nindicesNoCaps : nindices) / 3 );
 
-			mRenderablesFull[i]->setPrimType( D3DPT_TRIANGLELIST );
-			mRenderablesFull[i]->setVertexDecl( vdecl );
-		}
-
-		if( mRenderablesNoCaps[i] ) {
-			mRenderablesNoCaps[i]->resetVBs();
-
-			mRenderablesNoCaps[i]->setVB( mVBChunk->getBuffer(), 0 );
-			mRenderablesNoCaps[i]->setStride( mVBChunk->getStride(), 0 );
-			mRenderablesNoCaps[i]->setBaseVertex( mVBChunk->getOffset() );
-			mRenderablesNoCaps[i]->setMinVertex( 0 );
-			mRenderablesNoCaps[i]->setNumVertices( nvertsNoCaps );
-
-			mRenderablesNoCaps[i]->setIB( mIBChunk->getBuffer() );
-			mRenderablesNoCaps[i]->setStartIndex( mIBChunk->getOffset() );
-			mRenderablesNoCaps[i]->setPrimCount( nindicesNoCaps / 3 );
-
-			mRenderablesNoCaps[i]->setPrimType( D3DPT_TRIANGLELIST );
-			mRenderablesNoCaps[i]->setVertexDecl( vdecl );
+			mRenderables[i]->setPrimType( D3DPT_TRIANGLELIST );
+			mRenderables[i]->setVertexDecl( vdecl );
 		}
 	}
 	return true;
 }
 
 
-void CWall3D::render( eRenderMode rm, bool noSideCaps )
+void CWall3D::render( eRenderMode rm )
 {
-	CRenderable* r = noSideCaps ? mRenderablesNoCaps[rm] : mRenderablesFull[rm];
+	CRenderable* r = mRenderables[rm];
 	if( !r )
 		return;
 

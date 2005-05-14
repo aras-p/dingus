@@ -76,6 +76,7 @@ void gReadFractureScenario( const char* fileName )
 				fscanf( f, "%i %i\n", &frm0, &frm1 );
 				ep.frame0 = frm0 + ANIM_FRAME_OFFSET;
 				ep.frame1 = frm1 + ANIM_FRAME_OFFSET;
+				restoreParams.push_back( ep );
 			}
 			break;
 		default:
@@ -131,12 +132,17 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 		}
 	}
 
+	// restore events
 	n = restoreParams.size();
 	for( i = 0; i < n; ++i ) {
 		const SRestoreParams& ep = restoreParams[i];
-		// TBD
-		if( ep.frame1 >= lastUpdateFrame && ep.frame1 < frame ) {
-			// TBD
+		if( ep.frame0 >= lastUpdateFrame && ep.frame0 < frame ) {
+			CConsole::CON_WARNING << "Event: restore " << i << endl;
+			for( int j = 0; j < CFACE_COUNT; ++j ) {
+				if( !walls[j] )
+					continue;
+				walls[j]->restorePieces( t );
+			}
 		}
 	}
 

@@ -250,8 +250,9 @@ public:
 	bool	intersectRay( const SLine3& ray, float& t ) const;
 	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, TIntVector& pcs );
 	void	fracturePiecesInYRange( float t, bool fractureOut, float y1, float y2, TIntVector& pcs );
+	void	restorePieces( float t );
 
-	void	render( eRenderMode rm, bool noSideCaps );
+	void	render( eRenderMode rm );
 
 private:
 	void	initPieces();
@@ -274,8 +275,7 @@ private:
 	int				mQuadtreeNodeCount;
 	std::vector<CWallPieceCombined*>	mPiecesCombined;
 
-	CRenderableIndexedBuffer*	mRenderablesFull[RMCOUNT];
-	CRenderableIndexedBuffer*	mRenderablesNoCaps[RMCOUNT];
+	CRenderableIndexedBuffer*	mRenderables[RMCOUNT];
 	TVBChunk::TSharedPtr		mVBChunk;
 	TIBChunk::TSharedPtr		mIBChunk;
 

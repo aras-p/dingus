@@ -4,10 +4,10 @@
 
 CODE
 
-. Restore walls (put back pieces, blend in wall, maybe blur)
++ Restore walls (put back pieces, blend in wall, maybe blur)
 . Attack effects
 . Tweak first attack's positions (lower)
-. Time-blend character's texture
+. Time-blend character's texture; tweak lighting
 . Shadows for other guys (needed?)
 . DoF
 . Glow; render extra brightness to alpha
@@ -42,6 +42,7 @@ CODE
 ART
 
 . Low poly / UV / NMap 2nd gargoyle
+. Adjust room layout to fill 1-px gaps somewhere.
 . (Antanas?) Animate camera target or dummy object for DoF focus distance
 . (Antanas) Hand-make fractured floor/ceil meshes and 2nd room
 
