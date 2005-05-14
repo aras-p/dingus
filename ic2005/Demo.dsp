@@ -384,6 +384,10 @@ SOURCE=.\data\fx\skin.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\skinCaster.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\skinCasterSimple.fx
 # End Source File
 # Begin Source File
@@ -404,7 +408,19 @@ SOURCE=.\data\fx\wallFixedNoRefl.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\wallFixedNoReflShad.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\wallFixedNoShad.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\wallNoRefl.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\walls.fx
 # End Source File
 # End Group
 # Begin Source File

@@ -16,8 +16,8 @@ CMeshEntity::CMeshEntity( const std::string& name )
 
 	if( descName == "ScrollerFloor" )
 		meshName = "billboard";
-	if( CStringHelper::startsWith( name, "Room" ) )
-		descName = "Room";
+	//if( CStringHelper::startsWith( name, "Room" ) )
+	//	descName = "Room";
 
 	mMesh = RGET_MESH(meshName);
 	for( int i = 0; i < RMCOUNT; ++i ) {

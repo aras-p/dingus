@@ -1,0 +1,8 @@
+name = 'RoomCeil'
+groups = {
+{
+  fx = 'wallFixedNoShad', pri = 0,
+  params = {
+  },
+},
+}

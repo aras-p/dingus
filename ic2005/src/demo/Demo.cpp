@@ -347,6 +347,7 @@ void gRenderWallReflections( CScene& scene )
 		// Now blurred stuff is in RT_REFL_TMP1. Copy it to our needed texture.
 		IDirect3DSurface9* surf;
 		RGET_S_TEX(WALL_TEXS[currWall])->getObject()->GetSurfaceLevel( 0, &surf );
+		//dx.getDevice().StretchRect( RGET_S_SURF(RT_REFLRT)->getObject(), NULL, surf, NULL, dx.getCaps().getStretchFilter() );
 		dx.getDevice().StretchRect( RGET_S_SURF(RT_REFL_TMP1)->getObject(), NULL, surf, NULL, dx.getCaps().getStretchFilter() );
 		surf->Release();
 	}

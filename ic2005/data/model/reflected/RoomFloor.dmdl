@@ -1,4 +1,4 @@
-name = 'Room'
+name = 'RoomFloor'
 groups = {
 {
   fx = 'wallFixedNoRefl', pri = 0,

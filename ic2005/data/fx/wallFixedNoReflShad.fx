@@ -1,5 +1,5 @@
 
 #undef WALL_NCOL
-#define WALL_SHADOW
+#undef WALL_SHADOW
 
 #include "walls.fx"
