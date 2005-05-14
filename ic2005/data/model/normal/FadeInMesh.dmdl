@@ -1,0 +1,8 @@
+name = 'FadeInMesh'
+groups = {
+{
+  fx = 'fadeinmesh', pri = 1,
+  params = {
+  },
+},
+}

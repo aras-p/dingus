@@ -24,8 +24,8 @@ std::vector<SFracYParams>	fracYParams;
 
 
 struct SRestoreParams {
-	double		frame0;
-	double		frame1;
+	double		frame;
+	float		duration;
 };
 std::vector<SRestoreParams>	restoreParams;
 
@@ -74,8 +74,8 @@ void gReadFractureScenario( const char* fileName )
 				SRestoreParams ep;
 				int frm0, frm1;
 				fscanf( f, "%i %i\n", &frm0, &frm1 );
-				ep.frame0 = frm0 + ANIM_FRAME_OFFSET;
-				ep.frame1 = frm1 + ANIM_FRAME_OFFSET;
+				ep.frame = frm0 + ANIM_FRAME_OFFSET;
+				ep.duration = (frm1-frm0) / ANIM_FPS;
 				restoreParams.push_back( ep );
 			}
 			break;
@@ -136,12 +136,12 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 	n = restoreParams.size();
 	for( i = 0; i < n; ++i ) {
 		const SRestoreParams& ep = restoreParams[i];
-		if( ep.frame0 >= lastUpdateFrame && ep.frame0 < frame ) {
+		if( ep.frame >= lastUpdateFrame && ep.frame < frame ) {
 			CConsole::CON_WARNING << "Event: restore " << i << endl;
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
 				if( !walls[j] )
 					continue;
-				walls[j]->restorePieces( t );
+				walls[j]->restorePieces( t, ep.duration );
 			}
 		}
 	}

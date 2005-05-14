@@ -356,6 +356,10 @@ SOURCE=.\data\fx\debug.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\fadeinmesh.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\filterBloom.fx
 # End Source File
 # Begin Source File

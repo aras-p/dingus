@@ -251,7 +251,7 @@ public:
 	bool	intersectRay( const SLine3& ray, float& t ) const;
 	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, TIntVector& pcs );
 	void	fracturePiecesInYRange( float t, bool fractureOut, float y1, float y2, TIntVector& pcs );
-	void	restorePieces( float t );
+	void	restorePieces( float t, float duration );
 
 	void	render( eRenderMode rm );
 
@@ -261,6 +261,7 @@ private:
 
 	void	fractureOutPiece( int index );
 	void	fractureInPiece( int index );
+	void	clearRestoring();
 
 private:
 	CWall2D		mWall2D;
@@ -280,6 +281,10 @@ private:
 	CMeshEntity*				mFadeInMesh;
 	TVBChunk::TSharedPtr		mVBChunk;
 	TIBChunk::TSharedPtr		mIBChunk;
+
+	float		mRestoreTime;
+	float		mRestoreDuration;
+	float		mRestoreAlpha;
 
 	bool	mPiecesInited;
 	bool	mNeedsRenderingIntoVB;

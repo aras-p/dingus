@@ -4,6 +4,7 @@
 #include <dingus/math/MathUtils.h>
 #include <dingus/renderer/RenderableBuffer.h>
 #include <dingus/utils/CpuTimer.h>
+#include "../MeshEntity.h"
 
 
 const float HALF_THICK = 0.02f;
@@ -761,6 +762,9 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 , mFracturedPieces(NULL)
 , mQuadtree(NULL)
 , mLastFractureTime( -100.0f )
+, mRestoreTime( -100.0f )
+, mRestoreDuration( 0.0f )
+, mRestoreAlpha( 0.0f )
 , mPiecesInited(false)
 , mNeedsRenderingIntoVB(false)
 {
@@ -779,7 +783,7 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
 
-	//mFadeInMesh = new CMeshEntity(
+	mFadeInMesh = new CMeshEntity( "FadeInMesh", "billboard" );
 }
 
 CWall3D::~CWall3D()
@@ -787,6 +791,7 @@ CWall3D::~CWall3D()
 	for( int i = 0; i < RMCOUNT; ++i ) {
 		safeDelete( mRenderables[i] );
 	}
+	safeDelete( mFadeInMesh );
 
 	stl_utils::wipe( mPiecesCombined );
 	safeDeleteArray( mPieces3D );
@@ -843,6 +848,22 @@ void CWall3D::initPieces()
 		}
 	}
 
+	// init fade-in mesh
+	SMatrix4x4 m = mMatrix;
+	m.getOrigin() += m.getAxisX() * (mWall2D.getSize().x*0.5f);
+	m.getOrigin() += m.getAxisY() * (mWall2D.getSize().y*0.5f);
+	m.getOrigin() += m.getAxisZ() * (-HALF_THICK);
+	m.getAxisX() *= mWall2D.getSize().x * -1.01f;
+	m.getAxisY() *= mWall2D.getSize().y * 1.01f;
+	mFadeInMesh->mWorldMat = m;
+	for( i = 0; i < RMCOUNT; ++i ) {
+		CRenderableMesh* r = mFadeInMesh->getRenderMesh(eRenderMode(i));
+		if( !r )
+			continue;
+		r->getParams().addVector3( "vNormal", m.getAxisZ() );
+		r->getParams().addFloatRef( "fAlpha", &mRestoreAlpha );
+	}
+
 	mPiecesInited = true;
 	mNeedsRenderingIntoVB = true;
 }
@@ -869,8 +890,10 @@ void CWall3D::fracturePiecesInSphere( float t, bool fractureOut, const SVector3&
 	if( !mPiecesInited )
 		initPieces();
 
-	if( fractureOut )
+	if( fractureOut ) {
 		mLastFractureTime = t;
+		clearRestoring();
+	}
 
 	// to local space
 	SVector3 locPos;
@@ -901,8 +924,10 @@ void CWall3D::fracturePiecesInYRange( float t, bool fractureOut, float y1, float
 	if( !mPiecesInited )
 		initPieces();
 
-	if( fractureOut )
+	if( fractureOut ) {
 		mLastFractureTime = t;
+		clearRestoring();
+	}
 
 	// fetch the pieces
 	pcs.resize( 0 );
@@ -954,16 +979,27 @@ void CWall3D::fractureInPiece( int index )
 	}
 }
 
-void CWall3D::restorePieces( float t )
+
+void CWall3D::restorePieces( float t, float duration )
 {
 	if( !mPiecesInited )
 		initPieces();
 
-	int n = mWall2D.getPieceCount();
-	for( int i = 0; i < n; ++i ) {
-		if( mFracturedPieces[i] )
-			fractureInPiece( i );
-	}
+	// if nothing is fractured, no need to restore
+	if( mQuadtree[0].getData().fracturedOutCounter == 0 )
+		return;
+
+	mRestoreTime = t;
+	mRestoreDuration = duration;
+	mRestoreAlpha = 0.0f;
+}
+
+
+void CWall3D::clearRestoring()
+{
+	mRestoreTime = -100.0f;
+	mRestoreDuration = -1.0f;
+	mRestoreAlpha = 0.0f;
 }
 
 
@@ -971,6 +1007,19 @@ void CWall3D::update( float t )
 {
 	if( !mPiecesInited )
 		initPieces();
+
+	// restoring?
+	if( mRestoreDuration > 0.0f ) {
+		mRestoreAlpha = (t-mRestoreTime) / mRestoreDuration;
+		if( mRestoreAlpha >= 1.0f ) {
+			int n = mWall2D.getPieceCount();
+			for( int i = 0; i < n; ++i ) {
+				if( mFracturedPieces[i] )
+					fractureInPiece( i );
+			}
+			clearRestoring();
+		}
+	}
 }
 
 
@@ -1139,6 +1188,9 @@ bool CWall3D::renderIntoVB()
 
 void CWall3D::render( eRenderMode rm )
 {
+	if( mRestoreAlpha > 0.0f )
+		mFadeInMesh->render( rm );
+
 	CRenderable* r = mRenderables[rm];
 	if( !r )
 		return;
