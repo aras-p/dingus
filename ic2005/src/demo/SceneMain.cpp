@@ -75,7 +75,7 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 
 		for( int j = 0; j < nroomEnts; ++j ) {
 			const CMeshEntity& re = *mRoom[j];
-			if( doorName != re.getName() )
+			if( doorName != re.getDescName() )
 				continue;
 			
 			const SMatrix4x4& roomMat = re.mWorldMat;

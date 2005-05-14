@@ -45,7 +45,7 @@ CSceneScroller::CSceneScroller()
 	mByeAnimDuration = gGetAnimDuration( *mByeAnim, false );
 
 	// floor
-	mFloor = new CMeshEntity( "ScrollerFloor" );
+	mFloor = new CMeshEntity( "ScrollerFloor", "billboard" );
 	addEntity( *mFloor );
 	
 	// position camera

@@ -15,7 +15,8 @@
  */
 class CMeshEntity : public CAbstractEntity {
 public:
-	CMeshEntity( const std::string& name );
+	CMeshEntity( const std::string& descName );
+	CMeshEntity( const std::string& descName, const std::string& meshName );
 	virtual ~CMeshEntity();
 
 	/// Gets AABB
@@ -41,7 +42,10 @@ public:
 		return rmv[0];
 	}
 
-	const std::string& getName() const { return mName; }
+	const std::string& getDescName() const { return mDescName; }
+
+private:
+	void	init( const std::string& descName, const std::string& meshName );
 
 private:
 	typedef std::vector<CRenderableMesh*>	TMeshVector;
@@ -49,7 +53,7 @@ private:
 	CMesh*		mMesh;
 	TMeshVector	mRenderMeshes[RMCOUNT];
 
-	std::string	mName;
+	std::string	mDescName;
 };
 
 

@@ -778,6 +778,8 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	
 	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
+
+	//mFadeInMesh = new CMeshEntity(
 }
 
 CWall3D::~CWall3D()

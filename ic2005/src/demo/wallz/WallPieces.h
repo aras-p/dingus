@@ -20,6 +20,7 @@ namespace dingus {
 };
 
 class CWall3D;
+class CMeshEntity;
 
 
 typedef SVertexXyzDiffuse TPieceVertex;
@@ -276,6 +277,7 @@ private:
 	std::vector<CWallPieceCombined*>	mPiecesCombined;
 
 	CRenderableIndexedBuffer*	mRenderables[RMCOUNT];
+	CMeshEntity*				mFadeInMesh;
 	TVBChunk::TSharedPtr		mVBChunk;
 	TIBChunk::TSharedPtr		mIBChunk;
 

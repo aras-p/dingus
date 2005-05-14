@@ -12,7 +12,7 @@
 // --------------------------------------------------------------------------
 
 CRoomObjectEntity::CRoomObjectEntity( const std::string& name )
-:	CMeshEntity(name), mMoved( true )
+:	CMeshEntity(name,name), mMoved( true )
 {
 	// add to effect parameters
 	for( int i = 0; i < RMCOUNT; ++i ) {

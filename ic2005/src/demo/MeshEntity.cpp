@@ -6,19 +6,29 @@
 
 // --------------------------------------------------------------------------
 
-CMeshEntity::CMeshEntity( const std::string& name )
+CMeshEntity::CMeshEntity( const std::string& descName )
 :	mMesh(0)
-,	mName( name )
+,	mDescName( descName )
 {
-	assert( !name.empty() );
-	std::string descName = name;
-	std::string meshName = name;
+	init( descName, descName );
+}
 
-	if( descName == "ScrollerFloor" )
-		meshName = "billboard";
-	//if( CStringHelper::startsWith( name, "Room" ) )
-	//	descName = "Room";
+CMeshEntity::CMeshEntity( const std::string& descName, const std::string& meshName )
+:	mMesh(0)
+,	mDescName( descName )
+{
+	init( descName, meshName );
+}
 
+CMeshEntity::~CMeshEntity()
+{
+	for( int i = 0; i < RMCOUNT; ++i )
+		stl_utils::wipe( mRenderMeshes[i] );
+}
+
+
+void CMeshEntity::init( const std::string& descName, const std::string& meshName )
+{
 	mMesh = RGET_MESH(meshName);
 	for( int i = 0; i < RMCOUNT; ++i ) {
 		// some objects don't get all rendermodes
@@ -32,12 +42,6 @@ CMeshEntity::CMeshEntity( const std::string& name )
 			addMatricesToParams( rr->getParams() );
 		}
 	}
-}
-
-CMeshEntity::~CMeshEntity()
-{
-	for( int i = 0; i < RMCOUNT; ++i )
-		stl_utils::wipe( mRenderMeshes[i] );
 }
 
 void CMeshEntity::render( eRenderMode renderMode, bool direct )
