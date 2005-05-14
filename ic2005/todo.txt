@@ -4,7 +4,6 @@
 
 CODE
 
-+ Restore walls (put back pieces, blend in wall, maybe blur)
 . Attack effects
 . Tweak first attack's positions (lower)
 . Time-blend character's texture; tweak lighting
@@ -20,6 +19,7 @@ CODE
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
 
++ Restore walls (put back pieces, blend in wall, maybe blur)
 + Scroller scene
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
@@ -41,7 +41,7 @@ CODE
 
 ART
 
-. Low poly / UV / NMap 2nd gargoyle
++ Low poly / UV / NMap 2nd gargoyle
 . Adjust room layout to fill 1-px gaps somewhere.
 . (Antanas?) Animate camera target or dummy object for DoF focus distance
 . (Antanas) Hand-make fractured floor/ceil meshes and 2nd room
