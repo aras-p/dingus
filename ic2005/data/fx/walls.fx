@@ -11,8 +11,12 @@
 #endif
 
 
-
-#if defined(WALL_SHADOW) && defined(WALL_REFL)
+#if defined(WALL_SH2REFL)
+	#define WALL_OUTPUT SPosColTexp3
+	#define WALL_SHCRD uvp[0]
+	#define WALL_S2CRD uvp[1]
+	#define WALL_RFCRD uvp[2]
+#elif defined(WALL_SHADOW) && defined(WALL_REFL)
 	#define WALL_OUTPUT SPosColTexp2
 	#define WALL_SHCRD uvp[0]
 	#define WALL_RFCRD uvp[1]
@@ -43,6 +47,9 @@ WALL_OUTPUT vsMain( WALL_INPUT i ) {
 #ifdef WALL_SHADOW
 	o.WALL_SHCRD = mul( i.pos, mShadowProj );
 #endif
+#ifdef WALL_SH2REFL
+	o.WALL_S2CRD = mul( i.pos, mShadowProj2 );
+#endif
 #ifdef WALL_REFL
 	o.WALL_RFCRD = mul( i.pos, mViewTexProj );
 #endif
@@ -54,7 +61,12 @@ WALL_OUTPUT vsMain( WALL_INPUT i ) {
 half4 psMain( WALL_OUTPUT i ) : COLOR {
 	half4 col = i.color;
 #ifdef WALL_SHADOW
-	col.xyz *= tex2Dproj( smpShadow, i.WALL_SHCRD );
+	half shadow = tex2Dproj( smpShadow, i.WALL_SHCRD ).r;
+	#ifdef WALL_SH2REFL
+		half shadow2 = tex2Dproj( smpShadow2, i.WALL_S2CRD ).r;
+		shadow = min( shadow, shadow2 );
+	#endif
+	col.xyz *= shadow;
 #endif
 #ifdef WALL_REFL
 	col.xyz += tex2Dproj( smpRefl, i.WALL_RFCRD ) * 0.15;

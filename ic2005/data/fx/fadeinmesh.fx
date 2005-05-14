@@ -13,7 +13,7 @@ SPosCol vsMain( SPosN i ) {
 	SPosCol o;
 	float3 wpos = mul( i.pos, mWorld );
 	o.pos = mul( i.pos, mWVP );
-	o.color = gWallLight( wpos, vNormal );
+	o.color = gWallLight( wpos, vNormal ) * 1.1;
 	o.color.a = fAlpha;
 	return o;
 }
