@@ -4,8 +4,6 @@
 
 CODE
 
-+ Scroller scene
-. Fade out physics pieces
 . Don't shadow ceiling
 . Restore walls (put back pieces, blend in wall, maybe blur)
 . Attack effects
@@ -23,11 +21,12 @@ CODE
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
 
++ Scroller scene
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
 + Shadows from bed/wallpieces
 
-* Fade out bed/stone pieces
+. Fade out physics/bed/stone pieces
 * Floor/ceil doesn't fracture, replace by fixed meshes
 * Reflect outer room
 * Frustum cull objects
