@@ -17,4 +17,14 @@ float4 gWallLight( float3 wpos, float3 wn )
 }
 
 
+half gWallLightPS( half3 wn, half3 tol )
+{
+	half cDiff = 0.6;
+	half cAmb = 0.4;
+	half diffuse = saturate( dot( tol, wn ) );
+	half col = diffuse * cDiff + cAmb;
+	return col;
+}
+
+
 #endif

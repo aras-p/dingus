@@ -12,20 +12,39 @@
 
 
 #if defined(WALL_SH2REFL)
-	#define WALL_OUTPUT SPosColTexp3
+	struct SOutput {
+		float4 pos		: POSITION;
+		half3  n 		: COLOR0;
+		half3  tol 		: COLOR1;
+		float4 uvp[3]	: TEXCOORD0;
+	};
 	#define WALL_SHCRD uvp[0]
 	#define WALL_S2CRD uvp[1]
 	#define WALL_RFCRD uvp[2]
 #elif defined(WALL_SHADOW) && defined(WALL_REFL)
-	#define WALL_OUTPUT SPosColTexp2
+	struct SOutput {
+		float4 pos		: POSITION;
+		half3  n 		: COLOR0;
+		half3  tol 		: COLOR1;
+		float4 uvp[2]	: TEXCOORD0;
+	};
 	#define WALL_SHCRD uvp[0]
 	#define WALL_RFCRD uvp[1]
 #elif defined(WALL_SHADOW) || defined(WALL_REFL)
-	#define WALL_OUTPUT SPosColTexp
+	struct SOutput {
+		float4 pos		: POSITION;
+		half3  n 		: COLOR0;
+		half3  tol 		: COLOR1;
+		float4 uvp		: TEXCOORD0;
+	};
 	#define WALL_SHCRD uvp
 	#define WALL_RFCRD uvp
 #else
-	#define WALL_OUTPUT SPosCol
+	struct SOutput {
+		float4 pos		: POSITION;
+		half3  n 		: COLOR0;
+		half3  tol 		: COLOR1;
+	};
 #endif
 
 
@@ -41,8 +60,8 @@
 
 
 
-WALL_OUTPUT vsMain( WALL_INPUT i ) {
-	WALL_OUTPUT o;
+SOutput vsMain( WALL_INPUT i ) {
+	SOutput o;
 	o.pos = mul( i.pos, mViewProj );
 #ifdef WALL_SHADOW
 	o.WALL_SHCRD = mul( i.pos, mShadowProj );
@@ -53,13 +72,20 @@ WALL_OUTPUT vsMain( WALL_INPUT i ) {
 #ifdef WALL_REFL
 	o.WALL_RFCRD = mul( i.pos, mViewTexProj );
 #endif
-	o.color = gWallLight( i.pos.xyz, WALL_N );
+	o.n = WALL_N*0.5+0.5;
+	float3 tolight = normalize( vLightPos - i.pos.xyz );
+	o.tol = tolight*0.5+0.5;
 	return o;
 }
 
 
-half4 psMain( WALL_OUTPUT i ) : COLOR {
-	half4 col = i.color;
+half4 psMain( SOutput i ) : COLOR {
+	// lighting
+	half3 n = i.n*2-1;
+	half3 tol = normalize( i.tol*2-1 );
+	half l = gWallLightPS( n, tol );
+	half4 col = l;
+
 #ifdef WALL_SHADOW
 	half shadow = tex2Dproj( smpShadow, i.WALL_SHCRD ).r;
 	#ifdef WALL_SH2REFL
