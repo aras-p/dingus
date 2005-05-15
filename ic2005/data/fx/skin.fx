@@ -2,6 +2,13 @@
 #include "lib/structs.fx"
 #include "lib/skinning.fx"
 
+texture		tBase;
+sampler2D	smpBase = sampler_state {
+	Texture = (tBase);
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+	AddressU = Wrap; AddressV = Wrap;
+};
+
 texture		tNormalAO;
 sampler2D	smpNormalAO = sampler_state {
 	Texture = (tNormalAO);
@@ -63,10 +70,14 @@ half4 psMain( SOutput i ) : COLOR {
 	rim *= 0.3;
 
 	const half3 cDiff = half3( 1.05, 1.1, 1.2 );
+
 	const half3 cRim = half3( 0.99, 0.98, 0.96 );
 	half3 col = cDiff * diffuse + cRim * rim;
 
 	col = col * 0.5 + 0.6 * occ;
+
+	col *= tex2D( smpBase, i.uv ).g;
+
 	return half4( col, 1 );
 }
 

@@ -4,9 +4,11 @@
 
 CODE
 
++ Restore walls (put back pieces, blend in wall, maybe blur)
++ Time-blend character's texture; tweak lighting
++ Scroller scene
 . Attack effects
 . Tweak first attack's positions (lower)
-. Time-blend character's texture; tweak lighting
 . Shadows for other guys (needed?)
 . DoF
 . Glow; render extra brightness to alpha
@@ -18,9 +20,9 @@ CODE
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
+. Interactive mode
+. Interactive mode tweak UI
 
-+ Restore walls (put back pieces, blend in wall, maybe blur)
-+ Scroller scene
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
 + Shadows from bed/wallpieces
