@@ -756,21 +756,20 @@ void CWallPieceCombined::renderCaps( TPieceVertex* vb, unsigned short* ib, int b
 // --------------------------------------------------------------------------
 
 
-CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* reflTextureID )
+CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* reflTextureID, const char* restoreTextureID )
 : mWall2D(size,smallestElemSize)
 , mPieces3D(NULL)
 , mFracturedPieces(NULL)
+, mPieceRestoreTimes(NULL)
 , mQuadtree(NULL)
-, mLastFractureTime( -100.0f )
-, mRestoreTime( -100.0f )
-, mRestoreDuration( 0.0f )
-, mRestoreAlpha( 0.0f )
 , mPiecesInited(false)
 , mNeedsRenderingIntoVB(false)
 {
 	mMatrix.identify();
 
-	for( int i = 0; i < RMCOUNT; ++i ) {
+	int i;
+
+	for( i = 0; i < RMCOUNT; ++i ) {
 		mRenderables[i] = NULL;
 	}
 	
@@ -784,6 +783,13 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
 
 	mFadeInMesh = new CMeshEntity( "FadeInMesh", "billboard" );
+
+	mResTimeGrid = new float[RESGRID_X*RESGRID_Y];
+	for( i = 0; i < RESGRID_X*RESGRID_Y; ++i ) {
+		mResTimeGrid[i] = -1.0f;
+	}
+
+	mRestoreTexture = RGET_S_TEX(restoreTextureID);
 }
 
 CWall3D::~CWall3D()
@@ -796,8 +802,10 @@ CWall3D::~CWall3D()
 	stl_utils::wipe( mPiecesCombined );
 	safeDeleteArray( mPieces3D );
 	safeDeleteArray( mFracturedPieces );
+	safeDeleteArray( mPieceRestoreTimes );
 
 	safeDeleteArray( mQuadtree );
+	delete[] mResTimeGrid;
 }
 
 void CWall3D::initPieces()
@@ -818,11 +826,13 @@ void CWall3D::initPieces()
 
 	mPieces3D = new CWallPiece3D[n];
 	mFracturedPieces = new bool[n];
+	mPieceRestoreTimes = new float[n];
 
 	// init the leaf pieces
 	for( i = 0; i < n; ++i ) {
 		mPieces3D[i].init( *this, i );
 		mFracturedPieces[i] = false;
+		mPieceRestoreTimes[i] = -1.0f;
 
 		CWallPieceCombined* wpc = new CWallPieceCombined();
 		wpc->initBegin( *this, NULL, false );
@@ -861,11 +871,12 @@ void CWall3D::initPieces()
 		if( !r )
 			continue;
 		r->getParams().addVector3( "vNormal", m.getAxisZ() );
-		r->getParams().addFloatRef( "fAlpha", &mRestoreAlpha );
+		r->getParams().addTexture( "tAlpha", *mRestoreTexture );
 	}
 
 	mPiecesInited = true;
 	mNeedsRenderingIntoVB = true;
+	mNeedsRenderFadeMesh = true;
 }
 
 
@@ -885,65 +896,101 @@ bool CWall3D::intersectRay( const SLine3& ray, float& t ) const
 }
 
 
-void CWall3D::fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, TIntVector& pcs )
+void CWall3D::fracturePiecesInSphere( float t, const SVector3& pos, float radius, TIntVector& pcs,
+		float restoreAfter, float restoreDuration )
 {
 	if( !mPiecesInited )
 		initPieces();
 
-	if( fractureOut ) {
-		mLastFractureTime = t;
-		clearRestoring();
-	}
-
+	pcs.resize( 0 );
+	
 	// to local space
 	SVector3 locPos;
 	D3DXVec3TransformCoord( &locPos, &pos, &mInvMatrix );
 
+	if( locPos.z < -radius || locPos.z > radius )
+		return;
+
+	// remember restore times
+	{
+		float rad = radius*2.0f;
+		float lx1 = (locPos.x - rad) / mWall2D.getSize().x * RESGRID_X;
+		float lx2 = (locPos.x + rad) / mWall2D.getSize().x * RESGRID_X;
+		float ly1 = (locPos.y - rad) / mWall2D.getSize().y * RESGRID_Y;
+		float ly2 = (locPos.y + rad) / mWall2D.getSize().y * RESGRID_Y;
+		int ix1 = (int)clamp( lx1, 0, RESGRID_X-1 );
+		int ix2 = (int)clamp( lx2, 0, RESGRID_X-1 );
+		int iy1 = (int)clamp( ly1, 0, RESGRID_Y-1 );
+		int iy2 = (int)clamp( ly2, 0, RESGRID_Y-1 );
+		float dx = mWall2D.getSize().x / RESGRID_X;
+		float dy = mWall2D.getSize().y / RESGRID_Y;
+		for( int iy = iy1; iy <= iy2; ++iy ) {
+			float* resval = mResTimeGrid + RESGRID_X*iy + ix1;
+			float fy = iy * dy;
+			for( int ix = ix1; ix <= ix2; ++ix, ++resval ) {
+				float fx = ix * dx;
+
+				// don't touch restore grid outside the circle
+				float diffX = fx-locPos.x;
+				float diffY = fy-locPos.y;
+				float diffR2 = diffX*diffX + diffY*diffY;
+				if( diffR2 > rad*rad )
+					continue;
+
+				// restore time for this grid point - start at
+				// t+restoreAfter at circle boundaries, later at circle
+				// center
+				float resTime = t + restoreAfter + (1.0f-diffR2/(rad*rad)) * restoreDuration;
+
+				if( *resval < 0.0f )
+					*resval = resTime;
+				else
+					*resval = max( (*resval), resTime );
+			}
+		}
+	}
+
 	// fetch the pieces
-	pcs.resize( 0 );
+
+	float pieceRestoreTime = t + restoreAfter + restoreDuration;
 
 	// TODO: optimize, right now linear search!
 	int n = mWall2D.getPieceCount();
 	for( int i = 0; i < n; ++i ) {
 		const CWallPiece2D& p = mWall2D.getPiece( i );
-		if( mFracturedPieces[i] )
-			continue;
 		SVector2 c = p.getAABB().getCenter();
 		SVector3 tocenter = locPos - SVector3(c.x,c.y,0);
 		if( tocenter.lengthSq() < radius*radius ) {
+			mPieceRestoreTimes[i] = pieceRestoreTime;
+			if( mFracturedPieces[i] )
+				continue;
 			pcs.push_back( i );
-			if( fractureOut ) {
-				fractureOutPiece( i );
-			}
+			fractureOutPiece( i );
 		}
 	}
 }
 
-void CWall3D::fracturePiecesInYRange( float t, bool fractureOut, float y1, float y2, TIntVector& pcs )
+void CWall3D::fracturePiecesInYRange( float t, float y1, float y2, TIntVector& pcs )
 {
 	if( !mPiecesInited )
 		initPieces();
-
-	if( fractureOut ) {
-		mLastFractureTime = t;
-		clearRestoring();
-	}
 
 	// fetch the pieces
 	pcs.resize( 0 );
 
 	// TODO: optimize, right now linear search!
+	float pieceRestoreTime = t + 1.0e6f;
+
 	int n = mWall2D.getPieceCount();
 	for( int i = 0; i < n; ++i ) {
 		const CWallPiece2D& p = mWall2D.getPiece( i );
-		if( mFracturedPieces[i] )
-			continue;
 		SVector2 c = p.getAABB().getCenter();
 		if( c.y >= y1 && c.y <= y2 ) {
+			mPieceRestoreTimes[i] = pieceRestoreTime;
+			if( mFracturedPieces[i] )
+				continue;
 			pcs.push_back( i );
-			if( fractureOut ) {
-				fractureOutPiece( i );
-			}
+			fractureOutPiece( i );
 		}
 	}
 }
@@ -968,6 +1015,7 @@ void CWall3D::fractureInPiece( int index )
 	assert( index >= 0 && index < mWall2D.getPieceCount() );
 	assert( mFracturedPieces[index] );
 	mFracturedPieces[index] = false;
+	mPieceRestoreTimes[index] = -1.0f;
 	mNeedsRenderingIntoVB = true;
 
 	// mark as non fractured in quadtree
@@ -980,45 +1028,60 @@ void CWall3D::fractureInPiece( int index )
 }
 
 
-void CWall3D::restorePieces( float t, float duration )
-{
-	if( !mPiecesInited )
-		initPieces();
-
-	// if nothing is fractured, no need to restore
-	if( mQuadtree[0].getData().fracturedOutCounter == 0 )
-		return;
-
-	mRestoreTime = t;
-	mRestoreDuration = duration;
-	mRestoreAlpha = 0.0f;
-}
-
-
-void CWall3D::clearRestoring()
-{
-	mRestoreTime = -100.0f;
-	mRestoreDuration = -1.0f;
-	mRestoreAlpha = 0.0f;
-}
-
 
 void CWall3D::update( float t )
 {
 	if( !mPiecesInited )
 		initPieces();
 
-	// restoring?
-	if( mRestoreDuration > 0.0f ) {
-		mRestoreAlpha = (t-mRestoreTime) / mRestoreDuration;
-		if( mRestoreAlpha >= 1.0f ) {
-			int n = mWall2D.getPieceCount();
-			for( int i = 0; i < n; ++i ) {
-				if( mFracturedPieces[i] )
-					fractureInPiece( i );
+	// update restoration texture
+	const float RESTORE_FADE_TIME = 0.2f;
+
+	bool hadZeros = false;
+	bool had255s = false;
+	bool hadOthers = false;
+
+	D3DLOCKED_RECT lr;
+	mRestoreTexture->getObject()->LockRect( 0, &lr, NULL, D3DLOCK_DISCARD );
+
+	BYTE* texptr = (BYTE*)lr.pBits;
+	float* resval = mResTimeGrid;
+	for( int iy = 0; iy < RESGRID_Y; ++iy ) {
+		for( int ix = 0; ix < RESGRID_X; ++ix, ++resval ) {
+			BYTE v;
+			float rt = *resval;
+			if( rt < 0.0f ) {
+				v = 255;
+				hadZeros = true;
+			} else if( t <= rt - RESTORE_FADE_TIME ) {
+				v = 0;
+				hadZeros = true;
+			} else {
+				float alpha = (t-rt+RESTORE_FADE_TIME) / RESTORE_FADE_TIME;
+				if( alpha >= 1.0f ) {
+					// fully restored
+					v = 255;
+					*resval = -1.0f;
+					had255s = true;
+				} else {
+					v = int(alpha*255);
+					hadOthers = true;
+				}
 			}
-			clearRestoring();
+			texptr[ix] = v;
 		}
+		texptr += lr.Pitch;
+	}
+
+	mRestoreTexture->getObject()->UnlockRect( 0 );
+
+	mNeedsRenderFadeMesh = (hadOthers) || (hadZeros && had255s);
+
+	// restore needed pieces
+	int n = mWall2D.getPieceCount();
+	for( int i = 0; i < n; ++i ) {
+		if( mFracturedPieces[i] && t>=mPieceRestoreTimes[i] )
+			fractureInPiece( i );
 	}
 }
 
@@ -1188,7 +1251,7 @@ bool CWall3D::renderIntoVB()
 
 void CWall3D::render( eRenderMode rm )
 {
-	if( mRestoreAlpha > 0.0f )
+	if( mNeedsRenderFadeMesh )
 		mFadeInMesh->render( rm );
 
 	CRenderable* r = mRenderables[rm];

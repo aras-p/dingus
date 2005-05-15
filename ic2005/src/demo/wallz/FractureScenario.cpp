@@ -11,6 +11,8 @@ struct SFracSphParams {
 	double		frame;
 	SVector3	pos;
 	float		radius;
+	float		restoreAfter;
+	float		restoreDur;
 };
 std::vector<SFracSphParams>	fracSphParams;
 
@@ -22,12 +24,6 @@ struct SFracYParams {
 };
 std::vector<SFracYParams>	fracYParams;
 
-
-struct SRestoreParams {
-	double		frame;
-	float		duration;
-};
-std::vector<SRestoreParams>	restoreParams;
 
 
 double	lastUpdateFrame = -1.0;
@@ -52,9 +48,11 @@ void gReadFractureScenario( const char* fileName )
 			{
 				// fracture sphere event
 				SFracSphParams ep;
-				int frm;
-				fscanf( f, "%i %f %f %f %f\n", &frm, &ep.pos.x, &ep.pos.y, &ep.pos.z, &ep.radius );
+				int frm, after, dur;
+				fscanf( f, "%i %f %f %f %f %i %i\n", &frm, &ep.pos.x, &ep.pos.y, &ep.pos.z, &ep.radius, &after, &dur );
 				ep.frame = frm + ANIM_FRAME_OFFSET;
+				ep.restoreAfter = float(after) / ANIM_FPS;
+				ep.restoreDur = float(dur) / ANIM_FPS;
 				fracSphParams.push_back( ep );
 			}
 			break;
@@ -66,17 +64,6 @@ void gReadFractureScenario( const char* fileName )
 				fscanf( f, "%i %f %f\n", &frm, &ep.y1, &ep.y2 );
 				ep.frame = frm + ANIM_FRAME_OFFSET;
 				fracYParams.push_back( ep );
-			}
-			break;
-		case 2:
-			{
-				// restore event
-				SRestoreParams ep;
-				int frm0, frm1;
-				fscanf( f, "%i %i\n", &frm0, &frm1 );
-				ep.frame = frm0 + ANIM_FRAME_OFFSET;
-				ep.duration = (frm1-frm0) / ANIM_FPS;
-				restoreParams.push_back( ep );
 			}
 			break;
 		default:
@@ -104,7 +91,7 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
 				if( !walls[j] )
 					continue;
-				walls[j]->fracturePiecesInSphere( t, true, ep.pos, ep.radius, pieces );
+				walls[j]->fracturePiecesInSphere( t, ep.pos, ep.radius, pieces, ep.restoreAfter, ep.restoreDur );
 				int npc = pieces.size();
 				for( int k = 0; k < npc; ++k ) {
 					wall_phys::spawnPiece( lodIndex, j, pieces[k] );
@@ -123,7 +110,7 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
 				if( !walls[j] )
 					continue;
-				walls[j]->fracturePiecesInYRange( t, true, ep.y1, ep.y2, pieces );
+				walls[j]->fracturePiecesInYRange( t, ep.y1, ep.y2, pieces );
 				int npc = pieces.size();
 				for( int k = 0; k < npc; ++k ) {
 					wall_phys::spawnPiece( lodIndex, j, pieces[k] );
@@ -131,21 +118,6 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 			}
 		}
 	}
-
-	// restore events
-	n = restoreParams.size();
-	for( i = 0; i < n; ++i ) {
-		const SRestoreParams& ep = restoreParams[i];
-		if( ep.frame >= lastUpdateFrame && ep.frame < frame ) {
-			CConsole::CON_WARNING << "Event: restore " << i << endl;
-			for( int j = 0; j < CFACE_COUNT; ++j ) {
-				if( !walls[j] )
-					continue;
-				walls[j]->restorePieces( t, ep.duration );
-			}
-		}
-	}
-
 
 	lastUpdateFrame = frame;
 }

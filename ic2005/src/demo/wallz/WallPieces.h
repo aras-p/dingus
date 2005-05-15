@@ -235,7 +235,12 @@ private:
  */ 
 class CWall3D : public boost::noncopyable {
 public:
-	CWall3D( const SVector2& size, float smallestElemSize, const char* reflTextureID );
+	enum {
+		RESGRID_X = 128,
+		RESGRID_Y = 64,
+	};
+public:
+	CWall3D( const SVector2& size, float smallestElemSize, const char* reflTextureID, const char* restoreTextureID );
 	~CWall3D();
 
 	const CWall2D& getWall2D() const { return mWall2D; }
@@ -249,9 +254,10 @@ public:
 	void	update( float t );
 
 	bool	intersectRay( const SLine3& ray, float& t ) const;
-	void	fracturePiecesInSphere( float t, bool fractureOut, const SVector3& pos, float radius, TIntVector& pcs );
-	void	fracturePiecesInYRange( float t, bool fractureOut, float y1, float y2, TIntVector& pcs );
-	void	restorePieces( float t, float duration );
+	void	fracturePiecesInSphere( float t, const SVector3& pos, float radius, TIntVector& pcs,
+		float restoreAfter, float restoreDuration );
+	void	fracturePiecesInYRange( float t, float y1, float y2, TIntVector& pcs );
+	//void	restorePieces( float t, float duration );
 
 	void	render( eRenderMode rm );
 
@@ -261,7 +267,7 @@ private:
 
 	void	fractureOutPiece( int index );
 	void	fractureInPiece( int index );
-	void	clearRestoring();
+	//void	clearRestoring();
 
 private:
 	CWall2D		mWall2D;
@@ -271,7 +277,7 @@ private:
 
 	CWallPiece3D*	mPieces3D;
 	bool*			mFracturedPieces;
-	float			mLastFractureTime;
+	float*			mPieceRestoreTimes;
 
 	TWallQuadNode*	mQuadtree;
 	int				mQuadtreeNodeCount;
@@ -282,9 +288,9 @@ private:
 	TVBChunk::TSharedPtr		mVBChunk;
 	TIBChunk::TSharedPtr		mIBChunk;
 
-	float		mRestoreTime;
-	float		mRestoreDuration;
-	float		mRestoreAlpha;
+	float*			mResTimeGrid;
+	CD3DTexture*	mRestoreTexture;
+	bool		mNeedsRenderFadeMesh;
 
 	bool	mPiecesInited;
 	bool	mNeedsRenderingIntoVB;
