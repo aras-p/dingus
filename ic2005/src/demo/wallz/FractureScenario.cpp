@@ -91,7 +91,7 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
 				if( !walls[j] )
 					continue;
-				walls[j]->fracturePiecesInSphere( t, ep.pos, ep.radius, pieces, ep.restoreAfter, ep.restoreDur );
+				walls[j]->fracturePiecesInSphere( t, ep.pos, ep.radius, pieces, ep.restoreAfter, ep.restoreDur, ep.restoreAfter<0 );
 				int npc = pieces.size();
 				for( int k = 0; k < npc; ++k ) {
 					wall_phys::spawnPiece( lodIndex, j, pieces[k] );

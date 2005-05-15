@@ -897,7 +897,7 @@ bool CWall3D::intersectRay( const SLine3& ray, float& t ) const
 
 
 void CWall3D::fracturePiecesInSphere( float t, const SVector3& pos, float radius, TIntVector& pcs,
-		float restoreAfter, float restoreDuration )
+		float restoreAfter, float restoreDuration, bool noRestore )
 {
 	if( !mPiecesInited )
 		initPieces();
@@ -912,7 +912,7 @@ void CWall3D::fracturePiecesInSphere( float t, const SVector3& pos, float radius
 		return;
 
 	// remember restore times
-	{
+	if( !noRestore ) {
 		float rad = radius*2.0f;
 		float lx1 = (locPos.x - rad) / mWall2D.getSize().x * RESGRID_X;
 		float lx2 = (locPos.x + rad) / mWall2D.getSize().x * RESGRID_X;
@@ -952,7 +952,12 @@ void CWall3D::fracturePiecesInSphere( float t, const SVector3& pos, float radius
 
 	// fetch the pieces
 
-	float pieceRestoreTime = t + restoreAfter + restoreDuration;
+	float pieceRestoreTime;
+	if( noRestore ) {
+		pieceRestoreTime = t + 1.0e9f;
+	} else {
+		pieceRestoreTime = t + restoreAfter + restoreDuration;
+	}
 
 	// TODO: optimize, right now linear search!
 	int n = mWall2D.getPieceCount();

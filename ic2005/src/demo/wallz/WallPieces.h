@@ -255,7 +255,7 @@ public:
 
 	bool	intersectRay( const SLine3& ray, float& t ) const;
 	void	fracturePiecesInSphere( float t, const SVector3& pos, float radius, TIntVector& pcs,
-		float restoreAfter, float restoreDuration );
+		float restoreAfter, float restoreDuration, bool noRestore );
 	void	fracturePiecesInYRange( float t, float y1, float y2, TIntVector& pcs );
 	//void	restorePieces( float t, float duration );
 
