@@ -69,6 +69,10 @@ half4 psMain( SOutput i ) : COLOR {
 	half rim = (1-saturate( dot( normal, i.toview.xyz*2-1 ) ));
 	rim *= 0.3;
 
+	half4 timeBlend = tex2D( smpBase, i.uv );
+	half lerper = saturate( (fCharTimeBlend-timeBlend.a) / 0.1 );
+	half colChar = lerp( 1, timeBlend.g, lerper );
+
 	const half3 cDiff = half3( 1.05, 1.1, 1.2 );
 
 	const half3 cRim = half3( 0.99, 0.98, 0.96 );
@@ -76,7 +80,7 @@ half4 psMain( SOutput i ) : COLOR {
 
 	col = col * 0.5 + 0.6 * occ;
 
-	col *= tex2D( smpBase, i.uv ).g;
+	col *= colChar;
 
 	return half4( col, 1 );
 }

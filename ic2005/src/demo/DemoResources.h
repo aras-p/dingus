@@ -21,6 +21,7 @@ extern const char* RMODE_PREFIX[RMCOUNT];
 extern bool gNoPixelShaders;
 extern SVector3	gSLightPos;
 extern SPlane	gReflPlane;
+extern float	gCharTimeBlend;
 
 
 enum eCubeFaces {

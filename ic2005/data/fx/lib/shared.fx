@@ -66,6 +66,8 @@ static const int SHADOW_MAP_SIZE2 = 512;
 // --------------------------------------------------------------------------
 //  others
 
+shared float fCharTimeBlend;
+
 
 const static float4x4 mIdentity = float4x4(
 	1,0,0,0,

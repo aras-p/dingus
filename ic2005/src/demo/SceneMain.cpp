@@ -4,6 +4,7 @@
 #include "SceneShared.h"
 #include "wallz/FractureScenario.h"
 #include <dingus/math/Interpolation.h>
+#include <dingus/math/MathUtils.h>
 
 
 // --------------------------------------------------------------------------
@@ -23,6 +24,8 @@ static const float DOOR_END_FRAME = 5400 + 800;
 static const float GUY2_BEGIN_FRAME = 5500 + 800;
 static const float GUY3_BEGIN_FRAME = 5639 + 800;
 
+static const float TIMEBLEND_BEGIN_FRAME = 2600 + 800;
+static const float TIMEBLEND_END_FRAME = 3200 + 800;
 
 
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
@@ -198,9 +201,10 @@ void CSceneMain::update( time_value demoTime, float dt )
 	mCurrAnimAlpha = demoTimeS / mAnimDuration;
 	mCurrAnimFrame = mCurrAnimAlpha * mAnimFrameCount;
 
+	// animate characters
+	gCharTimeBlend = clamp( (mCurrAnimFrame-TIMEBLEND_BEGIN_FRAME)/(TIMEBLEND_END_FRAME-TIMEBLEND_BEGIN_FRAME) );
 	mCharacter->update( demoTime );
 
-	// animate characters
 	if( mCurrAnimFrame >= GUY2_BEGIN_FRAME ) {
 		double animS = (mCurrAnimFrame-GUY2_BEGIN_FRAME)/ANIM_FPS;
 		if( animS < 0 ) animS = 0;

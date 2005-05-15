@@ -5,8 +5,8 @@
 CODE
 
 + Restore walls (put back pieces, blend in wall, maybe blur)
-+ Time-blend character's texture; tweak lighting
 + Scroller scene
+. Tweak character lighting
 . Attack effects
 . Tweak first attack's positions (lower)
 . Shadows for other guys (needed?)
@@ -23,6 +23,7 @@ CODE
 . Interactive mode
 . Interactive mode tweak UI
 
++ Time-blend character's texture
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
 + Shadows from bed/wallpieces
