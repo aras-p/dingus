@@ -31,6 +31,21 @@
 #include "lcp.h"
 #include "util.h"
 
+
+// Aras: replaced dRandInt in inner loop with fast inline funcion
+// as advised by Y.Gyurchev:
+//	http://hook.org/pipermail/ode/2005-May/015834.html
+unsigned int nRandIntSeed = 13;
+
+// return values from 0 to scale-1
+inline unsigned int RandomInt( unsigned int scale )
+{
+	nRandIntSeed=(nRandIntSeed*16807) & 0x7fffffff;
+	return ((nRandIntSeed>>15)*scale)>>16;
+}
+
+
+
 #define ALLOCA dALLOCA16
 
 typedef const dReal *dRealPtr;
@@ -421,7 +436,9 @@ static void SOR_LCP (int m, int nb, dRealMutablePtr J, int *jb, dxBody * const *
                 if ((iteration & 7) == 0) {
 			for (i=1; i<m; ++i) {
 				IndexError tmp = order[i];
-				int swapi = dRandInt(i+1);
+				// Aras: replaced dRandInt with inline version
+				//int swapi = dRandInt(i+1);
+				int swapi = RandomInt(i+1);
 				order[i] = order[swapi];
 				order[swapi] = tmp;
 			}
