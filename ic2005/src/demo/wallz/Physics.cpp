@@ -76,12 +76,12 @@ void CPhysObject::update( SMatrix4x4& matrix )
 		return;
 
 	// decrease mObject's linear velocity
-	const float LVEL_FACTOR = 0.995f;
+	const float LVEL_FACTOR = 0.994f;
 	const dReal* lvel = dBodyGetLinearVel( mObject );
 	dBodySetLinearVel( mObject, lvel[0]*LVEL_FACTOR, lvel[1]*LVEL_FACTOR, lvel[2]*LVEL_FACTOR );
 
 	// decrease mObject's angular velocity
-	const float AVEL_FACTOR = 0.95f;
+	const float AVEL_FACTOR = 0.94f;
 	const dReal* avel = dBodyGetAngularVel( mObject );
 	D3DXVECTOR3 newAVel( avel[0]*AVEL_FACTOR, avel[1]*AVEL_FACTOR, avel[2]*AVEL_FACTOR );
 
@@ -137,16 +137,19 @@ void physics::initialize( float updDT, float grav, const SVector3& boundMin, con
 	contacts = dJointGroupCreate( 0 );
 
 	dWorldSetGravity( world, 0, grav, 0 );
-	dWorldSetERP( world, 0.4f );
+	dWorldSetERP( world, 0.5f );
 	dWorldSetCFM( world, 1.0e-4f );
 
-	dWorldSetQuickStepNumIterations( world, 10 );
+	dWorldSetQuickStepNumIterations( world, 4 );
+
+	dWorldSetContactMaxCorrectingVel( world, 1.0e4f );
+	dWorldSetContactSurfaceLayer( world, 0.001f );
 
 	dWorldSetAutoDisableFlag( world, 1 );
 	dWorldSetAutoDisableSteps( world, 20 );
 	dWorldSetAutoDisableTime( world, 0.5f );
-	dWorldSetAutoDisableLinearThreshold( world, 0.22f );
-	dWorldSetAutoDisableAngularThreshold( world, 0.22f );
+	dWorldSetAutoDisableLinearThreshold( world, 0.25f );
+	dWorldSetAutoDisableAngularThreshold( world, 0.25f );
 }
 
 
