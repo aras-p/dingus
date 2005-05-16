@@ -4,11 +4,11 @@
 
 CODE
 
++ Tweak first attack's positions (lower)
 + Restore walls (put back pieces, blend in wall, maybe blur)
 + Scroller scene
 . Tweak character lighting
 . Attack effects
-. Tweak first attack's positions (lower)
 . Shadows for other guys (needed?)
 . DoF
 . Glow; render extra brightness to alpha
@@ -44,10 +44,11 @@ CODE
 
 ART
 
-+ Low poly / UV / NMap 2nd gargoyle
-. Adjust room layout to fill 1-px gaps somewhere.
+. (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
 . (Antanas?) Animate camera target or dummy object for DoF focus distance
-. (Antanas) Hand-make fractured floor/ceil meshes and 2nd room
 
 + nvdxt all textures, experiment with mip filters
++ (Antanas) Hand-make fractured floor/ceil meshes and 2nd room
+
+* Low poly / UV / NMap 2nd gargoyle
 * NMap top/ceil/floor bricks
