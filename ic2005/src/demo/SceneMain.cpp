@@ -25,7 +25,7 @@ static const float GUY2_BEGIN_FRAME = 5500 + 800;
 static const float GUY3_BEGIN_FRAME = 5639 + 800;
 
 static const float TIMEBLEND_BEGIN_FRAME = 2600 + 800;
-static const float TIMEBLEND_END_FRAME = 3200 + 800;
+static const float TIMEBLEND_END_FRAME = 3770 + 800;
 
 
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )

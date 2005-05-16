@@ -19,6 +19,8 @@ public:
 	void	updatePhysics();
 	void	updateFracture( int lodIndex, float demoTimeS );
 
+	bool	cullWall( int i, const SMatrix4x4& viewProj ) const;
+
 	CCameraEntity& getWallCamera() { return mWallCamera; }
 	CWall3D** getWalls( int lodIndex ) { return mWalls[lodIndex]; }
 

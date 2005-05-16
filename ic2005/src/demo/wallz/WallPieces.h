@@ -250,6 +250,7 @@ public:
 
 	const SMatrix4x4& getMatrix() const { return mMatrix; }
 	void setMatrix( const SMatrix4x4& m ) { mMatrix = m; mInvMatrix = m; mInvMatrix.invert(); }
+	const CAABox& getWorldAABB() const { return mWorldAABB; }
 
 	void	update( float t );
 
@@ -274,6 +275,7 @@ private:
 
 	SMatrix4x4	mMatrix;
 	SMatrix4x4	mInvMatrix;
+	CAABox		mWorldAABB;	// world space
 
 	CWallPiece3D*	mPieces3D;
 	bool*			mFracturedPieces;

@@ -877,6 +877,11 @@ void CWall3D::initPieces()
 		r->getParams().addTexture( "tAlpha", *mRestoreTexture );
 	}
 
+	// init AABB
+	mWorldAABB.extend( SVector3(0,0,-HALF_THICK*2), 0.1f );
+	mWorldAABB.extend( SVector3(mWall2D.getSize().x,mWall2D.getSize().y,HALF_THICK*2), 0.1f );
+	mWorldAABB.transform( mMatrix );
+
 	mPiecesInited = true;
 	mNeedsRenderingIntoVB = true;
 	mNeedsRenderFadeMesh = true;

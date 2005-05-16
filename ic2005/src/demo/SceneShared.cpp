@@ -197,3 +197,15 @@ void CSceneSharedStuff::updateFracture( int lodIndex, float demoTimeS )
 	}
 }
 
+bool CSceneSharedStuff::cullWall( int i, const SMatrix4x4& viewProj ) const
+{
+	if( mWalls[0][i] ) {
+		return mWalls[0][i]->getWorldAABB().frustumCull( viewProj );
+	} else {
+		if( i == CFACE_PY )
+			return mFixWallPY->getAABB().frustumCull( viewProj );
+		else
+			return mFixWallNY->getAABB().frustumCull( viewProj );
+	}
+}
+

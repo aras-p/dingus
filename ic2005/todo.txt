@@ -15,7 +15,6 @@ CODE
 . Loading screen
 . Blur in/out in several places
 . Reflections into single RT, with stencil/Z masks for fast culling
-. Cull walls for reflections
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
@@ -26,6 +25,7 @@ CODE
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
 
+* Cull walls for reflections
 * Shadows from bed/wallpieces
 * Tweaks to wall restoring: perpixel light
 * Reflect bed

@@ -317,9 +317,8 @@ void gRenderWallReflections( CScene& scene )
 
 	
 	for( int currWall = 0; currWall < CFACE_COUNT; ++currWall ) {
-		//gWallMeshes[currWall]->updateWVPMatrices();
-		//if( gWallMeshes[currWall]->frustumCull(gCameraViewProjMatrix) )
-		//	continue;
+		if( gSceneShared->cullWall( currWall, gCameraViewProjMatrix ) )
+			continue;
 
 		gReflPlane = SPlane( planePos[currWall] + planeNrm[currWall]*0.05f, planeNrm[currWall] );
 		SMatrix4x4 reflectMat;
@@ -765,6 +764,8 @@ void CDemo::perform()
 
 	//gFetchMousePieces( false );
 
+	curScene->getCamera().setOntoRenderContext();
+	gCameraViewProjMatrix = G_RENDERCTX->getCamera().getViewProjMatrix();
 	
 	if( !gNoPixelShaders ) {
 		// render shadow map
@@ -775,7 +776,6 @@ void CDemo::perform()
 	}
 
 	curScene->getCamera().setOntoRenderContext();
-	gCameraViewProjMatrix = G_RENDERCTX->getCamera().getViewProjMatrix();
 	gfx::textureProjectionWorld( gCameraViewProjMatrix, 1000.0f, 1000.0f, gViewTexProjMatrix );
 
 	dx.setDefaultRenderTarget();
