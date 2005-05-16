@@ -13,20 +13,39 @@ sampler2D	smpAlpha = sampler_state {
 	AddressU = Clamp; AddressV = Clamp;
 };
 
+texture		tRefl;
+sampler2D	smpRefl = sampler_state {
+	Texture = (tRefl);
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+	AddressU = Clamp; AddressV = Clamp;
+};
 
-SPosColTex vsMain( SPosNTex i ) {
-	SPosColTex o;
+
+struct SOutput {
+	float4	pos		: POSITION;
+	half4	color	: COLOR;
+	float2	uv		: TEXCOORD0;
+	float4	uvp		: TEXCOORD1;
+};
+
+
+SOutput vsMain( SPosNTex i ) {
+	SOutput o;
 	float3 wpos = mul( i.pos, mWorld );
 	o.pos = mul( i.pos, mWVP );
-	o.color = gWallLight( wpos, vNormal ) * 1.1;
+	o.color = gWallLight( wpos, vNormal );
 	o.uv.x = 1-i.uv.x;
 	o.uv.y = 1-i.uv.y;
+	o.uvp = mul( float4(wpos,1), mViewTexProj );
 	return o;
 }
 
-half4 psMain( SPosColTex i ) : COLOR {
+half4 psMain( SOutput i ) : COLOR {
 	half a = tex2D( smpAlpha, i.uv ).a;
-	return half4(i.color.rgb,a);
+
+	half3 col = i.color.rgb;
+	col += tex2Dproj( smpRefl, i.uvp ).rgb * 0.15;
+	return half4(col,a);
 }
 
 

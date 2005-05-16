@@ -4,6 +4,7 @@
 
 CODE
 
++ Optimize/hack physics for the massive fracture scene
 + Restore walls (put back pieces, blend in wall, maybe blur)
 + Scroller scene
 . Tweak character lighting
@@ -24,7 +25,6 @@ CODE
 
 + Time-blend character's texture
 + Tweak last attack position (clear walls for doors)
-+ Optimize/hack physics for the massive fracture scene
 + Shadows from bed/wallpieces
 
 * Tweak first attack's positions (lower)

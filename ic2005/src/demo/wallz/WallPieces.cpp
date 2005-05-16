@@ -783,6 +783,9 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
 
 	mFadeInMesh = new CMeshEntity( "FadeInMesh", "billboard" );
+	if( reflTextureID ) {
+		mFadeInMesh->getRenderMesh( RM_NORMAL )->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
+	}
 
 	mResTimeGrid = new float[RESGRID_X*RESGRID_Y];
 	for( i = 0; i < RESGRID_X*RESGRID_Y; ++i ) {
