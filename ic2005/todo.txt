@@ -6,7 +6,6 @@ CODE
 
 . Tweaks to wall restoring: perpixel light? more spheres?
 + Scroller scene
-. Reflect bed
 . Tweak character lighting
 . Attack effects
 . Shadows for other guys (needed?)
@@ -28,6 +27,7 @@ CODE
 + Shadows from bed/wallpieces
 + Optimize/hack physics for the massive fracture scene
 
+* Reflect bed
 * Restore walls (put back pieces, blend in wall)
 * Tweak first attack's positions (lower)
 * Fade out physics/bed/stone pieces
