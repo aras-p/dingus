@@ -48,8 +48,9 @@ void gReadFractureScenario( const char* fileName )
 			{
 				// fracture sphere event
 				SFracSphParams ep;
-				int frm, after, dur;
-				fscanf( f, "%i %f %f %f %f %i %i\n", &frm, &ep.pos.x, &ep.pos.y, &ep.pos.z, &ep.radius, &after, &dur );
+				float frm;
+				int after, dur;
+				fscanf( f, "%f %f %f %f %f %i %i\n", &frm, &ep.pos.x, &ep.pos.y, &ep.pos.z, &ep.radius, &after, &dur );
 				ep.frame = frm + ANIM_FRAME_OFFSET;
 				ep.restoreAfter = float(after) / ANIM_FPS;
 				ep.restoreDur = float(dur) / ANIM_FPS;
@@ -60,8 +61,8 @@ void gReadFractureScenario( const char* fileName )
 			{
 				// fracture Y range event
 				SFracYParams ep;
-				int frm;
-				fscanf( f, "%i %f %f\n", &frm, &ep.y1, &ep.y2 );
+				float frm;
+				fscanf( f, "%f %f %f\n", &frm, &ep.y1, &ep.y2 );
 				ep.frame = frm + ANIM_FRAME_OFFSET;
 				fracYParams.push_back( ep );
 			}

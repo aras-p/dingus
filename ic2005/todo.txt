@@ -4,7 +4,6 @@
 
 CODE
 
-+ Tweak first attack's positions (lower)
 + Restore walls (put back pieces, blend in wall, maybe blur)
 + Scroller scene
 . Tweak character lighting
@@ -28,6 +27,7 @@ CODE
 + Optimize/hack physics for the massive fracture scene
 + Shadows from bed/wallpieces
 
+* Tweak first attack's positions (lower)
 * Fade out physics/bed/stone pieces
 * Don't shadow ceiling
 * Floor/ceil doesn't fracture, replace by fixed meshes
