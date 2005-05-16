@@ -23,7 +23,7 @@ sampler2D	smpRefl = sampler_state {
 
 struct SOutput {
 	float4	pos		: POSITION;
-	half4	color	: COLOR;
+	half3	tol 	: COLOR;
 	float2	uv		: TEXCOORD0;
 	float4	uvp		: TEXCOORD1;
 };
@@ -33,18 +33,27 @@ SOutput vsMain( SPosNTex i ) {
 	SOutput o;
 	float3 wpos = mul( i.pos, mWorld );
 	o.pos = mul( i.pos, mWVP );
-	o.color = gWallLight( wpos, vNormal );
+
 	o.uv.x = 1-i.uv.x;
 	o.uv.y = 1-i.uv.y;
 	o.uvp = mul( float4(wpos,1), mViewTexProj );
+	
+	float3 tolight = normalize( vLightPos - wpos );
+	o.tol = tolight*0.5+0.5;
+
 	return o;
 }
 
 half4 psMain( SOutput i ) : COLOR {
 	half a = tex2D( smpAlpha, i.uv ).a;
 
-	half3 col = i.color.rgb;
-	col += tex2Dproj( smpRefl, i.uvp ).rgb * 0.15;
+	// lighting
+	half3 n = vNormal;
+	half3 tol = normalize( i.tol*2-1 );
+	half l = gWallLightPS( n, tol );
+	half3 col = l;
+
+	col += tex2Dproj( smpRefl, i.uvp ).rgb * 0.2;
 	return half4(col,a);
 }
 

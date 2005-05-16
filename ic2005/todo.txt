@@ -4,7 +4,7 @@
 
 CODE
 
-. Tweaks to wall restoring: perpixel light? more spheres?
+. Tweaks to wall restoring: more spheres?
 + Scroller scene
 . Tweak character lighting
 . Attack effects
@@ -24,9 +24,10 @@ CODE
 
 + Time-blend character's texture
 + Tweak last attack position (clear walls for doors)
-+ Shadows from bed/wallpieces
 + Optimize/hack physics for the massive fracture scene
 
+* Shadows from bed/wallpieces
+* Tweaks to wall restoring: perpixel light
 * Reflect bed
 * Restore walls (put back pieces, blend in wall)
 * Tweak first attack's positions (lower)

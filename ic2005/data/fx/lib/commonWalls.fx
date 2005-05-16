@@ -13,14 +13,14 @@ float4 gWallLightFull( float3 wpos, float3 wn, float diff, float amb )
 
 float4 gWallLight( float3 wpos, float3 wn )
 {
-	return gWallLightFull( wpos, wn, 0.6, 0.4 );
+	return gWallLightFull( wpos, wn, 0.60, 0.40 );
 }
 
 
 half gWallLightPS( half3 wn, half3 tol )
 {
-	half cDiff = 0.6;
-	half cAmb = 0.4;
+	half cDiff = 0.45;
+	half cAmb = 0.40;
 	half diffuse = saturate( dot( tol, wn ) );
 	half col = diffuse * cDiff + cAmb;
 	return col;

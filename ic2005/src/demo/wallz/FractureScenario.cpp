@@ -87,7 +87,6 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 	for( i = 0; i < n; ++i ) {
 		const SFracSphParams& ep = fracSphParams[i];
 		if( ep.frame >= lastUpdateFrame && ep.frame < frame ) {
-			CConsole::CON_WARNING << "Event: fracture sph " << i << endl;
 			TIntVector pieces;
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
 				if( !walls[j] )
@@ -106,7 +105,6 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 	for( i = 0; i < n; ++i ) {
 		const SFracYParams& ep = fracYParams[i];
 		if( ep.frame >= lastUpdateFrame && ep.frame < frame ) {
-			CConsole::CON_WARNING << "Event: fracture y " << i << endl;
 			TIntVector pieces;
 			for( int j = 0; j < CFACE_COUNT; ++j ) {
 				if( !walls[j] )

@@ -95,7 +95,7 @@ half4 psMain( SOutput i ) : COLOR {
 	col.xyz *= shadow;
 #endif
 #ifdef WALL_REFL
-	col.xyz += tex2Dproj( smpRefl, i.WALL_RFCRD ) * 0.15;
+	col.xyz += tex2Dproj( smpRefl, i.WALL_RFCRD ) * 0.2;
 #endif
 	return col;
 }
