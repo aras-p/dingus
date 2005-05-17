@@ -10,6 +10,7 @@
 #include "SceneMain.h"
 #include "SceneScroller.h"
 #include "SceneShared.h"
+#include "../system/MusicPlayer.h"
 
 #include <dingus/gfx/DebugRenderer.h>
 #include <dingus/gfx/GfxUtils.h>
@@ -490,6 +491,9 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		gQuadBlur->getParams().setEffect( *RGET_FX("filterPoisson") );
 		gQuadBlur->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
 	}
+
+	// music
+	music::init( mHwnd );
 }
 
 
@@ -705,6 +709,10 @@ void CDemo::perform()
 	double dt;
 	static bool firstPerform = true;
 	if( firstPerform || gPaused ) {
+		if( firstPerform ) {
+			// start music
+			music::play( "data/sound/ic2005.mp3" );
+		}
 		dt = 0.0;
 		firstPerform = false;
 	} else {
@@ -829,6 +837,8 @@ void CDemo::perform()
 
 void CDemo::shutdown()
 {
+	music::close();
+
 	delete gDebugRenderer;
 
 	safeDelete( gUIDlg );

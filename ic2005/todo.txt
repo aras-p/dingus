@@ -4,6 +4,9 @@
 
 CODE
 
+. Take time source from music?
+. Play/fadein/fadeout interactive mode music for scroller/intmode.
+. Interactive mode
 . Tweaks to wall restoring: more spheres?
 + Scroller scene
 . Tweak character lighting
@@ -18,13 +21,13 @@ CODE
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?
 . 2nd room (waiting for layout)
-. Interactive mode
 . Interactive mode tweak UI
 
 + Time-blend character's texture
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
 
+* Add music (added via BASS)
 * Cull walls for reflections
 * Shadows from bed/wallpieces
 * Tweaks to wall restoring: perpixel light
