@@ -6,9 +6,9 @@
 #include "Demo.h"
 #include "DemoResources.h"
 #include "Entity.h"
-#include "Scene.h"
 #include "SceneMain.h"
 #include "SceneScroller.h"
+#include "SceneInteractive.h"
 #include "SceneShared.h"
 #include "../system/MusicPlayer.h"
 

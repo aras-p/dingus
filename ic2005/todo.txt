@@ -4,9 +4,9 @@
 
 CODE
 
++ Interactive mode
 . Take time source from music?
 . Play/fadein/fadeout interactive mode music for scroller/intmode.
-. Interactive mode
 . Tweaks to wall restoring: more spheres?
 + Scroller scene
 . Tweak character lighting

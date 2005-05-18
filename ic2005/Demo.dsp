@@ -248,6 +248,14 @@ SOURCE=.\src\demo\Scene.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\demo\SceneInteractive.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\SceneInteractive.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\demo\SceneMain.cpp
 # End Source File
 # Begin Source File

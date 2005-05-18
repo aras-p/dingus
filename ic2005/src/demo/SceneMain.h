@@ -3,6 +3,7 @@
 
 #include "Scene.h"
 
+class CSceneSharedStuff;
 namespace dingus {
 	class CCharacterAnimator;
 };
