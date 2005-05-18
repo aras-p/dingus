@@ -1,0 +1,8 @@
+name = 'Room2Bottom'
+groups = {
+{
+  fx = 'wallFixedNoReflShad', pri = 0,
+  params = {
+  },
+},
+}

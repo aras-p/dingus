@@ -28,6 +28,9 @@ static const float TIMEBLEND_BEGIN_FRAME = 2600 + 800;
 static const float TIMEBLEND_END_FRAME = 3770 + 800;
 
 
+static const float ROOM2_BEGIN_FRAME = 5304;
+
+
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 :	mSharedStuff( sharedStuff )
 ,	mAnimFrameCount(0)
@@ -55,6 +58,11 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 
 	// room
 	gReadScene( "data/scene.lua", mRoom );
+
+	mRoom2Top = new CMeshEntity( "Room2Top" );
+	addEntity( *mRoom2Top );
+	mRoom2Bottom = new CMeshEntity( "Room2Bottom" );
+	addEntity( *mRoom2Bottom );
 
 	// animating doors
 	CAnimationBunch* animDoors = RGET_ANIM("DoorsAnim");
@@ -285,6 +293,10 @@ void CSceneMain::render( eRenderMode renderMode )
 	n = mRoom.size();
 	for( i = 0; i < n; ++i ) {
 		mRoom[i]->render( renderMode );
+	}
+	if( mCurrAnimFrame >= ROOM2_BEGIN_FRAME ) {
+		mRoom2Top->render( renderMode );
+		mRoom2Bottom->render( renderMode );
 	}
 
 	// bed

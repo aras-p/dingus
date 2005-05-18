@@ -23,6 +23,7 @@ CODE
 . 2nd room (waiting for layout)
 . Interactive mode tweak UI
 
++ 2nd fractured room
 + Time-blend character's texture
 + Tweak last attack position (clear walls for doors)
 + Optimize/hack physics for the massive fracture scene
@@ -54,7 +55,6 @@ ART
 . (Antanas?) Animate camera target or dummy object for DoF focus distance
 
 + nvdxt all textures, experiment with mip filters
-+ (Antanas) Hand-make fractured floor/ceil meshes and 2nd room
 
 * Low poly / UV / NMap 2nd gargoyle
 * NMap top/ceil/floor bricks

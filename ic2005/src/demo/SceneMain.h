@@ -55,6 +55,10 @@ private:
 	CComplexStuffEntity*	mBedAnim;
 	CComplexStuffEntity*	mStone;
 
+	// room2
+	CMeshEntity*			mRoom2Top;
+	CMeshEntity*			mRoom2Bottom;
+
 	// outside room
 	std::vector<CRoomObjectEntity*>	mRoom;
 };

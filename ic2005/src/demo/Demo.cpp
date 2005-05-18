@@ -722,11 +722,20 @@ void CDemo::perform()
 	time_value demoTime = gDemoTimer.getTime();
 
 	// figure out current scene
+	D3DCOLOR clearColor = 0xFFffffff;
+	bool	clearFlag = true;
 	CScene* curScene = NULL;
 	switch( gCurScene ) {
-	case SCENE_MAIN:		curScene = gSceneMain; break;
-	case SCENE_SCROLLER:	curScene = gSceneScroller; break;
-	case SCENE_INTERACTIVE:	curScene = gSceneInt; break;
+	case SCENE_MAIN:
+		curScene = gSceneMain;
+		clearColor = 0xFF404040;
+		break;
+	case SCENE_SCROLLER:
+		curScene = gSceneScroller;
+		break;
+	case SCENE_INTERACTIVE:
+		curScene = gSceneInt;
+		break;
 	}
 	assert( curScene );
 
@@ -788,7 +797,7 @@ void CDemo::perform()
 
 	dx.setDefaultRenderTarget();
 	dx.setDefaultZStencil();
-	dx.clearTargets( true, true, false, 0xFFffffff, 1.0f, 0L );
+	dx.clearTargets( clearFlag, true, false, clearColor, 1.0f, 0L );
 
 	dx.sceneBegin();
 	G_RENDERCTX->applyGlobalEffect();
