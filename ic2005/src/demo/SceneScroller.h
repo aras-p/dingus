@@ -23,6 +23,13 @@ public:
 	bool	isEnded() const { return mPlayedTime >= SCROLLER_DURATION; }
 
 private:
+	struct STextLine {
+		STextLine( const char* t, int f, int& y );
+		const char* text;
+		int			font;
+		float		ypos;
+		D3DXCOLOR	color;
+	};
 	static const float SCROLLER_DURATION;
 	void	startScrollerAnim();
 
@@ -50,6 +57,9 @@ private:
 
 	// floor
 	CMeshEntity*	mFloor;
+
+	// scroller
+	std::vector<STextLine>	mScroller;
 };
 
 

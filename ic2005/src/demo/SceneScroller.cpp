@@ -11,6 +11,26 @@
 //const float CSceneScroller::SCROLLER_DURATION = 41; // seconds
 const float CSceneScroller::SCROLLER_DURATION = 61; // seconds
 
+CSceneScroller::STextLine::STextLine( const char* t, int f, int& y )
+:	text(t)
+,	font(f)
+,	ypos(y)
+{
+	switch( f ) {
+	case 1:
+		y += 36;
+		color = 0xFF404040;
+		break;
+	case 2:
+		y += 24;
+		color = 0xFF606060;
+		break;
+	case 3:
+		y += 24;
+		color = 0xFF808080;
+		break;
+	}
+}
 
 
 static float gGetNextDefAnimPlayTime()
@@ -57,6 +77,34 @@ CSceneScroller::CSceneScroller()
 	);
 	
 	// TBD: DOF: focus distance = 4.5853
+
+	// scroller
+	int sy = GUI_Y;
+	mScroller.push_back( STextLine( "in.out.side: the shell", 1, sy ) );
+	mScroller.push_back( STextLine( "A realtime demo for Imagine Cup 2005", 2, sy ) );
+	mScroller.push_back( STextLine( "  by team 'nesnausk!'", 2, sy ) );
+	mScroller.push_back( STextLine( NULL, 2, sy ) );
+	mScroller.push_back( STextLine( "Authors:", 2, sy ) );
+	mScroller.push_back( STextLine( "  Antanas '?' Balvocius", 2, sy ) );
+	mScroller.push_back( STextLine( "      animations, models, camera", 3, sy ) );
+	mScroller.push_back( STextLine( "  Aras 'NeARAZ' Pranckevicius", 2, sy ) );
+	mScroller.push_back( STextLine( "      programming, technology, UV mapping", 3, sy ) );
+	mScroller.push_back( STextLine( "  Paulius 'OneHalf' Liekis", 2, sy ) );
+	mScroller.push_back( STextLine( "      models, textures, stuff", 3, sy ) );
+	mScroller.push_back( STextLine( "  Raimundas '?' Juska", 2, sy ) );
+	mScroller.push_back( STextLine( "      music and sound", 3, sy ) );
+	mScroller.push_back( STextLine( NULL, 2, sy ) );
+	// TBD: scroller text
+	mScroller.push_back( STextLine( "This demo features some graphics effects,", 2, sy ) );
+	mScroller.push_back( STextLine( "some content, physics calculations and", 2, sy ) );
+	mScroller.push_back( STextLine( "lots of dot products.", 2, sy ) );
+	mScroller.push_back( STextLine( NULL, 2, sy ) );
+	mScroller.push_back( STextLine( "Again, all the characters are imaginary.", 2, sy ) );
+	mScroller.push_back( STextLine( "No polygons were harmed during production.", 2, sy ) );
+	mScroller.push_back( STextLine( NULL, 2, sy ) );
+	mScroller.push_back( STextLine( "You may press Esc now or wait a bit to enter", 2, sy ) );
+	mScroller.push_back( STextLine( "interactive mode. Yay!", 2, sy ) );
+	mScroller.push_back( STextLine( "    (press Space to enter it right now)", 3, sy ) );
 }
 
 
@@ -158,28 +206,42 @@ void CSceneScroller::render( eRenderMode renderMode )
 
 void CSceneScroller::renderUI( CUIDialog& dlg )
 {
-	static const char* scrText =
-		"Bah blah! Teh scroller!\n"
-		"\n"
-		"Hey, it's me, the scroller!\n"
-		"Aaa!\n"
-		"\n"
-		"Here I am!\n"
-		;
-
 	SUIElement textElem;
 	memset( &textElem, 0, sizeof(textElem) );
 	textElem.fontIdx = 1;
-	textElem.textFormat = DT_LEFT;
+	textElem.textFormat = DT_LEFT | DT_TOP | DT_NOCLIP;
 	textElem.colorFont.current = 0xFF404040;
-	
+
 	SFRect textRC;
 	textRC.left = 0.1f * GUI_X;
-	textRC.right = 0.5f * GUI_X;
+	textRC.right = 0.7f * GUI_X;
 	textRC.top = 0.1f * GUI_Y;
-	textRC.bottom = 0.9f * GUI_Y;
+	textRC.bottom = GUI_Y;
 
-	dlg.drawText( scrText, &textElem, &textRC, false );
+	float dy = mLocalTime.tosec()*20.0f;
+
+	const float FADE_Y = GUI_Y*0.1f;
+
+	int n = mScroller.size();
+	for( int i = 0; i < n; ++i ) {
+		const STextLine& tl = mScroller[i];
+		if( tl.text == NULL )
+			continue;
+		textRC.top = tl.ypos - dy;
+		if( textRC.top + 50 < 0 || textRC.top > GUI_Y )
+			continue;
+
+		textElem.colorFont.current = tl.color;
+		if( textRC.top < FADE_Y )
+			textElem.colorFont.current.a = textRC.top/FADE_Y;
+		else if( textRC.top > GUI_Y-FADE_Y-30 )
+			textElem.colorFont.current.a = 1 - (textRC.top-GUI_Y+FADE_Y+30)/FADE_Y;
+
+		textElem.fontIdx = tl.font;
+
+
+		dlg.drawText( tl.text, &textElem, &textRC, false );
+	}
 }
 
 

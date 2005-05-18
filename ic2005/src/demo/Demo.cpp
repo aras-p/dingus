@@ -458,7 +458,9 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg = new CUIDialog();
 	//gUIDlg->enableKeyboardInput( true );
 	gUIDlg->setCallback( gUICallback );
-	gUIDlg->setFont( 1, "Arial", 24, 50 );
+	gUIDlg->setFont( 1, "Verdana", 24, FW_BOLD );
+	gUIDlg->setFont( 2, "Verdana", 20, FW_NORMAL );
+	gUIDlg->setFont( 3, "Verdana", 16, FW_NORMAL );
 
 	gSetupGUI();
 	gUIDlg->setRenderCallback( gUIRenderCallback );
