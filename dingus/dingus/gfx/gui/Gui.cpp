@@ -1614,7 +1614,7 @@ HRESULT CUIResourceManager::createFont( UINT fontIdx )
 	int height = xToBB( fontNode->height, CD3DDevice::getInstance().getBackBufferWidth() );
 	//int height = yToBB( fontNode->height, CD3DDevice::getInstance().getBackBufferHeight() );
 	V_RETURN( D3DXCreateFont( &CD3DDevice::getInstance().getDevice(), height, 0, fontNode->weight, 1, FALSE, DEFAULT_CHARSET, 
-							  OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, 
+							  OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, 
 							  fontNode->facename, &fontNode->font ) );
 	return S_OK;
 }
