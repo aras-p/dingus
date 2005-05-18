@@ -52,7 +52,6 @@ CODE
 ART
 
 . (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
-. (Antanas?) Animate camera target or dummy object for DoF focus distance
 
 + nvdxt all textures, experiment with mip filters
 

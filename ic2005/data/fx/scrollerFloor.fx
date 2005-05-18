@@ -3,17 +3,23 @@
 #include "lib/commonWalls.fx"
 
 
-SPosTexp vsMain( SPosN i ) {
-	SPosTexp o;
-	i.pos.xyz = i.pos.xzy * 4;
+SPosTexTexp vsMain( SPosNTex i ) {
+	SPosTexTexp o;
+	i.pos.xyz = i.pos.xzy;
+	i.pos.x *= 8;
+	i.pos.z *= 15;
+	i.pos.x += 1;
+	i.pos.z += 1;
 	o.pos = mul( i.pos, mViewProj );
+	o.uv = i.uv;
 	o.uvp = mul( i.pos, mShadowProj );
 	return o;
 }
 
-half4 psMain( SPosTexp i ) : COLOR {
-	half3 col = tex2Dproj( smpShadow, i.uvp );
-	return half4( col, 1 );
+half4 psMain( SPosTexTexp i ) : COLOR {
+	half col = lerp( 1.1, 224.0/255.0, i.uv.x );
+	col *= tex2Dproj( smpShadow, i.uvp ).r;
+	return half4( col, col, col, 1 );
 }
 
 

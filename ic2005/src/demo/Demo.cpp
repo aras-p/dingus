@@ -666,6 +666,7 @@ void CDemo::perform()
 		break;
 	case SCENE_SCROLLER:
 		curScene = gSceneScroller;
+		clearColor = 0xFFe0e0e0;
 		break;
 	case SCENE_INTERACTIVE:
 		curScene = gSceneInt;
