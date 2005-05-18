@@ -209,3 +209,38 @@ bool CSceneSharedStuff::cullWall( int i, const SMatrix4x4& viewProj ) const
 	}
 }
 
+float CSceneSharedStuff::intersectRay( const SLine3& ray ) const
+{
+	// intersect with walls
+	float minWallT = 1.0e6f;
+	for( int i = 0; i < CFACE_COUNT; ++i ) {
+		if( !mWalls[0][i] )
+			continue;
+
+		float t;
+		bool ok = mWalls[0][i]->intersectRay( ray, t );
+		if( ok && t < minWallT )
+			minWallT = t;
+	}
+	return minWallT;
+}
+
+void CSceneSharedStuff::fractureSphere( float demoTimeS, const SVector3& pos, float radius )
+{
+	TIntVector pieces;
+	const int LOD_IDX = 0;
+	
+	double t = CSystemTimer::getInstance().getTimeS();
+	for( int i = 0; i < CFACE_COUNT; ++i ) {
+		if( !mWalls[LOD_IDX][i] )
+			continue;
+
+		mWalls[LOD_IDX][i]->fracturePiecesInSphere(
+			demoTimeS, pos, radius, pieces, 10.0f, 1.0f, false );
+		int npc = pieces.size();
+		for( int k = 0; k < npc; ++k ) {
+			wall_phys::spawnPiece( LOD_IDX, i, pieces[k] );
+		}
+	}
+}
+

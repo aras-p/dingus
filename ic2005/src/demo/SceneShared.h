@@ -7,7 +7,9 @@
 
 class CWall3D;
 class CMeshEntity;
-
+namespace dingus {
+	struct SLine3;
+};
 
 
 class CSceneSharedStuff : public boost::noncopyable {
@@ -23,6 +25,9 @@ public:
 
 	CCameraEntity& getWallCamera() { return mWallCamera; }
 	CWall3D** getWalls( int lodIndex ) { return mWalls[lodIndex]; }
+
+	float	intersectRay( const SLine3& ray ) const;
+	void	fractureSphere( float demoTimeS, const SVector3& pos, float radius );
 
 private:
 	CCameraEntity	mWallCamera;

@@ -31,6 +31,13 @@ private:
 	
 	// outside room
 	std::vector<CRoomObjectEntity*>	mRoom;
+
+	// attacks related
+	time_value		mAttackStartTime;	// negative if no attack
+	time_value		mWallHitTime;		// negative if no attack
+	SVector3		mWallHitPos;
+	float			mWallHitRadius;
+
 };
 
 

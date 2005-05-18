@@ -143,8 +143,6 @@ SPlane			gReflPlane;
 CPostProcess*	gPPReflBlur;
 
 
-//std::vector<int>	gMousePieces[CFACE_COUNT];
-
 int		gWallVertCount, gWallTriCount;
 
 
@@ -503,38 +501,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 
 
-/*
-static void gFetchMousePieces( bool fractureOut )
-{
-	int i;
-
-	gMouseRay = gCamera.getWorldRay( gMouseX, gMouseY );
-	const SVector3& eyePos = gCamera.mWorldMat.getOrigin();
-	SLine3 mouseRay;
-	mouseRay.pos = eyePos;
-	mouseRay.vec = gMouseRay;
-
-	// intersect mouse with walls
-	float minWallT = 1.0e6f;
-	for( i = 0; i < CFACE_COUNT; ++i ) {
-		float t;
-		bool ok = gWalls[i]->intersectRay( mouseRay, t );
-		if( ok && t < minWallT )
-			minWallT = t;
-	}
-	SVector3 mousePos = eyePos + gMouseRay * minWallT;
-	const float MOUSE_RADIUS = 0.6f;
-
-	double t = CSystemTimer::getInstance().getTimeS();
-	if( fractureOut ) {
-		CConsole::CON_WARNING << mousePos << endl;
-	}
-	for( i = 0; i < CFACE_COUNT; ++i ) {
-		gWalls[i]->fracturePiecesInSphere( t, fractureOut, mousePos, MOUSE_RADIUS, gMousePieces[i] );
-	}
-}
-*/
-
 bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
 	if( !gUIDlg )
@@ -548,15 +514,7 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 	
 	// track mouse...
 	if( msg == WM_LBUTTONDOWN ) {
-		/*
-		gFetchMousePieces( true );
-		for( int i = 0; i < CFACE_COUNT; ++i ) {
-			int n = gMousePieces[i].size();
-			for( int j = 0; j < n; ++j ) {
-				wall_phys::spawnPiece( i, gMousePieces[i][j] );
-			}
-		}
-		*/
+		// ...
 	}
 	if( msg == WM_MOUSEMOVE ) {
 		CD3DDevice& dx = CD3DDevice::getInstance();
@@ -594,12 +552,6 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gPaused = !gPaused;
 			break;
-		/*
-		case DIK_F3:
-			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
-				gSimpleShadows = !gSimpleShadows;
-			break;
-		*/
 
 		case DIK_RETURN:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
@@ -656,24 +608,6 @@ void CDemo::onInputEvent( const CInputEvent& event )
 		case DIK_7:
 			gDemoTimer.update( time_value::fromsec(dt*100) );
 			break;
-		/*
-		case DIK_A:
-			if( gCameraFollow ) {
-				gCameraDist += dt*4;
-				gCameraDist = clamp( gCameraDist, 0.5f, 7.0f );
-			} else {
-				gCamera.mWorldMat.getOrigin() += gCamera.mWorldMat.getAxisZ() * dt * 3;
-			}
-			break;
-		case DIK_Z:
-			if( gCameraFollow ) {
-				gCameraDist -= dt*4;
-				gCameraDist = clamp( gCameraDist, 0.5f, 7.0f );
-			} else {
-				gCamera.mWorldMat.getOrigin() -= gCamera.mWorldMat.getAxisZ() * dt * 3;
-			}
-			break;
-		*/
 		}
 	}
 }
@@ -778,8 +712,6 @@ void CDemo::perform()
 		demoTime.tosec()*ANIM_FPS
 	);
 	gUILabFPS->setText( buf );
-
-	//gFetchMousePieces( false );
 
 	curScene->getCamera().setOntoRenderContext();
 	gCameraViewProjMatrix = G_RENDERCTX->getCamera().getViewProjMatrix();

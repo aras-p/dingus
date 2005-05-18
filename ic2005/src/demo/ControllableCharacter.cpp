@@ -72,8 +72,11 @@ CControllableCharacter::CControllableCharacter( float minX, float minZ, float ma
 	mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Fast"), 1.801f ) );		// 1.74094 m/s
 	
 
+	// start frame, bone (+y), hits after ~5 frames
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v01"), 0 ) );
+	// 19, R Hand
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v01_2x"), 0 ) );
+	// 19, R Hand; 38, L Hand
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v02"), 0 ) );
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03"), 0 ) );
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03b"), 0 ) );

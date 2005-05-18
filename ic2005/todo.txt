@@ -4,7 +4,6 @@
 
 CODE
 
-+ Interactive mode
 . Take time source from music?
 . Play/fadein/fadeout interactive mode music for scroller/intmode.
 . Tweaks to wall restoring: more spheres?
@@ -23,6 +22,7 @@ CODE
 . 2nd room (waiting for layout)
 . Interactive mode tweak UI
 
++ Interactive mode (waiting for attack fx meshes/anims)
 + 2nd fractured room
 + Time-blend character's texture
 + Tweak last attack position (clear walls for doors)
