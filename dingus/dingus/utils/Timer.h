@@ -128,6 +128,10 @@ public:
 		setTimesS();
 	}
 
+	void	setTime( const time_value& t ) {
+		update( t - mTime );
+	}
+
 	// ITimeSource
 	virtual time_value	getTime() const { return mTime; }
 	virtual time_value	getDeltaTime() const { return mDeltaTime; }
