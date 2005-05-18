@@ -33,6 +33,10 @@ public:
 
 	void operator+=( const time_value& t ) { value += t.value; }
 	void operator-=( const time_value& t ) { value -= t.value; }
+	bool operator<( const time_value& t ) const { return value < t.value; }
+	bool operator>( const time_value& t ) const { return value > t.value; }
+	bool operator<=( const time_value& t ) const { return value <= t.value; }
+	bool operator>=( const time_value& t ) const { return value >= t.value; }
 
 public:
 	value_type value;

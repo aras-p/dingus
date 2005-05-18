@@ -2,6 +2,7 @@
 Dingus codenamed "IC2005 demo"
 ========
 
+050518: comparison operators to time_value added.
 050517: setTime() helper to CTimer added.
 050502: Animation stuff can take arbitrary time sources, not only system
 		time. Also refactored to use time_values instead of floats

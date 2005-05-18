@@ -10,7 +10,7 @@
 namespace dingus {
 	
 	
-class SLine3 {
+struct SLine3 {
 public:
 	SLine3() { };
 	SLine3( const SVector3& v0, const SVector3& v1 ) : pos(v0), vec(v1-v0) { };
