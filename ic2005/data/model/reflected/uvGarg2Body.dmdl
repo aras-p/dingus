@@ -1,0 +1,10 @@
+name = 'uvGarg2Body'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/Garg2Body' },
+	  { 'tex', 'tNormalAO', 'rm/Garg2BodyLo.NMF.nao' },
+  },
+},
+}

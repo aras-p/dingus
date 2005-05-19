@@ -1,0 +1,10 @@
+name = 'uvGarg2Cage'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/Garg1Cage' },
+	  { 'tex', 'tNormalAO', 'rm/Garg2CageLo.NMF.nao' },
+  },
+},
+}

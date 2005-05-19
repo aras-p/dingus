@@ -1,0 +1,10 @@
+name = 'uvFloorBrick'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/FloorBricks' },
+	  { 'tex', 'tNormalAO', 'rm/FloorBrickLo.NMF.nao' },
+  },
+},
+}

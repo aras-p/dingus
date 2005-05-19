@@ -1,0 +1,10 @@
+name = 'uvCeilsBrick'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/CeilBricks' },
+	  { 'tex', 'tNormalAO', 'rm/CeilBrickLo.NMF.nao' },
+  },
+},
+}
