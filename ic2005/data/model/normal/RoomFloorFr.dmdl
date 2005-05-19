@@ -1,0 +1,8 @@
+name = 'RoomFloorFr'
+groups = {
+{
+  fx = 'wallFixed', pri = 0,
+  params = {
+  },
+},
+}

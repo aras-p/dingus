@@ -17,7 +17,7 @@ public:
 	CSceneSharedStuff();
 	~CSceneSharedStuff();
 
-	void	renderWalls( int lodIndex, eRenderMode rm );
+	void	renderWalls( int lodIndex, eRenderMode rm, bool fracturedFloor );
 	void	updatePhysics();
 	void	updateFracture( int lodIndex, float demoTimeS );
 
@@ -35,6 +35,7 @@ private:
 	
 	CMeshEntity*	mFixWallPY;
 	CMeshEntity*	mFixWallNY;
+	CMeshEntity*	mFixWallNYFr;
 };
 
 

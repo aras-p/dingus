@@ -149,9 +149,11 @@ CSceneSharedStuff::CSceneSharedStuff()
 	// fixed walls
 	mFixWallPY = new CMeshEntity( "RoomCeil" );
 	mFixWallNY = new CMeshEntity( "RoomFloor" );
+	mFixWallNYFr = new CMeshEntity( "RoomFloorFr" );
 	if( !gNoPixelShaders ) {
 		mFixWallPY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_PY) );
 		mFixWallNY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_NY) );
+		mFixWallNYFr->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_NY) );
 	}
 }
 
@@ -159,6 +161,7 @@ CSceneSharedStuff::~CSceneSharedStuff()
 {
 	delete mFixWallPY;
 	delete mFixWallNY;
+	delete mFixWallNYFr;
 
 	wall_phys::shutdown();
 	for( int i = 0; i < CFACE_COUNT; ++i ) {
@@ -168,16 +171,20 @@ CSceneSharedStuff::~CSceneSharedStuff()
 }
 
 
-void CSceneSharedStuff::renderWalls( int lodIndex, eRenderMode rm )
+void CSceneSharedStuff::renderWalls( int lodIndex, eRenderMode rm, bool fracturedFloor )
 {
 	for( int i = 0; i < CFACE_COUNT; ++i ) {
 		if( mWalls[lodIndex][i] ) {
 			mWalls[lodIndex][i]->render( rm );
 		} else {
-			if( i == CFACE_NY )
-				mFixWallNY->render( rm );
-			else if( i == CFACE_PY )
+			if( i == CFACE_NY ) {
+				if( fracturedFloor )
+					mFixWallNYFr->render( rm );
+				else
+					mFixWallNY->render( rm );
+			} else if( i == CFACE_PY ) {
 				mFixWallPY->render( rm );
+			}
 		}
 	}
 	wall_phys::render( rm );

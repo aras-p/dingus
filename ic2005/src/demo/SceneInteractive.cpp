@@ -91,7 +91,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 void CSceneInteractive::render( eRenderMode renderMode )
 {
-	mSharedStuff->renderWalls( 0, renderMode );
+	mSharedStuff->renderWalls( 0, renderMode, false );
 	
 	mCharacter->render( renderMode );
 	

@@ -1,0 +1,8 @@
+name = 'RoomFloorFr'
+groups = {
+{
+  fx = 'wallFixedNoRefl', pri = 0,
+  params = {
+  },
+},
+}

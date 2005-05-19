@@ -18,17 +18,19 @@ static const float STONE_HIDE_FRAME = 1710 + 800;
 
 static const float WALL_LOD1_FRAME = 3000 + 800;
 
+static const float FLOOR_FR_FRAME = 3800 + 950;
+
 static const float DOOR_BEGIN_FRAME = 5304 + 800;
 static const float DOOR_END_FRAME = 5400 + 800;
 
 static const float GUY2_BEGIN_FRAME = 5500 + 800;
 static const float GUY3_BEGIN_FRAME = 5639 + 800;
 
-static const float TIMEBLEND_BEGIN_FRAME = 2600 + 800;
-static const float TIMEBLEND_END_FRAME = 3770 + 800;
+static const float TIMEBLEND_BEGIN_FRAME = 2450 + 950;
+static const float TIMEBLEND_END_FRAME = 3770 + 950;
 
 
-static const float ROOM2_BEGIN_FRAME = 5304;
+static const float ROOM2_BEGIN_FRAME = 5304 + 800;
 
 
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
@@ -279,7 +281,7 @@ void CSceneMain::update( time_value demoTime, float dt )
 void CSceneMain::render( eRenderMode renderMode )
 {
 	int wallsLod = mCurrAnimFrame < WALL_LOD1_FRAME ? 0 : 1;
-	mSharedStuff->renderWalls( wallsLod, renderMode );
+	mSharedStuff->renderWalls( wallsLod, renderMode, mCurrAnimFrame >= FLOOR_FR_FRAME );
 
 	// characters
 	mCharacter->render( renderMode );

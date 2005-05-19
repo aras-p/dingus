@@ -4,6 +4,7 @@
 
 CODE
 
+. Fracture out whole ceiling, drop fake pieces
 . Take time source from music?
 . Play/fadein/fadeout interactive mode music for scroller/intmode.
 . Tweaks to wall restoring: more spheres?
