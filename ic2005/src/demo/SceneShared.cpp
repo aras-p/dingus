@@ -183,7 +183,8 @@ void CSceneSharedStuff::renderWalls( int lodIndex, eRenderMode rm, bool fracture
 				else
 					mFixWallNY->render( rm );
 			} else if( i == CFACE_PY ) {
-				mFixWallPY->render( rm );
+				if( !fracturedFloor )
+					mFixWallPY->render( rm );
 			}
 		}
 	}
