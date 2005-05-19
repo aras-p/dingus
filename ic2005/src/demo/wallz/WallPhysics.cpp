@@ -48,6 +48,7 @@ namespace {
 	typedef fastvector<CPhysPiece*>	TPieceVector;
 	TPieceVector	pieces;
 
+	int				lastActivePieceCount = 0;
 
 	CRenderableIndexedBuffer*	renderables[RMCOUNT];
 
@@ -122,6 +123,8 @@ void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector
 	walls[0].reserve( 6 );
 	walls[1].reserve( 6 );
 
+	lastActivePieceCount = 0;
+
 	physics::initialize( updDT, GRAVITY, boundMin, boundMax );
 }
 
@@ -160,6 +163,11 @@ void wall_phys::shutdown()
 
 void wall_phys::spawnPiece( int lodIndex, int wallID, int index )
 {
+	if( lastActivePieceCount > 200 ) {
+		if( gRandom.getUInt()&1 )
+			return;
+	}
+	
 	assert( lodIndex >= 0 && lodIndex < MAX_LODS );
 	assert( wallID >= 0 && wallID < walls[lodIndex].size() );
 	assert( walls[lodIndex][wallID] );
@@ -172,11 +180,31 @@ void wall_phys::update()
 {
 	stats.pieceCount = pieces.size();
 
-	physics::update1();
+	int physicsLod = 0;
+	if( lastActivePieceCount > 900 )
+		physicsLod = 4;
+	else if( lastActivePieceCount > 700 )
+		physicsLod = 3;
+	else if( lastActivePieceCount > 600 )
+		physicsLod = 2;
+	else if( lastActivePieceCount > 400 )
+		physicsLod = 1;
+
+	
+	static int counter = 0;
+	++counter;
+	if( counter > 20 ) {
+		counter = 0;
+		CConsole::getChannel("aa") << stats.pieceCount << ", " << lastActivePieceCount << " lod=" << physicsLod << endl;
+	}
+
+	physics::update( physicsLod );
+
 
 	{
 		cputimer::ticks_type t1 = cputimer::ticks();
 		// update pieces
+		lastActivePieceCount = 0;
 		TPieceVector::iterator it, itEnd = pieces.end();
 		for( it = pieces.begin(); it != itEnd;  ) {
 			CPhysPiece* p = *it;
@@ -185,6 +213,8 @@ void wall_phys::update()
 				itEnd = pieces.end();
 				delete p;
 			} else {
+				if( !p->isRemoved() )
+					++lastActivePieceCount;
 				++it;
 			}
 		}
@@ -192,13 +222,12 @@ void wall_phys::update()
 		stats.msUpdate = double(t2-t1) * cputimer::secsPerTick() * 1000.0f;
 	}
 
-	physics::update2();
-
 	stats.msColl = physics::getStats().msColl;
 	stats.msPhys = physics::getStats().msPhys;
 	
 	needsRendering = true;
 }
+
 
 namespace {
 bool renderIntoVB()

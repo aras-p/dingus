@@ -38,8 +38,7 @@ namespace physics {
 
 	void	initialize( float updDT, float grav, const SVector3& boundMin, const SVector3& boundMax );
 	void	shutdown();
-	void	update1();
-	void	update2();
+	void	update( int lod );
 
 	const	SStats&		getStats();
 

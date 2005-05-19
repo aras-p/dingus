@@ -137,7 +137,7 @@ void physics::initialize( float updDT, float grav, const SVector3& boundMin, con
 	contacts = dJointGroupCreate( 0 );
 
 	dWorldSetGravity( world, 0, grav, 0 );
-	dWorldSetERP( world, 0.5f );
+	dWorldSetERP( world, 0.8f );
 	dWorldSetCFM( world, 1.0e-4f );
 
 	dWorldSetQuickStepNumIterations( world, 4 );
@@ -147,9 +147,9 @@ void physics::initialize( float updDT, float grav, const SVector3& boundMin, con
 
 	dWorldSetAutoDisableFlag( world, 1 );
 	dWorldSetAutoDisableSteps( world, 20 );
-	dWorldSetAutoDisableTime( world, 0.5f );
-	dWorldSetAutoDisableLinearThreshold( world, 0.25f );
-	dWorldSetAutoDisableAngularThreshold( world, 0.25f );
+	dWorldSetAutoDisableTime( world, 0.3f );
+	dWorldSetAutoDisableLinearThreshold( world, 0.5f );
+	dWorldSetAutoDisableAngularThreshold( world, 0.5f );
 }
 
 
@@ -220,7 +220,7 @@ void	nearCallback( void *data, dGeomID o1, dGeomID o2 )
 }
 
 
-void physics::update1()
+void physics::update( int lod )
 {
 	{
 		cputimer::ticks_type t1 = cputimer::ticks();
@@ -231,14 +231,14 @@ void physics::update1()
 	}
 	{
 		cputimer::ticks_type t1 = cputimer::ticks();
+		dWorldSetQuickStepNumIterations( world, 5-lod );
+		//dWorldSetAutoDisableLinearThreshold( world, 0.4f + lod*0.2f );
+		//dWorldSetAutoDisableAngularThreshold( world, 0.4f + lod*0.2f );
+
 		dWorldQuickStep( world, updateDT );
 		cputimer::ticks_type t2 = cputimer::ticks();
 		stats.msPhys = double(t2-t1) * cputimer::secsPerTick() * 1000.0f;
 	}
-}
-
-void physics::update2()
-{
 }
 
 

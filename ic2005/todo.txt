@@ -4,10 +4,10 @@
 
 CODE
 
-. Fracture out whole ceiling, drop fake pieces
++ Fracture out whole ceiling, drop fake pieces
+. Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 . Take time source from music?
 . Play/fadein/fadeout interactive mode music for scroller/intmode.
-. Tweaks to wall restoring: more spheres?
 . Tweak character lighting
 . Attack effects
 . Shadows for other guys (needed?)
@@ -26,9 +26,9 @@ CODE
 + Scroller scene
 + 2nd fractured room
 + Time-blend character's texture
-+ Tweak last attack position (clear walls for doors)
-+ Optimize/hack physics for the massive fracture scene
 
+* Optimize/hack physics for the massive fracture scene
+* Tweak last attack position (clear walls for doors)
 * Add music (added via BASS)
 * Cull walls for reflections
 * Shadows from bed/wallpieces

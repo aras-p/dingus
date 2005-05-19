@@ -85,16 +85,19 @@ CSceneScroller::CSceneScroller()
 	mScroller.push_back( STextLine( "  by team 'nesnausk!'", 2, sy ) );
 	mScroller.push_back( STextLine( NULL, 2, sy ) );
 	mScroller.push_back( STextLine( "Authors:", 2, sy ) );
-	mScroller.push_back( STextLine( "  Antanas '?' Balvocius", 2, sy ) );
-	mScroller.push_back( STextLine( "      animations, models, camera", 3, sy ) );
 	mScroller.push_back( STextLine( "  Aras 'NeARAZ' Pranckevicius", 2, sy ) );
 	mScroller.push_back( STextLine( "      programming, technology, UV mapping", 3, sy ) );
 	mScroller.push_back( STextLine( "  Paulius 'OneHalf' Liekis", 2, sy ) );
-	mScroller.push_back( STextLine( "      models, textures, stuff", 3, sy ) );
-	mScroller.push_back( STextLine( "  Raimundas '?' Juska", 2, sy ) );
+	mScroller.push_back( STextLine( "      concept, sketches, models, textures, stuff", 3, sy ) );
+	mScroller.push_back( STextLine( "  Antanas 'AB' Balvocius", 2, sy ) );
+	mScroller.push_back( STextLine( "      animations, models, camera", 3, sy ) );
+	mScroller.push_back( STextLine( "  Raimundas 'mookid' Juska", 2, sy ) );
 	mScroller.push_back( STextLine( "      music and sound", 3, sy ) );
 	mScroller.push_back( STextLine( NULL, 2, sy ) );
 	// TBD: scroller text
+	mScroller.push_back( STextLine( "*** TBD: put the real scroller text ***", 2, sy ) );
+	mScroller.push_back( STextLine( "(and visit yer olde clue shoppe)", 3, sy ) );
+	mScroller.push_back( STextLine( NULL, 2, sy ) );
 	mScroller.push_back( STextLine( "This demo features some graphics effects,", 2, sy ) );
 	mScroller.push_back( STextLine( "some content, physics calculations and", 2, sy ) );
 	mScroller.push_back( STextLine( "lots of dot products.", 2, sy ) );
