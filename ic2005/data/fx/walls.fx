@@ -112,10 +112,20 @@ technique tec0
 	}
 }
 
+
+
+SPosCol vsMainFFP( WALL_INPUT i ) {
+	SPosCol o;
+	o.pos = mul( i.pos, mViewProj );
+	o.color = gWallLight( i.pos.xyz, WALL_N );
+	return o;
+}
+
+
 technique tecFFP
 {
 	pass P0 {
-		VertexShader = compile vs_1_1 vsMain();
+		VertexShader = compile vs_1_1 vsMainFFP();
 		PixelShader = NULL;
 
 		ColorOp[0] = SelectArg1;
