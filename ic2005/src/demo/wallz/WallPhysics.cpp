@@ -163,6 +163,7 @@ void wall_phys::shutdown()
 
 void wall_phys::spawnPiece( int lodIndex, int wallID, int index )
 {
+	// if we have lots of pieces by now, spawn them 2x less :)
 	if( lastActivePieceCount > 200 ) {
 		if( gRandom.getUInt()&1 )
 			return;
@@ -189,14 +190,6 @@ void wall_phys::update()
 		physicsLod = 2;
 	else if( lastActivePieceCount > 400 )
 		physicsLod = 1;
-
-	
-	static int counter = 0;
-	++counter;
-	if( counter > 20 ) {
-		counter = 0;
-		CConsole::getChannel("aa") << stats.pieceCount << ", " << lastActivePieceCount << " lod=" << physicsLod << endl;
-	}
 
 	physics::update( physicsLod );
 

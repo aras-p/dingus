@@ -84,20 +84,6 @@ CSceneSharedStuff::CSceneSharedStuff()
 	wallNYMat.getAxisY().set( 0, 0, -1 );
 	wallNYMat.getAxisZ().set( 0, 1, 0 );
 	wallNYMat.getOrigin().set( ROOM_MIN.x, ROOM_MIN.y, ROOM_MAX.z );
-	/*
-	wm.getAxisX().set( 1, 0, 0 );
-	wm.getAxisY().set( 0, 0, 1 );
-	wm.getAxisZ().set( 0, -1, 0 );
-	wm.getOrigin().set( ROOM_MIN.x, ROOM_MAX.y, ROOM_MIN.z );
-	mWalls[0][CFACE_PY]->setMatrix( wm );
-	mWalls[1][CFACE_PY]->setMatrix( wm );
-	wm.getAxisX().set( 1, 0, 0 );
-	wm.getAxisY().set( 0, 0, -1 );
-	wm.getAxisZ().set( 0, 1, 0 );
-	wm.getOrigin().set( ROOM_MIN.x, ROOM_MIN.y, ROOM_MAX.z );
-	mWalls[0][CFACE_NY]->setMatrix( wm );
-	mWalls[1][CFACE_NY]->setMatrix( wm );
-	*/
 
 	wm.getAxisX().set( -1, 0, 0 );
 	wm.getAxisY().set( 0, 1, 0 );
