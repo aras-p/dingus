@@ -8,8 +8,7 @@
 
 // --------------------------------------------------------------------------
 
-//const float CSceneScroller::SCROLLER_DURATION = 41; // seconds
-const float CSceneScroller::SCROLLER_DURATION = 61; // seconds
+const float CSceneScroller::SCROLLER_DURATION = 60; // seconds
 
 CSceneScroller::STextLine::STextLine( const char* t, int f, int& y )
 :	text(t)
@@ -26,8 +25,12 @@ CSceneScroller::STextLine::STextLine( const char* t, int f, int& y )
 		color = 0xFF606060;
 		break;
 	case 3:
-		y += 24;
+		y += 20;
 		color = 0xFF808080;
+		break;
+	case 4:
+		y += 10;
+		color = 0x00808080;
 		break;
 	}
 }
@@ -86,28 +89,31 @@ CSceneScroller::CSceneScroller()
 	mScroller.push_back( STextLine( NULL, 2, sy ) );
 	mScroller.push_back( STextLine( "Authors:", 2, sy ) );
 	mScroller.push_back( STextLine( "  Aras 'NeARAZ' Pranckevicius", 2, sy ) );
-	mScroller.push_back( STextLine( "      programming, technology, UV mapping", 3, sy ) );
+	mScroller.push_back( STextLine( "      programming, shaders, technology, UV maps", 3, sy ) );
 	mScroller.push_back( STextLine( "  Paulius 'OneHalf' Liekis", 2, sy ) );
-	mScroller.push_back( STextLine( "      concept, sketches, models, textures, stuff", 3, sy ) );
+	mScroller.push_back( STextLine( "      concept, sketches, models, textures, effects", 3, sy ) );
 	mScroller.push_back( STextLine( "  Antanas 'AB' Balvocius", 2, sy ) );
 	mScroller.push_back( STextLine( "      animations, models, camera", 3, sy ) );
 	mScroller.push_back( STextLine( "  Raimundas 'mookid' Juska", 2, sy ) );
 	mScroller.push_back( STextLine( "      music and sound", 3, sy ) );
 	mScroller.push_back( STextLine( NULL, 2, sy ) );
-	// TBD: scroller text
-	mScroller.push_back( STextLine( "*** TBD: put the real scroller text ***", 2, sy ) );
-	mScroller.push_back( STextLine( "(and visit yer olde clue shoppe)", 3, sy ) );
+	mScroller.push_back( STextLine( "This demo features:", 2, sy ) );
+	mScroller.push_back( STextLine( NULL, 4, sy ) );
+	mScroller.push_back( STextLine( "Effects: normal mapping, ambient occlusion,", 3, sy ) );
+	mScroller.push_back( STextLine( "soft shadows, glossy reflections, depth of field.", 3, sy ) );
+	mScroller.push_back( STextLine( NULL, 4, sy ) );
+	mScroller.push_back( STextLine( "Artwork: models, diffuse/gloss textures,", 3, sy ) );
+	mScroller.push_back( STextLine( "normal/AO textures, character & camera", 3, sy ) );
+	mScroller.push_back( STextLine( "animations, special effects, music & sound.", 3, sy ) );
+	mScroller.push_back( STextLine( NULL, 4, sy ) );
+	mScroller.push_back( STextLine( "Specials: physics, interactive mode.", 3, sy ) );
 	mScroller.push_back( STextLine( NULL, 2, sy ) );
-	mScroller.push_back( STextLine( "This demo features some graphics effects,", 2, sy ) );
-	mScroller.push_back( STextLine( "some content, physics calculations and", 2, sy ) );
-	mScroller.push_back( STextLine( "lots of dot products.", 2, sy ) );
+	mScroller.push_back( STextLine( "We really don't know the name of", 2, sy ) );
+	mScroller.push_back( STextLine( "this guy on the right side. But you", 2, sy ) );
+	mScroller.push_back( STextLine( "can be sure he's a good person!", 2, sy ) );
 	mScroller.push_back( STextLine( NULL, 2, sy ) );
-	mScroller.push_back( STextLine( "Again, all the characters are imaginary.", 2, sy ) );
-	mScroller.push_back( STextLine( "No polygons were harmed during production.", 2, sy ) );
-	mScroller.push_back( STextLine( NULL, 2, sy ) );
-	mScroller.push_back( STextLine( "You may press Esc now or wait a bit to enter", 2, sy ) );
-	mScroller.push_back( STextLine( "interactive mode. Yay!", 2, sy ) );
-	mScroller.push_back( STextLine( "    (press Space to enter it right now)", 3, sy ) );
+	mScroller.push_back( STextLine( "You may press Esc now or wait a bit to enter", 3, sy ) );
+	mScroller.push_back( STextLine( "interactive mode. Yay!", 3, sy ) );
 }
 
 
@@ -193,9 +199,6 @@ void CSceneScroller::update( time_value demoTime, float dt )
 		}
 	}
 	
-
-	// TBD: select and play scroller anims!
-
 	mCharacter->update( mLocalTime );
 }
 
@@ -245,6 +248,13 @@ void CSceneScroller::renderUI( CUIDialog& dlg )
 
 		dlg.drawText( tl.text, &textElem, &textRC, false );
 	}
+
+	textElem.textFormat = DT_RIGHT | DT_BOTTOM | DT_NOCLIP;
+	textElem.colorFont.current.a = 0.5f;
+	textRC.right = GUI_X - 5;
+	textRC.bottom = GUI_Y - 5;
+	textElem.fontIdx = 0;
+	dlg.drawText( "press space to enter interactive mode", &textElem, &textRC, false );
 }
 
 

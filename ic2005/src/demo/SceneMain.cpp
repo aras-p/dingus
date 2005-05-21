@@ -393,10 +393,6 @@ void CSceneMain::render( eRenderMode renderMode )
 
 void CSceneMain::renderUI( CUIDialog& dlg )
 {
-	if( mCurrAnimFrame >= TITLE_FRAMES + TITLE_FADE_FRAMES ) {
-		return;
-	}
-
 	SUIElement textElem;
 	memset( &textElem, 0, sizeof(textElem) );
 	textElem.fontIdx = 1;
@@ -413,6 +409,12 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 
 	textElem.fontIdx = 1;
 	dlg.drawText( "in.out.side: the shell", &textElem, &textRC, false );
+
+	textElem.colorFont.current.a = (1 - textElem.colorFont.current.a)*0.5f;
+	textRC.right = GUI_X - 5;
+	textRC.bottom = GUI_Y - 5;
+	textElem.fontIdx = 0;
+	dlg.drawText( "press space to enter interactive mode", &textElem, &textRC, false );
 }
 
 const SMatrix4x4* CSceneMain::getLightTargetMatrix() const

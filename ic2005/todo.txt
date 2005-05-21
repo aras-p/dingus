@@ -21,11 +21,11 @@ CODE
 . Interactive mode tweak UI
 
 + Interactive mode (waiting for attack fx meshes/anims)
-+ Scroller scene
-+ 2nd fractured room
-+ Time-blend character's texture
-+ Separate light for 2nd room
 
+* Time-blend character's texture
+* Separate light for 2nd room
+* 2nd fractured room
+* Scroller scene
 * DoF
 * Add 2nd room
 * Optimize/hack physics for the massive fracture scene
