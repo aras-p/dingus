@@ -59,7 +59,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 	//const float dofDist = SVector3(getCamera().mWorldMat.getOrigin() - getLightTargetMatrix()->getOrigin()).length() * 1.2f;
 	//const float dofRange = dofDist * 3.0f;
 	const float dofDist = 4.0f;
-	const float dofRange = 3.0f;
+	const float dofRange = 5.0f;
 	gDOFParams.set( dofDist, 1.0f / dofRange, 0.0f );
 
 	// attack must be started now?

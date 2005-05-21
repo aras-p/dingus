@@ -1,0 +1,10 @@
+name = 'uvCorridor'
+groups = {
+{
+  fx = 'normalMap', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'rm/Doors' },
+	  { 'tex', 'tNormalAO', 'rm/DoorsLo.NMF.nao' },
+  },
+},
+}

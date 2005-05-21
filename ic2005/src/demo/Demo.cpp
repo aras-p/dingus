@@ -823,7 +823,8 @@ void CDemo::perform()
 	dx.sceneEnd();
 
 	// DOF
-	gRenderDOF();
+	if( gCurScene != SCENE_SCROLLER )
+		gRenderDOF();
 
 	// render GUI
 	dx.sceneBegin();
