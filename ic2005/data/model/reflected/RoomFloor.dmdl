@@ -1,7 +1,7 @@
 name = 'RoomFloor'
 groups = {
 {
-  fx = 'wallFixedNoRefl', pri = 0,
+  fx = 'wall_StS', pri = 0,
   params = {
   },
 },

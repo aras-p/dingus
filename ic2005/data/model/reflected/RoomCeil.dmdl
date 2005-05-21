@@ -1,7 +1,7 @@
 name = 'RoomCeil'
 groups = {
 {
-  fx = 'wallFixedNoReflShad', pri = 0,
+  fx = 'wall_St', pri = 0,
   params = {
   },
 },

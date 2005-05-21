@@ -5,6 +5,8 @@
 
 float3		vLightPos;
 
+//#define WALL_DOF
+
 
 #ifdef WALL_NCOL
 	#define WALL_INPUT SPosCol
@@ -25,6 +27,7 @@ float3		vLightPos;
 	#define WALL_SHCRD uvp[0]
 	#define WALL_S2CRD uvp[1]
 	#define WALL_RFCRD uvp[2]
+	#define WALL_DOFCRD uvp[0].z
 #elif defined(WALL_SHADOW) && defined(WALL_REFL)
 	struct SOutput {
 		float4 pos		: POSITION;
@@ -34,6 +37,7 @@ float3		vLightPos;
 	};
 	#define WALL_SHCRD uvp[0]
 	#define WALL_RFCRD uvp[1]
+	#define WALL_DOFCRD uvp[0].z
 #elif defined(WALL_SHADOW) || defined(WALL_REFL)
 	struct SOutput {
 		float4 pos		: POSITION;
@@ -43,12 +47,17 @@ float3		vLightPos;
 	};
 	#define WALL_SHCRD uvp
 	#define WALL_RFCRD uvp
+	#define WALL_DOFCRD uvp.z
 #else
 	struct SOutput {
 		float4 pos		: POSITION;
 		half3  n 		: COLOR0;
 		half3  tol 		: COLOR1;
+	#ifdef WALL_DOF
+		float  z		: TEXCOORD0;
+	#endif
 	};
+	#define WALL_DOFCRD z
 #endif
 
 

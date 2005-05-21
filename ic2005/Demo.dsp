@@ -420,27 +420,27 @@ SOURCE=.\data\fx\skinRefl.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\wall.fx
+SOURCE=.\data\fx\wall_DnS.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\wallFixed.fx
+SOURCE=.\data\fx\wall_DnSR.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\wallFixedNoRefl.fx
+SOURCE=.\data\fx\wall_St.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\wallFixedNoReflShad.fx
+SOURCE=.\data\fx\wall_StR.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\wallFixedNoShad.fx
+SOURCE=.\data\fx\wall_StS.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\wallNoRefl.fx
+SOURCE=.\data\fx\wall_StS2R.fx
 # End Source File
 # Begin Source File
 

@@ -114,7 +114,7 @@ void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector
 		renderables[i] = NULL;
 
 	renderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
-	renderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wallNoRefl") );
+	renderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall_DnS") );
 	renderables[RM_CASTERSIMPLE] = new CRenderableIndexedBuffer( NULL, 0 );
 	renderables[RM_CASTERSIMPLE]->getParams().setEffect( *RGET_FX("casterSimple") );
 	

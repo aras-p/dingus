@@ -774,14 +774,14 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	}
 	
 	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
+	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall_DnSR") );
 	mRenderables[RM_NORMAL]->getParams().addVector3( "vLightPos", LIGHT_POS_1 );
 	if( reflTextureID ) {
 		mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
 	}
 	
 	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
+	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wall_DnS") );
 	mRenderables[RM_REFLECTED]->getParams().addVector3( "vLightPos", LIGHT_POS_1 );
 
 	mFadeInMesh = new CMeshEntity( "FadeInMesh", "billboard" );
