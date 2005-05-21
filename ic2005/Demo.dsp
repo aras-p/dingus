@@ -335,6 +335,10 @@ SOURCE=.\data\fx\lib\defines.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\lib\dof.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\lib\global.fx
 # End Source File
 # Begin Source File

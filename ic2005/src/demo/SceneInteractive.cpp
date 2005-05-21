@@ -56,6 +56,10 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 	const float camfov = D3DX_PI/4;
 	getCamera().setProjectionParams( camfov, CD3DDevice::getInstance().getBackBufferAspect(), camnear, camfar );
 
+	const float dofDist = SVector3(getCamera().mWorldMat.getOrigin() - getLightTargetMatrix()->getOrigin()).length() * 1.2f;
+	const float dofRange = dofDist * 3.0f;
+	gDOFParams.set( dofDist, 1.0f / dofRange, 0.0f );
+
 	// attack must be started now?
 	if( mAttackStartTime.value >= 0 && demoTime >= mAttackStartTime ) {
 		mAttackStartTime = time_value(-1);

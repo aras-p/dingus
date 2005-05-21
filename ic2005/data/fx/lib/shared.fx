@@ -17,7 +17,10 @@ shared float	fTime;
 shared float4x4	mView;
 shared float4x4	mProjection;
 shared float4x4	mViewProj;
-shared float3		vEye;
+shared float3	vEye;
+
+shared float3	vDOF; // x=focalDist, y=1/focalRange, z=blurBias
+
 
 // --------------------------------------------------------------------------
 //  global cull params

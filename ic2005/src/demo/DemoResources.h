@@ -18,9 +18,10 @@ enum eRenderMode {
 	RMCOUNT
 };
 extern const char* RMODE_PREFIX[RMCOUNT];
-extern bool gNoPixelShaders;
+extern bool		gNoPixelShaders;
 extern SPlane	gReflPlane;
 extern float	gCharTimeBlend;
+extern SVector3	gDOFParams;
 
 
 enum eCubeFaces {

@@ -128,6 +128,7 @@ bool			gPaused = false;
 //bool			gSimpleShadows = false;
 
 float		gCharTimeBlend;
+SVector3	gDOFParams;
 
 
 
@@ -444,6 +445,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj", gSShadowProj );
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj2", gSShadowProj2 );
 	G_RENDERCTX->getGlobalParams().addFloatRef( "fCharTimeBlend", &gCharTimeBlend );
+	G_RENDERCTX->getGlobalParams().addVector3Ref( "vDOF", gDOFParams );
 
 	gDebugRenderer = new CDebugRenderer( *G_RENDERCTX, *RGET_FX("debug") );
 

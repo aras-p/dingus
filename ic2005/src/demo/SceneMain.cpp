@@ -122,12 +122,13 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	mCameraAnimRot = mCameraAnim->findQuatAnim("rot");
 	mCameraAnimParams = mCameraAnim->findVector3Anim("cam");
 	mAnimFrameCount = mCameraAnimPos->getLength();
+	// DOF anim
+	mDOFAnim = RGET_ANIM("Dof");
+	mDOFAnimPos = mDOFAnim->findVector3Anim("pos");
+	mDOFAnimRange = mDOFAnim->findFloatAnim("scale");
 
 	// start anims
-	//const time_value HACK_START_ANIM = time_value::fromsec( -40.0f );
-	const time_value HACK_START_ANIM = time_value::fromsec( 0.0f );
-
-	mCharacter->getAnimator().playDefaultAnim( HACK_START_ANIM );
+	mCharacter->getAnimator().playDefaultAnim( time_value() );
 	mBedAnim->getAnimator().playDefaultAnim( time_value() );
 	mStone->getAnimator().playDefaultAnim( time_value() );
 }
@@ -161,10 +162,12 @@ void CSceneMain::animateCamera()
 	getCamera().mWorldMat.identify();
 	getCamera().mWorldMat.getOrigin().set( 0, 1.0f, -3.0f );
 
-
 	SVector3 camPos;
 	SQuaternion camRot;
 	SVector3 camParams;
+
+	SVector3 dofPos;
+	float	 dofScale;
 
 	int c0idx = -1;
 	for( int i = 0; i < CAM_C0_FRAMES_SIZE; ++i ) {
@@ -178,10 +181,14 @@ void CSceneMain::animateCamera()
 		mCameraAnimPos->sample( mCurrAnimAlpha, 0, 1, &camPos );
 		mCameraAnimRot->sample( mCurrAnimAlpha, 0, 1, &camRot );
 		mCameraAnimParams->sample( mCurrAnimAlpha, 0, 1, &camParams );
+		mDOFAnimPos->sample( mCurrAnimAlpha, 0, 1, &dofPos );
+		mDOFAnimRange->sample( mCurrAnimAlpha, 0, 1, &dofScale );
 	} else {
 		SVector3 pos1, pos2;
 		SQuaternion rot1, rot2;
 		SVector3 params1, params2;
+		SVector3 dpos1, dpos2;
+		float range1, range2;
 		double a1 = mCurrAnimAlpha - (3.0/mAnimFrameCount);
 		double a2 = mCurrAnimAlpha - (2.5/mAnimFrameCount);
 		double lerper = (mCurrAnimAlpha-a1) / (a2-a1);
@@ -191,9 +198,15 @@ void CSceneMain::animateCamera()
 		mCameraAnimRot->sample( a2, 0, 1, &rot2 );
 		mCameraAnimParams->sample( a1, 0, 1, &params1 );
 		mCameraAnimParams->sample( a2, 0, 1, &params2 );
+		mDOFAnimPos->sample( a1, 0, 1, &dpos1 );
+		mDOFAnimPos->sample( a2, 0, 1, &dpos2 );
+		mDOFAnimRange->sample( a1, 0, 1, &range1 );
+		mDOFAnimRange->sample( a2, 0, 1, &range2 );
 		camPos = math_lerp<SVector3>( pos1, pos2, lerper );
 		camRot = math_lerp<SQuaternion>( rot1, rot2, lerper );
 		camParams = math_lerp<SVector3>( params1, params2, lerper );
+		dofPos = math_lerp<SVector3>( dpos1, dpos2, lerper );
+		dofScale = math_lerp<float>( range1, range2, lerper );
 	}
 
 	const float fov = camParams.z;
@@ -207,6 +220,12 @@ void CSceneMain::animateCamera()
 
 	float aspect = CD3DDevice::getInstance().getBackBufferAspect();
 	getCamera().setProjectionParams( fov / aspect, aspect, camnear, camfar );
+
+	// DOF
+	const SVector3 toFocus = dofPos - camPos;
+	const float dofDist = toFocus.dot( getCamera().mWorldMat.getAxisZ() );
+	const float dofRange = dofScale * 0.5f;
+	gDOFParams.set( dofDist, 1.0f / dofRange, 0.0f );
 }
 
 

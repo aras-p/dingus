@@ -27,11 +27,14 @@ private:
 private:
 	CSceneSharedStuff*	mSharedStuff;
 
-	// camera anim
+	// camera/DOF anim
 	CAnimationBunch*	mCameraAnim;
 	CAnimationBunch::TVector3Animation*	mCameraAnimPos;
 	CAnimationBunch::TQuatAnimation*	mCameraAnimRot;
 	CAnimationBunch::TVector3Animation*	mCameraAnimParams;
+	CAnimationBunch*	mDOFAnim;
+	CAnimationBunch::TVector3Animation*	mDOFAnimPos;
+	CAnimationBunch::TFloatAnimation*	mDOFAnimRange;
 
 	// timing
 	double	mAnimFrameCount;

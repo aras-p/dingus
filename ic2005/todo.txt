@@ -4,6 +4,7 @@
 
 CODE
 
++ DoF
 + Fracture out whole ceiling, drop fake pieces
 . Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 . Take time source from music?
@@ -11,7 +12,6 @@ CODE
 . Tweak character lighting
 . Attack effects
 . Shadows for other guys (needed?)
-. DoF
 . Glow; render extra brightness to alpha
 . Fresnel for reflections?
 . Loading screen
