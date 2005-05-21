@@ -16,7 +16,7 @@ public:
 	CRoomObjectEntity( const std::string& name );
 
 	void	setMoved() { mMoved = true; }
-	void	update();
+	void	update( const SVector3& wlightPos );
 	void	render( eRenderMode renderMode );
 
 private:

@@ -268,12 +268,12 @@ void CSceneMain::update( time_value demoTime, float dt )
 	int i;
 	int n = mRoom.size();
 	for( i = 0; i < n; ++i ) {
-		mRoom[i]->update();
+		mRoom[i]->update( LIGHT_POS_1 );
 	}
 	if( mCurrAnimFrame >= ROOM2_BEGIN_FRAME ) {
 		n = mRoom2.size();
 		for( i = 0; i < n; ++i ) {
-			mRoom2[i]->update();
+			mRoom2[i]->update( LIGHT_POS_2 );
 		}
 	}
 

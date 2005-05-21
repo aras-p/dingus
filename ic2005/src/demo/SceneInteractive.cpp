@@ -41,7 +41,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 	int n = mRoom.size();
 	for( int i = 0; i < n; ++i ) {
-		mRoom[i]->update();
+		mRoom[i]->update( LIGHT_POS_1 );
 	}
 	
 	float demoTimeS = demoTime.tosec();

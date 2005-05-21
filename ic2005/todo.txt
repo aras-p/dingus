@@ -4,7 +4,7 @@
 
 CODE
 
-. Separate light for 2nd room
++ Separate light for 2nd room
 + Fracture out whole ceiling, drop fake pieces
 . Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 . Take time source from music?

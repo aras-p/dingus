@@ -22,7 +22,7 @@ CRoomObjectEntity::CRoomObjectEntity( const std::string& name )
 	}
 }
 
-void CRoomObjectEntity::update()
+void CRoomObjectEntity::update( const SVector3& wlightPos )
 {
 	if( !mMoved )
 		return;
@@ -30,6 +30,9 @@ void CRoomObjectEntity::update()
 
 	// TBD: don't do full inverse
 	D3DXMatrixInverse( &mInvWorld, NULL, &mWorldMat );
+
+	// update light position
+	D3DXVec3TransformCoord( &mLightPosOS, &wlightPos, &mInvWorld );
 }
 
 void CRoomObjectEntity::render( eRenderMode renderMode )
@@ -42,8 +45,7 @@ void CRoomObjectEntity::render( eRenderMode renderMode )
 			return;
 	}
 
-	// update light/eye positions
-	D3DXVec3TransformCoord( &mLightPosOS, &gSLightPos, &mInvWorld );
+	// update eye position
 	D3DXVec3TransformCoord( &mEyePosOS, &G_RENDERCTX->getCamera().getEye3(), &mInvWorld );
 	
 	CMeshEntity::render( renderMode );

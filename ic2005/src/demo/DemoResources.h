@@ -19,7 +19,6 @@ enum eRenderMode {
 };
 extern const char* RMODE_PREFIX[RMCOUNT];
 extern bool gNoPixelShaders;
-extern SVector3	gSLightPos;
 extern SPlane	gReflPlane;
 extern float	gCharTimeBlend;
 
@@ -35,6 +34,8 @@ static const SVector3 ROOM_MID = (ROOM_MIN + ROOM_MAX)*0.5f;
 static const SVector3 ROOM_SIZE = (ROOM_MAX - ROOM_MIN);
 static const SVector3 ROOM_HSIZE = ROOM_SIZE*0.5f;
 
+static const SVector3 LIGHT_POS_1 = SVector3( ROOM_MID.x, ROOM_MAX.y*1.5f, ROOM_MID.z );
+static const SVector3 LIGHT_POS_2 = SVector3( LIGHT_POS_1.x + ROOM_SIZE.x, LIGHT_POS_1.y, LIGHT_POS_1.z );
 
 static const double ANIM_FPS = 30.0;
 

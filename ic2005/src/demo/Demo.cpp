@@ -173,12 +173,10 @@ public:
 };
 
 
-const SVector3 LIGHT_POS = SVector3( ROOM_MID.x, ROOM_MAX.y*1.5f, ROOM_MID.z );
 
 // Main, tightly targeted at character. Soft shadows.
 SShadowLight	gSLight;
 SMatrix4x4		gSShadowProj;
-SVector3		gSLightPos = LIGHT_POS;
 
 // Secondary, covers floor, misc. pieces render into it. Standard proj. shadows.
 SShadowLight	gSLight2;
@@ -194,7 +192,7 @@ void gShadowRender( CScene& scene )
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
 	// target the light where needed
-	gSLight.initialize( LIGHT_POS, lightTargetMat->getOrigin(), D3DX_PI/5 );
+	gSLight.initialize( LIGHT_POS_1, lightTargetMat->getOrigin(), D3DX_PI/5 );
 
 	// Leave one texel padding...
 	D3DVIEWPORT9 vp;
@@ -203,7 +201,6 @@ void gShadowRender( CScene& scene )
 
 	gSLight.camera.setOntoRenderContext();
 
-	gSLightPos = gSLight.camera.mWorldMat.getOrigin();
 	gfx::textureProjectionWorld( gSLight.viewProj, SZ_SHADOWMAP, SZ_SHADOWMAP, gSShadowProj );
 
 	// render soft shadow map
@@ -257,7 +254,7 @@ void gShadowRender2( CScene& scene )
 
 	// target the light where needed
 	const SVector3 LIGHT_TARGET_POS( ROOM_MID.x, ROOM_MIN.y, ROOM_MID.z );
-	gSLight2.initialize( LIGHT_POS, LIGHT_TARGET_POS, D3DX_PI*0.45f );
+	gSLight2.initialize( LIGHT_POS_1, LIGHT_TARGET_POS, D3DX_PI*0.45f );
 
 	// Leave one texel padding...
 	//D3DVIEWPORT9 vp;
@@ -447,7 +444,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj", gSShadowProj );
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj2", gSShadowProj2 );
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mLightViewProj", gSLight.viewProj );
-	G_RENDERCTX->getGlobalParams().addVector3Ref( "vLightPos", gSLightPos );
+	G_RENDERCTX->getGlobalParams().addVector3( "vLightPos", LIGHT_POS_1 );
 	G_RENDERCTX->getGlobalParams().addFloatRef( "fCharTimeBlend", &gCharTimeBlend );
 
 	gDebugRenderer = new CDebugRenderer( *G_RENDERCTX, *RGET_FX("debug") );
