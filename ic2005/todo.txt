@@ -4,6 +4,7 @@
 
 CODE
 
+. Separate light for 2nd room
 + Fracture out whole ceiling, drop fake pieces
 . Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 . Take time source from music?
@@ -19,7 +20,6 @@ CODE
 . Reflections into single RT, with stencil/Z masks for fast culling
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?
-. 2nd room (waiting for layout)
 . Interactive mode tweak UI
 
 + Interactive mode (waiting for attack fx meshes/anims)
@@ -27,6 +27,7 @@ CODE
 + 2nd fractured room
 + Time-blend character's texture
 
+* Add 2nd room
 * Optimize/hack physics for the massive fracture scene
 * Tweak last attack position (clear walls for doors)
 * Add music (added via BASS)

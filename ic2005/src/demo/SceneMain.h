@@ -60,8 +60,9 @@ private:
 	CMeshEntity*			mRoom2Top;
 	CMeshEntity*			mRoom2Bottom;
 
-	// outside room
+	// outside rooms
 	std::vector<CRoomObjectEntity*>	mRoom;
+	std::vector<CRoomObjectEntity*>	mRoom2;
 };
 
 

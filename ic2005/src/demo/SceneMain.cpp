@@ -58,8 +58,9 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	mStone = new CComplexStuffEntity( "Stone", "StoneAnim" );
 	addAnimEntity( *mStone );
 
-	// room
+	// rooms
 	gReadScene( "data/scene.lua", mRoom );
+	gReadScene( "data/scene2.lua", mRoom2 );
 
 	mRoom2Top = new CMeshEntity( "Room2Top" );
 	addEntity( *mRoom2Top );
@@ -130,6 +131,7 @@ CSceneMain::~CSceneMain()
 {
 	delete mDoorsAnim;
 	stl_utils::wipe( mRoom );
+	stl_utils::wipe( mRoom2 );
 }
 
 
@@ -262,10 +264,17 @@ void CSceneMain::update( time_value demoTime, float dt )
 		mStone->update( stoneAnimTime );
 	}
 
-	// update room
+	// update rooms
+	int i;
 	int n = mRoom.size();
-	for( int i = 0; i < n; ++i ) {
+	for( i = 0; i < n; ++i ) {
 		mRoom[i]->update();
+	}
+	if( mCurrAnimFrame >= ROOM2_BEGIN_FRAME ) {
+		n = mRoom2.size();
+		for( i = 0; i < n; ++i ) {
+			mRoom2[i]->update();
+		}
 	}
 
 	int wallsLod = mCurrAnimFrame < WALL_LOD1_FRAME ? 0 : 1;
@@ -297,6 +306,12 @@ void CSceneMain::render( eRenderMode renderMode )
 		mRoom[i]->render( renderMode );
 	}
 	if( mCurrAnimFrame >= ROOM2_BEGIN_FRAME ) {
+		if( renderMode != RM_REFLECTED ) {
+			n = mRoom2.size();
+			for( i = 0; i < n; ++i ) {
+				mRoom2[i]->render( renderMode );
+			}
+		}
 		mRoom2Top->render( renderMode );
 		mRoom2Bottom->render( renderMode );
 	}

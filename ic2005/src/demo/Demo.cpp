@@ -759,10 +759,6 @@ void CDemo::perform()
 	}
 	*/
 
-	if( gShowStats ) {
-		CConsole::getChannel("system") << "scene=" << gCurScene << endl;
-	}
-
 	// manage scene transitions
 	if( gCurScene == SCENE_MAIN && gSceneMain->isEnded() ) { 
 		gCurScene = SCENE_SCROLLER;

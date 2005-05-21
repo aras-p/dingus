@@ -86,9 +86,6 @@ bool gReadScene( const char* fileName, std::vector<CRoomObjectEntity*>& scene )
 		SVector3 pos = CLuaHelper::getVector3( luaObj, "pos" );
 		SQuaternion rot = CLuaHelper::getQuaternion( luaObj, "rot" );
 
-		pos.x += ROOM_MID.x;
-		pos.z += ROOM_MID.z;
-
 		CRoomObjectEntity* obj = new CRoomObjectEntity( name );
 		obj->mWorldMat = SMatrix4x4( pos, rot );
 		obj->setMoved();
