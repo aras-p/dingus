@@ -15,7 +15,7 @@ sampler		smpBase = sampler_state {
     AddressU = Clamp; AddressV = Clamp;
 };
 
-// x=0.5/texwidth, y=0.5/texheight, z=1-x*2, w=1-y*2
+// x=0.5/texwidth, y=0.5/texheight
 float4	vFixUV;
 float4	vTexelsX;
 float4	vTexelsY;

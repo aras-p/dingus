@@ -36,8 +36,6 @@ struct SOutput {
 };
 
 SOutput vsMain0( SInput0 i ) {
-	SOutput o;
-	
 	// compensate for lack of UBYTE4 on Geforce3
 	o.pos.w = 1;
 	int4 indices = D3DCOLORtoUBYTE4( i.indices );
@@ -63,6 +61,7 @@ SOutput vsMain0( SInput0 i ) {
 }
 
 half4 psMain( SOutput i ) : COLOR {
+	return 0;
 	// sample normal+AO map
 	half4 normalAO = tex2D( smpNormalAO, i.uv );
 	half3 normal = normalAO.rgb*2-1;

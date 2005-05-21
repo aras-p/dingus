@@ -1,5 +1,6 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
+#include "lib/dof.fx"
 
 float4x4	mWorld;
 float4x4	mWorldView;
@@ -27,7 +28,7 @@ struct SOutput {
 	float4 pos		: POSITION;
 	float4 tolight	: COLOR0;		// object space
 	float2 uv		: TEXCOORD0;
-	float3 halfang	: TEXCOORD1;	// object space
+	half4  halfangz	: TEXCOORD1;	// half-angle object space; camera depth
 };
 
 
@@ -41,7 +42,9 @@ SOutput vsMain( SPosTex i ) {
 	o.tolight = float4( tolight*0.5+0.5, 1 );
 
 	float3 toview = normalize( vEyeOS - i.pos.xyz );
-	o.halfang = normalize( tolight + toview );
+	o.halfangz.xyz = normalize( tolight + toview );
+
+	o.halfangz.w = gCameraDepth( i.pos, mWorldView );
 
 	o.uv = i.uv;
 	
@@ -61,7 +64,7 @@ half4 psMain( SOutput i ) : COLOR {
 
 	// calc lighting
 	half diffuse = saturate( dot( normal, i.tolight.xyz*2-1 ) ) * occ + ambBias;
-	float spec = pow( saturate( dot( normal, i.halfang ) ), 16 );
+	float spec = pow( saturate( dot( normal, i.halfangz.xyz ) ), 16 );
 
 	// sample diffuse/gloss map
 	half4 cBase = tex2D( smpBase, i.uv );
@@ -72,10 +75,7 @@ half4 psMain( SOutput i ) : COLOR {
 
 	half3 col = cDiff * diffuse + cSpec * spec + amb;
 
-	//col = normal*0.5+0.5;
-	//col = i.tolight.xyz;
-
-	return half4( col, 1 );
+	return half4( col, gBluriness(i.halfangz.w) );
 }
 
 

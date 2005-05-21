@@ -41,7 +41,7 @@ void CPostProcess::pingPongBlur( int passes, int startPass )
 
 	int swidth = sdesc.Width;
 	int sheight = sdesc.Height;
-	mFixUVs4th.set( 0.5f/swidth, 0.5f/sheight, 1.0f-2.0f/swidth, 1.0f-2.0f/sheight );
+	mFixUVs4th.set( 0.5f/swidth, 0.5f/sheight, 0, 0 );
 
 	// ping-pong blur passes
 	dx.setZStencil( NULL );

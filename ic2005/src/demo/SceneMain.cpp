@@ -222,7 +222,7 @@ void CSceneMain::animateCamera()
 	getCamera().setProjectionParams( fov / aspect, aspect, camnear, camfar );
 
 	// DOF
-	const SVector3 toFocus = dofPos - camPos;
+	const SVector3 toFocus = dofPos - getCamera().mWorldMat.getOrigin();
 	const float dofDist = toFocus.dot( getCamera().mWorldMat.getAxisZ() );
 	const float dofRange = dofScale * 0.5f;
 	gDOFParams.set( dofDist, 1.0f / dofRange, 0.0f );

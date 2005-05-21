@@ -23,13 +23,16 @@ shared float3	vDOF; // x=focalDist, y=1/focalRange, z=blurBias
 
 
 // --------------------------------------------------------------------------
-//  global cull params
+//  global params
 
 // cull mode: CW=2 (should be default), CCW=3 (for reflected, etc.)
 shared int		iCull = 2;
 
 // cull mode: Solid=3 (should be default)
 shared int		iFill = 3;
+
+// x=0.5/width, y=0.5/height
+shared float4	vScreenFixUV;
 
 
 // --------------------------------------------------------------------------

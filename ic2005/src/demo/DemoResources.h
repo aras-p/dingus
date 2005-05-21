@@ -43,6 +43,9 @@ static const double ANIM_FPS = 30.0;
 
 // --------------------------------------------------------------------------
 
+#define RT_FULLSCREEN "fullRT"
+
+
 const int SZ_SHADOWMAP = 256;
 #define RT_SHADOWMAP "shadow"
 #define RT_SHADOWBLUR "shadowBlur"
@@ -58,16 +61,17 @@ const int SZ_SHADOWMAP2_SM = 512;
 //
 // walls reflections
 
-const float SZ_REFLRT_REL = 0.5f;
-const float SZ_REFLBLUR_REL = 0.25f;
+const float SZ_HALF_REL = 0.5f;
+const float SZ_QUAT_REL = 0.25f;
 
 // render target and z/stencil
-#define RT_REFLRT "reflRT"
-#define RT_REFLZ "reflZ"
-// small temp ones for blurring
-#define RT_REFL_TMP1 "reflTmp1"
-#define RT_REFL_TMP2 "reflTmp2"
-// small final one textures
+#define RT_HALFRT "halfRT"
+#define RT_HALFZ "halfZ"
+// temp ones for blurring
+#define RT_HALF_TMP1 "reflTmp1"
+#define RT_HALF_TMP2 "reflTmp2"
+
+// small final reflection textures
 #define RT_REFL_PX "reflpx"
 #define RT_REFL_NX "reflnx"
 #define RT_REFL_PY "reflpy"
@@ -77,6 +81,10 @@ const float SZ_REFLBLUR_REL = 0.25f;
 
 
 static const char* WALL_TEXS[CFACE_COUNT] = { RT_REFL_PX, RT_REFL_NX, RT_REFL_PY, RT_REFL_NY, RT_REFL_PZ, RT_REFL_NZ };
+
+// DOF
+#define RT_DOF_1 "dof1"
+#define RT_DOF_2 "dof2"
 
 
 #endif

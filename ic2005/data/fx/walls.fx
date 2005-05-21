@@ -1,11 +1,12 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
 #include "lib/commonWalls.fx"
+#include "lib/dof.fx"
 
 
 float3		vLightPos;
 
-//#define WALL_DOF
+#define WALL_DOF
 
 
 #ifdef WALL_NCOL
@@ -76,6 +77,8 @@ float3		vLightPos;
 SOutput vsMain( WALL_INPUT i ) {
 	SOutput o;
 	o.pos = mul( i.pos, mViewProj );
+
+	// compute texcoords for projection in pixel shader
 #ifdef WALL_SHADOW
 	o.WALL_SHCRD = mul( i.pos, mShadowProj );
 #endif
@@ -85,6 +88,13 @@ SOutput vsMain( WALL_INPUT i ) {
 #ifdef WALL_REFL
 	o.WALL_RFCRD = mul( i.pos, mViewTexProj );
 #endif
+
+	// DOF
+#ifdef WALL_DOF
+	o.WALL_DOFCRD = gCameraDepth( i.pos.xyz );
+#endif
+
+	// pass lighting to pixel shader
 	o.n = WALL_N*0.5+0.5;
 	float3 tolight = normalize( vLightPos - i.pos.xyz );
 	o.tol = tolight*0.5+0.5;
@@ -110,7 +120,14 @@ half4 psMain( SOutput i ) : COLOR {
 #ifdef WALL_REFL
 	col.xyz += tex2Dproj( smpRefl, i.WALL_RFCRD ) * 0.2;
 #endif
-	return col;
+
+	half4 color = col;
+
+#ifdef WALL_DOF
+	color.a = gBluriness( i.WALL_DOFCRD );
+#endif
+
+	return color;
 }
 
 
