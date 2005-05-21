@@ -33,6 +33,14 @@ static const float TIMEBLEND_END_FRAME = 3770 + 950;
 static const float ROOM2_BEGIN_FRAME = 5304 + 800;
 static const float LIGHT_SWITCH_FRAME = 5402 + 800;
 
+// 2 attack: 3160 - 3230
+// SecondAttack1Box1/2
+// SecondAttack2Box1/2
+
+static const float ATK2_BEGIN_FRAME = 3160 + 800;
+static const float ATK2_END_FRAME = 3230 + 800;
+
+
 
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 :	mSharedStuff( sharedStuff )
@@ -61,6 +69,12 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	addAnimEntity( *mBedAnim );
 	mStone = new CComplexStuffEntity( "Stone", "StoneAnim" );
 	addAnimEntity( *mStone );
+
+	// attacks
+	mAttack2_1 = new CComplexStuffEntity( "AttackFx2_1", "AttackFx2" );
+	addAnimEntity( *mAttack2_1 );
+	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", "AttackFx2" );
+	addAnimEntity( *mAttack2_2 );
 
 	// rooms
 	gReadScene( "data/scene.lua", mRoom );
@@ -229,6 +243,25 @@ void CSceneMain::animateCamera()
 }
 
 
+void CSceneMain::animateLocally( CComplexStuffEntity& e, float beginFrame )
+{
+	if( mCurrAnimFrame >= beginFrame ) {
+		double animS = (mCurrAnimFrame-beginFrame)/ANIM_FPS;
+		if( animS < 0 ) animS = 0;
+		time_value animTime = time_value::fromsec( animS );
+		e.update( animTime );
+	}
+}
+void CSceneMain::animateLocally( CComplexStuffEntity& e, float beginFrame, float endFrame )
+{
+	if( mCurrAnimFrame >= beginFrame && mCurrAnimFrame <= endFrame ) {
+		double animS = (mCurrAnimFrame-beginFrame)/ANIM_FPS;
+		if( animS < 0 ) animS = 0;
+		time_value animTime = time_value::fromsec( animS );
+		e.update( animTime );
+	}
+}
+
 
 void CSceneMain::update( time_value demoTime, float dt )
 {
@@ -245,18 +278,12 @@ void CSceneMain::update( time_value demoTime, float dt )
 	mCharacter->setLightPos( secondLight ? LIGHT_POS_2 : LIGHT_POS_1 );
 	mCharacter->update( demoTime );
 
-	if( mCurrAnimFrame >= GUY2_BEGIN_FRAME ) {
-		double animS = (mCurrAnimFrame-GUY2_BEGIN_FRAME)/ANIM_FPS;
-		if( animS < 0 ) animS = 0;
-		time_value animTime = time_value::fromsec( animS );
-		mCharacter2->update( animTime );
-	}
-	if( mCurrAnimFrame >= GUY3_BEGIN_FRAME ) {
-		double animS = (mCurrAnimFrame-GUY3_BEGIN_FRAME)/ANIM_FPS;
-		if( animS < 0 ) animS = 0;
-		time_value animTime = time_value::fromsec( animS );
-		mCharacter3->update( animTime );
-	}
+	animateLocally( *mCharacter2, GUY2_BEGIN_FRAME );
+	animateLocally( *mCharacter3, GUY3_BEGIN_FRAME );
+
+	// attacks
+	animateLocally( *mAttack2_1, ATK2_BEGIN_FRAME, ATK2_END_FRAME );
+	animateLocally( *mAttack2_2, ATK2_BEGIN_FRAME, ATK2_END_FRAME );
 
 	// animate doors
 	{
@@ -277,13 +304,8 @@ void CSceneMain::update( time_value demoTime, float dt )
 	}
 	
 
-	if( mCurrAnimFrame >= BED_FRACTURE_FRAME && mCurrAnimFrame <= BED_HIDE_FRAME ) {
-		double bedAnimS = (mCurrAnimFrame-BED_FRACTURE_FRAME)/ANIM_FPS;
-		if( bedAnimS < 0.0 )
-			bedAnimS = 0.0;
-		time_value bedAnimTime = time_value::fromsec( bedAnimS );
-		mBedAnim->update( bedAnimTime );
-	}
+	animateLocally( *mBedAnim, BED_FRACTURE_FRAME );
+
 	if( mCurrAnimFrame >= STONE_SHOW_FRAME && mCurrAnimFrame <= STONE_HIDE_FRAME ) {
 		double stoneAnimS = (mCurrAnimFrame-STONE_BEGIN_FRAME)/ANIM_FPS;
 		if( stoneAnimS < 0.0 )
@@ -353,6 +375,12 @@ void CSceneMain::render( eRenderMode renderMode )
 	// stone
 	if( mCurrAnimFrame > STONE_SHOW_FRAME && mCurrAnimFrame < STONE_HIDE_FRAME )
 		mStone->render( renderMode );
+
+	// attacks
+	if( mCurrAnimFrame > ATK2_BEGIN_FRAME && mCurrAnimFrame < ATK2_END_FRAME ) {
+		mAttack2_1->render( renderMode );
+		mAttack2_2->render( renderMode );
+	}
 }
 
 const SMatrix4x4* CSceneMain::getLightTargetMatrix() const

@@ -23,6 +23,8 @@ public:
 
 private:
 	void	animateCamera();
+	void	animateLocally( CComplexStuffEntity& e, float beginFrame );
+	void	animateLocally( CComplexStuffEntity& e, float beginFrame, float endFrame );
 
 private:
 	CSceneSharedStuff*	mSharedStuff;
@@ -58,6 +60,10 @@ private:
 	CMeshEntity*			mBedStatic;
 	CComplexStuffEntity*	mBedAnim;
 	CComplexStuffEntity*	mStone;
+
+	// attack fx
+	CComplexStuffEntity*	mAttack2_1;
+	CComplexStuffEntity*	mAttack2_2;
 
 	// room2
 	CMeshEntity*			mRoom2Top;

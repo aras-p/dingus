@@ -4,12 +4,12 @@
 
 CODE
 
++ Attack effects
 + Fracture out whole ceiling, drop fake pieces
 . Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 . Take time source from music?
 . Play/fadein/fadeout interactive mode music for scroller/intmode.
 . Tweak character lighting
-. Attack effects
 . Shadows for other guys (needed?)
 . Glow; render extra brightness to alpha
 . Fresnel for reflections?

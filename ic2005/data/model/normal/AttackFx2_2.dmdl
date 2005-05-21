@@ -1,0 +1,8 @@
+name = 'AttackFx2_2'
+groups = {
+{
+  fx = 'attack2', pri = 2,
+  params = {
+  },
+},
+}

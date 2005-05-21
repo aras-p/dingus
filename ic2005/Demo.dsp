@@ -360,6 +360,10 @@ SOURCE=.\data\fx\lib\structs.fx
 # End Group
 # Begin Source File
 
+SOURCE=.\data\fx\attack2.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\bed.fx
 # End Source File
 # Begin Source File

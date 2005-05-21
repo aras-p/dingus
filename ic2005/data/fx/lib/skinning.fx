@@ -45,6 +45,32 @@ static inline void gSkinningPos(
 // --------------------------------------------------------------------------
 // 2-4 bone skinning
 
+static inline void gSkinning2(
+	float4	ipos,
+	float3	inormal,
+	float4	findices,
+	float	weight,
+	out float3 outPos,
+	out float3 outNormal )
+{
+	// compensate for lack of UBYTE4 on Geforce3
+	int4 indices = D3DCOLORtoUBYTE4( findices );
+
+	// first influence
+	int idx = indices[0];
+	outPos = mul( ipos, mSkin[idx] ) * weight;
+	float3 normal = mul( inormal, (float3x3)mSkin[idx] ) * weight;
+
+	// add in last influence
+	float lastWeight = 1.0f - weight;
+	outPos += mul( ipos, mSkin[indices[1]] ) * lastWeight;
+	normal += mul( inormal, (float3x3)mSkin[indices[1]] ) * lastWeight;
+	
+	// normalize normal
+	outNormal = normalize( normal );
+}
+
+
 static inline void gSkinning(
 	float4	ipos,
 	float3	inormal,
