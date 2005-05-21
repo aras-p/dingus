@@ -38,7 +38,7 @@ CSceneSharedStuff::CSceneSharedStuff()
 	const float ELEM_SIZE2 = 0.15f;
 
 	CSharedTextureBundle& stb = CSharedTextureBundle::getInstance();
-	ITextureCreator* tcr = new CFixedTextureCreator(CWall3D::RESGRID_X,CWall3D::RESGRID_Y,1,0,D3DFMT_A8,D3DPOOL_MANAGED);
+	ITextureCreator* tcr = new CFixedTextureCreator(CWall3D::RESGRID_X,CWall3D::RESGRID_Y,1,D3DUSAGE_DYNAMIC,D3DFMT_A8,D3DPOOL_DEFAULT);
 
 	stb.registerTexture( WALL_RESTEXS[CFACE_PX], *tcr );
 	stb.registerTexture( WALL_RESTEXS[CFACE_NX], *tcr );

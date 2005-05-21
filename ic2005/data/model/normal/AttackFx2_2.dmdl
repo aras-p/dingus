@@ -3,6 +3,7 @@ groups = {
 {
   fx = 'attack2', pri = 2,
   params = {
+	  { 'tex', 'tBase', 'TiledNoise' },
   },
 },
 }

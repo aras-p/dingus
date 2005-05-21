@@ -6,6 +6,15 @@
 
 int			iBones;
 
+
+texture		tBase;
+sampler2D	smpBase = sampler_state {
+	Texture = (tBase);
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+	AddressU = Wrap; AddressV = Wrap;
+};
+
+
 struct SInput {
 	float4	pos		: POSITION;
 	float	weight  : BLENDWEIGHT;
@@ -16,7 +25,7 @@ struct SInput {
 
 struct SOutput {
 	float4 pos		: POSITION;
-	float4 toview	: COLOR0;		// world space
+	float4 color	: COLOR0;
 	float2 uv		: TEXCOORD0;
 	float  z		: TEXCOORD1;
 };
@@ -26,21 +35,35 @@ SOutput vsMain( SInput i ) {
 
 	float3 wpos, wn;
 	o.pos.w = 1;
-	gSkinning2( i.pos, i.normal, i.indices, i.weight, o.pos.xyz, wn );
+	gSkinning2( i.pos, i.normal*2-1, i.indices, i.weight, o.pos.xyz, wn );
 	
 	o.z = gCameraDepth( o.pos.xyz );
 
-	float3 toview = normalize( vEye - o.pos.xyz );
-	o.toview = float4( toview*0.5+0.5, 1 );
+	float3 vn = mul( wn, (float3x3)mView );
+	float rim = saturate( abs(vn.z) * 1.2 - 0.2 );
+	o.color.rgb = 1;
+	o.color.a = rim;
 
 	o.pos = mul( o.pos, mViewProj );
 
-	o.uv = i.uv;
+	o.uv = i.uv*2 + float2(fTime,0);
 	return o;
 }
 
-half4 psMain( SOutput i ) : COLOR {
-	return half4( i.toview.xyz, gBluriness(i.z) );
+half4 psMain1( SOutput i ) : COLOR {
+	half4 col = tex2D( smpBase, i.uv );
+	col *= i.color.a * 0.1;
+	return col;
+}
+
+half4 psMain2( SOutput i ) : COLOR {
+	float3 COLOR = float3(0.05,0.4,0.7);
+	half4 col = tex2D( smpBase, i.uv );
+	return col * half4( COLOR, i.color.a * 0.5 );
+}
+
+half4 psMain3( SOutput i ) : COLOR {
+	return half4( 1, 1, 1, gBluriness(i.z) );
 }
 
 
@@ -48,10 +71,32 @@ technique tec20
 {
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
-		PixelShader = compile ps_2_0 psMain();
-		FillMode = Wireframe;
+		PixelShader = compile ps_2_0 psMain1();
+
+		ColorWriteEnable = Red | Green | Blue;
+
+		ZWriteEnable = False;
+		AlphaBlendEnable = True;
+		SrcBlend = Zero;
+		DestBlend = InvSrcColor;
+	}
+	pass P1 {
+		VertexShader = compile vs_1_1 vsMain();
+		PixelShader = compile ps_2_0 psMain2();
+
+		SrcBlend = SrcAlpha;
+		DestBlend = One;
+	}
+	pass P2 {
+		VertexShader = compile vs_1_1 vsMain();
+		PixelShader = compile ps_2_0 psMain3();
+
+		ColorWriteEnable = Alpha;
+
+		AlphaBlendEnable = False;
 	}
 	pass PLast {
-		FillMode = Solid;
+		ColorWriteEnable = Red | Green | Blue | Alpha;
+		ZWriteEnable = True;
 	}
 }

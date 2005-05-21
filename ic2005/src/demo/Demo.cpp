@@ -37,7 +37,7 @@ CDebugRenderer*	gDebugRenderer;
 int			gGlobalCullMode;	// global cull mode
 int			gGlobalFillMode;	// global fill mode
 SVector4	gScreenFixUVs;		// UV fixes for fullscreen quads
-//float		gTimeParam;			// time parameter for effects
+float		gTimeParam;			// time parameter for effects
 
 bool	gNoPixelShaders = false;
 
@@ -514,7 +514,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gGlobalFillMode = D3DFILL_SOLID;
 	G_RENDERCTX->getGlobalParams().addIntRef( "iCull", &gGlobalCullMode );
 	G_RENDERCTX->getGlobalParams().addIntRef( "iFill", &gGlobalFillMode );
-	//G_RENDERCTX->getGlobalParams().addFloatRef( "fTime", &gTimeParam );
+	G_RENDERCTX->getGlobalParams().addFloatRef( "fTime", &gTimeParam );
 
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mViewTexProj", gViewTexProjMatrix );
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj", gSShadowProj );
@@ -738,6 +738,7 @@ void CDemo::perform()
 		gDemoTimer.update( CSystemTimer::getInstance().getDeltaTime() );
 	}
 	time_value demoTime = gDemoTimer.getTime();
+	gTimeParam = demoTime.tosec();
 
 	// figure out current scene
 	D3DCOLOR clearColor = 0xFFffffff;

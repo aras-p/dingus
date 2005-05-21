@@ -33,10 +33,6 @@ static const float TIMEBLEND_END_FRAME = 3770 + 950;
 static const float ROOM2_BEGIN_FRAME = 5304 + 800;
 static const float LIGHT_SWITCH_FRAME = 5402 + 800;
 
-// 2 attack: 3160 - 3230
-// SecondAttack1Box1/2
-// SecondAttack2Box1/2
-
 static const float ATK2_BEGIN_FRAME = 3160 + 800;
 static const float ATK2_END_FRAME = 3230 + 800;
 
