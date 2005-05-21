@@ -20,7 +20,7 @@ public:
 	virtual void	render( eRenderMode renderMode );
 	virtual void	renderUI( CUIDialog& dlg );
 	virtual const SMatrix4x4* getLightTargetMatrix() const;
-	bool	isEnded() const { return mCurrAnimAlpha >= 1.0; }
+	bool	isEnded() const { return mExtraTimeLeft <= 0.0; }
 
 private:
 	void	animateCamera();
@@ -44,6 +44,7 @@ private:
 	double	mAnimDuration;
 	double	mCurrAnimFrame;
 	double	mCurrAnimAlpha;
+	float	mExtraTimeLeft;
 
 	// main character
 	CComplexStuffEntity*	mCharacter;

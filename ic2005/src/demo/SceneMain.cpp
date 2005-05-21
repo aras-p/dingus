@@ -44,6 +44,10 @@ static const float TITLE_FADE_FRAMES = 30;
 
 static const float BLUR_FRAMES = 60;
 static const float BLUR_FADE_FRAMES = 45;
+static const float BLUR_END_FRAMES = 45;
+
+
+static const float EXTRA_TIME = 15.5f;
 
 
 
@@ -53,6 +57,7 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 ,	mAnimDuration(0)
 ,	mCurrAnimFrame(0)
 ,	mCurrAnimAlpha(0)
+,	mExtraTimeLeft(EXTRA_TIME)
 {
 	// characters
 	mCharacter = new CComplexStuffEntity( "Bicas", "BicasAnim" );
@@ -244,7 +249,9 @@ void CSceneMain::animateCamera()
 	const SVector3 toFocus = dofPos - getCamera().mWorldMat.getOrigin();
 	const float dofDist = toFocus.dot( getCamera().mWorldMat.getAxisZ() );
 	const float dofRange = dofScale * 1.2f;
-	const float dofBias = clamp( 1-(mCurrAnimFrame-BLUR_FRAMES)/BLUR_FADE_FRAMES );
+	float dofBias = 0.0f;
+	dofBias = max( dofBias, clamp( 1-(mCurrAnimFrame-BLUR_FRAMES)/BLUR_FADE_FRAMES ) );
+	dofBias = max( dofBias, clamp( (mCurrAnimFrame-mAnimFrameCount+BLUR_END_FRAMES)/BLUR_END_FRAMES ) );
 
 	gDOFParams.set( dofDist, 1.0f / dofRange, dofBias );
 }

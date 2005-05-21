@@ -4,17 +4,17 @@
 
 CODE
 
+. Blur in/out in several places
+. Play/fadein/fadeout interactive mode music for scroller/intmode.
 + Attack effects
 + Fracture out whole ceiling, drop fake pieces
 . Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 . Take time source from music?
-. Play/fadein/fadeout interactive mode music for scroller/intmode.
 . Tweak character lighting
 . Shadows for other guys (needed?)
 . Glow; render extra brightness to alpha
 . Fresnel for reflections?
 . Loading screen
-. Blur in/out in several places
 . Reflections into single RT, with stencil/Z masks for fast culling
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?

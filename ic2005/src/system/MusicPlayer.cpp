@@ -29,13 +29,13 @@ void music::close()
 {
 	BASS_Free();
 }
-void music::play( const char* fileName )
+void music::play( const char* fileName, bool loop )
 {
 	if( gSoundStream ) {
 		BASS_StreamFree( gSoundStream );
 		gSoundStream = NULL;
 	}
-	gSoundStream = BASS_StreamCreateFile( FALSE, fileName, 0, 0, 0 );
+	gSoundStream = BASS_StreamCreateFile( FALSE, fileName, 0, 0, loop ? BASS_SAMPLE_LOOP : 0 );
 	if( !gSoundStream )
 		return;
 

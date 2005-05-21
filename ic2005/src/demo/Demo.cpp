@@ -729,7 +729,7 @@ void CDemo::perform()
 	if( firstPerform || gPaused ) {
 		if( firstPerform ) {
 			// start music
-			music::play( "data/sound/ic2005.mp3" );
+			music::play( "data/sound/ic2005.mp3", false );
 		}
 		dt = 0.0;
 		firstPerform = false;
