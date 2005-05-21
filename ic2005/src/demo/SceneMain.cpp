@@ -5,6 +5,7 @@
 #include "wallz/FractureScenario.h"
 #include <dingus/math/Interpolation.h>
 #include <dingus/math/MathUtils.h>
+#include <dingus/gfx/gui/Gui.h>
 
 
 // --------------------------------------------------------------------------
@@ -35,6 +36,14 @@ static const float LIGHT_SWITCH_FRAME = 5402 + 800;
 
 static const float ATK2_BEGIN_FRAME = 3160 + 800;
 static const float ATK2_END_FRAME = 3230 + 800;
+
+
+static const float TITLE_FRAMES = 150;
+static const float TITLE_FADE_FRAMES = 30;
+
+
+static const float BLUR_FRAMES = 60;
+static const float BLUR_FADE_FRAMES = 45;
 
 
 
@@ -235,7 +244,9 @@ void CSceneMain::animateCamera()
 	const SVector3 toFocus = dofPos - getCamera().mWorldMat.getOrigin();
 	const float dofDist = toFocus.dot( getCamera().mWorldMat.getAxisZ() );
 	const float dofRange = dofScale * 1.2f;
-	gDOFParams.set( dofDist, 1.0f / dofRange, 0.0f );
+	const float dofBias = clamp( 1-(mCurrAnimFrame-BLUR_FRAMES)/BLUR_FADE_FRAMES );
+
+	gDOFParams.set( dofDist, 1.0f / dofRange, dofBias );
 }
 
 
@@ -377,6 +388,31 @@ void CSceneMain::render( eRenderMode renderMode )
 		mAttack2_1->render( renderMode );
 		mAttack2_2->render( renderMode );
 	}
+}
+
+
+void CSceneMain::renderUI( CUIDialog& dlg )
+{
+	if( mCurrAnimFrame >= TITLE_FRAMES + TITLE_FADE_FRAMES ) {
+		return;
+	}
+
+	SUIElement textElem;
+	memset( &textElem, 0, sizeof(textElem) );
+	textElem.fontIdx = 1;
+	textElem.textFormat = DT_RIGHT | DT_BOTTOM | DT_NOCLIP;
+	textElem.colorFont.current = 0xFF404040;
+
+	textElem.colorFont.current.a = clamp( 1-(mCurrAnimFrame-TITLE_FRAMES)/TITLE_FADE_FRAMES );
+
+	SFRect textRC;
+	textRC.left = 0.1f * GUI_X;
+	textRC.right = GUI_X - 20;
+	textRC.top = 0.1f * GUI_Y;
+	textRC.bottom = GUI_Y - 20;
+
+	textElem.fontIdx = 1;
+	dlg.drawText( "in.out.side: the shell", &textElem, &textRC, false );
 }
 
 const SMatrix4x4* CSceneMain::getLightTargetMatrix() const

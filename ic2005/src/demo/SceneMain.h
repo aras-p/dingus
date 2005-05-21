@@ -18,6 +18,7 @@ public:
 
 	virtual void	update( time_value demoTime, float dt );
 	virtual void	render( eRenderMode renderMode );
+	virtual void	renderUI( CUIDialog& dlg );
 	virtual const SMatrix4x4* getLightTargetMatrix() const;
 	bool	isEnded() const { return mCurrAnimAlpha >= 1.0; }
 
