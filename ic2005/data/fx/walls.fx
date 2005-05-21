@@ -2,6 +2,10 @@
 #include "lib/structs.fx"
 #include "lib/commonWalls.fx"
 
+
+float3		vLightPos;
+
+
 #ifdef WALL_NCOL
 	#define WALL_INPUT SPosCol
 	#define WALL_N (i.color.xyz*2-1)
@@ -117,7 +121,7 @@ technique tec0
 SPosCol vsMainFFP( WALL_INPUT i ) {
 	SPosCol o;
 	o.pos = mul( i.pos, mViewProj );
-	o.color = gWallLight( i.pos.xyz, WALL_N );
+	o.color = gWallLight( i.pos.xyz, WALL_N, vLightPos );
 	return o;
 }
 

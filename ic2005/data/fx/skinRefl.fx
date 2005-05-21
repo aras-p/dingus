@@ -2,6 +2,9 @@
 #include "lib/structs.fx"
 #include "lib/skinning.fx"
 
+float3		vLightPos;
+
+
 texture		tNormalAO;
 sampler2D	smpNormalAO = sampler_state {
 	Texture = (tNormalAO);

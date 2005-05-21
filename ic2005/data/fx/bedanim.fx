@@ -3,6 +3,9 @@
 #include "lib/skinning.fx"
 #include "lib/commonWalls.fx"
 
+float3 vLightPos;
+
+
 int			iBones;
 
 struct SInput0 {
@@ -23,7 +26,7 @@ SPosColTexp vsMain0( SInput0 i ) {
 	float3 n = mul( i.normal*2-1, (float3x3)skin );
 
 	o.uvp = mul( o.pos, mShadowProj );
-	o.color = gWallLight( o.pos.xyz, n );
+	o.color = gWallLight( o.pos.xyz, n, vLightPos );
 	o.pos = mul( o.pos, mViewProj );
 
 	return o;

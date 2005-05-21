@@ -5,6 +5,7 @@
 float4x4	mWorld;
 float4x4	mWVP;
 float3		vNormal;
+float3		vLightPos;
 
 texture		tAlpha;
 sampler2D	smpAlpha = sampler_state {

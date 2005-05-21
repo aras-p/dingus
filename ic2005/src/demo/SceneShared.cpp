@@ -136,6 +136,9 @@ CSceneSharedStuff::CSceneSharedStuff()
 	mFixWallPY = new CMeshEntity( "RoomCeil" );
 	mFixWallNY = new CMeshEntity( "RoomFloor" );
 	mFixWallNYFr = new CMeshEntity( "RoomFloorFr" );
+	mFixWallPY->addLightToParams( LIGHT_POS_1 );
+	mFixWallNY->addLightToParams( LIGHT_POS_1 );
+	mFixWallNYFr->addLightToParams( LIGHT_POS_1 );
 	if( !gNoPixelShaders ) {
 		mFixWallPY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_PY) );
 		mFixWallNY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_NY) );

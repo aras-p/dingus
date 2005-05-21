@@ -443,8 +443,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mViewTexProj", gViewTexProjMatrix );
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj", gSShadowProj );
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj2", gSShadowProj2 );
-	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mLightViewProj", gSLight.viewProj );
-	G_RENDERCTX->getGlobalParams().addVector3( "vLightPos", LIGHT_POS_1 );
 	G_RENDERCTX->getGlobalParams().addFloatRef( "fCharTimeBlend", &gCharTimeBlend );
 
 	gDebugRenderer = new CDebugRenderer( *G_RENDERCTX, *RGET_FX("debug") );

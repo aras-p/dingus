@@ -62,3 +62,13 @@ void CMeshEntity::render( eRenderMode renderMode, bool direct )
 			G_RENDERCTX->attach( m );
 	}
 }
+
+void CMeshEntity::addLightToParams( const SVector3& lpos )
+{
+	for( int i = 0; i < RMCOUNT; ++i ) {
+		if( !mRenderMeshes[i].empty() ) {
+			mRenderMeshes[i][0]->getParams().addVector3( "vLightPos", lpos );
+		}
+	}
+}
+

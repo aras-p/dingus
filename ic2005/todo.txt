@@ -4,7 +4,6 @@
 
 CODE
 
-+ Separate light for 2nd room
 + Fracture out whole ceiling, drop fake pieces
 . Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 . Take time source from music?
@@ -26,6 +25,7 @@ CODE
 + Scroller scene
 + 2nd fractured room
 + Time-blend character's texture
++ Separate light for 2nd room
 
 * Add 2nd room
 * Optimize/hack physics for the massive fracture scene

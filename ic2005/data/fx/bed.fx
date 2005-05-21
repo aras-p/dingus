@@ -2,12 +2,14 @@
 #include "lib/structs.fx"
 #include "lib/commonWalls.fx"
 
+float3 vLightPos;
+
 
 SPosColTexp vsMain( SPosN i ) {
 	SPosColTexp o;
 	o.pos = mul( i.pos, mViewProj );
 	o.uvp = mul( i.pos, mShadowProj );
-	o.color = gWallLight( i.pos.xyz, i.normal*2-1 );
+	o.color = gWallLight( i.pos.xyz, i.normal*2-1, vLightPos );
 	return o;
 }
 

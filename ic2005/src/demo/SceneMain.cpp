@@ -31,6 +31,7 @@ static const float TIMEBLEND_END_FRAME = 3770 + 950;
 
 
 static const float ROOM2_BEGIN_FRAME = 5304 + 800;
+static const float LIGHT_SWITCH_FRAME = 5402 + 800;
 
 
 CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
@@ -44,14 +45,17 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	mCharacter = new CComplexStuffEntity( "Bicas", "BicasAnim" );
 	addAnimEntity( *mCharacter );
 	mCharacter2 = new CComplexStuffEntity( "Bicas", "Bicas2Anim" );
+	mCharacter2->setLightPos( LIGHT_POS_2 );
 	addAnimEntity( *mCharacter2 );
 	mCharacter3 = new CComplexStuffEntity( "Bicas", "Bicas3Anim" );
+	mCharacter3->setLightPos( LIGHT_POS_2 );
 	addAnimEntity( *mCharacter3 );
 
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
 
 	// bed/stone
 	mBedStatic = new CMeshEntity( "Bed" );
+	mBedStatic->addLightToParams( LIGHT_POS_1 );
 	addEntity( *mBedStatic );
 	mBedAnim = new CComplexStuffEntity( "BedPieces", "BedAnim" );
 	addAnimEntity( *mBedAnim );
@@ -63,8 +67,10 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	gReadScene( "data/scene2.lua", mRoom2 );
 
 	mRoom2Top = new CMeshEntity( "Room2Top" );
+	mRoom2Top->addLightToParams( LIGHT_POS_2 );
 	addEntity( *mRoom2Top );
 	mRoom2Bottom = new CMeshEntity( "Room2Bottom" );
+	mRoom2Top->addLightToParams( LIGHT_POS_2 );
 	addEntity( *mRoom2Bottom );
 
 	// animating doors
@@ -213,8 +219,11 @@ void CSceneMain::update( time_value demoTime, float dt )
 	mCurrAnimAlpha = demoTimeS / mAnimDuration;
 	mCurrAnimFrame = mCurrAnimAlpha * mAnimFrameCount;
 
+	bool secondLight = (mCurrAnimFrame >= LIGHT_SWITCH_FRAME);
+
 	// animate characters
 	gCharTimeBlend = clamp( (mCurrAnimFrame-TIMEBLEND_BEGIN_FRAME)/(TIMEBLEND_END_FRAME-TIMEBLEND_BEGIN_FRAME) );
+	mCharacter->setLightPos( secondLight ? LIGHT_POS_2 : LIGHT_POS_1 );
 	mCharacter->update( demoTime );
 
 	if( mCurrAnimFrame >= GUY2_BEGIN_FRAME ) {

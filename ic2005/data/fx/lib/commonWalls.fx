@@ -3,17 +3,17 @@
 
 #include "shared.fx"
 
-float4 gWallLightFull( float3 wpos, float3 wn, float diff, float amb )
+float4 gWallLightFull( float3 wpos, float3 wn, float3 lpos, float diff, float amb )
 {
-	float3 tolight = normalize( vLightPos - wpos );
+	float3 tolight = normalize( lpos - wpos );
 	float diffuse = max( 0.0, dot( tolight, wn ) );
 	float col = diffuse * diff + amb;
 	return col;
 }
 
-float4 gWallLight( float3 wpos, float3 wn )
+float4 gWallLight( float3 wpos, float3 wn, float3 lpos )
 {
-	return gWallLightFull( wpos, wn, 0.60, 0.40 );
+	return gWallLightFull( wpos, wn, lpos, 0.60, 0.40 );
 }
 
 

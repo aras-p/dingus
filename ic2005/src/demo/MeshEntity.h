@@ -44,6 +44,8 @@ public:
 
 	const std::string& getDescName() const { return mDescName; }
 
+	void	addLightToParams( const SVector3& lpos );
+
 private:
 	void	init( const std::string& descName, const std::string& meshName );
 

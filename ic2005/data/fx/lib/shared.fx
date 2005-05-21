@@ -40,9 +40,6 @@ shared float4x4	mViewTexProj;
 shared float4x4	mShadowProj;
 shared float4x4	mShadowProj2;
 
-shared float4x4	mLightViewProj;
-
-shared float3	vLightPos;
 
 
 shared texture	tShadow;

@@ -6,6 +6,7 @@
 
 
 CComplexStuffEntity::CComplexStuffEntity( const char* name, const char* defaultAnim, float defAnimFadeInTime )
+:	mLightPos(LIGHT_POS_1)
 {
 	mAnimator = new CCharacterAnimator();
 	CAnimationBunch& anim = *RGET_ANIM(defaultAnim);
@@ -28,6 +29,7 @@ CComplexStuffEntity::CComplexStuffEntity( const char* name, const char* defaultA
 				&mAnimator->getRootMatrix().getOrigin(), desc->getRenderPriority(0) );
 		CEffectParams& ep = rskin->getParams();
 		desc->fillFxParams( 0, ep );
+		ep.addVector3Ref( "vLightPos", mLightPos );
 		mMesh[i] = rskin;
 	}
 

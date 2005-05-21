@@ -26,6 +26,7 @@ public:
 
 	void	render( eRenderMode renderMode );
 	void	update( time_value timenow );
+	void	setLightPos( const SVector3& lpos ) { mLightPos = lpos; }
 
 	const SMatrix4x4& getWorldMatrix() const { return mAnimator->getRootMatrix(); }
 	SMatrix4x4& getWorldMatrix() { return mAnimator->getRootMatrix(); }
@@ -38,6 +39,7 @@ protected:
 	CRenderableSkin*		mMesh[RMCOUNT];
 	CCharacterAnimator*		mAnimator;
 	CSkinUpdater*			mSkinUpdater;
+	SVector3				mLightPos;
 };
 
 

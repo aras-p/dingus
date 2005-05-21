@@ -2,6 +2,9 @@
 #include "lib/structs.fx"
 #include "lib/skinning.fx"
 
+float3		vLightPos;
+
+
 texture		tBase;
 sampler2D	smpBase = sampler_state {
 	Texture = (tBase);

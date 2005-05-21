@@ -775,12 +775,14 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	
 	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall") );
+	mRenderables[RM_NORMAL]->getParams().addVector3( "vLightPos", LIGHT_POS_1 );
 	if( reflTextureID ) {
 		mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
 	}
 	
 	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wallNoRefl") );
+	mRenderables[RM_REFLECTED]->getParams().addVector3( "vLightPos", LIGHT_POS_1 );
 
 	mFadeInMesh = new CMeshEntity( "FadeInMesh", "billboard" );
 	if( reflTextureID ) {
@@ -869,6 +871,7 @@ void CWall3D::initPieces()
 	m.getAxisX() *= mWall2D.getSize().x * -1.01f;
 	m.getAxisY() *= mWall2D.getSize().y * 1.01f;
 	mFadeInMesh->mWorldMat = m;
+	mFadeInMesh->addLightToParams( LIGHT_POS_1 );
 	for( i = 0; i < RMCOUNT; ++i ) {
 		CRenderableMesh* r = mFadeInMesh->getRenderMesh(eRenderMode(i));
 		if( !r )
