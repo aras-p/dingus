@@ -68,8 +68,8 @@ const float SZ_QUAT_REL = 0.25f;
 #define RT_HALFRT "halfRT"
 #define RT_HALFZ "halfZ"
 // temp ones for blurring
-#define RT_HALF_TMP1 "reflTmp1"
-#define RT_HALF_TMP2 "reflTmp2"
+#define RT_QUAD_TMP1 "quadTmp1"
+#define RT_QUAD_TMP2 "quadTmp2"
 
 // small final reflection textures
 #define RT_REFL_PX "reflpx"
@@ -85,6 +85,9 @@ static const char* WALL_TEXS[CFACE_COUNT] = { RT_REFL_PX, RT_REFL_NX, RT_REFL_PY
 // DOF
 #define RT_DOF_1 "dof1"
 #define RT_DOF_2 "dof2"
+// temp ones for blurring
+#define RT_HALF_TMP1 "halfTmp1"
+#define RT_HALF_TMP2 "halfTmp2"
 
 
 #endif

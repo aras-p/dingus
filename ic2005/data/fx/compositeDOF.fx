@@ -45,14 +45,13 @@ half4 psMain20( SPosTex3 i ) : COLOR
 	half3 cblur1 = tex2D( smpBlur1, i.uv[1] ).rgb;
 	half3 cblur2 = tex2D( smpBlur2, i.uv[2] ).rgb;
 
-	half a;
-	if( ca > 0.5 )
-		a = saturate( ca * 0.25 + 0.75 );
-	else
-		a = saturate( ca * 1.5 );
-	half factor = saturate( ca * 1.5 - 0.75 );
+	half a = (ca*2-1) * ((ca>0.5) ? 0.15 : 0.75);
+	a += 0.75;
+	half factor = saturate( (ca*2-1) * 0.75 );
+
 	half3 blur = lerp( cblur1, cblur2, factor );
 	half3 col = lerp( cbase, blur, a );
+
 	return half4( col, 1 );
 }
 
@@ -63,14 +62,10 @@ technique tec20 {
 
 		ZEnable = False;
 		ZWriteEnable = False;
-		//AlphaBlendEnable = True;
-		//SrcBlend = SrcAlpha;
-		//DestBlend = InvSrcAlpha;
 	}
 	pass PLast {
 		ZEnable = True;
 		ZWriteEnable = True;
-		//AlphaBlendEnable = False;
 		Texture[0] = NULL;
 		Texture[1] = NULL;
 	}

@@ -3,7 +3,7 @@
 #include "DemoResources.h"
 
 
-CPostProcess::CPostProcess( const char* ridTemp1, const char* ridTemp2 )
+CPostProcess::CPostProcess( const char* ridTemp1, const char* ridTemp2/*, const char* ridDownSmp*/ )
 {
 	mTempRids[0] = ridTemp1;
 	mTempRids[1] = ridTemp2;
@@ -19,6 +19,13 @@ CPostProcess::CPostProcess( const char* ridTemp1, const char* ridTemp2 )
 	}
 	mBloomPingPongs[0]->getParams().addTexture( "tBase", *RGET_S_TEX(ridTemp1) );
 	mBloomPingPongs[1]->getParams().addTexture( "tBase", *RGET_S_TEX(ridTemp2) );
+
+	/*
+	{
+		mDownsample4 = new CRenderableMesh( *RGET_MESH("billboard"), 0 );
+		CEffectParams& ep = 
+	}
+	*/
 }
 
 CPostProcess::~CPostProcess()

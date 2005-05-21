@@ -1,6 +1,7 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
 #include "lib/commonWalls.fx"
+#include "lib/dof.fx"
 
 float3 vLightPos;
 
@@ -10,12 +11,13 @@ SPosColTexp vsMain( SPosN i ) {
 	o.pos = mul( i.pos, mViewProj );
 	o.uvp = mul( i.pos, mShadowProj );
 	o.color = gWallLight( i.pos.xyz, i.normal*2-1, vLightPos );
+	o.uvp.z = gCameraDepth( i.pos.xyz );
 	return o;
 }
 
 half4 psMain( SPosColTexp i ) : COLOR {
 	half3 col = tex2Dproj( smpShadow, i.uvp ) * i.color;
-	return half4( col, 1 );
+	return half4( col, gBluriness(i.uvp.z) );
 }
 
 

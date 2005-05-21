@@ -142,6 +142,7 @@ SMatrix4x4		gCameraViewProjMatrix;
 SMatrix4x4		gViewTexProjMatrix;
 SPlane			gReflPlane;
 CPostProcess*	gPPReflBlur;
+CPostProcess*	gPPDofBlur;
 
 
 int		gWallVertCount, gWallTriCount;
@@ -347,7 +348,7 @@ void gRenderWallReflections( CScene& scene )
 		IDirect3DSurface9* surf;
 		RGET_S_TEX(WALL_TEXS[currWall])->getObject()->GetSurfaceLevel( 0, &surf );
 		//dx.getDevice().StretchRect( RGET_S_SURF(RT_REFLRT)->getObject(), NULL, surf, NULL, dx.getCaps().getStretchFilter() );
-		dx.getDevice().StretchRect( RGET_S_SURF(RT_HALF_TMP1)->getObject(), NULL, surf, NULL, dx.getCaps().getStretchFilter() );
+		dx.getDevice().StretchRect( RGET_S_SURF(RT_QUAD_TMP1)->getObject(), NULL, surf, NULL, dx.getCaps().getStretchFilter() );
 		surf->Release();
 	}
 
@@ -374,9 +375,9 @@ static void gRenderDOF()
 	);
 
 	// blur 1st phase
-	gPPReflBlur->downsampleRT( *RGET_S_SURF(RT_FULLSCREEN)->getObject() );
+	gPPDofBlur->downsampleRT( *RGET_S_SURF(RT_FULLSCREEN)->getObject() );
 	dx.getStateManager().SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
-	gPPReflBlur->pingPongBlur( BLUR_PASSES_1 );
+	gPPDofBlur->pingPongBlur( BLUR_PASSES_1 );
 	
 	dx.getDevice().StretchRect(
 		RGET_S_SURF( !(BLUR_PASSES_1&1) ? RT_HALF_TMP1 : RT_HALF_TMP2 )->getObject(), NULL,
@@ -385,7 +386,7 @@ static void gRenderDOF()
 	);
 
 	// blur 2nd phase
-	gPPReflBlur->pingPongBlur( BLUR_PASSES_2, BLUR_PASSES_1 );
+	gPPDofBlur->pingPongBlur( BLUR_PASSES_2, BLUR_PASSES_1 );
 	dx.getDevice().StretchRect(
 		RGET_S_SURF( !(BLUR_PASSES&1) ? RT_HALF_TMP1 : RT_HALF_TMP2 )->getObject(), NULL,
 		RGET_S_SURF(RT_DOF_2)->getObject(), NULL,
@@ -469,22 +470,33 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// reflections
 	if( !gNoPixelShaders ) {
 		ITextureCreator* rtcreatDofRT = new CScreenBasedTextureCreator(
-			SZ_QUAT_REL, SZ_QUAT_REL, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+			SZ_HALF_REL, SZ_HALF_REL, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
 
 		ISurfaceCreator* rtcreatReflRT = new CScreenBasedSurfaceCreator(
 			SZ_HALF_REL, SZ_HALF_REL, false, D3DFMT_A8R8G8B8, false );
 		ISurfaceCreator* rtcreatReflZ = new CScreenBasedSurfaceCreator(
 			SZ_HALF_REL, SZ_HALF_REL, true, D3DFMT_D16, false );
-		ITextureCreator* rtcreatReflBlur = new CScreenBasedTextureCreator(
+		
+		ITextureCreator* rtcreat2th = new CScreenBasedTextureCreator(
+			SZ_HALF_REL, SZ_HALF_REL, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+		ITextureCreator* rtcreat4th = new CScreenBasedTextureCreator(
 			SZ_QUAT_REL, SZ_QUAT_REL, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
-		stb.registerTexture( RT_REFL_PX, *rtcreatReflBlur );
-		stb.registerTexture( RT_REFL_NX, *rtcreatReflBlur );
-		stb.registerTexture( RT_REFL_PY, *rtcreatReflBlur );
-		stb.registerTexture( RT_REFL_NY, *rtcreatReflBlur );
-		stb.registerTexture( RT_REFL_PZ, *rtcreatReflBlur );
-		stb.registerTexture( RT_REFL_NZ, *rtcreatReflBlur );
-		stb.registerTexture( RT_HALF_TMP1, *rtcreatReflBlur );
-		stb.registerTexture( RT_HALF_TMP2, *rtcreatReflBlur );
+
+		stb.registerTexture( RT_REFL_PX, *rtcreat4th );
+		stb.registerTexture( RT_REFL_NX, *rtcreat4th );
+		stb.registerTexture( RT_REFL_PY, *rtcreat4th );
+		stb.registerTexture( RT_REFL_NY, *rtcreat4th );
+		stb.registerTexture( RT_REFL_PZ, *rtcreat4th );
+		stb.registerTexture( RT_REFL_NZ, *rtcreat4th );
+
+		stb.registerTexture( RT_HALF_TMP1, *rtcreat2th );
+		stb.registerTexture( RT_HALF_TMP2, *rtcreat2th );
+		stb.registerTexture( RT_QUAD_TMP1, *rtcreat4th );
+		stb.registerTexture( RT_QUAD_TMP2, *rtcreat4th );
+		ssb.registerSurface( RT_HALF_TMP1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_HALF_TMP1),0)) );
+		ssb.registerSurface( RT_HALF_TMP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_HALF_TMP2),0)) );
+		ssb.registerSurface( RT_QUAD_TMP1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_QUAD_TMP1),0)) );
+		ssb.registerSurface( RT_QUAD_TMP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_QUAD_TMP2),0)) );
 
 		stb.registerTexture( RT_DOF_1, *rtcreatDofRT );
 		stb.registerTexture( RT_DOF_2, *rtcreatDofRT );
@@ -493,8 +505,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 		ssb.registerSurface( RT_HALFRT, *rtcreatReflRT );
 		ssb.registerSurface( RT_HALFZ, *rtcreatReflZ );
-		ssb.registerSurface( RT_HALF_TMP1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_HALF_TMP1),0)) );
-		ssb.registerSurface( RT_HALF_TMP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_HALF_TMP2),0)) );
 	}
 
 	// --------------------------------
@@ -540,7 +550,9 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	if( !gNoPixelShaders ) {
 		// post processes
-		gPPReflBlur = new CPostProcess( RT_HALF_TMP1, RT_HALF_TMP2 );
+		gPPReflBlur = new CPostProcess( RT_QUAD_TMP1, RT_QUAD_TMP2 );
+		gPPDofBlur = new CPostProcess( RT_HALF_TMP1, RT_HALF_TMP2 );
+
 		// gauss X shadowmap -> shadowblur
 		gQuadGaussX = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
 		gQuadGaussX->getParams().setEffect( *RGET_FX("filterGaussX") );
@@ -858,6 +870,8 @@ void CDemo::shutdown()
 
 	safeDelete( gUIDlg );
 	safeDelete( gPPReflBlur );
+	safeDelete( gPPDofBlur );
+	
 	delete gSceneMain;
 	delete gSceneScroller;
 	delete gSceneInt;

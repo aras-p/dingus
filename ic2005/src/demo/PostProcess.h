@@ -6,7 +6,7 @@
 
 class CPostProcess {
 public:
-	CPostProcess( const char* ridTemp1, const char* ridTemp2 );
+	CPostProcess( const char* ridTemp1, const char* ridTemp2/*, const char* ridDownSmp*/ );
 	~CPostProcess();
 	
 	// down-samples into temp1
@@ -21,6 +21,8 @@ private:
 	SVector4			mFixUVs4th;
 	SVector4			mTexelOffsetsX;
 	SVector4			mTexelOffsetsY;
+
+	//CRenderableMesh*	mDownsample4;
 };
 
 

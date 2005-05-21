@@ -1,6 +1,7 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
 #include "lib/skinning.fx"
+#include "lib/dof.fx"
 
 float3		vLightPos;
 
@@ -33,15 +34,20 @@ struct SOutput {
 	float4 tolight	: COLOR0;		// skin space
 	float4 toview	: COLOR1;		// skin space
 	float2 uv		: TEXCOORD0;
+	float  z		: TEXCOORD1;
 };
 
 SOutput vsMain0( SInput0 i ) {
+	SOutput o;
+	
 	// compensate for lack of UBYTE4 on Geforce3
 	o.pos.w = 1;
 	int4 indices = D3DCOLORtoUBYTE4( i.indices );
 	float4x3 skin = mSkin[indices[0]];
 
 	o.pos.xyz = mul( i.pos, skin ); // world pos
+
+	o.z = gCameraDepth( o.pos.xyz );
 
 	float3x3 skinT = transpose( (float3x3)skin );
 
@@ -61,7 +67,6 @@ SOutput vsMain0( SInput0 i ) {
 }
 
 half4 psMain( SOutput i ) : COLOR {
-	return 0;
 	// sample normal+AO map
 	half4 normalAO = tex2D( smpNormalAO, i.uv );
 	half3 normal = normalAO.rgb*2-1;
@@ -84,7 +89,7 @@ half4 psMain( SOutput i ) : COLOR {
 
 	col *= colChar;
 
-	return half4( col, 1 );
+	return half4( col, gBluriness(i.z) );
 }
 
 

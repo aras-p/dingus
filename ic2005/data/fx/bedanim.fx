@@ -2,6 +2,7 @@
 #include "lib/structs.fx"
 #include "lib/skinning.fx"
 #include "lib/commonWalls.fx"
+#include "lib/dof.fx"
 
 float3 vLightPos;
 
@@ -25,7 +26,10 @@ SPosColTexp vsMain0( SInput0 i ) {
 	o.pos.xyz = mul( i.pos, skin ); // world pos
 	float3 n = mul( i.normal*2-1, (float3x3)skin );
 
+
 	o.uvp = mul( o.pos, mShadowProj );
+	o.uvp.z = gCameraDepth( o.pos.xyz );
+
 	o.color = gWallLight( o.pos.xyz, n, vLightPos );
 	o.pos = mul( o.pos, mViewProj );
 
@@ -34,7 +38,7 @@ SPosColTexp vsMain0( SInput0 i ) {
 
 half4 psMain( SPosColTexp i ) : COLOR {
 	half3 col = tex2Dproj( smpShadow, i.uvp ) * i.color;
-	return half4( col, 1 );
+	return half4( col, gBluriness(i.uvp.z) );
 }
 
 technique tec20

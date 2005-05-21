@@ -224,7 +224,7 @@ void CSceneMain::animateCamera()
 	// DOF
 	const SVector3 toFocus = dofPos - getCamera().mWorldMat.getOrigin();
 	const float dofDist = toFocus.dot( getCamera().mWorldMat.getAxisZ() );
-	const float dofRange = dofScale * 0.5f;
+	const float dofRange = dofScale * 0.8f;
 	gDOFParams.set( dofDist, 1.0f / dofRange, 0.0f );
 }
 
