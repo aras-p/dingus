@@ -49,7 +49,8 @@ static const float BLUR_BEGIN_FRAMES = 90;
 static const float BLUR_END_FRAMES = 150;
 static const float BLUR_END_START = 120;
 static const float WHITE_BEGIN_FRAMES = 30;
-static const float WHITE_END_FRAMES = 120;
+static const float WHITE_END1_FRAMES = 30;
+static const float WHITE_END2_FRAMES = 120;
 
 
 const float CSceneMain::EXTRA_FRAMES = 15.5f * ANIM_FPS;
@@ -262,7 +263,8 @@ void CSceneMain::animateCamera()
 
 	float dofColor = 0.0f;
 	dofColor = max( dofColor, clamp( 1-mCurrAnimFrame/WHITE_BEGIN_FRAMES ) );
-	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_END_FRAMES-EXTRA_FRAMES)/WHITE_END_FRAMES ) );
+	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_END1_FRAMES)/WHITE_END1_FRAMES ) * 0.4f );
+	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_END2_FRAMES-EXTRA_FRAMES)/WHITE_END2_FRAMES ) );
 	dofColor *= dofColor; // quadratic
 
 	gSetDOFBlurBias( dofBias );
@@ -446,25 +448,62 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 	if( mCurrAnimFrame >= mAnimFrameCount ) {
 		float poetryFrame = mCurrAnimFrame - mAnimFrameCount;
 
-		const int POETRY_COUNT = 4;
+		const int POETRY_COUNT = 6;
 		static const char* POETRY[POETRY_COUNT] = {
-			"be free to discover",
-			"yourself, your time and the world around you",
+			"Be free to discover",
+			"Yourself,",
+			"your time",
+			"and the world around you",
 			"",
-			"dissolve the boundaries",
+			"Dissolve the boundaries",
+		};
+		static const int POETRY_LINES[POETRY_COUNT] = {
+			0,
+			1,
+			1,
+			1,
+			2,
+			3,
+		};
+		static const int POETRY_X[POETRY_COUNT] = {
+			0,
+			0,
+			105,
+			220,
+			0,
+			0,
+		};
+		static const int POETRY_FONT[POETRY_COUNT] = {
+			4,
+			1,
+			1,
+			1,
+			1,
+			4,
 		};
 
-		// trys tie per kableli vienoj eilutej. vienas po kito atsiranda
+		const int LINES_Y = 130;
+		const int LINE_HEIGHT = 40;
+		const int LINES_X = 60;
 
-		textElem.fontIdx = 1;
-		textElem.textFormat = DT_CENTER | DT_TOP | DT_NOCLIP;
+		textElem.textFormat = DT_LEFT | DT_TOP | DT_NOCLIP;
 		textRC.left = GUI_X*0.2f;
-		textRC.right = GUI_X*0.9f;
+		textRC.right = GUI_X*0.8f;
 		textRC.bottom = GUI_Y;
 		textElem.colorFont.current = 0xFF202020;
 
+		const float framesPerLine = EXTRA_FRAMES / (POETRY_COUNT+2);
+
 		for( int i = 0; i < POETRY_COUNT; ++i ) {
-			textRC.top = GUI_Y/(POETRY_COUNT+6)*(i+3);
+			textElem.fontIdx = POETRY_FONT[i];
+			float alpha = clamp( (poetryFrame-framesPerLine*i)/framesPerLine );
+			float endFadeMul = clamp( (EXTRA_FRAMES-poetryFrame-framesPerLine/2)/framesPerLine );
+			alpha *= endFadeMul;
+			textElem.colorFont.current.a = alpha;
+
+			
+			textRC.top = LINES_Y + POETRY_LINES[i] * LINE_HEIGHT;
+			textRC.left = LINES_X + POETRY_X[i];
 			dlg.drawText( POETRY[i], &textElem, &textRC, false );
 		}
 	}

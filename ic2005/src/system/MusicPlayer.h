@@ -10,7 +10,7 @@ void	update();
 void	play( const char* fileName, bool loop );
 void	setVolume( float volume );
 float	getTime();
-//void	setTime( float t );
+void	setTime( float t );
 float	getLength();
 
 };

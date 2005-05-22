@@ -6,7 +6,6 @@
 #include <dingus/math/MathUtils.h>
 
 
-
 // --------------------------------------------------------------------------
 
 const float CSceneScroller::SCROLLER_DURATION = 60; // seconds
@@ -56,7 +55,7 @@ CSceneScroller::CSceneScroller()
 	addAnimEntity( *mCharacter );
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
 
-	// preload anims
+	// load anims
 	mAnims.push_back( RGET_ANIM("ScrollerClock") );
 	mAnims.push_back( RGET_ANIM("ScrollerDance") );
 	mAnims.push_back( RGET_ANIM("ScrollerFly") );

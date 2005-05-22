@@ -556,6 +556,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setFont( 1, "Verdana", 24, FW_BOLD );
 	gUIDlg->setFont( 2, "Verdana", 20, FW_NORMAL );
 	gUIDlg->setFont( 3, "Verdana", 16, FW_NORMAL );
+	gUIDlg->setFont( 4, "Verdana", 32, FW_BOLD );
 
 	gSetupGUI();
 	gUIDlg->setRenderCallback( gUIRenderCallback );
@@ -606,6 +607,12 @@ void CDemo::initialize( IDingusAppContext& appContext )
 // Perform code (main loop)
 
 
+static void	gStartScroller()
+{
+	music::play( "data/sound/ic2005loop.ogg", true );
+	gSceneScroller->start( gDemoTimer.getTime() );
+}
+
 
 bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
@@ -636,6 +643,12 @@ static float	gInputTargetRotpeed = 0.0f;
 static bool		gInputAttack = false;
 
 
+static void gAdjustTime( float dt )
+{
+	gDemoTimer.update( time_value::fromsec(dt) );
+	music::setTime( gDemoTimer.getTimeS() );
+}
+
 void CDemo::onInputEvent( const CInputEvent& event )
 {
 	time_value animTime = gDemoTimer.getTime();
@@ -664,7 +677,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 				++gCurScene;
 				gCurScene %= SCENECOUNT;
 				if( gCurScene == SCENE_SCROLLER )
-					gSceneScroller->start( gDemoTimer.getTime() );
+					gStartScroller();
 			}
 			break;
 		case DIK_SPACE:
@@ -694,25 +707,25 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			break;
 
 		case DIK_1:
-			gDemoTimer.update( time_value::fromsec(-dt*10) );
+			gAdjustTime( -dt*10 );
 			break;
 		case DIK_2:
-			gDemoTimer.update( time_value::fromsec(-dt*2) );
+			gAdjustTime( -dt*2 );
 			break;
 		case DIK_3:
-			gDemoTimer.update( time_value::fromsec(-dt) );
+			gAdjustTime( -dt );
 			break;
 		case DIK_4:
-			gDemoTimer.update( time_value::fromsec(-dt*0.8f) );
+			gAdjustTime( -dt*0.8f );
 			break;
 		case DIK_5:
-			gDemoTimer.update( time_value::fromsec(dt*4) );
+			gAdjustTime( dt*4 );
 			break;
 		case DIK_6:
-			gDemoTimer.update( time_value::fromsec(dt*20) );
+			gAdjustTime( dt*20 );
 			break;
 		case DIK_7:
-			gDemoTimer.update( time_value::fromsec(dt*100) );
+			gAdjustTime( dt*100 );
 			break;
 		}
 	}
@@ -751,7 +764,7 @@ void CDemo::perform()
 	if( firstPerform || gPaused ) {
 		if( firstPerform ) {
 			// start music
-			music::play( "data/sound/ic2005.mp3", false );
+			music::play( "data/sound/ic2005sound.ogg", false );
 		}
 		dt = 0.0;
 		firstPerform = false;
@@ -851,11 +864,13 @@ void CDemo::perform()
 	// manage scene transitions
 	if( gCurScene == SCENE_MAIN && gSceneMain->isEnded() ) { 
 		gCurScene = SCENE_SCROLLER;
-		gSceneScroller->start( demoTime );
+		gStartScroller();
 	}
 	else if( gCurScene == SCENE_SCROLLER && gSceneScroller->isEnded() ) {
 		gFinished = true;
 	}
+
+	music::update();
 }
 
 
