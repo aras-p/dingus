@@ -28,6 +28,7 @@ namespace wall_phys {
 	void	shutdown();
 
 	void	spawnPiece( int lodIndex, int wallID, int index, bool longLived );
+	void	clearPieces();
 
 	void	update();
 

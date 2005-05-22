@@ -22,6 +22,8 @@ CODE
 - Glow; render extra brightness to alpha
 
 
+* Go to interactive mode when scroller ends
+* Clear pieces when entering interactive mode
 * Fade out physics pieces
 * Fracture out whole ceiling, drop pieces
 * Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)

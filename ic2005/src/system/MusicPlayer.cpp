@@ -73,7 +73,7 @@ void music::update()
 	// if we're playing looped music, fade in/out at ends
 	float volume = 1.0f;
 	if( gSoundLooped ) {
-		const float LOOP_FADE_TIME = 0.5f;
+		const float LOOP_FADE_TIME = 0.75f;
 
 		float t = getTime();
 

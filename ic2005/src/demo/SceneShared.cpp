@@ -248,3 +248,8 @@ void CSceneSharedStuff::fractureSphere( float demoTimeS, const SVector3& pos, fl
 	}
 }
 
+void CSceneSharedStuff::clearPieces()
+{
+	wall_phys::clearPieces();
+}
+

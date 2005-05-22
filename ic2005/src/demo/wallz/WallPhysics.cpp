@@ -187,6 +187,11 @@ void wall_phys::spawnPiece( int lodIndex, int wallID, int index, bool longLived 
 	pieces.push_back( p );
 }
 
+void wall_phys::clearPieces()
+{
+	stl_utils::wipe( pieces );
+}
+
 
 void wall_phys::update()
 {

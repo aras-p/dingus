@@ -867,7 +867,8 @@ void CDemo::perform()
 		gStartScroller();
 	}
 	else if( gCurScene == SCENE_SCROLLER && gSceneScroller->isEnded() ) {
-		gFinished = true;
+		gCurScene = SCENE_INTERACTIVE;
+		gSceneInt->start( demoTime );
 	}
 
 	music::update();

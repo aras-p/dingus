@@ -19,6 +19,8 @@ public:
 	virtual void	update( time_value demoTime, float dt );
 	virtual void	render( eRenderMode renderMode );
 	virtual const SMatrix4x4* getLightTargetMatrix() const;
+	
+	void	start( time_value demoTime );
 
 	void	processInput( float mov, float rot, bool attack, time_value demoTime );
 

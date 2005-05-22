@@ -35,6 +35,12 @@ CSceneInteractive::~CSceneInteractive()
 }
 
 
+void CSceneInteractive::start( time_value demoTime )
+{
+	mSharedStuff->clearPieces();
+}
+
+
 void CSceneInteractive::update( time_value demoTime, float dt )
 {
 	mSharedStuff->updatePhysics();

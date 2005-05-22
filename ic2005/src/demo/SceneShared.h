@@ -28,6 +28,7 @@ public:
 
 	float	intersectRay( const SLine3& ray ) const;
 	void	fractureSphere( float demoTimeS, const SVector3& pos, float radius );
+	void	clearPieces();
 
 private:
 	CCameraEntity	mWallCamera;
