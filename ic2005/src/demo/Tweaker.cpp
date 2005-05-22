@@ -97,6 +97,8 @@ void CALLBACK dlgCallback( UINT evt, int ctrlID, CUIControl* ctrl )
 
 void tweaker::init()
 {
+	options.apply();
+
 	visible = false;
 
 	dialog = new CUIDialog();

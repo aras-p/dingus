@@ -96,8 +96,6 @@ static void	gSetupGUI()
 {
 	gUIDlg->addStatic( 0, "", 3, 480-UIHLAB-1, 500, UIHLAB, false, &gUILabFPS );
 	gUIDlg->enableNonUserEvents( true );
-
-	tweaker::init();
 }
 
 
@@ -463,6 +461,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// render targets
 
+	tweaker::init();
+
 	// shadow maps
 	if( !gNoPixelShaders ) {
 		ITextureCreator* shadowT = new CFixedTextureCreator(
@@ -691,6 +691,8 @@ void CDemo::onInputEvent( const CInputEvent& event )
 				gCurScene %= SCENECOUNT;
 				if( gCurScene == SCENE_SCROLLER )
 					gStartScroller();
+				else if( gCurScene == SCENE_INTERACTIVE )
+					gStartInteractiveMode();
 			}
 			break;
 		case DIK_SPACE:

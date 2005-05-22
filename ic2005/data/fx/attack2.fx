@@ -46,7 +46,7 @@ SOutput vsMain( SInput i ) {
 
 	o.pos = mul( o.pos, mViewProj );
 
-	o.uv = i.uv*4 + float2(fTime,0);
+	o.uv = i.uv*4 + float2(fTime*3,fTime);
 	return o;
 }
 
