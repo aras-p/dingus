@@ -11,6 +11,7 @@ CODE
 + Blur in/out in several places
 + Attack effects
 . Test on various hardware
+. Benchmark mode!
 . Tweak character lighting
 . Shadows for other guys (needed?)
 . Loading screen
@@ -22,7 +23,7 @@ CODE
 - Glow; render extra brightness to alpha
 
 
-* Go to interactive mode when scroller ends
+* Go to interactive mode when scroller ends or space is pressed
 * Clear pieces when entering interactive mode
 * Fade out physics pieces
 * Fracture out whole ceiling, drop pieces

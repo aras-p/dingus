@@ -611,6 +611,15 @@ static void	gStartScroller()
 {
 	music::play( "data/sound/ic2005loop.ogg", true );
 	gSceneScroller->start( gDemoTimer.getTime() );
+	gCurScene = SCENE_SCROLLER;
+}
+
+static void	gStartInteractiveMode()
+{
+	if( gCurScene != SCENE_SCROLLER )
+		music::play( "data/sound/ic2005loop.ogg", true );
+	gSceneInt->start( gDemoTimer.getTime() );
+	gCurScene = SCENE_INTERACTIVE;
 }
 
 
@@ -684,6 +693,8 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
 				if( gCurScene == SCENE_INTERACTIVE ) {
 					gInputAttack = true;
+				} else {
+					gStartInteractiveMode();
 				}
 			}
 			break;
@@ -863,12 +874,10 @@ void CDemo::perform()
 
 	// manage scene transitions
 	if( gCurScene == SCENE_MAIN && gSceneMain->isEnded() ) { 
-		gCurScene = SCENE_SCROLLER;
 		gStartScroller();
 	}
 	else if( gCurScene == SCENE_SCROLLER && gSceneScroller->isEnded() ) {
-		gCurScene = SCENE_INTERACTIVE;
-		gSceneInt->start( demoTime );
+		gStartInteractiveMode();
 	}
 
 	music::update();
