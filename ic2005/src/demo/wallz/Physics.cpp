@@ -177,7 +177,7 @@ void physics::initialize( float updDT, float grav, const SVector3& boundMin, con
 	dWorldSetAutoDisableSteps( world, 20 );
 	dWorldSetAutoDisableTime( world, 0.3f );
 	dWorldSetAutoDisableLinearThreshold( world, 0.3f );
-	dWorldSetAutoDisableAngularThreshold( world, 0.3f );
+	dWorldSetAutoDisableAngularThreshold( world, 0.4f );
 }
 
 

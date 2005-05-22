@@ -17,7 +17,6 @@ technique tec11
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_1_1 psMain();
-		FVF = Xyz;
 	}
 	pass PLast {
 	}

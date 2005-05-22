@@ -137,7 +137,7 @@ void CWallPiece3D::preRender( int& vbcount, int& ibcount ) const
 	ibcount = mIB.size();
 }
 
-void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
+void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount, BYTE alpha ) const
 {
 	int i;
 	
@@ -149,7 +149,9 @@ void CWallPiece3D::render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned 
 		D3DXVec3TransformCoord( &p, &srcVB->p, &matrix );
 		D3DXVec3TransformNormal( &n, &srcVB->n, &matrix );
 		vb->p = p;
-		vb->diffuse = gVectorToColor( n );
+		DWORD ncol = gVectorToColor( n );
+		ncol |= (alpha<<24);
+		vb->diffuse = ncol;
 		++srcVB;
 		++vb;
 	}

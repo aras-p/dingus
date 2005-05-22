@@ -11,17 +11,19 @@ float3		vLightPos;
 
 #ifdef WALL_NCOL
 	#define WALL_INPUT SPosCol
-	#define WALL_N (i.color.xyz*2-1)
+	#define WALL_N (i.color.xyz)
+	#define WALL_A (i.color.w)
 #else
 	#define WALL_INPUT SPosN
-	#define WALL_N (i.normal*2-1)
+	#define WALL_N (i.normal)
+	#define WALL_A 1.0
 #endif
 
 
 #if defined(WALL_SH2REFL)
 	struct SOutput {
 		float4 pos		: POSITION;
-		half3  n 		: COLOR0;
+		half4  na 		: COLOR0;
 		half3  tol 		: COLOR1;
 		float4 uvp[3]	: TEXCOORD0;
 	};
@@ -32,7 +34,7 @@ float3		vLightPos;
 #elif defined(WALL_SHADOW) && defined(WALL_REFL)
 	struct SOutput {
 		float4 pos		: POSITION;
-		half3  n 		: COLOR0;
+		half4  na 		: COLOR0;
 		half3  tol 		: COLOR1;
 		float4 uvp[2]	: TEXCOORD0;
 	};
@@ -42,7 +44,7 @@ float3		vLightPos;
 #elif defined(WALL_SHADOW) || defined(WALL_REFL)
 	struct SOutput {
 		float4 pos		: POSITION;
-		half3  n 		: COLOR0;
+		half4  na 		: COLOR0;
 		half3  tol 		: COLOR1;
 		float4 uvp		: TEXCOORD0;
 	};
@@ -52,7 +54,7 @@ float3		vLightPos;
 #else
 	struct SOutput {
 		float4 pos		: POSITION;
-		half3  n 		: COLOR0;
+		half4  na 		: COLOR0;
 		half3  tol 		: COLOR1;
 	#ifdef WALL_DOF
 		float  z		: TEXCOORD0;
@@ -95,16 +97,19 @@ SOutput vsMain( WALL_INPUT i ) {
 #endif
 
 	// pass lighting to pixel shader
-	o.n = WALL_N*0.5+0.5;
+	o.na.xyz = WALL_N;
+	o.na.w = WALL_A;
+
 	float3 tolight = normalize( vLightPos - i.pos.xyz );
 	o.tol = tolight*0.5+0.5;
+
 	return o;
 }
 
 
 half4 psMain( SOutput i ) : COLOR {
 	// lighting
-	half3 n = i.n*2-1;
+	half3 n = i.na.xyz*2-1;
 	half3 tol = normalize( i.tol*2-1 );
 	half l = gWallLightPS( n, tol );
 	half4 col = l;
@@ -126,15 +131,62 @@ half4 psMain( SOutput i ) : COLOR {
 
 	half4 color = col;
 
-#ifdef WALL_DOF
-	color.a = gBluriness( i.WALL_DOFCRD );
+#ifdef WALL_ALPHA
+	color.a = i.na.w;
+#else
+	#ifdef WALL_DOF
+		color.a = gBluriness( i.WALL_DOFCRD );
+	#endif
 #endif
 
 	return color;
 }
 
 
-technique tec0
+#ifdef WALL_ALPHA
+#ifdef WALL_DOF
+half4 psMainA( SOutput i ) : COLOR {
+	return half4( 1, 1, 1, gBluriness( i.WALL_DOFCRD ) );
+}
+#endif
+#endif
+
+
+#ifdef WALL_ALPHA
+
+technique tec20
+{
+	// blend
+	pass P0 {
+		VertexShader = compile vs_1_1 vsMain();
+		PixelShader = compile ps_2_0 psMain();
+
+		AlphaBlendEnable = True;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ColorWriteEnable = Red | Green | Blue;
+	}
+
+	// dof alpha
+#ifdef WALL_DOF
+	pass P1 {
+		VertexShader = compile vs_1_1 vsMain();
+		PixelShader = compile ps_2_0 psMainA();
+
+		AlphaBlendEnable = False;
+		ColorWriteEnable = Alpha;
+	}
+#endif
+
+	pass PLast {
+		Texture[0] = NULL;
+		ColorWriteEnable = Red | Green | Blue | Alpha;
+	}
+}
+
+#else
+
+technique tec20
 {
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
@@ -145,30 +197,4 @@ technique tec0
 	}
 }
 
-
-
-SPosCol vsMainFFP( WALL_INPUT i ) {
-	SPosCol o;
-	o.pos = mul( i.pos, mViewProj );
-	o.color = gWallLight( i.pos.xyz, WALL_N, vLightPos );
-	return o;
-}
-
-
-technique tecFFP
-{
-	pass P0 {
-		VertexShader = compile vs_1_1 vsMainFFP();
-		PixelShader = NULL;
-
-		ColorOp[0] = SelectArg1;
-		ColorArg1[0] = Diffuse;
-		AlphaOp[0] = SelectArg1;
-		AlphaArg1[0] = Diffuse;
-
-		ColorOp[1] = Disable;
-		AlphaOp[1] = Disable;
-	}
-	pass PLast {
-	}
-}
+#endif

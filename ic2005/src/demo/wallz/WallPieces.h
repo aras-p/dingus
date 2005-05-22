@@ -24,7 +24,6 @@ class CMeshEntity;
 
 
 typedef SVertexXyzDiffuse TPieceVertex;
-static const DWORD WALL_VERTEX_FVF = FVF_XYZ_DIFFUSE;
 
 
 static DWORD gVectorToColor( const SVector3& v ) {
@@ -109,7 +108,7 @@ public:
 public:
 	void	init( const CWall3D& w, int idx );
 	void	preRender( int& vbcount, int& ibcount ) const;
-	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const;
+	void	render( const SMatrix4x4& matrix, TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount, BYTE alpha ) const;
 
 	const TVertexVector& getVB() const { return mVB; }
 	const TIntVector& getIB() const { return mIB; }

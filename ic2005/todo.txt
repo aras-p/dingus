@@ -4,7 +4,6 @@
 
 CODE
 
-. Sink/fade physics pieces
 + Scene poetry at the end
 + Blur in/out in several places
 + Attack effects
@@ -21,6 +20,7 @@ CODE
 
 + Interactive mode (waiting for attack fx meshes/anims)
 
+* Fade out physics pieces
 * Fracture out whole ceiling, drop pieces
 * Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 * Play/fadein/fadeout interactive mode music for scroller/intmode.

@@ -94,7 +94,7 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 				walls[j]->fracturePiecesInSphere( t, ep.pos, ep.radius, pieces, ep.restoreAfter, ep.restoreDur, ep.restoreAfter<0 );
 				int npc = pieces.size();
 				for( int k = 0; k < npc; ++k ) {
-					wall_phys::spawnPiece( lodIndex, j, pieces[k] );
+					wall_phys::spawnPiece( lodIndex, j, pieces[k], ep.restoreAfter<0 );
 				}
 			}
 		}
@@ -112,7 +112,7 @@ void gUpdateFractureScenario( double frame, double t, int lodIndex, CWall3D** wa
 				walls[j]->fracturePiecesInYRange( t, ep.y1, ep.y2, pieces );
 				int npc = pieces.size();
 				for( int k = 0; k < npc; ++k ) {
-					wall_phys::spawnPiece( lodIndex, j, pieces[k] );
+					wall_phys::spawnPiece( lodIndex, j, pieces[k], true );
 				}
 			}
 		}

@@ -377,6 +377,10 @@ SOURCE=.\data\fx\casterSimple.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\casterSimpleA.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\compositeDOF.fx
 # End Source File
 # Begin Source File
@@ -438,6 +442,10 @@ SOURCE=.\data\fx\wall_DnR.fx
 # Begin Source File
 
 SOURCE=.\data\fx\wall_DnS.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\wall_DnSA.fx
 # End Source File
 # Begin Source File
 

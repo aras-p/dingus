@@ -243,7 +243,7 @@ void CSceneSharedStuff::fractureSphere( float demoTimeS, const SVector3& pos, fl
 			demoTimeS, pos, radius, pieces, 10.0f, 1.0f, false );
 		int npc = pieces.size();
 		for( int k = 0; k < npc; ++k ) {
-			wall_phys::spawnPiece( LOD_IDX, i, pieces[k] );
+			wall_phys::spawnPiece( LOD_IDX, i, pieces[k], false );
 		}
 	}
 }

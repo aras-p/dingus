@@ -29,7 +29,7 @@ namespace {
 	// Piece in physics
 	class CPhysPiece : public physics::CPhysObject {
 	public:
-		CPhysPiece( const CWallPiece3D& rpiece );
+		CPhysPiece( const CWallPiece3D& rpiece, bool longLived );
 		~CPhysPiece();
 
 		/// @return false if already dead
@@ -67,10 +67,10 @@ namespace {
 // --------------------------------------------------------------------------
 
 
-CPhysPiece::CPhysPiece( const CWallPiece3D& rpiece )
+CPhysPiece::CPhysPiece( const CWallPiece3D& rpiece, bool longLived )
 :	physics::CPhysObject( rpiece.getMatrix(), rpiece.getSize() )
 ,	mRestPiece( &rpiece )
-,	mTimeLeft( gRandom.getFloat(5.0f,25.0f) )
+,	mTimeLeft( longLived ? 60.0f : gRandom.getFloat(5.0f,25.0f) )
 {
 	mMatrix = rpiece.getMatrix();
 }
@@ -94,13 +94,20 @@ bool CPhysPiece::update()
 
 void CPhysPiece::preRender( int& vbcount, int& ibcount ) const
 {
+	const float FADE_TIME = 1.0f;
 	mRestPiece->preRender( vbcount, ibcount );
 }
 
 
 void CPhysPiece::render( TPieceVertex* vb, unsigned short* ib, int baseIndex, int& vbcount, int& ibcount ) const
 {
-	mRestPiece->render( mMatrix, vb, ib, baseIndex, vbcount, ibcount );
+	const float FADE_TIME = 2.0f;
+	BYTE alpha = 255;
+	if( mTimeLeft < FADE_TIME ) {
+		float a = mTimeLeft/FADE_TIME;
+		alpha = int(a*255.0f);
+	}
+	mRestPiece->render( mMatrix, vb, ib, baseIndex, vbcount, ibcount, alpha );
 }
 
 
@@ -113,10 +120,11 @@ void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector
 	for( int i = 0; i < RMCOUNT; ++i )
 		renderables[i] = NULL;
 
-	renderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
-	renderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall_DnS") );
-	renderables[RM_CASTERSIMPLE] = new CRenderableIndexedBuffer( NULL, 0 );
-	renderables[RM_CASTERSIMPLE]->getParams().setEffect( *RGET_FX("casterSimple") );
+	renderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 1 );
+	renderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall_DnSA") );
+	renderables[RM_NORMAL]->getParams().addVector3( "vLightPos", LIGHT_POS_1 );
+	renderables[RM_CASTERSIMPLE] = new CRenderableIndexedBuffer( NULL, 1 );
+	renderables[RM_CASTERSIMPLE]->getParams().setEffect( *RGET_FX("casterSimpleA") );
 	
 	updateDT = updDT;
 
@@ -161,10 +169,10 @@ void wall_phys::shutdown()
 }
 
 
-void wall_phys::spawnPiece( int lodIndex, int wallID, int index )
+void wall_phys::spawnPiece( int lodIndex, int wallID, int index, bool longLived )
 {
 	// if we have lots of pieces by now, spawn less!
-	if( lastActivePieceCount > 500 ) {
+	if( lastActivePieceCount > 400 ) {
 		if( gRandom.getUInt()&3 )
 			return;
 	} else if( lastActivePieceCount > 200 ) {
@@ -175,7 +183,7 @@ void wall_phys::spawnPiece( int lodIndex, int wallID, int index )
 	assert( lodIndex >= 0 && lodIndex < MAX_LODS );
 	assert( wallID >= 0 && wallID < walls[lodIndex].size() );
 	assert( walls[lodIndex][wallID] );
-	CPhysPiece* p = new CPhysPiece( walls[lodIndex][wallID]->getPieces3D()[index] );
+	CPhysPiece* p = new CPhysPiece( walls[lodIndex][wallID]->getPieces3D()[index], longLived );
 	pieces.push_back( p );
 }
 
