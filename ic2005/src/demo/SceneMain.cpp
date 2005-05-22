@@ -437,15 +437,15 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 	if( mCurrAnimFrame >= mAnimFrameCount ) {
 		float poetryFrame = mCurrAnimFrame - mAnimFrameCount;
 
-		const int POETRY_COUNT = 6;
+		const int POETRY_COUNT = 4;
 		static const char* POETRY[POETRY_COUNT] = {
 			"be free to discover",
-			"yourself",
-			"your time",
-			"and the world around you",
+			"yourself, your time and the world around you",
 			"",
-			"break the boundaries",
+			"dissolve the boundaries",
 		};
+
+		// trys tie per kableli vienoj eilutej. vienas po kito atsiranda
 
 		textElem.fontIdx = 1;
 		textElem.textFormat = DT_CENTER | DT_TOP | DT_NOCLIP;

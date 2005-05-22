@@ -46,18 +46,18 @@ SOutput vsMain( SInput i ) {
 
 	o.pos = mul( o.pos, mViewProj );
 
-	o.uv = i.uv*2 + float2(fTime,0);
+	o.uv = i.uv*4 + float2(fTime,0);
 	return o;
 }
 
 half4 psMain1( SOutput i ) : COLOR {
 	half4 col = tex2D( smpBase, i.uv );
-	col *= i.color.a * 0.1;
+	col *= i.color.a * 0.20;
 	return col;
 }
 
 half4 psMain2( SOutput i ) : COLOR {
-	float3 COLOR = float3(0.05,0.4,0.7);
+	float3 COLOR = float3(0.4,0.45,1.0);
 	half4 col = tex2D( smpBase, i.uv );
 	return col * half4( COLOR, i.color.a * 0.5 );
 }
