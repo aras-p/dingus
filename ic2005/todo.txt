@@ -1,24 +1,26 @@
 . = todo
 + = in progress / not fully finished
 * = done
+- = will be cut :)
 
 CODE
 
+. Interactive mode tweak UI
++ Interactive mode (waiting for attack fx meshes/anims)
 + Scene poetry at the end
 + Blur in/out in several places
 + Attack effects
-. Take time source from music?
+. Test on various hardware
 . Tweak character lighting
 . Shadows for other guys (needed?)
-. Glow; render extra brightness to alpha
-. Fresnel for reflections?
 . Loading screen
-. Reflections into single RT, with stencil/Z masks for fast culling
+. Fresnel for reflections?
+. Take time source from music?
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?
-. Interactive mode tweak UI
+. Reflections into single RT, with stencil/Z masks for fast culling
+- Glow; render extra brightness to alpha
 
-+ Interactive mode (waiting for attack fx meshes/anims)
 
 * Fade out physics pieces
 * Fracture out whole ceiling, drop pieces
