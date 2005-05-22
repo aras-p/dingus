@@ -287,6 +287,14 @@ SOURCE=.\src\demo\ThirdPersonCamera.cpp
 
 SOURCE=.\src\demo\ThirdPersonCamera.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\Tweaker.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\Tweaker.h
+# End Source File
 # End Group
 # Begin Group "system"
 

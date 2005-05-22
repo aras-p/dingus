@@ -6,7 +6,6 @@ technique tec0 {
 	pass P0 {
 		AlphaBlendEnable = False;
 		CullMode = <iCull>;
-		FillMode = <iFill>;
 		ZFunc = LessEqual;
 	}
 	pass PLast {

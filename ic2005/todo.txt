@@ -5,7 +5,7 @@
 
 CODE
 
-. Interactive mode tweak UI
++ Demo tweak UI
 + Interactive mode (waiting for attack fx meshes/anims)
 + Scene poetry at the end
 + Blur in/out in several places
@@ -60,6 +60,7 @@ CODE
 
 ART
 
+. Tweak attack effect animations
 . (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
 
 + nvdxt all textures, experiment with mip filters

@@ -5,6 +5,8 @@
 #include "SceneShared.h"
 #include <dingus/math/Line3.h>
 #include <dingus/utils/Random.h>
+#include <dingus/gfx/gui/Gui.h>
+
 
 // --------------------------------------------------------------------------
 
@@ -35,7 +37,7 @@ CSceneInteractive::~CSceneInteractive()
 }
 
 
-void CSceneInteractive::start( time_value demoTime )
+void CSceneInteractive::start( time_value demoTime, CUIDialog& dlg )
 {
 	mSharedStuff->clearPieces();
 }

@@ -10,6 +10,7 @@
 #include "SceneScroller.h"
 #include "SceneInteractive.h"
 #include "SceneShared.h"
+#include "Tweaker.h"
 #include "../system/MusicPlayer.h"
 
 #include <dingus/gfx/DebugRenderer.h>
@@ -35,7 +36,6 @@ const char* RMODE_PREFIX[RMCOUNT] = {
 CDebugRenderer*	gDebugRenderer;
 
 int			gGlobalCullMode;	// global cull mode
-int			gGlobalFillMode;	// global fill mode
 SVector4	gScreenFixUVs;		// UV fixes for fullscreen quads
 float		gTimeParam;			// time parameter for effects
 
@@ -96,6 +96,8 @@ static void	gSetupGUI()
 {
 	gUIDlg->addStatic( 0, "", 3, 480-UIHLAB-1, 500, UIHLAB, false, &gUILabFPS );
 	gUIDlg->enableNonUserEvents( true );
+
+	tweaker::init();
 }
 
 
@@ -533,9 +535,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// common params
 
 	gGlobalCullMode = D3DCULL_CW;
-	gGlobalFillMode = D3DFILL_SOLID;
 	G_RENDERCTX->getGlobalParams().addIntRef( "iCull", &gGlobalCullMode );
-	G_RENDERCTX->getGlobalParams().addIntRef( "iFill", &gGlobalFillMode );
 	G_RENDERCTX->getGlobalParams().addFloatRef( "fTime", &gTimeParam );
 
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mViewTexProj", gViewTexProjMatrix );
@@ -618,7 +618,7 @@ static void	gStartInteractiveMode()
 {
 	if( gCurScene != SCENE_SCROLLER )
 		music::play( "data/sound/ic2005loop.ogg", true );
-	gSceneInt->start( gDemoTimer.getTime() );
+	gSceneInt->start( gDemoTimer.getTime(), *gUIDlg );
 	gCurScene = SCENE_INTERACTIVE;
 }
 
@@ -629,6 +629,10 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 		return false;
 
 	bool done = false;
+
+	if( tweaker::isVisible() ) {
+		return tweaker::getDlg().msgProc( hwnd, msg, wparam, lparam );
+	}
 
 	done = gUIDlg->msgProc( hwnd, msg, wparam, lparam );
 	if( done )
@@ -698,6 +702,15 @@ void CDemo::onInputEvent( const CInputEvent& event )
 				}
 			}
 			break;
+		case DIK_F3:
+			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
+				// show tweaker UI
+				if( !tweaker::isVisible() ) {
+					tweaker::show();
+				}
+			}
+			break;
+
 		case DIK_LEFT:
 			if( gCurScene == SCENE_INTERACTIVE )
 				gInputTargetRotpeed -= 3.0f;
@@ -824,6 +837,12 @@ void CDemo::perform()
 	);
 	gUILabFPS->setText( buf );
 
+	// rendering options
+	const tweaker::SOptions& options = tweaker::getOptions();
+
+	// use solid fill to render shadows/reflections - faster!
+	dx.getStateManager().SetRenderState( D3DRS_FILLMODE, D3DFILL_SOLID );
+
 	curScene->getCamera().setOntoRenderContext();
 	gCameraViewProjMatrix = G_RENDERCTX->getCamera().getViewProjMatrix();
 	
@@ -834,6 +853,9 @@ void CDemo::perform()
 		// render wall reflections
 		gRenderWallReflections( *curScene );
 	}
+
+	// set fill mode from options
+	dx.getStateManager().SetRenderState( D3DRS_FILLMODE, options.wireframe ? D3DFILL_WIREFRAME : D3DFILL_SOLID );
 
 	curScene->getCamera().setOntoRenderContext();
 	gfx::textureProjectionWorld( gCameraViewProjMatrix, 1000.0f, 1000.0f, gViewTexProjMatrix );
@@ -849,11 +871,15 @@ void CDemo::perform()
 	dx.sceneEnd();
 
 	// DOF
-	gRenderDOF();
+	if( options.dof )
+		gRenderDOF();
 
 	// render GUI
 	dx.sceneBegin();
 	gUIDlg->onRender( dt );
+	if( tweaker::isVisible() ) {
+		tweaker::getDlg().onRender( dt );
+	}
 	dx.sceneEnd();
 
 
@@ -895,6 +921,7 @@ void CDemo::shutdown()
 
 	delete gDebugRenderer;
 
+	tweaker::shutdown();
 	safeDelete( gUIDlg );
 	safeDelete( gPPReflBlur );
 	safeDelete( gPPDofBlur );
