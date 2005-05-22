@@ -20,8 +20,12 @@ enum eRenderMode {
 extern const char* RMODE_PREFIX[RMCOUNT];
 extern bool		gNoPixelShaders;
 extern SPlane	gReflPlane;
+
 extern float	gCharTimeBlend;
-extern SVector3	gDOFParams;
+
+extern SVector4	gDOFParams;
+void	gSetDOFBlurBias( float blur );
+
 
 
 enum eCubeFaces {

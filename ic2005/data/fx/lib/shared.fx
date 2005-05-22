@@ -19,7 +19,7 @@ shared float4x4	mProjection;
 shared float4x4	mViewProj;
 shared float3	vEye;
 
-shared float3	vDOF; // x=focalDist, y=1/focalRange, z=blurBias
+shared float4	vDOF; // x=focalDist, y=1/focalRange, z=blurBias, w=colorfade
 
 
 // --------------------------------------------------------------------------

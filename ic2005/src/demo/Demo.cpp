@@ -128,7 +128,33 @@ bool			gPaused = false;
 //bool			gSimpleShadows = false;
 
 float		gCharTimeBlend;
-SVector3	gDOFParams;
+SVector4	gDOFParams;
+int			gDOFPasses1 = 1;
+int			gDOFPasses2 = 2;
+float		gDOFSpreadMult = 1.0f;
+
+void	gSetDOFBlurBias( float blur )
+{
+	gDOFPasses1 = 1;
+	gDOFPasses2 = 2;
+	gDOFSpreadMult = 1.0f + blur*3.0f;
+	if( blur > 0.2f ) {
+		gDOFSpreadMult *= 3.0f / 4.0f;
+		++gDOFPasses2;
+	}
+	if( blur > 0.4f ) {
+		gDOFSpreadMult *= 4.0f / 5.0f;
+		++gDOFPasses2;
+	}
+	if( blur > 0.6f ) {
+		gDOFSpreadMult *= 5.0f / 6.0f;
+		++gDOFPasses2;
+	}
+	if( blur > 0.8f ) {
+		gDOFSpreadMult *= 6.0f / 7.0f;
+		++gDOFPasses2;
+	}
+}
 
 
 
@@ -361,8 +387,8 @@ void gRenderWallReflections( CScene& scene )
 
 static void gRenderDOF()
 {
-	const int BLUR_PASSES_1 = 1;
-	const int BLUR_PASSES_2 = 2;
+	const int BLUR_PASSES_1 = gDOFPasses1;
+	const int BLUR_PASSES_2 = gDOFPasses2;
 	const int BLUR_PASSES = BLUR_PASSES_1 + BLUR_PASSES_2;
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
@@ -377,7 +403,7 @@ static void gRenderDOF()
 	// blur 1st phase
 	gPPDofBlur->downsampleRT( *RGET_S_SURF(RT_FULLSCREEN)->getObject() );
 	dx.getStateManager().SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
-	gPPDofBlur->pingPongBlur( BLUR_PASSES_1 );
+	gPPDofBlur->pingPongBlur( BLUR_PASSES_1, 0, gDOFSpreadMult );
 	
 	dx.getDevice().StretchRect(
 		RGET_S_SURF( !(BLUR_PASSES_1&1) ? RT_HALF_TMP1 : RT_HALF_TMP2 )->getObject(), NULL,
@@ -386,7 +412,7 @@ static void gRenderDOF()
 	);
 
 	// blur 2nd phase
-	gPPDofBlur->pingPongBlur( BLUR_PASSES_2, BLUR_PASSES_1 );
+	gPPDofBlur->pingPongBlur( BLUR_PASSES_2, BLUR_PASSES_1, gDOFSpreadMult );
 	dx.getDevice().StretchRect(
 		RGET_S_SURF( !(BLUR_PASSES&1) ? RT_HALF_TMP1 : RT_HALF_TMP2 )->getObject(), NULL,
 		RGET_S_SURF(RT_DOF_2)->getObject(), NULL,
@@ -521,7 +547,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj2", gSShadowProj2 );
 	G_RENDERCTX->getGlobalParams().addVector4Ref( "vScreenFixUV", gScreenFixUVs );
 	G_RENDERCTX->getGlobalParams().addFloatRef( "fCharTimeBlend", &gCharTimeBlend );
-	G_RENDERCTX->getGlobalParams().addVector3Ref( "vDOF", gDOFParams );
+	G_RENDERCTX->getGlobalParams().addVector4Ref( "vDOF", gDOFParams );
 
 	gDebugRenderer = new CDebugRenderer( *G_RENDERCTX, *RGET_FX("debug") );
 

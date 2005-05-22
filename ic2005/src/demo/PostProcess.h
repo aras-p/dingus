@@ -13,7 +13,7 @@ public:
 	void	downsampleRT( IDirect3DSurface9& rt );
 
 	// Ping-pong blurs between temp 1 and 2
-	void	pingPongBlur( int passes, int startPass = 0 );
+	void	pingPongBlur( int passes, int startPass = 0, float spreadMult = 1.0f );
 
 private:
 	std::string			mTempRids[2];

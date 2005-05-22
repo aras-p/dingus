@@ -4,7 +4,7 @@
 
 CODE
 
-. Blur in/out in several places
++ Blur in/out in several places
 . Play/fadein/fadeout interactive mode music for scroller/intmode.
 + Attack effects
 + Fracture out whole ceiling, drop fake pieces

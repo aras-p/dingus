@@ -46,11 +46,12 @@ half4 psMain20( SPosTex3 i ) : COLOR
 	half3 cblur2 = tex2D( smpBlur2, i.uv[2] ).rgb;
 
 	half a = (ca*2-1) * ((ca>0.5) ? 0.15 : 0.75);
-	a += 0.75;
-	half factor = saturate( (ca*2-1) * 0.75 );
+	a = saturate( a + 0.75 + vDOF.z );
+	half factor = saturate( (ca*2-1) * 0.75 + vDOF.z );
 
 	half3 blur = lerp( cblur1, cblur2, factor );
 	half3 col = lerp( cbase, blur, a );
+	col += vDOF.w;
 
 	return half4( col, 1 );
 }

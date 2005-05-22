@@ -79,8 +79,6 @@ CSceneScroller::CSceneScroller()
 		SQuaternion( -0.499555f, 0.501168f, 0.413188f, 0.573193f )
 	);
 	
-	// TBD: DOF: focus distance = 4.5853
-
 	// scroller
 	int sy = GUI_Y;
 	mScroller.push_back( STextLine( "in.out.side: the shell", 1, sy ) );
@@ -95,7 +93,7 @@ CSceneScroller::CSceneScroller()
 	mScroller.push_back( STextLine( "  Antanas 'AB' Balvocius", 2, sy ) );
 	mScroller.push_back( STextLine( "      animations, models, camera", 3, sy ) );
 	mScroller.push_back( STextLine( "  Raimundas 'mookid' Juska", 2, sy ) );
-	mScroller.push_back( STextLine( "      music and sound", 3, sy ) );
+	mScroller.push_back( STextLine( "      music and sound fx", 3, sy ) );
 	mScroller.push_back( STextLine( NULL, 2, sy ) );
 	mScroller.push_back( STextLine( "This demo features:", 2, sy ) );
 	mScroller.push_back( STextLine( NULL, 4, sy ) );

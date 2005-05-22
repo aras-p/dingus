@@ -34,7 +34,7 @@ CPostProcess::~CPostProcess()
 	delete mBloomPingPongs[1];
 }
 
-void CPostProcess::pingPongBlur( int passes, int startPass )
+void CPostProcess::pingPongBlur( int passes, int startPass, float spreadMult )
 {
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
@@ -57,7 +57,7 @@ void CPostProcess::pingPongBlur( int passes, int startPass )
 	const SVector4 offsetY( 1,-1,-1, 1);
 	for( int i = 0; i < passes; ++i ) {
 		int realPass = i + startPass;
-		const float pixDist = realPass+0.5f;
+		const float pixDist = (realPass*spreadMult+0.5f);
 		mTexelOffsetsX = offsetX * (mFixUVs4th.x*2 * pixDist);
 		mTexelOffsetsY = offsetY * (mFixUVs4th.y*2 * pixDist);
 		dx.setRenderTarget( pingPongS[realPass&1] );

@@ -34,7 +34,7 @@ half 	gBluriness( half depth )
 	half fromFocal = depth - vDOF.x;
 	if( fromFocal < 0 )
 		fromFocal *= 2;
-	return abs( fromFocal ) * vDOF.y + vDOF.z;
+	return abs( fromFocal ) * vDOF.y;
 }
 
 #endif

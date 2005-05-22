@@ -42,9 +42,9 @@ static const float TITLE_FRAMES = 150;
 static const float TITLE_FADE_FRAMES = 30;
 
 
-static const float BLUR_FRAMES = 60;
-static const float BLUR_FADE_FRAMES = 45;
-static const float BLUR_END_FRAMES = 45;
+static const float BLUR_BEGIN_FRAMES = 90;
+static const float BLUR_END_FRAMES = 90;
+static const float WHITE_FRAMES = 30;
 
 
 static const float EXTRA_TIME = 15.5f;
@@ -249,11 +249,18 @@ void CSceneMain::animateCamera()
 	const SVector3 toFocus = dofPos - getCamera().mWorldMat.getOrigin();
 	const float dofDist = toFocus.dot( getCamera().mWorldMat.getAxisZ() );
 	const float dofRange = dofScale * 1.2f;
+
 	float dofBias = 0.0f;
-	dofBias = max( dofBias, clamp( 1-(mCurrAnimFrame-BLUR_FRAMES)/BLUR_FADE_FRAMES ) );
+	dofBias = max( dofBias, clamp( 1-(mCurrAnimFrame)/BLUR_BEGIN_FRAMES ) );
 	dofBias = max( dofBias, clamp( (mCurrAnimFrame-mAnimFrameCount+BLUR_END_FRAMES)/BLUR_END_FRAMES ) );
 
-	gDOFParams.set( dofDist, 1.0f / dofRange, dofBias );
+	float dofColor = 0.0f;
+	dofColor = max( dofColor, clamp( 1-mCurrAnimFrame/WHITE_FRAMES ) );
+	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_FRAMES)/WHITE_FRAMES ) );
+	dofColor *= dofColor; // quadratic
+
+	gSetDOFBlurBias( dofBias );
+	gDOFParams.set( dofDist, 1.0f / dofRange, dofBias*2, dofColor );
 }
 
 
