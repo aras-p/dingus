@@ -37,6 +37,9 @@ static const float LIGHT_SWITCH_FRAME = 5402 + 800;
 static const float ATK2_BEGIN_FRAME = 3160 + 800;
 static const float ATK2_END_FRAME = 3230 + 800;
 
+static const float ATK3_BEGIN_FRAME = 3800 + 800;
+static const float ATK3_END_FRAME = 3960 + 800;
+
 
 static const float TITLE_FRAMES = 150;
 static const float TITLE_FADE_FRAMES = 30;
@@ -86,6 +89,8 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	addAnimEntity( *mAttack2_1 );
 	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", "AttackFx2" );
 	addAnimEntity( *mAttack2_2 );
+	mAttack3 = new CComplexStuffEntity( "AttackFx3", "AttackFx3" );
+	addAnimEntity( *mAttack3 );
 
 	// rooms
 	gReadScene( "data/scene.lua", mRoom );
@@ -306,6 +311,7 @@ void CSceneMain::update( time_value demoTime, float dt )
 	// attacks
 	animateLocally( *mAttack2_1, ATK2_BEGIN_FRAME, ATK2_END_FRAME );
 	animateLocally( *mAttack2_2, ATK2_BEGIN_FRAME, ATK2_END_FRAME );
+	animateLocally( *mAttack3, ATK3_BEGIN_FRAME, ATK3_END_FRAME );
 
 	// animate doors
 	{
@@ -402,6 +408,9 @@ void CSceneMain::render( eRenderMode renderMode )
 	if( mCurrAnimFrame > ATK2_BEGIN_FRAME && mCurrAnimFrame < ATK2_END_FRAME ) {
 		mAttack2_1->render( renderMode );
 		mAttack2_2->render( renderMode );
+	}
+	if( mCurrAnimFrame > ATK3_BEGIN_FRAME && mCurrAnimFrame < ATK3_END_FRAME ) {
+		mAttack3->render( renderMode );
 	}
 }
 

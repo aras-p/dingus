@@ -65,9 +65,10 @@ private:
 	CComplexStuffEntity*	mBedAnim;
 	CComplexStuffEntity*	mStone;
 
-	// attack fx
+	// attacks
 	CComplexStuffEntity*	mAttack2_1;
 	CComplexStuffEntity*	mAttack2_2;
+	CComplexStuffEntity*	mAttack3;
 
 	// room2
 	CMeshEntity*			mRoom2Top;
