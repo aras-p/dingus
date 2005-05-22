@@ -138,20 +138,16 @@ void	gSetDOFBlurBias( float blur )
 	gDOFPasses1 = 1;
 	gDOFPasses2 = 2;
 	gDOFSpreadMult = 1.0f + blur*3.0f;
-	if( blur > 0.2f ) {
+	if( blur > 0.25f ) {
 		gDOFSpreadMult *= 3.0f / 4.0f;
 		++gDOFPasses2;
 	}
-	if( blur > 0.4f ) {
+	if( blur > 0.5f ) {
 		gDOFSpreadMult *= 4.0f / 5.0f;
 		++gDOFPasses2;
 	}
-	if( blur > 0.6f ) {
+	if( blur > 0.75f ) {
 		gDOFSpreadMult *= 5.0f / 6.0f;
-		++gDOFPasses2;
-	}
-	if( blur > 0.8f ) {
-		gDOFSpreadMult *= 6.0f / 7.0f;
 		++gDOFPasses2;
 	}
 }

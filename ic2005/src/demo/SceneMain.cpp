@@ -43,11 +43,13 @@ static const float TITLE_FADE_FRAMES = 30;
 
 
 static const float BLUR_BEGIN_FRAMES = 90;
-static const float BLUR_END_FRAMES = 90;
-static const float WHITE_FRAMES = 30;
+static const float BLUR_END_FRAMES = 150;
+static const float BLUR_END_START = 120;
+static const float WHITE_BEGIN_FRAMES = 30;
+static const float WHITE_END_FRAMES = 120;
 
 
-static const float EXTRA_TIME = 15.5f;
+const float CSceneMain::EXTRA_FRAMES = 15.5f * ANIM_FPS;
 
 
 
@@ -57,7 +59,6 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 ,	mAnimDuration(0)
 ,	mCurrAnimFrame(0)
 ,	mCurrAnimAlpha(0)
-,	mExtraTimeLeft(EXTRA_TIME)
 {
 	// characters
 	mCharacter = new CComplexStuffEntity( "Bicas", "BicasAnim" );
@@ -252,11 +253,11 @@ void CSceneMain::animateCamera()
 
 	float dofBias = 0.0f;
 	dofBias = max( dofBias, clamp( 1-(mCurrAnimFrame)/BLUR_BEGIN_FRAMES ) );
-	dofBias = max( dofBias, clamp( (mCurrAnimFrame-mAnimFrameCount+BLUR_END_FRAMES)/BLUR_END_FRAMES ) );
+	dofBias = max( dofBias, clamp( (mCurrAnimFrame-mAnimFrameCount+BLUR_END_START)/BLUR_END_FRAMES ) );
 
 	float dofColor = 0.0f;
-	dofColor = max( dofColor, clamp( 1-mCurrAnimFrame/WHITE_FRAMES ) );
-	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_FRAMES)/WHITE_FRAMES ) );
+	dofColor = max( dofColor, clamp( 1-mCurrAnimFrame/WHITE_BEGIN_FRAMES ) );
+	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_END_FRAMES-EXTRA_FRAMES)/WHITE_END_FRAMES ) );
 	dofColor *= dofColor; // quadratic
 
 	gSetDOFBlurBias( dofBias );
@@ -413,22 +414,51 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 	textElem.textFormat = DT_RIGHT | DT_BOTTOM | DT_NOCLIP;
 	textElem.colorFont.current = 0xFF404040;
 
-	textElem.colorFont.current.a = clamp( 1-(mCurrAnimFrame-TITLE_FRAMES)/TITLE_FADE_FRAMES );
-
 	SFRect textRC;
+
+	// title at start
 	textRC.left = 0.1f * GUI_X;
 	textRC.right = GUI_X - 20;
 	textRC.top = 0.1f * GUI_Y;
 	textRC.bottom = GUI_Y - 20;
 
+	textElem.colorFont.current.a = clamp( 1-(mCurrAnimFrame-TITLE_FRAMES)/TITLE_FADE_FRAMES );
 	textElem.fontIdx = 1;
 	dlg.drawText( "in.out.side: the shell", &textElem, &textRC, false );
 
+	// "press space" during the demo
 	textElem.colorFont.current.a = (1 - textElem.colorFont.current.a)*0.5f;
 	textRC.right = GUI_X - 5;
 	textRC.bottom = GUI_Y - 5;
 	textElem.fontIdx = 0;
 	dlg.drawText( "press space to enter interactive mode", &textElem, &textRC, false );
+
+	// scene poetry at end
+	if( mCurrAnimFrame >= mAnimFrameCount ) {
+		float poetryFrame = mCurrAnimFrame - mAnimFrameCount;
+
+		const int POETRY_COUNT = 6;
+		static const char* POETRY[POETRY_COUNT] = {
+			"be free to discover",
+			"yourself",
+			"your time",
+			"and the world around you",
+			"",
+			"break the boundaries",
+		};
+
+		textElem.fontIdx = 1;
+		textElem.textFormat = DT_CENTER | DT_TOP | DT_NOCLIP;
+		textRC.left = GUI_X*0.2f;
+		textRC.right = GUI_X*0.9f;
+		textRC.bottom = GUI_Y;
+		textElem.colorFont.current = 0xFF202020;
+
+		for( int i = 0; i < POETRY_COUNT; ++i ) {
+			textRC.top = GUI_Y/(POETRY_COUNT+6)*(i+3);
+			dlg.drawText( POETRY[i], &textElem, &textRC, false );
+		}
+	}
 }
 
 const SMatrix4x4* CSceneMain::getLightTargetMatrix() const

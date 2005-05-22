@@ -11,7 +11,10 @@ namespace dingus {
 
 // --------------------------------------------------------------------------
 
+
 class CSceneMain : public CScene {
+public:
+	static const float EXTRA_FRAMES;
 public:
 	CSceneMain( CSceneSharedStuff* sharedStuff );
 	~CSceneMain();
@@ -20,7 +23,7 @@ public:
 	virtual void	render( eRenderMode renderMode );
 	virtual void	renderUI( CUIDialog& dlg );
 	virtual const SMatrix4x4* getLightTargetMatrix() const;
-	bool	isEnded() const { return mExtraTimeLeft <= 0.0; }
+	bool	isEnded() const { return mCurrAnimFrame >= mAnimFrameCount + EXTRA_FRAMES; }
 
 private:
 	void	animateCamera();
@@ -44,7 +47,6 @@ private:
 	double	mAnimDuration;
 	double	mCurrAnimFrame;
 	double	mCurrAnimAlpha;
-	float	mExtraTimeLeft;
 
 	// main character
 	CComplexStuffEntity*	mCharacter;

@@ -4,6 +4,7 @@
 
 CODE
 
++ Scene poetry at the end
 + Blur in/out in several places
 . Play/fadein/fadeout interactive mode music for scroller/intmode.
 + Attack effects
