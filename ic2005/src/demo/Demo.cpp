@@ -777,7 +777,7 @@ void CDemo::perform()
 		break;
 	case SCENE_SCROLLER:
 		curScene = gSceneScroller;
-		clearColor = 0xFFe0e0e0;
+		clearColor = 0x00e0e0e0;
 		break;
 	case SCENE_INTERACTIVE:
 		curScene = gSceneInt;
@@ -797,27 +797,6 @@ void CDemo::perform()
 	
 	
 	// FPS
-	/*
-	static float maxMsColl = 0;
-	static float maxMsPhys = 0;
-	static const int MAGIC_COUNT = 1550;
-	const wall_phys::SStats& stats = wall_phys::getStats();
-
-	if( stats.msColl > maxMsColl && stats.pieceCount < MAGIC_COUNT )
-		maxMsColl = stats.msColl;
-	if( stats.msPhys > maxMsPhys && stats.pieceCount < MAGIC_COUNT )
-		maxMsPhys = stats.msPhys;
-	sprintf( buf, "fps=%.1f  frame=%.1f  phys: c=%.1f (%.1f) p=%.1f (%.1f) u=%.1f ms  pieces: %i",
-		dx.getStats().getFPS(),
-		gCurrAnimFrame,
-		stats.msColl,
-		maxMsColl,
-		stats.msPhys,
-		maxMsPhys,
-		stats.msUpdate,
-		stats.pieceCount
-	);
-	*/
 	sprintf( buf, "fps=%.1f  time=%.1f (%.1f)",
 		dx.getStats().getFPS(),
 		demoTime.tosec(),
@@ -850,8 +829,7 @@ void CDemo::perform()
 	dx.sceneEnd();
 
 	// DOF
-	if( gCurScene != SCENE_SCROLLER )
-		gRenderDOF();
+	gRenderDOF();
 
 	// render GUI
 	dx.sceneBegin();

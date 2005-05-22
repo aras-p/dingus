@@ -3,6 +3,7 @@
 #include "ComplexStuffEntity.h"
 #include <time.h>
 #include <dingus/gfx/gui/Gui.h>
+#include <dingus/math/MathUtils.h>
 
 
 
@@ -162,6 +163,10 @@ void CSceneScroller::startScrollerAnim()
 }
 
 
+static const float BLUR_TIME = 30.0f / ANIM_FPS;
+static const float WHITE_TIME = 15.0f / ANIM_FPS;
+
+
 void CSceneScroller::update( time_value demoTime, float dt )
 {
 	// update camera projection
@@ -177,7 +182,23 @@ void CSceneScroller::update( time_value demoTime, float dt )
 	mPlayedTime = mLocalTime.tosec();
 	float dtFromTimer = (mLocalTime-oldLocalTime).tosec();
 
+	// dof/blur
+	const float FOCUS_DISTANCE = 4.5853f;
 
+	float dofBias = 0.0f;
+	dofBias = max( dofBias, clamp( 1-mPlayedTime/BLUR_TIME ) );
+	dofBias = max( dofBias, clamp( (mPlayedTime-SCROLLER_DURATION+BLUR_TIME)/BLUR_TIME ) );
+
+	float dofColor = 0.0f;
+	dofColor = max( dofColor, clamp( 1-mPlayedTime/WHITE_TIME ) );
+	dofColor = max( dofColor, clamp( (mPlayedTime-SCROLLER_DURATION+WHITE_TIME)/WHITE_TIME ) );
+	dofColor *= dofColor; // quadratic
+
+	gSetDOFBlurBias( dofBias );
+	gDOFParams.set( FOCUS_DISTANCE, 1.0f/3.0f, dofBias*2, dofColor );
+
+
+	// animations
 	if( mPlayedTime >= SCROLLER_DURATION - mByeAnimDuration + 2.0f ) {
 		// if we're ending, play bye anim
 		if( mCharacter->getAnimator().getCurrAnim() != mByeAnim ) {

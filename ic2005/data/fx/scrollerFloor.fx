@@ -32,7 +32,7 @@ SPosCol vsMainFFP( SPosNTex i ) {
 half4 psMain( SPosTexTexp i ) : COLOR {
 	half col = lerp( 1.1, 224.0/255.0, i.uv.x );
 	col *= tex2Dproj( smpShadow, i.uvp ).r;
-	return half4( col, col, col, 1 );
+	return half4( col, col, col, 0 );
 }
 
 
