@@ -109,6 +109,9 @@ half4 psMain( SOutput i ) : COLOR {
 	half l = gWallLightPS( n, tol );
 	half4 col = l;
 
+	// want more colours - uncomment this!
+	//col.rgb = cross( n.rgb, tol.rgb )*0.5+0.5;
+
 #ifdef WALL_SHADOW
 	half shadow = tex2Dproj( smpShadow, i.WALL_SHCRD ).r;
 	#ifdef WALL_SH2REFL

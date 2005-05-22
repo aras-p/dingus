@@ -774,27 +774,34 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	}
 	
 	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall_DnSR") );
+	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX( restoreTextureID ? "wall_DnSR" : "wall_DnR" ) );
 	mRenderables[RM_NORMAL]->getParams().addVector3( "vLightPos", LIGHT_POS_1 );
 	if( reflTextureID ) {
 		mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
 	}
 	
 	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
-	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX("wall_DnS") );
+	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX( restoreTextureID ? "wall_DnS" : "wall_Dn" ) );
 	mRenderables[RM_REFLECTED]->getParams().addVector3( "vLightPos", LIGHT_POS_1 );
 
-	mFadeInMesh = new CMeshEntity( "FadeInMesh", "billboard" );
-	if( reflTextureID ) {
-		mFadeInMesh->getRenderMesh( RM_NORMAL )->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
-	}
+	if( restoreTextureID ) {
+		mFadeInMesh = new CMeshEntity( "FadeInMesh", "billboard" );
+		if( reflTextureID ) {
+			mFadeInMesh->getRenderMesh( RM_NORMAL )->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
+		}
 
-	mResTimeGrid = new float[RESGRID_X*RESGRID_Y];
-	for( i = 0; i < RESGRID_X*RESGRID_Y; ++i ) {
-		mResTimeGrid[i] = -1.0f;
-	}
+		mResTimeGrid = new float[RESGRID_X*RESGRID_Y];
+		for( i = 0; i < RESGRID_X*RESGRID_Y; ++i ) {
+			mResTimeGrid[i] = -1.0f;
+		}
 
-	mRestoreTexture = RGET_S_TEX(restoreTextureID);
+		mRestoreTexture = RGET_S_TEX(restoreTextureID);
+
+	} else {
+		mFadeInMesh = NULL;
+		mResTimeGrid = NULL;
+		mRestoreTexture = NULL;
+	}
 }
 
 CWall3D::~CWall3D()
@@ -810,7 +817,7 @@ CWall3D::~CWall3D()
 	safeDeleteArray( mPieceRestoreTimes );
 
 	safeDeleteArray( mQuadtree );
-	delete[] mResTimeGrid;
+	safeDeleteArray( mResTimeGrid );
 }
 
 void CWall3D::initPieces()
@@ -864,20 +871,22 @@ void CWall3D::initPieces()
 	}
 
 	// init fade-in mesh
-	SMatrix4x4 m = mMatrix;
-	m.getOrigin() += m.getAxisX() * (mWall2D.getSize().x*0.5f);
-	m.getOrigin() += m.getAxisY() * (mWall2D.getSize().y*0.5f);
-	m.getOrigin() += m.getAxisZ() * (-HALF_THICK);
-	m.getAxisX() *= mWall2D.getSize().x * -1.01f;
-	m.getAxisY() *= mWall2D.getSize().y * 1.01f;
-	mFadeInMesh->mWorldMat = m;
-	mFadeInMesh->addLightToParams( LIGHT_POS_1 );
-	for( i = 0; i < RMCOUNT; ++i ) {
-		CRenderableMesh* r = mFadeInMesh->getRenderMesh(eRenderMode(i));
-		if( !r )
-			continue;
-		r->getParams().addVector3( "vNormal", m.getAxisZ() );
-		r->getParams().addTexture( "tAlpha", *mRestoreTexture );
+	if( mFadeInMesh ) {
+		SMatrix4x4 m = mMatrix;
+		m.getOrigin() += m.getAxisX() * (mWall2D.getSize().x*0.5f);
+		m.getOrigin() += m.getAxisY() * (mWall2D.getSize().y*0.5f);
+		m.getOrigin() += m.getAxisZ() * (-HALF_THICK);
+		m.getAxisX() *= mWall2D.getSize().x * -1.01f;
+		m.getAxisY() *= mWall2D.getSize().y * 1.01f;
+		mFadeInMesh->mWorldMat = m;
+		mFadeInMesh->addLightToParams( LIGHT_POS_1 );
+		for( i = 0; i < RMCOUNT; ++i ) {
+			CRenderableMesh* r = mFadeInMesh->getRenderMesh(eRenderMode(i));
+			if( !r )
+				continue;
+			r->getParams().addVector3( "vNormal", m.getAxisZ() );
+			r->getParams().addTexture( "tAlpha", *mRestoreTexture );
+		}
 	}
 
 	// init AABB
@@ -923,7 +932,7 @@ void CWall3D::fracturePiecesInSphere( float t, const SVector3& pos, float radius
 		return;
 
 	// remember restore times
-	if( !noRestore ) {
+	if( mResTimeGrid && !noRestore ) {
 		float rad = radius*2.0f;
 		float lx1 = (locPos.x - rad) / mWall2D.getSize().x * RESGRID_X;
 		float lx2 = (locPos.x + rad) / mWall2D.getSize().x * RESGRID_X;
@@ -1001,7 +1010,13 @@ void CWall3D::fracturePiecesInYRange( float t, float y1, float y2, TIntVector& p
 	for( int i = 0; i < n; ++i ) {
 		const CWallPiece2D& p = mWall2D.getPiece( i );
 		SVector2 c = p.getAABB().getCenter();
-		if( c.y >= y1 && c.y <= y2 ) {
+		float y = c.y;
+		if( mMatrix.getAxisY().y < 0.5f ) {
+			SVector3 wc;
+			D3DXVec3TransformCoord( &wc, &SVector3(c.x,c.y,0), &mMatrix );
+			y = wc.y;
+		}
+		if( y >= y1 && y <= y2 ) {
 			mPieceRestoreTimes[i] = pieceRestoreTime;
 			if( mFracturedPieces[i] )
 				continue;
@@ -1051,53 +1066,55 @@ void CWall3D::update( float t )
 		initPieces();
 
 	// update restoration texture
-	const float RESTORE_FADE_TIME = 0.2f;
+	if( mRestoreTexture ) {
+		const float RESTORE_FADE_TIME = 0.2f;
 
-	bool hadZeros = false;
-	bool had255s = false;
-	bool hadOthers = false;
+		bool hadZeros = false;
+		bool had255s = false;
+		bool hadOthers = false;
 
-	D3DLOCKED_RECT lr;
-	mRestoreTexture->getObject()->LockRect( 0, &lr, NULL, D3DLOCK_DISCARD );
+		D3DLOCKED_RECT lr;
+		mRestoreTexture->getObject()->LockRect( 0, &lr, NULL, D3DLOCK_DISCARD );
 
-	BYTE* texptr = (BYTE*)lr.pBits;
-	float* resval = mResTimeGrid;
-	for( int iy = 0; iy < RESGRID_Y; ++iy ) {
-		for( int ix = 0; ix < RESGRID_X; ++ix, ++resval ) {
-			BYTE v;
-			float rt = *resval;
-			if( rt < 0.0f ) {
-				v = 255;
-				hadZeros = true;
-			} else if( t <= rt - RESTORE_FADE_TIME ) {
-				v = 0;
-				hadZeros = true;
-			} else {
-				float alpha = (t-rt+RESTORE_FADE_TIME) / RESTORE_FADE_TIME;
-				if( alpha >= 1.0f ) {
-					// fully restored
+		BYTE* texptr = (BYTE*)lr.pBits;
+		float* resval = mResTimeGrid;
+		for( int iy = 0; iy < RESGRID_Y; ++iy ) {
+			for( int ix = 0; ix < RESGRID_X; ++ix, ++resval ) {
+				BYTE v;
+				float rt = *resval;
+				if( rt < 0.0f ) {
 					v = 255;
-					*resval = -1.0f;
-					had255s = true;
+					hadZeros = true;
+				} else if( t <= rt - RESTORE_FADE_TIME ) {
+					v = 0;
+					hadZeros = true;
 				} else {
-					v = int(alpha*255);
-					hadOthers = true;
+					float alpha = (t-rt+RESTORE_FADE_TIME) / RESTORE_FADE_TIME;
+					if( alpha >= 1.0f ) {
+						// fully restored
+						v = 255;
+						*resval = -1.0f;
+						had255s = true;
+					} else {
+						v = int(alpha*255);
+						hadOthers = true;
+					}
 				}
+				texptr[ix] = v;
 			}
-			texptr[ix] = v;
+			texptr += lr.Pitch;
 		}
-		texptr += lr.Pitch;
-	}
 
-	mRestoreTexture->getObject()->UnlockRect( 0 );
+		mRestoreTexture->getObject()->UnlockRect( 0 );
 
-	mNeedsRenderFadeMesh = (hadOthers) || (hadZeros && had255s);
+		mNeedsRenderFadeMesh = (hadOthers) || (hadZeros && had255s);
 
-	// restore needed pieces
-	int n = mWall2D.getPieceCount();
-	for( int i = 0; i < n; ++i ) {
-		if( mFracturedPieces[i] && t>=mPieceRestoreTimes[i] )
-			fractureInPiece( i );
+		// restore needed pieces
+		int n = mWall2D.getPieceCount();
+		for( int i = 0; i < n; ++i ) {
+			if( mFracturedPieces[i] && t>=mPieceRestoreTimes[i] )
+				fractureInPiece( i );
+		}
 	}
 }
 
@@ -1267,7 +1284,7 @@ bool CWall3D::renderIntoVB()
 
 void CWall3D::render( eRenderMode rm )
 {
-	if( mNeedsRenderFadeMesh )
+	if( mFadeInMesh && mNeedsRenderFadeMesh )
 		mFadeInMesh->render( rm );
 
 	CRenderable* r = mRenderables[rm];

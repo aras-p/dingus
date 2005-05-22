@@ -5,6 +5,7 @@
 #include <dingus/utils/CpuTimer.h>
 #include <dingus/utils/Random.h>
 #include <dingus/math/MathUtils.h>
+#include "../DemoResources.h"
 
 using namespace physics;
 
@@ -60,7 +61,16 @@ CPhysObject::CPhysObject( const SMatrix4x4& matrix, const SVector3& size )
 	dMassSetBoxTotal( &mass, 1.0f, size.x, size.y, size.z );
 	dBodySetMass( mObject, &mass );
 
-	SVector3 force( gRandom.getFloat(-100,100), gRandom.getFloat(-10,10), gRandom.getFloat(-100,100) );
+	//SVector3 force( gRandom.getFloat(-50,50), gRandom.getFloat(-50,50), gRandom.getFloat(30,40) );
+	// force to pull all inside the room
+	SVector3 towards = ROOM_MID - matrix.getOrigin();
+	towards.normalize();
+	
+	SVector3 force = towards * 70;
+	force.x += gRandom.getFloat(-50,50);
+	force.y += gRandom.getFloat(-50,50);
+	force.z += gRandom.getFloat(-50,50);
+
 	SVector3 fpos( gRandom.getFloat(-size.x,size.x), gRandom.getFloat(-size.y,size.y), gRandom.getFloat(-size.z,size.z) );
 	dBodyAddForceAtRelPos( mObject, force.x, force.y, force.z, fpos.x, fpos.y, fpos.z );
 }
@@ -84,6 +94,24 @@ void CPhysObject::update( SMatrix4x4& matrix )
 	const float AVEL_FACTOR = 0.94f;
 	const dReal* avel = dBodyGetAngularVel( mObject );
 	D3DXVECTOR3 newAVel( avel[0]*AVEL_FACTOR, avel[1]*AVEL_FACTOR, avel[2]*AVEL_FACTOR );
+
+	// if our velocities got small enough and we're still stuck in the air,
+	// apply random force
+	if( matrix.getOrigin().y > 0.4f ) {
+		const float lvelL = lvel[0]*lvel[0]+lvel[1]*lvel[1]+lvel[2]*lvel[2];
+		//const float avelL = avel[0]*avel[0]+avel[1]*avel[1]+avel[2]*avel[2];
+		if( lvelL < 0.3f*0.3f /*|| avelL < 0.5f*0.5f*/ ) {
+			SVector3 towards = ROOM_MID - matrix.getOrigin();
+			towards.normalize();
+			
+			SVector3 force = towards * 50;
+			force.x += gRandom.getFloat(-20,20);
+			force.y += gRandom.getFloat(-20,20);
+			force.z += gRandom.getFloat(-20,20);
+
+			dBodyAddForce( mObject, force.x, force.y, force.z );
+		}
+	}
 
 	// Also clamp angular velocity. Some light and elongated
 	// objects tend to spin very quickly at deep collisions, and for some
@@ -137,7 +165,7 @@ void physics::initialize( float updDT, float grav, const SVector3& boundMin, con
 	contacts = dJointGroupCreate( 0 );
 
 	dWorldSetGravity( world, 0, grav, 0 );
-	dWorldSetERP( world, 0.8f );
+	dWorldSetERP( world, 0.4f );
 	dWorldSetCFM( world, 1.0e-4f );
 
 	dWorldSetQuickStepNumIterations( world, 4 );
@@ -148,8 +176,8 @@ void physics::initialize( float updDT, float grav, const SVector3& boundMin, con
 	dWorldSetAutoDisableFlag( world, 1 );
 	dWorldSetAutoDisableSteps( world, 20 );
 	dWorldSetAutoDisableTime( world, 0.3f );
-	dWorldSetAutoDisableLinearThreshold( world, 0.5f );
-	dWorldSetAutoDisableAngularThreshold( world, 0.5f );
+	dWorldSetAutoDisableLinearThreshold( world, 0.3f );
+	dWorldSetAutoDisableAngularThreshold( world, 0.3f );
 }
 
 

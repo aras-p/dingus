@@ -36,6 +36,7 @@ CSceneSharedStuff::CSceneSharedStuff()
 	// walls
 	const float ELEM_SIZE1 = 0.1f;
 	const float ELEM_SIZE2 = 0.15f;
+	const float ELEM_SIZE3 = 0.3f;
 
 	CSharedTextureBundle& stb = CSharedTextureBundle::getInstance();
 	ITextureCreator* tcr = new CFixedTextureCreator(CWall3D::RESGRID_X,CWall3D::RESGRID_Y,1,D3DUSAGE_DYNAMIC,D3DFMT_A8,D3DPOOL_DEFAULT);
@@ -51,9 +52,11 @@ CSceneSharedStuff::CSceneSharedStuff()
 	mWalls[0][CFACE_NY] = NULL;
 	mWalls[0][CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE1, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PZ], WALL_RESTEXS[CFACE_PZ] );
 	mWalls[0][CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE1, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NZ], WALL_RESTEXS[CFACE_NZ] );
+	
 	mWalls[1][CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE2, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PX], WALL_RESTEXS[CFACE_PX] );
 	mWalls[1][CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE2, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NX], WALL_RESTEXS[CFACE_NX] );
-	mWalls[1][CFACE_PY] = NULL;
+	mWalls[1][CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE3, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PY], NULL );
+	//mWalls[1][CFACE_PY] = NULL;
 	mWalls[1][CFACE_NY] = NULL;
 	mWalls[1][CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE2, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PZ], WALL_RESTEXS[CFACE_PZ] );
 	mWalls[1][CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE2, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NZ], WALL_RESTEXS[CFACE_NZ] );
@@ -75,11 +78,15 @@ CSceneSharedStuff::CSceneSharedStuff()
 	mWalls[1][CFACE_NX]->setMatrix( wm );
 
 	SMatrix4x4 wallPYMat;
+	wallPYMat.identify();
 	wallPYMat.getAxisX().set( 1, 0, 0 );
 	wallPYMat.getAxisY().set( 0, 0, 1 );
 	wallPYMat.getAxisZ().set( 0, -1, 0 );
 	wallPYMat.getOrigin().set( ROOM_MIN.x, ROOM_MAX.y, ROOM_MIN.z );
+	mWalls[1][CFACE_PY]->setMatrix( wallPYMat );
+	
 	SMatrix4x4 wallNYMat;
+	wallNYMat.identify();
 	wallNYMat.getAxisX().set( 1, 0, 0 );
 	wallNYMat.getAxisY().set( 0, 0, -1 );
 	wallNYMat.getAxisZ().set( 0, 1, 0 );

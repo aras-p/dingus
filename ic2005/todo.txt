@@ -4,11 +4,10 @@
 
 CODE
 
+. Sink/fade physics pieces
 + Scene poetry at the end
 + Blur in/out in several places
 + Attack effects
-+ Fracture out whole ceiling, drop fake pieces
-. Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 . Take time source from music?
 . Tweak character lighting
 . Shadows for other guys (needed?)
@@ -22,6 +21,8 @@ CODE
 
 + Interactive mode (waiting for attack fx meshes/anims)
 
+* Fracture out whole ceiling, drop pieces
+* Fix physics glitches (pieces standing on thin sides, stuck to walls etc.)
 * Play/fadein/fadeout interactive mode music for scroller/intmode.
 * Time-blend character's texture
 * Separate light for 2nd room
@@ -38,7 +39,7 @@ CODE
 * Reflect bed
 * Restore walls (put back pieces, blend in wall)
 * Tweak first attack's positions (lower)
-* Fade out physics/bed/stone pieces
+* Fade out bed/stone pieces
 * Don't shadow ceiling
 * Floor/ceil doesn't fracture, replace by fixed meshes
 * Reflect outer room

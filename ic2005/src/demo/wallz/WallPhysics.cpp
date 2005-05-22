@@ -163,8 +163,11 @@ void wall_phys::shutdown()
 
 void wall_phys::spawnPiece( int lodIndex, int wallID, int index )
 {
-	// if we have lots of pieces by now, spawn them 2x less :)
-	if( lastActivePieceCount > 200 ) {
+	// if we have lots of pieces by now, spawn less!
+	if( lastActivePieceCount > 500 ) {
+		if( gRandom.getUInt()&3 )
+			return;
+	} else if( lastActivePieceCount > 200 ) {
 		if( gRandom.getUInt()&1 )
 			return;
 	}
