@@ -16,7 +16,6 @@ CODE
 . Tweak character lighting
 . Shadows for other guys (needed?)
 . Fresnel for reflections?
-. Take time source from music?
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?
 . Reflections into single RT, with stencil/Z masks for fast culling
@@ -38,6 +37,7 @@ ART
 RECENTLY DONE
 
 CODE
+* Take time source from music
 * Loading screen
 * Character's electricity effects
 * Go to interactive mode when scroller ends or space is pressed

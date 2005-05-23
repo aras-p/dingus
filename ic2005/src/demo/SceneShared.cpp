@@ -232,7 +232,6 @@ void CSceneSharedStuff::fractureSphere( float demoTimeS, const SVector3& pos, fl
 	TIntVector pieces;
 	const int LOD_IDX = 0;
 	
-	double t = CSystemTimer::getInstance().getTimeS();
 	for( int i = 0; i < CFACE_COUNT; ++i ) {
 		if( !mWalls[LOD_IDX][i] )
 			continue;

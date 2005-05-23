@@ -151,10 +151,10 @@ void CSceneInteractive::render( eRenderMode renderMode )
 }
 
 
-void CSceneInteractive::processInput( float mov, float rot, bool attack, time_value demoTime )
+void CSceneInteractive::processInput( float mov, float rot, bool attack, time_value demoTime, float dt )
 {
-	mCharacter->move( mov, demoTime );
-	mCharacter->rotate( rot );
+	mCharacter->move( mov, demoTime, dt );
+	mCharacter->rotate( rot, dt );
 	if( attack && mAttackStartTime.value < 0 ) {
 		mAttackIndex = mCharacter->attack( demoTime );
 		mAttackStartTime = demoTime + time_value::fromsec(0.5f);

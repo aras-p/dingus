@@ -11,8 +11,8 @@ public:
 	CControllableCharacter( float minX, float minZ, float maxX, float maxZ );
 	~CControllableCharacter();
 
-	void	move( float accel, time_value timenow );
-	void	rotate( float targetSpeed );
+	void	move( float accel, time_value timenow, float dt );
+	void	rotate( float targetSpeed, float dt );
 	int		attack( time_value timenow );
 	
 private:

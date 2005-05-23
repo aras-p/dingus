@@ -22,7 +22,7 @@ public:
 	
 	void	start( time_value demoTime, CUIDialog& dlg );
 
-	void	processInput( float mov, float rot, bool attack, time_value demoTime );
+	void	processInput( float mov, float rot, bool attack, time_value demoTime, float dt );
 
 private:
 	CSceneSharedStuff*	mSharedStuff;

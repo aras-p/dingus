@@ -14,13 +14,13 @@
 #include <dingus/input/DIMouse.h>
 
 
-const bool DEV_MODE = true;
+const bool DEV_MODE = false;
 
 
 SAppStartupParams CSystem::getStartupParams()
 {
 	SAppStartupParams sp;
-	sp.windowTitle = "Whatever";
+	sp.windowTitle = "in.out.side: the shell";
 	sp.dataPath = "data/";
 	sp.windowWidth = 640;
 	sp.windowHeight = 480;
@@ -40,9 +40,9 @@ SAppStartupParams CSystem::getStartupParams()
 
 IConsoleRenderingContext* CSystem::createStdConsoleCtx( HWND hwnd )
 {
-	//if( DEV_MODE )
-	//	return new CW32StdConsoleRenderingContext();
-	//else
+	if( DEV_MODE )
+		return new CW32StdConsoleRenderingContext();
+	else
 		return NULL;
 }
 

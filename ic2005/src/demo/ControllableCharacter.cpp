@@ -87,7 +87,7 @@ CControllableCharacter::CControllableCharacter( float minX, float minZ, float ma
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03c"), 0 ) );
 
 	getAnimator().setDefaultAnim( *mAnimsIdle[0].anim, mAnimsIdle[0].duration, 0.5f );
-	getAnimator().playDefaultAnim( CSystemTimer::getInstance().getTime() );
+	getAnimator().playDefaultAnim( time_value(0) );
 }
 
 
@@ -109,12 +109,11 @@ notes:
 
 */
 
-void	CControllableCharacter::move( float accel, time_value timenow )
+void	CControllableCharacter::move( float accel, time_value timenow, float dt )
 {
 	if( getAnimator().isPlayingOneShotAnim() )
 		return;
 
-	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 	if( accel == 0.0f || accel*mMoveVelocity < 0.0f )
 		mMoveVelocity = smoothCD( mMoveVelocity, 0.0f, mMoveAccel, 0.2f, dt );
 	mMoveVelocity += accel * dt;
@@ -208,12 +207,11 @@ void	CControllableCharacter::move( float accel, time_value timenow )
 	}
 }
 
-void	CControllableCharacter::rotate( float targetSpeed )
+void	CControllableCharacter::rotate( float targetSpeed, float dt )
 {
 	if( getAnimator().isPlayingOneShotAnim() )
 		targetSpeed *= 0.25f;
 
-	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 	if( targetSpeed == 0.0f )
 		mRotateVelocity = smoothCD( mRotateVelocity, 0.0f, mRotateAccel, 0.1f, dt );
 	else

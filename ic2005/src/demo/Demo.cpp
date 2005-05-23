@@ -60,11 +60,6 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 		errors.addError( "Pixel shaders 2.0 required" );
 		ok = false;
 	}
-	// need float textures...
-	//if( !caps.hasFloatTextures() ) {
-	//	errors.addError( "Floating point rendertargets are required" );
-	//	ok = false;
-	//}
 	
 	return ok;
 }
@@ -125,10 +120,9 @@ CSceneScroller*		gSceneScroller;
 int			gCurScene = SCENE_MAIN;
 
 
-// normally system timer, but controllable for debugging
+// normally music/system timer, but controllable for debugging
 CTimer			gDemoTimer;
 bool			gPaused = false;
-//bool			gSimpleShadows = false;
 
 float		gCharTimeBlend;
 SVector4	gDOFParams;
@@ -658,13 +652,12 @@ static bool		gInputAttack = false;
 
 static void gAdjustTime( float dt )
 {
-	gDemoTimer.update( time_value::fromsec(dt) );
-	music::setTime( gDemoTimer.getTimeS() );
+	music::setTime( music::getTime() + dt );
+	gDemoTimer.setTime( time_value::fromsec( music::getTime() + dt ) );
 }
 
 void CDemo::onInputEvent( const CInputEvent& event )
 {
-	time_value animTime = gDemoTimer.getTime();
 	static bool shiftPressed = false;
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 
@@ -763,7 +756,7 @@ void CDemo::onInputStage()
 {
 	if( gCurScene == SCENE_INTERACTIVE ) {
 		time_value animTime = gDemoTimer.getTime();
-		gSceneInt->processInput( gInputTargetMoveSpeed, gInputTargetRotpeed, gInputAttack, animTime );
+		gSceneInt->processInput( gInputTargetMoveSpeed, gInputTargetRotpeed, gInputAttack, animTime, gDemoTimer.getDeltaTimeS() );
 	}
 
 
@@ -820,8 +813,18 @@ void CDemo::perform()
 		dt = 0.0;
 		firstPerform = false;
 	} else {
-		dt = CSystemTimer::getInstance().getDeltaTimeS();
-		gDemoTimer.update( CSystemTimer::getInstance().getDeltaTime() );
+
+		if( gCurScene == SCENE_MAIN ) {
+			// during main demo, 100% synchronize to music
+			float t = music::getTime();
+			gDemoTimer.setTime( time_value::fromsec( t ) );
+			dt = gDemoTimer.getDeltaTimeS();
+			//CConsole::getChannel("system") << "music time: " << t << " demo time: " << gDemoTimer.getTimeS() << endl;
+		} else {
+			// during other parts, take time from system timer
+			dt = CSystemTimer::getInstance().getDeltaTimeS();
+			gDemoTimer.update( CSystemTimer::getInstance().getDeltaTime() );
+		}
 	}
 	time_value demoTime = gDemoTimer.getTime();
 	gTimeParam = demoTime.tosec();
@@ -862,7 +865,7 @@ void CDemo::perform()
 		demoTime.tosec()*ANIM_FPS
 	);
 	gUILabFPS->setText( buf );
-	gUILabFPS->setVisible( false );
+	//gUILabFPS->setVisible( false );
 
 	// rendering options
 	const tweaker::SOptions& options = tweaker::getOptions();

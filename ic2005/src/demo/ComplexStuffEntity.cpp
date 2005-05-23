@@ -12,7 +12,7 @@ CComplexStuffEntity::CComplexStuffEntity( const char* name, const char* name2, c
 	CAnimationBunch& anim = *RGET_ANIM(defaultAnim);
 	float animDuration = gGetAnimDuration(anim,false);
 	mAnimator->setDefaultAnim( anim, animDuration, defAnimFadeInTime );
-	mAnimator->playDefaultAnim( CSystemTimer::getInstance().getTime() );
+	mAnimator->playDefaultAnim( time_value(0) );
 
 	CSkinMesh* skinMesh = RGET_SKIN( name );
 	mSkinUpdater = new CSkinUpdater( skinMesh->getSkeleton(), *mAnimator );
