@@ -95,9 +95,10 @@ void CPhysObject::update( SMatrix4x4& matrix )
 	const dReal* avel = dBodyGetAngularVel( mObject );
 	D3DXVECTOR3 newAVel( avel[0]*AVEL_FACTOR, avel[1]*AVEL_FACTOR, avel[2]*AVEL_FACTOR );
 
-	// if our velocities got small enough and we're still stuck in the air,
-	// apply random force
-	if( matrix.getOrigin().y > 0.4f ) {
+	if( matrix.getOrigin().y > 0.2f ) {
+		// if our velocities got small enough and we're still stuck in the air,
+		// apply random force
+
 		const float lvelL = lvel[0]*lvel[0]+lvel[1]*lvel[1]+lvel[2]*lvel[2];
 		//const float avelL = avel[0]*avel[0]+avel[1]*avel[1]+avel[2]*avel[2];
 		if( lvelL < 0.3f*0.3f /*|| avelL < 0.5f*0.5f*/ ) {
@@ -111,7 +112,12 @@ void CPhysObject::update( SMatrix4x4& matrix )
 
 			dBodyAddForce( mObject, force.x, force.y, force.z );
 		}
+	} else {
+		// if we're nearly on the ground, increase auto-disable thresholds
+		dBodySetAutoDisableLinearThreshold( mObject, 0.6f );
+		dBodySetAutoDisableAngularThreshold( mObject, 1.0f );
 	}
+
 
 	// Also clamp angular velocity. Some light and elongated
 	// objects tend to spin very quickly at deep collisions, and for some

@@ -8,8 +8,7 @@ CODE
 + Demo tweak UI
 + Interactive mode (waiting for attack fx meshes/anims)
 + Scene poetry at the end
-+ Blur in/out in several places
-+ Attack effects
++ Attack effects (waiting for animations)
 . Test on various hardware
 . Benchmark mode!
 . Tweak character lighting
@@ -22,6 +21,7 @@ CODE
 . Reflections into single RT, with stencil/Z masks for fast culling
 - Glow; render extra brightness to alpha
 
++ Blur in/out in several places
 
 * Character's electricity effects
 * Go to interactive mode when scroller ends or space is pressed

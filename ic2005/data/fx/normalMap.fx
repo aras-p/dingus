@@ -17,12 +17,14 @@ sampler2D	smpBase = sampler_state {
 	AddressU = Wrap; AddressV = Wrap;
 };
 
+
 texture		tNormalAO;
 sampler2D	smpNormalAO = sampler_state {
 	Texture = (tNormalAO);
 	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
 	AddressU = Wrap; AddressV = Wrap;
 };
+
 
 struct SOutput {
 	float4 pos		: POSITION;
@@ -60,11 +62,22 @@ half4 psMain( SOutput i ) : COLOR {
 	half amb = 0.1;
 	half ambBias = 0.1;
 	half ambMul = 0.9;
+#if D_AO==1
 	half occ = normalAO.a * ambMul;
+#else
+	half occ = 1;
+#endif
 
 	// calc lighting
-	half diffuse = saturate( dot( normal, i.tolight.xyz*2-1 ) ) * occ + ambBias;
+#if D_NORMALMAPS==1
+	half diffuse = saturate( dot( normal, i.tolight.xyz*2-1 ) );
 	float spec = pow( saturate( dot( normal, i.halfangz.xyz ) ), 16 );
+#else
+	half diffuse = 1;
+	float spec = 0;
+#endif
+
+	diffuse = diffuse * occ + ambBias;
 
 	// sample diffuse/gloss map
 	half4 cBase = tex2D( smpBase, i.uv );

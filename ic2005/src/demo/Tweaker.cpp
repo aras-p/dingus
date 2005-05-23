@@ -9,6 +9,7 @@ namespace {
 	
 	CUIDialog*	dialog;
 	bool		visible = false;
+	bool		fullyInited = false;
 
 	tweaker::SOptions	options;
 
@@ -67,22 +68,26 @@ void CALLBACK dlgCallback( UINT evt, int ctrlID, CUIControl* ctrl )
 			break;
 		case GID_CHK_SHADOWS:
 			options.shadows = checked;
-			options.apply();
+			if( fullyInited )
+				options.apply();
 			break;
 		case GID_CHK_REFLECTIONS:
 			options.reflections = checked;
-			options.apply();
+			if( fullyInited )
+				options.apply();
 			break;
 		case GID_CHK_DOF:
 			options.dof = checked;
 			break;
 		case GID_CHK_NORMALMAPS:
 			options.normalmaps = checked;
-			options.apply();
+			if( fullyInited )
+				options.apply();
 			break;
 		case GID_CHK_AO:
 			options.ao = checked;
-			options.apply();
+			if( fullyInited )
+				options.apply();
 			break;
 		}
 	}
@@ -98,6 +103,8 @@ void CALLBACK dlgCallback( UINT evt, int ctrlID, CUIControl* ctrl )
 void tweaker::init()
 {
 	options.apply();
+
+	fullyInited = false;
 
 	visible = false;
 
@@ -130,6 +137,8 @@ void tweaker::init()
 	
 	// buttons
 	dialog->addButton( IDOK, "Close", 340, dialog->getHeight()-35, 58, 20 );
+
+	fullyInited = true;
 }
 
 void tweaker::shutdown()
