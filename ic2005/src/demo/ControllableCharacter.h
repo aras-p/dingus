@@ -13,7 +13,7 @@ public:
 
 	void	move( float accel, time_value timenow );
 	void	rotate( float targetSpeed );
-	void	attack( time_value timenow );
+	int		attack( time_value timenow );
 	
 private:
 	struct SAnimParams {

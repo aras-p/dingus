@@ -35,11 +35,17 @@ private:
 	std::vector<CRoomObjectEntity*>	mRoom;
 
 	// attacks related
+	int				mAttackIndex;
+	int				mAttackType;
 	time_value		mAttackStartTime;	// negative if no attack
+	time_value		mAttackAnimStartTime;
 	time_value		mWallHitTime;		// negative if no attack
 	SVector3		mWallHitPos;
 	float			mWallHitRadius;
 
+	// 2nd attack type
+	CComplexStuffEntity*	mAttack2_1;
+	CComplexStuffEntity*	mAttack2_2;
 };
 
 

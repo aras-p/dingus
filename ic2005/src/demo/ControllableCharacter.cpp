@@ -75,8 +75,10 @@ CControllableCharacter::CControllableCharacter( float minX, float minZ, float ma
 	// start frame, bone (+y), hits after ~5 frames
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v01"), 0 ) );
 	// 19, R Hand
+
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v01_2x"), 0 ) );
 	// 19, R Hand; 38, L Hand
+
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v02"), 0 ) );
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03"), 0 ) );
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03b"), 0 ) );
@@ -221,13 +223,15 @@ void	CControllableCharacter::rotate( float targetSpeed )
 	getWorldMatrix() = mr * getWorldMatrix();
 }
 
-void CControllableCharacter::attack( time_value timenow )
+int CControllableCharacter::attack( time_value timenow )
 {
 	if( getAnimator().isPlayingOneShotAnim() )
-		return;
+		return -1;
 
 	int idx = gRandom.getInt() % mAnimsAttack.size();
 	getAnimator().playAnim( *mAnimsAttack[idx].anim, mAnimsAttack[idx].duration, 0.2f, true, timenow );
 
 	mMoveVelocity = mMoveAccel = 0.0f;
+
+	return idx;
 }

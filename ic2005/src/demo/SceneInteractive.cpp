@@ -12,7 +12,9 @@
 
 CSceneInteractive::CSceneInteractive( CSceneSharedStuff* sharedStuff )
 :	mSharedStuff( sharedStuff )
+,	mAttackIndex(-1)
 ,	mAttackStartTime(-1)
+,	mAttackAnimStartTime(-1)
 ,	mWallHitTime(-1)
 {
 	const float WALK_BOUNDS = 0.9f;
@@ -23,6 +25,12 @@ CSceneInteractive::CSceneInteractive( CSceneSharedStuff* sharedStuff )
 
 	// room
 	gReadScene( "data/scene.lua", mRoom );
+
+	// attacks
+	mAttack2_1 = new CComplexStuffEntity( "AttackFx2_1", NULL, "Attack_v02Fx" );
+	addAnimEntity( *mAttack2_1 );
+	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", NULL, "Attack_v02Fx" );
+	addAnimEntity( *mAttack2_2 );
 
 	const float CAMERA_BOUND = 0.15f;
 	SVector3 CAMERA_BOUND_MIN = ROOM_MIN + SVector3(CAMERA_BOUND,CAMERA_BOUND,CAMERA_BOUND);
@@ -55,6 +63,26 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 	float demoTimeS = demoTime.tosec();
 
 	mCharacter->update( demoTime );
+
+	// figure out current attack type, if any
+	if( !mCharacter->getAnimator().isPlayingOneShotAnim() ) {
+		mAttackType = -1;
+		mAttackIndex = -1;
+		mAttackAnimStartTime = time_value(-1);
+	} else {
+		if( mAttackIndex == 2 ) {
+			mAttackType = 1;
+			time_value animTime = demoTime - mAttackAnimStartTime;
+			mAttack2_1->getWorldMatrix() = mCharacter->getWorldMatrix();
+			mAttack2_2->getWorldMatrix() = mCharacter->getWorldMatrix();
+			mAttack2_1->update( animTime );
+			mAttack2_2->update( animTime );
+		} else {
+			mAttackType = 0;
+			// TBD
+		}
+	}
+
 
 	mSharedStuff->updateFracture( 0, demoTimeS );
 
@@ -109,6 +137,11 @@ void CSceneInteractive::render( eRenderMode renderMode )
 	mSharedStuff->renderWalls( 0, renderMode, false );
 	
 	mCharacter->render( renderMode );
+
+	if( mAttackType == 1 ) {
+		mAttack2_1->render( renderMode );
+		mAttack2_2->render( renderMode );
+	}
 	
 	int i, n;
 	n = mRoom.size();
@@ -123,8 +156,9 @@ void CSceneInteractive::processInput( float mov, float rot, bool attack, time_va
 	mCharacter->move( mov, demoTime );
 	mCharacter->rotate( rot );
 	if( attack && mAttackStartTime.value < 0 ) {
-		mCharacter->attack( demoTime );
+		mAttackIndex = mCharacter->attack( demoTime );
 		mAttackStartTime = demoTime + time_value::fromsec(0.5f);
+		mAttackAnimStartTime = demoTime;
 	}
 }
 
