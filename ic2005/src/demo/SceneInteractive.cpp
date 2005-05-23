@@ -30,24 +30,14 @@ CSceneInteractive::CSceneInteractive( CSceneSharedStuff* sharedStuff )
 	gReadScene( "data/scene.lua", mRoom );
 
 	// attacks
-	mAttack1L = new CComplexStuffEntity( "AttackFx1", NULL, "AttackFx1L" );
+	mAttack1L = new CComplexStuffEntity( "AttackFx1Int", NULL, "AttackFx1L" );
 	addAnimEntity( *mAttack1L );
-	mAttack1R = new CComplexStuffEntity( "AttackFx1", NULL, "AttackFx1R" );
+	mAttack1R = new CComplexStuffEntity( "AttackFx1Int", NULL, "AttackFx1R" );
 	addAnimEntity( *mAttack1R );
 	mAttack2_1 = new CComplexStuffEntity( "AttackFx2_1", NULL, "Attack_v02Fx" );
 	addAnimEntity( *mAttack2_1 );
 	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", NULL, "Attack_v02Fx" );
 	addAnimEntity( *mAttack2_2 );
-
-	mMatLBegin = SMatrix4x4( SVector3(-1.700f,1.320f,-2.725f), SQuaternion(-0.668644f,0.455175f,0.530113f,0.254382f) );
-	mMatLMid   = SMatrix4x4( SVector3(-2.144f,1.953f,-2.719f), SQuaternion(-0.0927577f,0.308475f,0.769266f,0.551787f) );
-	mMatRBegin = SMatrix4x4( SVector3(-2.088f,0.945f,-2.473f), SQuaternion(0.529337f,-0.699213f,-0.11135f,-0.467445f) );
-	mMatRMid   = SMatrix4x4( SVector3(-1.779f,1.597f,-2.707f), SQuaternion(-0.257726f,0.329951f,0.476417f,0.773134f) );
-
-	D3DXMatrixInverse( &mInvMatLBegin, NULL, &mMatLBegin );
-	D3DXMatrixInverse( &mInvMatLMid, NULL, &mMatLMid );
-	D3DXMatrixInverse( &mInvMatRBegin, NULL, &mMatRBegin );
-	D3DXMatrixInverse( &mInvMatRMid, NULL, &mMatRMid );
 
 	// camera
 	const float CAMERA_BOUND = 0.15f;
@@ -70,7 +60,7 @@ void CSceneInteractive::start( time_value demoTime, CUIDialog& dlg )
 
 
 void CSceneInteractive::animateAttack1Bolt( float animTime,
-		const SMatrix4x4& handMat, SMatrix4x4* mats, float ts, float th, float addY )
+		const SMatrix4x4& handMat, SMatrix4x4* mats, float ts, float th, const SVector3& target )
 {
 	const int MATRIX_COUNT = 4;
 
@@ -86,27 +76,45 @@ void CSceneInteractive::animateAttack1Bolt( float animTime,
 		return;
 	}
 
+	SVector3 totarget = target - handMat.getOrigin();
+
 	// figure out wanted length of the bold and direction lerper
 	float wantedLength;
-	float dirLerp;
-	const float MIN_LENGTH = 0.001f;
-	const float MAX_LENGTH = 4.0f / MATRIX_COUNT;
+	float dirLerp1, dirLerp2;
+	float wantedScale;
+	const float MIN_LENGTH = 0.0001f;
+	const float MAX_LENGTH = totarget.length();
 	if( animTime <= th ) {
 		float a = clamp( (animTime-ts)/(th-ts) );
-		dirLerp = a;
+		dirLerp1 = a;
+		dirLerp2 = a*a;
+		wantedScale = a;
 		wantedLength = a * MAX_LENGTH + MIN_LENGTH;
 	} else {
 		float a = clamp( 1 - (animTime-th)/(th-ts) );
-		dirLerp = 1.0f;
+		dirLerp1 = 1.0f;
+		dirLerp2 = 1.0f;
 		wantedLength = a * MAX_LENGTH + MIN_LENGTH;
+		wantedScale = 1-powf( 1-a, 4.0f );
 	}
 
 	// figure out wanted direction
-	SVector3 wantedDir = handMat.getAxisZ() * (1-dirLerp) + handMat.getAxisX() * dirLerp;
+	// from the hand
+	SVector3 wantedDir = handMat.getAxisZ() * (1-dirLerp1) + handMat.getAxisX() * dirLerp1;
 	wantedDir.normalize();
+	// towards the target
+	wantedDir = wantedDir * (1-dirLerp2) + totarget.getNormalized() * dirLerp2;
+	wantedDir.normalize();
+	wantedLength = wantedLength * (1-dirLerp2) + totarget.length() * dirLerp2;
+
+	// TEST
+	//wantedDir = totarget.getNormalized();
+	//wantedLength = totarget.length();
 
 	// construct bolt skinning matrices
-	static const int MAT_INDEX_MAP[MATRIX_COUNT] = { 1, 2, 3, 0, }; // match animation!
+	static const int MAT_INDEX_MAP[MATRIX_COUNT] = { 3, 0, 1, 2, }; // match animation!
+	static const float MAT_IPOLS[MATRIX_COUNT] = { 0.0f, 0.3f, 0.7f, 1.0f };
+	static const float MAT_WAVY[MATRIX_COUNT] = { 0.0f, 1.0f, 1.0f, 0.1f };
 
 	// base matrix
 	SMatrix4x4 mbase;
@@ -115,8 +123,38 @@ void CSceneInteractive::animateAttack1Bolt( float animTime,
 	mbase.spaceFromAxisZ();
 
 	for( int i = 0; i < MATRIX_COUNT; ++i ) {
-		mats[i] = mbase;
-		mats[i].getOrigin() = handMat.getOrigin() + wantedDir * (wantedLength * i);
+		int idx = MAT_INDEX_MAP[i];
+		SMatrix4x4& m = mats[idx];
+		m = mbase;
+		float wavyN = MAT_WAVY[MATRIX_COUNT] * 0.3f;
+		float wavyO = MAT_WAVY[MATRIX_COUNT] * 0.1f;
+		float t = mTimeSource + animTime + i;
+		m.getAxisX() += SVector3(
+			cosf( 0.2f + t * 13.2f + sinf( t * 8.8f ) ) * wavyN,
+			cosf( 0.6f + t * 24.4f + sinf( t * 6.1f ) ) * wavyN,
+			cosf( 0.9f + t * 12.8f + sinf( t * 14.2f ) ) * wavyN
+		);
+		m.getAxisX().normalize();
+		m.getAxisY() += SVector3(
+			cosf( 0.7f + t * 15.1f + sinf( t * 5.7f ) ) * wavyN,
+			cosf( 0.4f + t * 12.2f + sinf( t * 8.1f ) ) * wavyN,
+			cosf( 0.3f + t * 14.0f + sinf( t * 5.9f ) ) * wavyN
+		);
+		m.getAxisY().normalize();
+
+		m.getAxisZ() = m.getAxisX().cross( m.getAxisY() );
+		
+		float scaling = wantedScale * (i+1);
+		m.getAxisX() *= scaling;
+		m.getAxisY() *= scaling;
+		m.getAxisZ() *= wantedScale * 2.0f;
+
+		m.getOrigin() = handMat.getOrigin() + wantedDir * wantedLength * MAT_IPOLS[i];
+		m.getOrigin() += SVector3(
+			cosf( 0.8f + t * 14.2f + sinf( t * 7.3f ) ) * wavyO,
+			cosf( 0.1f + t * 21.7f + sinf( t * 5.2f ) ) * wavyO,
+			cosf( 0.5f + t * 11.3f + sinf( t * 7.9f ) ) * wavyO
+		);
 	}
 }
 
@@ -127,8 +165,12 @@ void CSceneInteractive::animateAttack1( time_value animTime )
 	float animTimeS = animTime.tosec();
 	const SMatrix4x4& mhandL = mCharacter->getAnimator().getBoneWorldMatrices()[mHandLIndex];
 	const SMatrix4x4& mhandR = mCharacter->getAnimator().getBoneWorldMatrices()[mHandRIndex];
-	animateAttack1Bolt( animTimeS, mhandL, mAttack1L->getAnimator().getBoneWorldMatrices(), atkParams.l.timeStart, atkParams.l.timeHit, atkParams.addY );
-	animateAttack1Bolt( animTimeS, mhandR, mAttack1R->getAnimator().getBoneWorldMatrices(), atkParams.r.timeStart, atkParams.r.timeHit, atkParams.addY );
+	SVector3 target = mCharacter->getAnimator().getBoneWorldMatrices()[mSpineBoneIndex].getOrigin() - mCharacter->getWorldMatrix().getAxisX() * 3.0f;
+	target.y += atkParams.addY;
+
+	animateAttack1Bolt( animTimeS, mhandL, mAttack1L->getAnimator().getBoneWorldMatrices(), atkParams.l.timeStart, atkParams.l.timeHit, target );
+	animateAttack1Bolt( animTimeS, mhandR, mAttack1R->getAnimator().getBoneWorldMatrices(), atkParams.r.timeStart, atkParams.r.timeHit, target );
+
 	mAttack1L->getSkinUpdater().update();
 	mAttack1R->getSkinUpdater().update();
 }
@@ -244,6 +286,11 @@ void CSceneInteractive::processInput( float mov, float rot, bool attack, time_va
 	mCharacter->rotate( rot, dt );
 	if( attack && mAttackStartTime.value < 0 ) {
 		mAttackIndex = mCharacter->attack( demoTime );
+		if( mAttackIndex < 0 ) {
+			mAttackStartTime = time_value(-1);
+			return;
+		}
+		mTimeSource = gRandom.getFloat( -3, 3 );
 		mAttackStartTime = demoTime + time_value::fromsec(0.5f);
 		mAttackAnimStartTime = demoTime;
 	}

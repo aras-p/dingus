@@ -405,6 +405,10 @@ SOURCE=.\data\fx\electricityAtk.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\electricityAtk2.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\fadeinmesh.fx
 # End Source File
 # Begin Source File

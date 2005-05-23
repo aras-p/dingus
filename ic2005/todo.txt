@@ -8,7 +8,7 @@ IN PROGRESS
 
 CODE
 
-+ Interactive mode (waiting for anims)
++ Interactive mode
 + Attack effects (waiting for anims)
 + Test on various hardware
 . Benchmark mode!

@@ -26,7 +26,7 @@ public:
 
 private:
 	void	animateAttack1Bolt( float animTime,
-		const SMatrix4x4& handMat, SMatrix4x4* mats, float ts, float th, float addY );
+		const SMatrix4x4& handMat, SMatrix4x4* mats, float ts, float th, const SVector3& target );
 	void	animateAttack1( time_value animTime );
 
 private:
@@ -53,16 +53,7 @@ private:
 	CComplexStuffEntity*	mAttack1R;
 	int			mHandLIndex;
 	int			mHandRIndex;
-	// hand world matrices in canonical animation
-	SMatrix4x4		mMatLBegin, mMatLMid;
-	SMatrix4x4		mMatRBegin, mMatRMid;
-	// inverse hand world matrices in canonical animation
-	// these * curr_anim_hands = M
-	// curr_bone_mats = canon_bone_mats * M
-	SMatrix4x4		mInvMatLBegin, mInvMatLMid;
-	SMatrix4x4		mInvMatRBegin, mInvMatRMid;
-
-
+	float		mTimeSource;
 
 	// 2nd attack type
 	CComplexStuffEntity*	mAttack2_1;

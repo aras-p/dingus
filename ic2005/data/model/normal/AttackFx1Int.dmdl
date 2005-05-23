@@ -1,0 +1,11 @@
+name = 'AttackFx1'
+groups = {
+{
+  fx = 'electricityAtk2', pri = 2,
+  params = {
+	  { 'tex', 'tEnv1', 'ElEnv1' },
+	  { 'tex', 'tEnv2', 'ElEnv2' },
+	  { 'tex', 'tScroll', 'ElScroll' },
+  },
+},
+}
