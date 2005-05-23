@@ -5,7 +5,6 @@
 
 CODE
 
-+ Character's electricity effects
 + Demo tweak UI
 + Interactive mode (waiting for attack fx meshes/anims)
 + Scene poetry at the end
@@ -24,6 +23,7 @@ CODE
 - Glow; render extra brightness to alpha
 
 
+* Character's electricity effects
 * Go to interactive mode when scroller ends or space is pressed
 * Clear pieces when entering interactive mode
 * Fade out physics pieces
