@@ -690,7 +690,9 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
 				++gCurScene;
 				gCurScene %= SCENECOUNT;
-				if( gCurScene == SCENE_SCROLLER )
+				if( gCurScene == SCENE_MAIN )
+					gStartMain();
+				else if( gCurScene == SCENE_SCROLLER )
 					gStartScroller();
 				else if( gCurScene == SCENE_INTERACTIVE )
 					gStartInteractiveMode();

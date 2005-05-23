@@ -46,11 +46,11 @@ static const float TITLE_FADE_FRAMES = 30;
 
 
 static const float BLUR_BEGIN_FRAMES = 90;
-static const float BLUR_END_FRAMES = 150;
-static const float BLUR_END_START = 120;
+static const float BLUR_END_FRAMES = 90;
+static const float BLUR_END_START = 90;
 static const float WHITE_BEGIN_FRAMES = 30;
-static const float WHITE_END1_FRAMES = 30;
-static const float WHITE_END2_FRAMES = 120;
+static const float WHITE_END1_FRAMES = 90;
+static const float WHITE_END2_FRAMES = 100;
 
 
 const float CSceneMain::EXTRA_FRAMES = 15.5f * ANIM_FPS;
@@ -468,7 +468,13 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 		textRC.left = GUI_X*0.2f;
 		textRC.right = GUI_X*0.8f;
 		textRC.bottom = GUI_Y;
-		textElem.colorFont.current = 0xB0101010;
+		textElem.colorTexture.current = 0xC0303030;
+		textElem.texture = RGET_TEX("PoetryLine");
+		textElem.textureRect.left = 0;
+		textElem.textureRect.right = 512;
+		textElem.textureRect.top = 0;
+		textElem.textureRect.bottom = 16;
+		textElem.colorFont.current = 0xC0303030;
 
 		const float framesPerLine = EXTRA_FRAMES / (POETRY_COUNT+2);
 		float endFadeMul = clamp( (EXTRA_FRAMES-poetryFrame-framesPerLine/2)/framesPerLine );
@@ -477,7 +483,7 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 			textElem.fontIdx = POETRY_FONT[i];
 			float alpha = clamp( (poetryFrame-framesPerLine*i)/framesPerLine );
 			alpha *= endFadeMul;
-			textElem.colorFont.current.a *= alpha;
+			textElem.colorFont.current.a = 0.75f * alpha;
 
 			textRC.left = PTR_X[i];
 			textRC.right = PTR_X[i] + PTR_DX[i];
@@ -485,6 +491,18 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 			textRC.bottom = PTR_Y[i] + PTR_DY[i];
 			
 			dlg.drawText( POETRY[i], &textElem, &textRC, false );
+
+			if( i == 0 ) {
+				textRC.left = 320-391/2;
+				textRC.right = 320+391/2;
+				textRC.top = 125;
+				textRC.bottom = 125+16;
+				textElem.colorTexture.current.a = 0.5f * alpha;
+				dlg.drawSprite( &textElem, &textRC );
+				textRC.top = 163;
+				textRC.bottom = 163+16;
+				dlg.drawSprite( &textElem, &textRC );
+			}
 		}
 	}
 }
