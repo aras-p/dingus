@@ -74,30 +74,3 @@ technique tec20
 		ZWriteEnable = True;
 	}
 }
-
-
-technique tecFFP
-{
-	pass P0 {
-		VertexShader = compile vs_1_1 vsMain();
-		PixelShader = NULL;
-
-		AlphaBlendEnable = True;
-		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
-		ZWriteEnable = False;
-
-		Sampler[0] = (smpAlpha);
-		ColorOp[0] = SelectArg1;
-		ColorArg1[0] = Texture;
-		AlphaOp[0] = SelectArg1;
-		AlphaArg1[0] = Texture;
-
-		ColorOp[1] = Disable;
-		AlphaOp[1] = Disable;
-	}
-	pass PLast {
-		AlphaBlendEnable = False;
-		ZWriteEnable = True;
-	}
-}

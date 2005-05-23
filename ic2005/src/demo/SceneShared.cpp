@@ -46,20 +46,20 @@ CSceneSharedStuff::CSceneSharedStuff()
 	stb.registerTexture( WALL_RESTEXS[CFACE_PZ], *tcr );
 	stb.registerTexture( WALL_RESTEXS[CFACE_NZ], *tcr );
 
-	mWalls[0][CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE1, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PX], WALL_RESTEXS[CFACE_PX] );
-	mWalls[0][CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE1, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NX], WALL_RESTEXS[CFACE_NX] );
+	mWalls[0][CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE1, WALL_TEXS[CFACE_PX], WALL_RESTEXS[CFACE_PX] );
+	mWalls[0][CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE1, WALL_TEXS[CFACE_NX], WALL_RESTEXS[CFACE_NX] );
 	mWalls[0][CFACE_PY] = NULL;
 	mWalls[0][CFACE_NY] = NULL;
-	mWalls[0][CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE1, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PZ], WALL_RESTEXS[CFACE_PZ] );
-	mWalls[0][CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE1, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NZ], WALL_RESTEXS[CFACE_NZ] );
+	mWalls[0][CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE1, WALL_TEXS[CFACE_PZ], WALL_RESTEXS[CFACE_PZ] );
+	mWalls[0][CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE1, WALL_TEXS[CFACE_NZ], WALL_RESTEXS[CFACE_NZ] );
 	
-	mWalls[1][CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE2, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PX], WALL_RESTEXS[CFACE_PX] );
-	mWalls[1][CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE2, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NX], WALL_RESTEXS[CFACE_NX] );
-	mWalls[1][CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE3, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PY], NULL );
+	mWalls[1][CFACE_PX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE2, WALL_TEXS[CFACE_PX], WALL_RESTEXS[CFACE_PX] );
+	mWalls[1][CFACE_NX] = new CWall3D( SVector2(ROOM_SIZE.z,ROOM_SIZE.y), ELEM_SIZE2, WALL_TEXS[CFACE_NX], WALL_RESTEXS[CFACE_NX] );
+	mWalls[1][CFACE_PY] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.z), ELEM_SIZE3, WALL_TEXS[CFACE_PY], NULL );
 	//mWalls[1][CFACE_PY] = NULL;
 	mWalls[1][CFACE_NY] = NULL;
-	mWalls[1][CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE2, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_PZ], WALL_RESTEXS[CFACE_PZ] );
-	mWalls[1][CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE2, gNoPixelShaders ? NULL : WALL_TEXS[CFACE_NZ], WALL_RESTEXS[CFACE_NZ] );
+	mWalls[1][CFACE_PZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE2, WALL_TEXS[CFACE_PZ], WALL_RESTEXS[CFACE_PZ] );
+	mWalls[1][CFACE_NZ] = new CWall3D( SVector2(ROOM_SIZE.x,ROOM_SIZE.y), ELEM_SIZE2, WALL_TEXS[CFACE_NZ], WALL_RESTEXS[CFACE_NZ] );
 
 	SMatrix4x4 wm;
 	wm.identify();
@@ -146,11 +146,9 @@ CSceneSharedStuff::CSceneSharedStuff()
 	mFixWallPY->addLightToParams( LIGHT_POS_1 );
 	mFixWallNY->addLightToParams( LIGHT_POS_1 );
 	mFixWallNYFr->addLightToParams( LIGHT_POS_1 );
-	if( !gNoPixelShaders ) {
-		mFixWallPY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_PY) );
-		mFixWallNY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_NY) );
-		mFixWallNYFr->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_NY) );
-	}
+	mFixWallPY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_PY) );
+	mFixWallNY->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_NY) );
+	mFixWallNYFr->getRenderMesh(RM_NORMAL)->getParams().addTexture( "tRefl", *RGET_S_TEX(RT_REFL_NY) );
 }
 
 CSceneSharedStuff::~CSceneSharedStuff()

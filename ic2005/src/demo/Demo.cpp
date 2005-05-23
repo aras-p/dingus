@@ -39,8 +39,6 @@ int			gGlobalCullMode;	// global cull mode
 SVector4	gScreenFixUVs;		// UV fixes for fullscreen quads
 float		gTimeParam;			// time parameter for effects
 
-bool	gNoPixelShaders = false;
-
 bool	gFinished = false;
 bool	gShowStats = false;
 
@@ -57,6 +55,10 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 	if( caps.getVShaderVersion() < CD3DDeviceCaps::VS_1_1 ) {
 		if( vproc != CD3DDeviceCaps::VP_SW )
 			ok = false;
+	}
+	if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
+		errors.addError( "Pixel shaders 2.0 required" );
+		ok = false;
 	}
 	// need float textures...
 	//if( !caps.hasFloatTextures() ) {
@@ -456,80 +458,74 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	G_INPUTCTX->addListener( *this );
 
-	gNoPixelShaders = (dx.getCaps().getPShaderVersion() < CD3DDeviceCaps::PS_1_1);
-
 	// --------------------------------
 	// render targets
 
 	tweaker::init();
 
 	// shadow maps
-	if( !gNoPixelShaders ) {
-		ITextureCreator* shadowT = new CFixedTextureCreator(
-			SZ_SHADOWMAP, SZ_SHADOWMAP, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
-		ITextureCreator* shadowTMip = new CFixedTextureCreator(
-			SZ_SHADOWMAP, SZ_SHADOWMAP, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
-		stb.registerTexture( RT_SHADOWMAP, *shadowT );
-		stb.registerTexture( RT_SHADOWBLUR, *shadowTMip );
-		ssb.registerSurface( RT_SHADOWMAP, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP),0)) );
-		ssb.registerSurface( RT_SHADOWBLUR, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWBLUR),0)) );
-		ssb.registerSurface( RT_SHADOWZ, *(new CFixedSurfaceCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,true,D3DFMT_D16)) );
+	ITextureCreator* shadowT = new CFixedTextureCreator(
+		SZ_SHADOWMAP, SZ_SHADOWMAP, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+	ITextureCreator* shadowTMip = new CFixedTextureCreator(
+		SZ_SHADOWMAP, SZ_SHADOWMAP, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+	stb.registerTexture( RT_SHADOWMAP, *shadowT );
+	stb.registerTexture( RT_SHADOWBLUR, *shadowTMip );
+	ssb.registerSurface( RT_SHADOWMAP, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP),0)) );
+	ssb.registerSurface( RT_SHADOWBLUR, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWBLUR),0)) );
+	ssb.registerSurface( RT_SHADOWZ, *(new CFixedSurfaceCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,true,D3DFMT_D16)) );
 
-		G_RENDERCTX->getGlobalParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
+	G_RENDERCTX->getGlobalParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
 
-		stb.registerTexture( RT_SHADOWMAP2_SM, *new CFixedTextureCreator(
-			SZ_SHADOWMAP2_SM, SZ_SHADOWMAP2_SM, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT ) );
-		ssb.registerSurface( RT_SHADOWMAP2_SM, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP2_SM),0)) );
+	stb.registerTexture( RT_SHADOWMAP2_SM, *new CFixedTextureCreator(
+		SZ_SHADOWMAP2_SM, SZ_SHADOWMAP2_SM, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT ) );
+	ssb.registerSurface( RT_SHADOWMAP2_SM, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP2_SM),0)) );
 
-		ssb.registerSurface( RT_SHADOWMAP2_BIG, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2_BIG,SZ_SHADOWMAP2_BIG,false,D3DFMT_R5G6B5)) );
-		ssb.registerSurface( RT_SHADOWZ2, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2_BIG,SZ_SHADOWMAP2_BIG,true,D3DFMT_D16)) );
+	ssb.registerSurface( RT_SHADOWMAP2_BIG, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2_BIG,SZ_SHADOWMAP2_BIG,false,D3DFMT_R5G6B5)) );
+	ssb.registerSurface( RT_SHADOWZ2, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2_BIG,SZ_SHADOWMAP2_BIG,true,D3DFMT_D16)) );
 
-		G_RENDERCTX->getGlobalParams().addTexture( "tShadow2", *RGET_S_TEX(RT_SHADOWMAP2_SM) );
-	}
+	G_RENDERCTX->getGlobalParams().addTexture( "tShadow2", *RGET_S_TEX(RT_SHADOWMAP2_SM) );
 	
 	// misc
 	stb.registerTexture( RT_FULLSCREEN, *new CScreenBasedTextureCreator(1.0f,1.0f,1,D3DUSAGE_RENDERTARGET,D3DFMT_A8R8G8B8,D3DPOOL_DEFAULT) );
 	ssb.registerSurface( RT_FULLSCREEN, *new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_FULLSCREEN),0) );
 
 	// reflections
-	if( !gNoPixelShaders ) {
-		ITextureCreator* rtcreatDofRT = new CScreenBasedTextureCreator(
-			SZ_HALF_REL, SZ_HALF_REL, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+	ITextureCreator* rtcreatDofRT = new CScreenBasedTextureCreator(
+		SZ_HALF_REL, SZ_HALF_REL, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
 
-		ISurfaceCreator* rtcreatReflRT = new CScreenBasedSurfaceCreator(
-			SZ_HALF_REL, SZ_HALF_REL, false, D3DFMT_A8R8G8B8, false );
-		ISurfaceCreator* rtcreatReflZ = new CScreenBasedSurfaceCreator(
-			SZ_HALF_REL, SZ_HALF_REL, true, D3DFMT_D16, false );
-		
-		ITextureCreator* rtcreat2th = new CScreenBasedTextureCreator(
-			SZ_HALF_REL, SZ_HALF_REL, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
-		ITextureCreator* rtcreat4th = new CScreenBasedTextureCreator(
-			SZ_QUAT_REL, SZ_QUAT_REL, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+	ISurfaceCreator* rtcreatReflRT = new CScreenBasedSurfaceCreator(
+		SZ_HALF_REL, SZ_HALF_REL, false, D3DFMT_A8R8G8B8, false );
+	ISurfaceCreator* rtcreatReflZ = new CScreenBasedSurfaceCreator(
+		SZ_HALF_REL, SZ_HALF_REL, true, D3DFMT_D16, false );
+	
+	ITextureCreator* rtcreat2th = new CScreenBasedTextureCreator(
+		SZ_HALF_REL, SZ_HALF_REL, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+	ITextureCreator* rtcreat4th = new CScreenBasedTextureCreator(
+		SZ_QUAT_REL, SZ_QUAT_REL, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
 
-		stb.registerTexture( RT_REFL_PX, *rtcreat4th );
-		stb.registerTexture( RT_REFL_NX, *rtcreat4th );
-		stb.registerTexture( RT_REFL_PY, *rtcreat4th );
-		stb.registerTexture( RT_REFL_NY, *rtcreat4th );
-		stb.registerTexture( RT_REFL_PZ, *rtcreat4th );
-		stb.registerTexture( RT_REFL_NZ, *rtcreat4th );
+	stb.registerTexture( RT_REFL_PX, *rtcreat4th );
+	stb.registerTexture( RT_REFL_NX, *rtcreat4th );
+	stb.registerTexture( RT_REFL_PY, *rtcreat4th );
+	stb.registerTexture( RT_REFL_NY, *rtcreat4th );
+	stb.registerTexture( RT_REFL_PZ, *rtcreat4th );
+	stb.registerTexture( RT_REFL_NZ, *rtcreat4th );
 
-		stb.registerTexture( RT_HALF_TMP1, *rtcreat2th );
-		stb.registerTexture( RT_HALF_TMP2, *rtcreat2th );
-		stb.registerTexture( RT_QUAD_TMP1, *rtcreat4th );
-		stb.registerTexture( RT_QUAD_TMP2, *rtcreat4th );
-		ssb.registerSurface( RT_HALF_TMP1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_HALF_TMP1),0)) );
-		ssb.registerSurface( RT_HALF_TMP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_HALF_TMP2),0)) );
-		ssb.registerSurface( RT_QUAD_TMP1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_QUAD_TMP1),0)) );
-		ssb.registerSurface( RT_QUAD_TMP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_QUAD_TMP2),0)) );
+	stb.registerTexture( RT_HALF_TMP1, *rtcreat2th );
+	stb.registerTexture( RT_HALF_TMP2, *rtcreat2th );
+	stb.registerTexture( RT_QUAD_TMP1, *rtcreat4th );
+	stb.registerTexture( RT_QUAD_TMP2, *rtcreat4th );
+	ssb.registerSurface( RT_HALF_TMP1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_HALF_TMP1),0)) );
+	ssb.registerSurface( RT_HALF_TMP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_HALF_TMP2),0)) );
+	ssb.registerSurface( RT_QUAD_TMP1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_QUAD_TMP1),0)) );
+	ssb.registerSurface( RT_QUAD_TMP2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_QUAD_TMP2),0)) );
 
-		stb.registerTexture( RT_DOF_1, *rtcreatDofRT );
-		stb.registerTexture( RT_DOF_2, *rtcreatDofRT );
-		ssb.registerSurface( RT_DOF_1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_DOF_1),0)) );
-		ssb.registerSurface( RT_DOF_2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_DOF_2),0)) );
+	stb.registerTexture( RT_DOF_1, *rtcreatDofRT );
+	stb.registerTexture( RT_DOF_2, *rtcreatDofRT );
+	ssb.registerSurface( RT_DOF_1, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_DOF_1),0)) );
+	ssb.registerSurface( RT_DOF_2, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_DOF_2),0)) );
 
-		ssb.registerSurface( RT_HALFRT, *rtcreatReflRT );
-		ssb.registerSurface( RT_HALFZ, *rtcreatReflZ );
-	}
+	ssb.registerSurface( RT_HALFRT, *rtcreatReflRT );
+	ssb.registerSurface( RT_HALFZ, *rtcreatReflZ );
 
 	// --------------------------------
 	// common params
@@ -571,31 +567,29 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gSceneScroller = new CSceneScroller();
 
 
-	if( !gNoPixelShaders ) {
-		// post processes
-		gPPReflBlur = new CPostProcess( RT_QUAD_TMP1, RT_QUAD_TMP2 );
-		gPPDofBlur = new CPostProcess( RT_HALF_TMP1, RT_HALF_TMP2 );
+	// post processes
+	gPPReflBlur = new CPostProcess( RT_QUAD_TMP1, RT_QUAD_TMP2 );
+	gPPDofBlur = new CPostProcess( RT_HALF_TMP1, RT_HALF_TMP2 );
 
-		// gauss X shadowmap -> shadowblur
-		gQuadGaussX = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
-		gQuadGaussX->getParams().setEffect( *RGET_FX("filterGaussX") );
-		gQuadGaussX->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
-		// gauss Y shadowblur -> shadowmap
-		gQuadGaussY = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
-		gQuadGaussY->getParams().setEffect( *RGET_FX("filterGaussY") );
-		gQuadGaussY->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWBLUR) );
-		// blur shadowmap -> shadowblur
-		gQuadBlur = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
-		gQuadBlur->getParams().setEffect( *RGET_FX("filterPoisson") );
-		gQuadBlur->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
+	// gauss X shadowmap -> shadowblur
+	gQuadGaussX = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
+	gQuadGaussX->getParams().setEffect( *RGET_FX("filterGaussX") );
+	gQuadGaussX->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
+	// gauss Y shadowblur -> shadowmap
+	gQuadGaussY = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
+	gQuadGaussY->getParams().setEffect( *RGET_FX("filterGaussY") );
+	gQuadGaussY->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWBLUR) );
+	// blur shadowmap -> shadowblur
+	gQuadBlur = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
+	gQuadBlur->getParams().setEffect( *RGET_FX("filterPoisson") );
+	gQuadBlur->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SHADOWMAP) );
 
-		// DOF composite
-		gQuadDOF = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
-		gQuadDOF->getParams().setEffect( *RGET_FX("compositeDOF") );
-		gQuadDOF->getParams().addTexture( "tBase", *RGET_S_TEX(RT_FULLSCREEN) );
-		gQuadDOF->getParams().addTexture( "tBlur1", *RGET_S_TEX(RT_DOF_1) );
-		gQuadDOF->getParams().addTexture( "tBlur2", *RGET_S_TEX(RT_DOF_2) );
-	}
+	// DOF composite
+	gQuadDOF = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
+	gQuadDOF->getParams().setEffect( *RGET_FX("compositeDOF") );
+	gQuadDOF->getParams().addTexture( "tBase", *RGET_S_TEX(RT_FULLSCREEN) );
+	gQuadDOF->getParams().addTexture( "tBlur1", *RGET_S_TEX(RT_DOF_1) );
+	gQuadDOF->getParams().addTexture( "tBlur2", *RGET_S_TEX(RT_DOF_2) );
 
 	// music
 	music::init( mHwnd );
@@ -848,10 +842,12 @@ void CDemo::perform()
 	curScene->getCamera().setOntoRenderContext();
 	gCameraViewProjMatrix = G_RENDERCTX->getCamera().getViewProjMatrix();
 	
-	if( !gNoPixelShaders ) {
+	if( options.shadows ) {
 		// render shadow map
 		gShadowRender( *curScene );
 		gShadowRender2( *curScene );
+	}
+	if( options.reflections ) {
 		// render wall reflections
 		gRenderWallReflections( *curScene );
 	}
