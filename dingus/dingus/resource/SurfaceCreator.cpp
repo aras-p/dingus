@@ -35,7 +35,12 @@ IDirect3DSurface9* CAbstractSurfaceCreator::internalCreate( int width, int heigh
 			width, height, mFormat, msType, msQty, FALSE, &surface, NULL );
 	}
 	if( FAILED( hres ) ) {
-		std::string msg = "failed to create surface";
+		char buf[1000];
+		sprintf( buf,
+			"AbstractSurfaceCreator: failed to create surface \n"
+			"(type=%s w=%i h=%i fmt=%i msaa=%i/%i)",
+			mDepthStencil ? "DS" : "RT", width, height, mFormat, msType, msQty );
+		std::string msg = buf;
 		CConsole::CON_ERROR.write(msg);
 		THROW_DXERROR( hres, msg );
 	}
@@ -88,7 +93,7 @@ IDirect3DSurface9* CTextureLevelSurfaceCreator::createSurface()
 
 	hres = mTexture->getObject()->GetSurfaceLevel( mLevel, &surface );
 	if( FAILED( hres ) ) {
-		std::string msg = "failed to obtain texture level surface";
+		std::string msg = "TextureLevelSurfaceCreator: failed to get texture level";
 		CConsole::CON_ERROR.write(msg);
 		THROW_DXERROR( hres, msg );
 	}

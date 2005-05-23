@@ -29,7 +29,12 @@ IDirect3DTexture9* CFixedTextureCreator::createTexture()
 		getUsage(), fmt, getPool(),
 		&texture, NULL );
 	if( FAILED( hr ) ) {
-		std::string msg = "failed to create texture";
+		char buf[1000];
+		sprintf( buf,
+			"FixedTextureCreator: failed to create texture \n"
+			"(w=%i h=%i lvl=%i usage=%i fmt=%i pool=%i)",
+			width, height, levels, getUsage(), fmt, getPool() );
+		std::string msg = buf;
 		CConsole::CON_ERROR.write(msg);
 		THROW_DXERROR( hr, msg );
 	}
@@ -52,7 +57,12 @@ IDirect3DTexture9* CScreenBasedTextureCreator::createTexture()
 		getUsage(), getFormat(), getPool(),
 		&texture, NULL );
 	if( FAILED( hr ) ) {
-		std::string msg = "failed to create texture";
+		char buf[1000];
+		sprintf( buf,
+			"ScreenBasedTextureCreator: failed to create texture \n"
+			"(w=%i h=%i lvl=%i usage=%i fmt=%i pool=%i)",
+			width, height, mLevels, getUsage(), getFormat(), getPool() );
+		std::string msg = buf;
 		CConsole::CON_ERROR.write(msg);
 		THROW_DXERROR( hr, msg );
 	}
@@ -86,7 +96,12 @@ IDirect3DTexture9* CScreenBasedPow2TextureCreator::createTexture()
 		getUsage(), getFormat(), getPool(),
 		&texture, NULL );
 	if( FAILED( hr ) ) {
-		std::string msg = "failed to create texture";
+		char buf[1000];
+		sprintf( buf,
+			"ScreenBasedPow2TextureCreator: failed to create texture \n"
+			"(w=%i h=%i lvl=%i usage=%i fmt=%i pool=%i)",
+			width, height, mLevels, getUsage(), getFormat(), getPool() );
+		std::string msg = buf;
 		CConsole::CON_ERROR.write(msg);
 		THROW_DXERROR( hr, msg );
 	}
