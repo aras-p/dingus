@@ -70,11 +70,21 @@ half4 psMain( SOutput i ) : COLOR {
 	// sample normal+AO map
 	half4 normalAO = tex2D( smpNormalAO, i.uv );
 	half3 normal = normalAO.rgb*2-1;
+
+#if D_AO==1
 	half occ = normalAO.a * 0.5 + 0.5;
-	
+#else
+	half occ = 1;
+#endif
+
+#if D_NORMALMAPS==1	
 	half diffuse = saturate( dot( normal, i.tolight.xyz*2-1 ) );
 	half rim = (1-saturate( dot( normal, i.toview.xyz*2-1 ) ));
 	rim *= 0.3;
+#else
+	half diffuse = 1;
+	half rim = 0;
+#endif
 
 	half4 timeBlend = tex2D( smpBase, i.uv );
 	half lerper = saturate( (fCharTimeBlend-timeBlend.a) / 0.1 );

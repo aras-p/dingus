@@ -16,7 +16,11 @@ SPosColTexp vsMain( SPosN i ) {
 }
 
 half4 psMain( SPosColTexp i ) : COLOR {
+#if D_SHADOWS==1
 	half3 col = tex2Dproj( smpShadow, i.uvp ) * i.color;
+#else
+	half3 col = i.color.rgb;
+#endif
 	return half4( col, gBluriness(i.uvp.z) );
 }
 
