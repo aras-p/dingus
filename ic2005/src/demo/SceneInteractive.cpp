@@ -32,6 +32,17 @@ CSceneInteractive::CSceneInteractive( CSceneSharedStuff* sharedStuff )
 	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", NULL, "Attack_v02Fx" );
 	addAnimEntity( *mAttack2_2 );
 
+	mMatLBegin = SMatrix4x4( SVector3(-1.700f,1.320f,-2.725f), SQuaternion(-0.668644f,0.455175f,0.530113f,0.254382f) );
+	mMatLMid   = SMatrix4x4( SVector3(-2.144f,1.953f,-2.719f), SQuaternion(-0.0927577f,0.308475f,0.769266f,0.551787f) );
+	mMatRBegin = SMatrix4x4( SVector3(-2.088f,0.945f,-2.473f), SQuaternion(0.529337f,-0.699213f,-0.11135f,-0.467445f) );
+	mMatRMid   = SMatrix4x4( SVector3(-1.779f,1.597f,-2.707f), SQuaternion(-0.257726f,0.329951f,0.476417f,0.773134f) );
+
+	D3DXMatrixInverse( &mInvMatLBegin, NULL, &mMatLBegin );
+	D3DXMatrixInverse( &mInvMatLMid, NULL, &mMatLMid );
+	D3DXMatrixInverse( &mInvMatRBegin, NULL, &mMatRBegin );
+	D3DXMatrixInverse( &mInvMatRMid, NULL, &mMatRMid );
+
+	// camera
 	const float CAMERA_BOUND = 0.15f;
 	SVector3 CAMERA_BOUND_MIN = ROOM_MIN + SVector3(CAMERA_BOUND,CAMERA_BOUND,CAMERA_BOUND);
 	SVector3 CAMERA_BOUND_MAX = ROOM_MAX - SVector3(CAMERA_BOUND,CAMERA_BOUND,CAMERA_BOUND);
@@ -48,6 +59,18 @@ CSceneInteractive::~CSceneInteractive()
 void CSceneInteractive::start( time_value demoTime, CUIDialog& dlg )
 {
 	mSharedStuff->clearPieces();
+}
+
+
+void CSceneInteractive::animateAttack1( int hand, float t )
+{
+	// L hand:
+	// start: pos = -1700.58,-2725.66,1320.66 rot = -0.668644 0.530113 0.455175 0.254382
+	// mid: pos=-2144.63,-2719.95,1953.5 rot = -0.0927577 0.769266 0.308475 0.551787
+
+	// R hand:
+	// start: pos = -2088.07,-2473.16,945.51 rot = 0.529337 -0.11135 -0.699213 -0.467445
+	// mid: pos = -1779.79,-2707.26,1597.72 rot = -0.257726 0.476417 0.329951 0.773134
 }
 
 

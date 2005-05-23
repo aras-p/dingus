@@ -25,10 +25,13 @@ public:
 	void	processInput( float mov, float rot, bool attack, time_value demoTime, float dt );
 
 private:
+	void	animateAttack1( int hand, float t );
+
+private:
 	CSceneSharedStuff*	mSharedStuff;
 	
 	CControllableCharacter*			mCharacter;
-	int								mSpineBoneIndex;
+	int			mSpineBoneIndex;
 	CThirdPersonCameraController*	mCamController;
 	
 	// outside room
@@ -42,6 +45,21 @@ private:
 	time_value		mWallHitTime;		// negative if no attack
 	SVector3		mWallHitPos;
 	float			mWallHitRadius;
+
+	// 1st attack type
+	CComplexStuffEntity*	mAttack1;
+	int			mHandLIndex;
+	int			mHandRIndex;
+	// hand world matrices in canonical animation
+	SMatrix4x4		mMatLBegin, mMatLMid;
+	SMatrix4x4		mMatRBegin, mMatRMid;
+	// inverse hand world matrices in canonical animation
+	// these * curr_anim_hands = M
+	// curr_bone_mats = canon_bone_mats * M
+	SMatrix4x4		mInvMatLBegin, mInvMatLMid;
+	SMatrix4x4		mInvMatRBegin, mInvMatRMid;
+
+
 
 	// 2nd attack type
 	CComplexStuffEntity*	mAttack2_1;
