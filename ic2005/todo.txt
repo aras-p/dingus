@@ -9,7 +9,6 @@ IN PROGRESS
 CODE
 
 + Interactive mode
-+ Attack effects (waiting for anims)
 + Test on various hardware
 . Benchmark mode!
 . Shadows for other guys (needed?)
@@ -25,8 +24,8 @@ CODE
 
 ART
 
+. Add final 1st attacks anim (waiting for anim)
 . (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
-
 + Tweak attack effect animations
 
 
@@ -34,6 +33,7 @@ ART
 RECENTLY DONE
 
 CODE
+* Attack effects
 * Scene poetry at the end
 * Take time source from music
 * Loading screen
