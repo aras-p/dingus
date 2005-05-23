@@ -1,0 +1,9 @@
+name = 'Electricity'
+groups = {
+{
+  fx = 'electricity', pri = 2,
+  params = {
+	  { 'tex', 'tBase', 'TiledNoise' },
+  },
+},
+}

@@ -51,7 +51,7 @@ CSceneScroller::CSceneScroller()
 {
 	mRandom.seed( time(NULL) );
 
-	mCharacter = new CComplexStuffEntity( "Bicas", "Idle_v01", 0.5f );
+	mCharacter = new CComplexStuffEntity( "Bicas", "Electricity", "Idle_v01", 0.5f );
 	addAnimEntity( *mCharacter );
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
 

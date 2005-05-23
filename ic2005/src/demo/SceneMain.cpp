@@ -65,12 +65,12 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 ,	mCurrAnimAlpha(0)
 {
 	// characters
-	mCharacter = new CComplexStuffEntity( "Bicas", "BicasAnim" );
+	mCharacter = new CComplexStuffEntity( "Bicas", "Electricity", "BicasAnim" );
 	addAnimEntity( *mCharacter );
-	mCharacter2 = new CComplexStuffEntity( "Bicas", "Bicas2Anim" );
+	mCharacter2 = new CComplexStuffEntity( "Bicas", "Electricity", "Bicas2Anim" );
 	mCharacter2->setLightPos( LIGHT_POS_2 );
 	addAnimEntity( *mCharacter2 );
-	mCharacter3 = new CComplexStuffEntity( "Bicas", "Bicas3Anim" );
+	mCharacter3 = new CComplexStuffEntity( "Bicas", "Electricity", "Bicas3Anim" );
 	mCharacter3->setLightPos( LIGHT_POS_2 );
 	addAnimEntity( *mCharacter3 );
 
@@ -80,17 +80,17 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	mBedStatic = new CMeshEntity( "Bed" );
 	mBedStatic->addLightToParams( LIGHT_POS_1 );
 	addEntity( *mBedStatic );
-	mBedAnim = new CComplexStuffEntity( "BedPieces", "BedAnim" );
+	mBedAnim = new CComplexStuffEntity( "BedPieces", NULL, "BedAnim" );
 	addAnimEntity( *mBedAnim );
-	mStone = new CComplexStuffEntity( "Stone", "StoneAnim" );
+	mStone = new CComplexStuffEntity( "Stone", NULL, "StoneAnim" );
 	addAnimEntity( *mStone );
 
 	// attacks
-	mAttack2_1 = new CComplexStuffEntity( "AttackFx2_1", "AttackFx2" );
+	mAttack2_1 = new CComplexStuffEntity( "AttackFx2_1", NULL, "AttackFx2" );
 	addAnimEntity( *mAttack2_1 );
-	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", "AttackFx2" );
+	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", NULL, "AttackFx2" );
 	addAnimEntity( *mAttack2_2 );
-	mAttack3 = new CComplexStuffEntity( "AttackFx3", "AttackFx3" );
+	mAttack3 = new CComplexStuffEntity( "AttackFx3", NULL, "AttackFx3" );
 	addAnimEntity( *mAttack3 );
 
 	// rooms

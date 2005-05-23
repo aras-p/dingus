@@ -5,6 +5,7 @@
 
 CODE
 
++ Character's electricity effects
 + Demo tweak UI
 + Interactive mode (waiting for attack fx meshes/anims)
 + Scene poetry at the end

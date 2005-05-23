@@ -21,7 +21,7 @@ inline static double gGetAnimDuration( const CAnimationBunch& b, bool loopLast )
 
 class CComplexStuffEntity : public boost::noncopyable {
 public:
-	CComplexStuffEntity( const char* name, const char* defaultAnim, float defAnimFadeInTime = 0.1f );
+	CComplexStuffEntity( const char* name, const char* name2, const char* defaultAnim, float defAnimFadeInTime = 0.1f );
 	~CComplexStuffEntity();
 
 	void	render( eRenderMode renderMode );
@@ -34,11 +34,14 @@ public:
 	CCharacterAnimator& getAnimator() { return *mAnimator; }
 
 	CRenderableSkin*		getMesh( eRenderMode rm ) { return mMesh[rm]; }
+	CRenderableSkin*		getMesh2( eRenderMode rm ) { return mMesh2[rm]; }
 
 protected:
 	CRenderableSkin*		mMesh[RMCOUNT];
+	CRenderableSkin*		mMesh2[RMCOUNT];
 	CCharacterAnimator*		mAnimator;
 	CSkinUpdater*			mSkinUpdater;
+	CSkinUpdater*			mSkinUpdater2;
 	SVector3				mLightPos;
 };
 
