@@ -546,7 +546,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setFont( 2, "Verdana", 20, FW_NORMAL );
 	gUIDlg->setFont( 3, "Verdana", 16, FW_NORMAL );
 	gUIDlg->setFont( 4, "Verdana", 34, FW_BOLD );
-	gUIDlg->setFont( 5, "Verdana", 16, FW_BOLD );
+	gUIDlg->setFont( 5, "Verdana", 14, FW_BOLD );
+	gUIDlg->setFont( 6, "Verdana", 28, FW_BOLD );
 
 	gUIDlg->addImage( 0, 0, 0, GUI_X, GUI_Y, *RGET_TEX("Title"), 0, 0, 1024, 768, &gUIImgLoading );
 
@@ -601,6 +602,12 @@ void CDemo::loadDemo()
 // --------------------------------------------------------------------------
 // Perform code (main loop)
 
+
+static void	gStartMain()
+{
+	music::play( "data/sound/ic2005sound.ogg", true );
+	gCurScene = SCENE_MAIN;
+}
 
 static void	gStartScroller()
 {
@@ -809,7 +816,7 @@ void CDemo::perform()
 	if( firstPerform || gPaused ) {
 		if( firstPerform ) {
 			// start music
-			music::play( "data/sound/ic2005sound.ogg", false );
+			gStartMain();
 		}
 		dt = 0.0;
 		firstPerform = false;

@@ -263,7 +263,7 @@ void CSceneMain::animateCamera()
 
 	float dofColor = 0.0f;
 	dofColor = max( dofColor, clamp( 1-mCurrAnimFrame/WHITE_BEGIN_FRAMES ) );
-	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_END1_FRAMES)/WHITE_END1_FRAMES ) * 0.4f );
+	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_END1_FRAMES)/WHITE_END1_FRAMES ) * 0.5f );
 	dofColor = max( dofColor, clamp( (mCurrAnimFrame-mAnimFrameCount+WHITE_END2_FRAMES-EXTRA_FRAMES)/WHITE_END2_FRAMES ) );
 	dofColor *= dofColor; // quadratic
 
@@ -458,26 +458,26 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 			"",
 			"dissolve the boundaries",
 		};
-		static const int PTR_X[POETRY_COUNT] = { 0, 0, 192, 244, 299, 0, 0, };
-		static const int PTR_Y[POETRY_COUNT] = { 135, 238, 259, 259, 259, 0, 334, };
+		static const int PTR_X[POETRY_COUNT] = { 0, 0, 170, 234, 312, 0, 0, };
+		static const int PTR_Y[POETRY_COUNT] = { 135, 234, 259, 259, 259, 0, 334, };
 		static const int PTR_DX[POETRY_COUNT] = { 640, 640, 48, 53, 141, 0, 640, };
 		static const int PTR_DY[POETRY_COUNT] = { 35, 20, 12, 12, 12, 0, 27, };
-		static const int POETRY_FONT[POETRY_COUNT] = { 4, 2, 5, 5, 5, 0, 4 };
+		static const int POETRY_FONT[POETRY_COUNT] = { 4, 6, 5, 5, 5, 0, 4 };
 
 		textElem.textFormat = DT_CENTER | DT_VCENTER | DT_NOCLIP;
 		textRC.left = GUI_X*0.2f;
 		textRC.right = GUI_X*0.8f;
 		textRC.bottom = GUI_Y;
-		textElem.colorFont.current = 0xFF202020;
+		textElem.colorFont.current = 0xB0101010;
 
 		const float framesPerLine = EXTRA_FRAMES / (POETRY_COUNT+2);
+		float endFadeMul = clamp( (EXTRA_FRAMES-poetryFrame-framesPerLine/2)/framesPerLine );
 
 		for( int i = 0; i < POETRY_COUNT; ++i ) {
 			textElem.fontIdx = POETRY_FONT[i];
 			float alpha = clamp( (poetryFrame-framesPerLine*i)/framesPerLine );
-			float endFadeMul = clamp( (EXTRA_FRAMES-poetryFrame-framesPerLine/2)/framesPerLine );
 			alpha *= endFadeMul;
-			textElem.colorFont.current.a = alpha;
+			textElem.colorFont.current.a *= alpha;
 
 			textRC.left = PTR_X[i];
 			textRC.right = PTR_X[i] + PTR_DX[i];
