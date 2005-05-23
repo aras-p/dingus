@@ -3,7 +3,9 @@ groups = {
 {
   fx = 'electricity', pri = 2,
   params = {
-	  { 'tex', 'tBase', 'TiledNoise' },
+	  { 'tex', 'tEnv1', 'ElEnv1' },
+	  { 'tex', 'tEnv2', 'ElEnv2' },
+	  { 'tex', 'tScroll', 'ElScroll' },
   },
 },
 }
