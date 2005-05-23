@@ -32,6 +32,8 @@ public:
 	SMatrix4x4& getWorldMatrix() { return mAnimator->getRootMatrix(); }
 	const CCharacterAnimator& getAnimator() const { return *mAnimator; }
 	CCharacterAnimator& getAnimator() { return *mAnimator; }
+	
+	CSkinUpdater& getSkinUpdater() { return *mSkinUpdater; }
 
 	CRenderableSkin*		getMesh( eRenderMode rm ) { return mMesh[rm]; }
 	CRenderableSkin*		getMesh2( eRenderMode rm ) { return mMesh2[rm]; }

@@ -25,7 +25,7 @@ public:
 	void	processInput( float mov, float rot, bool attack, time_value demoTime, float dt );
 
 private:
-	void	animateAttack1( int hand, float t );
+	void	animateAttack1( time_value animTime );
 
 private:
 	CSceneSharedStuff*	mSharedStuff;
@@ -47,7 +47,8 @@ private:
 	float			mWallHitRadius;
 
 	// 1st attack type
-	CComplexStuffEntity*	mAttack1;
+	CComplexStuffEntity*	mAttack1L;
+	CComplexStuffEntity*	mAttack1R;
 	int			mHandLIndex;
 	int			mHandRIndex;
 	// hand world matrices in canonical animation

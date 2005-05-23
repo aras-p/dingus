@@ -22,11 +22,17 @@ CSceneInteractive::CSceneInteractive( CSceneSharedStuff* sharedStuff )
 	addAnimEntity( *mCharacter );
 
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
+	mHandLIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "L Hand" );
+	mHandRIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "R Hand" );
 
 	// room
 	gReadScene( "data/scene.lua", mRoom );
 
 	// attacks
+	mAttack1L = new CComplexStuffEntity( "AttackFx1", NULL, "AttackFx1L" );
+	addAnimEntity( *mAttack1L );
+	mAttack1R = new CComplexStuffEntity( "AttackFx1", NULL, "AttackFx1R" );
+	addAnimEntity( *mAttack1R );
 	mAttack2_1 = new CComplexStuffEntity( "AttackFx2_1", NULL, "Attack_v02Fx" );
 	addAnimEntity( *mAttack2_1 );
 	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", NULL, "Attack_v02Fx" );
@@ -62,15 +68,40 @@ void CSceneInteractive::start( time_value demoTime, CUIDialog& dlg )
 }
 
 
-void CSceneInteractive::animateAttack1( int hand, float t )
+void CSceneInteractive::animateAttack1( time_value animTime )
 {
-	// L hand:
-	// start: pos = -1700.58,-2725.66,1320.66 rot = -0.668644 0.530113 0.455175 0.254382
-	// mid: pos=-2144.63,-2719.95,1953.5 rot = -0.0927577 0.769266 0.308475 0.551787
+	animTime -= time_value::fromsec( 0.3f );
+	if( animTime.value < 0 )
+		animTime.zero();
 
-	// R hand:
-	// start: pos = -2088.07,-2473.16,945.51 rot = 0.529337 -0.11135 -0.699213 -0.467445
-	// mid: pos = -1779.79,-2707.26,1597.72 rot = -0.257726 0.476417 0.329951 0.773134
+	const SMatrix4x4& mhandL = mCharacter->getAnimator().getBoneWorldMatrices()[mHandLIndex];
+	const SMatrix4x4& mhandR = mCharacter->getAnimator().getBoneWorldMatrices()[mHandRIndex];
+	//mhandL.invert();
+	//mhandR.invert();
+	SMatrix4x4 offL = mInvMatLMid * mhandL;
+	SMatrix4x4 offR = mInvMatRMid * mhandR;
+	//offL.invert();
+	//offR.invert();
+	//mAttack1L->getWorldMatrix() = offL;
+	//mAttack1R->getWorldMatrix() = offR;
+	//SVector3 offL = mhandL.getOrigin() - mMatLMid.getOrigin();
+	//SVector3 offR = mhandR.getOrigin() - mMatRMid.getOrigin();
+	
+	//mAttack1L->update( animTime );
+	//mAttack1R->update( animTime );
+	mAttack1L->getAnimator().updateLocal( animTime );
+	mAttack1L->getAnimator().updateWorld();
+	mAttack1R->getAnimator().updateLocal( animTime );
+	mAttack1R->getAnimator().updateWorld();
+	const int BONES = 4;
+	for( int i = 0; i < BONES; ++i ) {
+		mAttack1L->getAnimator().getBoneWorldMatrices()[i] *= offL;
+		mAttack1R->getAnimator().getBoneWorldMatrices()[i] *= offR;
+		//mAttack1L->getAnimator().getBoneWorldMatrices()[i].getOrigin() += offL;
+		//mAttack1R->getAnimator().getBoneWorldMatrices()[i].getOrigin() += offR;
+	}
+	mAttack1L->getSkinUpdater().update();
+	mAttack1R->getSkinUpdater().update();
 }
 
 
@@ -102,7 +133,8 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 			mAttack2_2->update( animTime );
 		} else {
 			mAttackType = 0;
-			// TBD
+			time_value animTime = demoTime - mAttackAnimStartTime;
+			animateAttack1( animTime );
 		}
 	}
 
@@ -164,6 +196,9 @@ void CSceneInteractive::render( eRenderMode renderMode )
 	if( mAttackType == 1 ) {
 		mAttack2_1->render( renderMode );
 		mAttack2_2->render( renderMode );
+	} else if( mAttackType == 0 ) {
+		mAttack1L->render( renderMode );
+		mAttack1R->render( renderMode );
 	}
 	
 	int i, n;
