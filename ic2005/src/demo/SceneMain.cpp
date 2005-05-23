@@ -448,45 +448,23 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 	if( mCurrAnimFrame >= mAnimFrameCount ) {
 		float poetryFrame = mCurrAnimFrame - mAnimFrameCount;
 
-		const int POETRY_COUNT = 6;
+		const int POETRY_COUNT = 7;
 		static const char* POETRY[POETRY_COUNT] = {
-			"Be free to discover",
-			"Yourself,",
+			"in.out.side: the shell",
+			"be free to discover",
+			"yourself,",
 			"your time",
 			"and the world around you",
 			"",
-			"Dissolve the boundaries",
+			"dissolve the boundaries",
 		};
-		static const int POETRY_LINES[POETRY_COUNT] = {
-			0,
-			1,
-			1,
-			1,
-			2,
-			3,
-		};
-		static const int POETRY_X[POETRY_COUNT] = {
-			0,
-			0,
-			105,
-			220,
-			0,
-			0,
-		};
-		static const int POETRY_FONT[POETRY_COUNT] = {
-			4,
-			1,
-			1,
-			1,
-			1,
-			4,
-		};
+		static const int PTR_X[POETRY_COUNT] = { 0, 0, 192, 244, 299, 0, 0, };
+		static const int PTR_Y[POETRY_COUNT] = { 135, 238, 259, 259, 259, 0, 334, };
+		static const int PTR_DX[POETRY_COUNT] = { 640, 640, 48, 53, 141, 0, 640, };
+		static const int PTR_DY[POETRY_COUNT] = { 35, 20, 12, 12, 12, 0, 27, };
+		static const int POETRY_FONT[POETRY_COUNT] = { 4, 2, 5, 5, 5, 0, 4 };
 
-		const int LINES_Y = 130;
-		const int LINE_HEIGHT = 40;
-		const int LINES_X = 60;
-
-		textElem.textFormat = DT_LEFT | DT_TOP | DT_NOCLIP;
+		textElem.textFormat = DT_CENTER | DT_VCENTER | DT_NOCLIP;
 		textRC.left = GUI_X*0.2f;
 		textRC.right = GUI_X*0.8f;
 		textRC.bottom = GUI_Y;
@@ -501,9 +479,11 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 			alpha *= endFadeMul;
 			textElem.colorFont.current.a = alpha;
 
+			textRC.left = PTR_X[i];
+			textRC.right = PTR_X[i] + PTR_DX[i];
+			textRC.top = PTR_Y[i];
+			textRC.bottom = PTR_Y[i] + PTR_DY[i];
 			
-			textRC.top = LINES_Y + POETRY_LINES[i] * LINE_HEIGHT;
-			textRC.left = LINES_X + POETRY_X[i];
 			dlg.drawText( POETRY[i], &textElem, &textRC, false );
 		}
 	}

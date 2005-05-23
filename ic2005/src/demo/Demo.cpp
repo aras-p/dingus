@@ -545,7 +545,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setFont( 1, "Verdana", 24, FW_BOLD );
 	gUIDlg->setFont( 2, "Verdana", 20, FW_NORMAL );
 	gUIDlg->setFont( 3, "Verdana", 16, FW_NORMAL );
-	gUIDlg->setFont( 4, "Verdana", 32, FW_BOLD );
+	gUIDlg->setFont( 4, "Verdana", 34, FW_BOLD );
+	gUIDlg->setFont( 5, "Verdana", 16, FW_BOLD );
 
 	gUIDlg->addImage( 0, 0, 0, GUI_X, GUI_Y, *RGET_TEX("Title"), 0, 0, 1024, 768, &gUIImgLoading );
 
