@@ -66,6 +66,7 @@ private:
 	CComplexStuffEntity*	mStone;
 
 	// attacks
+	CComplexStuffEntity*	mAttack1;
 	CComplexStuffEntity*	mAttack2_1;
 	CComplexStuffEntity*	mAttack2_2;
 	CComplexStuffEntity*	mAttack3;

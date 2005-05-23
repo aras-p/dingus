@@ -460,7 +460,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	ITextureCreator* shadowT = new CFixedTextureCreator(
 		SZ_SHADOWMAP, SZ_SHADOWMAP, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
 	ITextureCreator* shadowTMip = new CFixedTextureCreator(
-		SZ_SHADOWMAP, SZ_SHADOWMAP, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+		SZ_SHADOWMAP, SZ_SHADOWMAP, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
 	stb.registerTexture( RT_SHADOWMAP, *shadowT );
 	stb.registerTexture( RT_SHADOWBLUR, *shadowTMip );
 	ssb.registerSurface( RT_SHADOWMAP, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP),0)) );
@@ -482,9 +482,9 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	stb.registerTexture( RT_FULLSCREEN, *new CScreenBasedTextureCreator(1.0f,1.0f,1,D3DUSAGE_RENDERTARGET,D3DFMT_A8R8G8B8,D3DPOOL_DEFAULT) );
 	ssb.registerSurface( RT_FULLSCREEN, *new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_FULLSCREEN),0) );
 
-	// reflections
+	// reflections / DOF
 	ITextureCreator* rtcreatDofRT = new CScreenBasedTextureCreator(
-		SZ_HALF_REL, SZ_HALF_REL, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
+		SZ_HALF_REL, SZ_HALF_REL, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT );
 
 	ISurfaceCreator* rtcreatReflRT = new CScreenBasedSurfaceCreator(
 		SZ_HALF_REL, SZ_HALF_REL, false, D3DFMT_A8R8G8B8, false );
@@ -606,6 +606,7 @@ void CDemo::loadDemo()
 static void	gStartMain()
 {
 	music::play( "data/sound/ic2005sound.ogg", true );
+	gSceneShared->clearPieces();
 	gCurScene = SCENE_MAIN;
 }
 
@@ -827,6 +828,7 @@ void CDemo::perform()
 		if( gCurScene == SCENE_MAIN ) {
 			// during main demo, 100% synchronize to music
 			float t = music::getTime();
+			//float t = CSystemTimer::getInstance().getTimeS(); // TEST
 			gDemoTimer.setTime( time_value::fromsec( t ) );
 			dt = gDemoTimer.getDeltaTimeS();
 			//CConsole::getChannel("system") << "music time: " << t << " demo time: " << gDemoTimer.getTimeS() << endl;
@@ -918,7 +920,7 @@ void CDemo::perform()
 
 	// render GUI
 	dx.sceneBegin();
-	gUIDlg->onRender( dt );
+	gUIDlg->onRender( CSystemTimer::getInstance().getDeltaTimeS() );
 	if( tweaker::isVisible() ) {
 		tweaker::getDlg().onRender( dt );
 	}

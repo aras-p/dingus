@@ -1061,6 +1061,16 @@ void CWall3D::fractureInPiece( int index )
 }
 
 
+void CWall3D::restoreAll()
+{
+	// restore all pieces
+	int n = mWall2D.getPieceCount();
+	for( int i = 0; i < n; ++i ) {
+		if( mFracturedPieces[i] )
+			fractureInPiece( i );
+	}
+}
+
 
 void CWall3D::update( float t )
 {

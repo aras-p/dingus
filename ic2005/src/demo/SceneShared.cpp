@@ -247,6 +247,12 @@ void CSceneSharedStuff::fractureSphere( float demoTimeS, const SVector3& pos, fl
 
 void CSceneSharedStuff::clearPieces()
 {
+	for( int i = 0; i < CFACE_COUNT; ++i ) {
+		if( mWalls[0][i] )
+			mWalls[0][i]->restoreAll();
+		if( mWalls[1][i] )
+			mWalls[1][i]->restoreAll();
+	}
 	wall_phys::clearPieces();
 }
 

@@ -106,7 +106,7 @@ technique tec20
 		SrcBlend = SrcAlpha;
 		DestBlend = InvSrcAlpha;
 	}
-	pass P0 {
+	pass P1 {
 		VertexShader = compile vs_1_1 vsMain2();
 		PixelShader = compile ps_2_0 psMain2();
 

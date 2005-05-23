@@ -257,7 +257,7 @@ public:
 	void	fracturePiecesInSphere( float t, const SVector3& pos, float radius, TIntVector& pcs,
 		float restoreAfter, float restoreDuration, bool noRestore );
 	void	fracturePiecesInYRange( float t, float y1, float y2, TIntVector& pcs );
-	//void	restorePieces( float t, float duration );
+	void	restoreAll();
 
 	void	render( eRenderMode rm );
 

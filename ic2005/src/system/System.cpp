@@ -14,7 +14,7 @@
 #include <dingus/input/DIMouse.h>
 
 
-const bool DEV_MODE = false;
+const bool DEV_MODE = true;
 
 
 SAppStartupParams CSystem::getStartupParams()
@@ -35,6 +35,7 @@ SAppStartupParams CSystem::getStartupParams()
 	sp.vsyncFullscreen = !DEV_MODE;
 	sp.debugTimer = false;
 	sp.selectDeviceAtStartup = !DEV_MODE;
+	sp.selectDeviceAtStartup = true;
 	return sp;
 }
 

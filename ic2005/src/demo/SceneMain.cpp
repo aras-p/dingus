@@ -34,6 +34,9 @@ static const float TIMEBLEND_END_FRAME = 3770 + 950;
 static const float ROOM2_BEGIN_FRAME = 5304 + 800;
 static const float LIGHT_SWITCH_FRAME = 5402 + 800;
 
+static const float ATK1_BEGIN_FRAME = 2404 + 800;
+static const float ATK1_END_FRAME = 2556 + 800;
+
 static const float ATK2_BEGIN_FRAME = 3160 + 800;
 static const float ATK2_END_FRAME = 3230 + 800;
 
@@ -86,6 +89,8 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	addAnimEntity( *mStone );
 
 	// attacks
+	mAttack1 = new CComplexStuffEntity( "AttackFx1", NULL, "AttackFx1" );
+	addAnimEntity( *mAttack1 );
 	mAttack2_1 = new CComplexStuffEntity( "AttackFx2_1", NULL, "AttackFx2" );
 	addAnimEntity( *mAttack2_1 );
 	mAttack2_2 = new CComplexStuffEntity( "AttackFx2_2", NULL, "AttackFx2" );
@@ -246,6 +251,7 @@ void CSceneMain::animateCamera()
 	D3DXMatrixRotationX( &mr, D3DX_PI/2 );
 	getCamera().mWorldMat = mr * SMatrix4x4( camPos, camRot );
 
+
 	const float camnear = 0.1f; // not from animation, just hardcoded
 	const float camfar = 50.0f;
 
@@ -311,6 +317,7 @@ void CSceneMain::update( time_value demoTime, float dt )
 	animateLocally( *mCharacter3, GUY3_BEGIN_FRAME );
 
 	// attacks
+	animateLocally( *mAttack1, ATK1_BEGIN_FRAME, ATK1_END_FRAME );
 	animateLocally( *mAttack2_1, ATK2_BEGIN_FRAME, ATK2_END_FRAME );
 	animateLocally( *mAttack2_2, ATK2_BEGIN_FRAME, ATK2_END_FRAME );
 	animateLocally( *mAttack3, ATK3_BEGIN_FRAME, ATK3_END_FRAME );
@@ -407,6 +414,9 @@ void CSceneMain::render( eRenderMode renderMode )
 		mStone->render( renderMode );
 
 	// attacks
+	if( mCurrAnimFrame > ATK1_BEGIN_FRAME && mCurrAnimFrame < ATK1_END_FRAME ) {
+		mAttack1->render( renderMode );
+	}
 	if( mCurrAnimFrame > ATK2_BEGIN_FRAME && mCurrAnimFrame < ATK2_END_FRAME ) {
 		mAttack2_1->render( renderMode );
 		mAttack2_2->render( renderMode );

@@ -105,6 +105,23 @@ static inline void gSkinning(
 	outNormal = normalize( normal );
 }
 
+
+static inline void gSkinningPos2(
+	float4	ipos,
+	float4	findices,
+	float	weight,
+	out float3 outPos )
+{
+	// compensate for lack of UBYTE4 on Geforce3
+	int4 indices = D3DCOLORtoUBYTE4( findices );
+
+	int idx = indices[0];
+	outPos = mul( ipos, mSkin[idx] ) * weight;
+
+	outPos += mul( ipos, mSkin[indices[1]] ) * (1-weight);
+}
+
+
 static inline void gSkinningPos(
 	float4	ipos,
 	float4	findices,
