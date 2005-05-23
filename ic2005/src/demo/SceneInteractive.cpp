@@ -70,7 +70,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 		mAttackIndex = -1;
 		mAttackAnimStartTime = time_value(-1);
 	} else {
-		if( mAttackIndex == 2 ) {
+		if( mAttackIndex == 2 || mAttackIndex == 3 ) {
 			mAttackType = 1;
 			time_value animTime = demoTime - mAttackAnimStartTime;
 			mAttack2_1->getWorldMatrix() = mCharacter->getWorldMatrix();

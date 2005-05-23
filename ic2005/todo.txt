@@ -3,6 +3,9 @@
 * = done
 - = will be cut :)
 
+-----------------------------------------------------------------------------
+IN PROGRESS
+
 CODE
 
 + Interactive mode (waiting for attack fx meshes/anims)
@@ -12,7 +15,6 @@ CODE
 . Benchmark mode!
 . Tweak character lighting
 . Shadows for other guys (needed?)
-. Loading screen
 . Fresnel for reflections?
 . Take time source from music?
 . Look at asm of the shaders, profile
@@ -23,6 +25,20 @@ CODE
 + Demo tweak UI
 + Blur in/out in several places
 
+ART
+
+. Fix tiny blinking polys on bed model
++ Tweak attack effect animations
+. (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
+
++ nvdxt all textures, experiment with mip filters
+
+
+-----------------------------------------------------------------------------
+RECENTLY DONE
+
+CODE
+* Loading screen
 * Character's electricity effects
 * Go to interactive mode when scroller ends or space is pressed
 * Clear pieces when entering interactive mode
@@ -57,14 +73,6 @@ CODE
 * Fix lighting on some objects bug
 * Light pos in object space via fx params
 
-
-
 ART
-
-. Tweak attack effect animations
-. (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
-
-+ nvdxt all textures, experiment with mip filters
-
 * Low poly / UV / NMap 2nd gargoyle
 * NMap top/ceil/floor bricks

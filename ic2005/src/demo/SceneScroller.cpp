@@ -126,6 +126,7 @@ void CSceneScroller::start( time_value demoTime )
 	mPlayedTime = 0.0f;
 	mLocalTime = time_value(0);
 	mCharacter->getAnimator().playDefaultAnim( mLocalTime );
+	gCharTimeBlend = 0.0f;
 }
 
 

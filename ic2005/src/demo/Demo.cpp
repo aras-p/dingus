@@ -85,6 +85,7 @@ bool CDemo::shouldShowStats()
 
 CUIDialog*		gUIDlg;
 
+CUIImage*		gUIImgLoading;
 CUIStatic*		gUILabFPS;
 
 
@@ -456,8 +457,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
-	G_INPUTCTX->addListener( *this );
-
 	// --------------------------------
 	// render targets
 
@@ -554,18 +553,21 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setFont( 3, "Verdana", 16, FW_NORMAL );
 	gUIDlg->setFont( 4, "Verdana", 32, FW_BOLD );
 
-	gSetupGUI();
-	gUIDlg->setRenderCallback( gUIRenderCallback );
-	
+	gUIDlg->addImage( 0, 0, 0, GUI_X, GUI_Y, *RGET_TEX("Title"), 0, 0, 1024, 768, &gUIImgLoading );
 
-	// --------------------------------
+	// bulk of the demo will be loaded later, when loading screen is drawn
+}
+
+
+
+// actually load the demo
+void CDemo::loadDemo()
+{
 	// scenes
-
 	gSceneShared = new CSceneSharedStuff();
 	gSceneMain = new CSceneMain( gSceneShared );
 	gSceneInt = new CSceneInteractive( gSceneShared );
 	gSceneScroller = new CSceneScroller();
-
 
 	// post processes
 	gPPReflBlur = new CPostProcess( RT_QUAD_TMP1, RT_QUAD_TMP2 );
@@ -593,8 +595,12 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	// music
 	music::init( mHwnd );
-}
 
+	// listeners and callbacks
+	G_INPUTCTX->addListener( *this );
+	gSetupGUI();
+	gUIDlg->setRenderCallback( gUIRenderCallback );
+}
 
 
 // --------------------------------------------------------------------------
@@ -775,6 +781,31 @@ void CDemo::perform()
 
 	CDynamicVBManager::getInstance().discard();
 	CDynamicIBManager::getInstance().discard();
+	CD3DDevice& dx = CD3DDevice::getInstance();
+
+
+	// very first perform - draw loading screen and return immediately
+	static bool loadingScreenDone = false;
+	if( !loadingScreenDone ) {
+		loadingScreenDone = true;
+
+		dx.clearTargets( true, true, false, 0xFFffffff, 1.0f, 0L );
+		dx.sceneBegin();
+		G_RENDERCTX->applyGlobalEffect();
+		gUIDlg->onRender( 0.01f );
+		dx.sceneEnd();
+
+		gUIImgLoading->setVisible( false );
+		return;
+	}
+
+	// second perform - actually load everything
+	static bool loaded = false;
+	if( !loaded ) {
+		loaded = true;
+		loadDemo();
+	}
+
 
 	G_INPUTCTX->perform();
 
@@ -820,8 +851,7 @@ void CDemo::perform()
 
 	gWallVertCount = gWallTriCount = 0;
 
-	CD3DDevice& dx = CD3DDevice::getInstance();
-	
+
 	gScreenFixUVs.set( 0.5f/dx.getBackBufferWidth(), 0.5f/dx.getBackBufferHeight(), 0.0f, 0.0f );
 	
 	
@@ -832,6 +862,7 @@ void CDemo::perform()
 		demoTime.tosec()*ANIM_FPS
 	);
 	gUILabFPS->setText( buf );
+	gUILabFPS->setVisible( false );
 
 	// rendering options
 	const tweaker::SOptions& options = tweaker::getOptions();

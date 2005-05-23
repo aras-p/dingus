@@ -80,6 +80,8 @@ CControllableCharacter::CControllableCharacter( float minX, float minZ, float ma
 	// 19, R Hand; 38, L Hand
 
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v02"), 0 ) );
+	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v02"), 0 ) ); // add two times to increase probability
+
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03"), 0 ) );
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03b"), 0 ) );
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03c"), 0 ) );
