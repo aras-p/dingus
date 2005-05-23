@@ -25,11 +25,9 @@ CODE
 
 ART
 
-. Change fx texture borders to white from black
 . (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
 
 + Tweak attack effect animations
-+ nvdxt all textures, experiment with mip filters
 
 
 -----------------------------------------------------------------------------
@@ -74,6 +72,8 @@ CODE
 * Light pos in object space via fx params
 
 ART
+* Change fx texture borders to white from black
+* DDS all textures, experiment with mip filters
 * Fix tiny blinking polys on bed model
 * Low poly / UV / NMap 2nd gargoyle
 * NMap top/ceil/floor bricks

@@ -21,6 +21,7 @@
 #include <dingus/gfx/geometry/DynamicVBManager.h>
 #include <dingus/gfx/geometry/DynamicIBManager.h>
 #include "PostProcess.h"
+#include <ctime>
 
 
 // --------------------------------------------------------------------------
@@ -559,6 +560,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 // actually load the demo
 void CDemo::loadDemo()
 {
+	clock_t t1 = clock();
+
 	// scenes
 	gSceneShared = new CSceneSharedStuff();
 	gSceneMain = new CSceneMain( gSceneShared );
@@ -596,6 +599,17 @@ void CDemo::loadDemo()
 	G_INPUTCTX->addListener( *this );
 	gSetupGUI();
 	gUIDlg->setRenderCallback( gUIRenderCallback );
+
+	// if we loaded too fast, annoy users more and show the loading screen!
+	// ok, it's at most 3 seconds; let's say that's needed because the beamers
+	// switch resolutions slowly
+	const float MIN_LOAD_TIME = 3.0f;
+	clock_t t2 = clock();
+	float loaded = float(t2-t1)/CLOCKS_PER_SEC;
+	float towait = MIN_LOAD_TIME - loaded;
+	if( towait > 0 ) {
+		Sleep( towait * 1000 );
+	}
 }
 
 
@@ -661,8 +675,8 @@ static bool		gInputAttack = false;
 
 static void gAdjustTime( float dt )
 {
-	music::setTime( music::getTime() + dt );
-	gDemoTimer.setTime( time_value::fromsec( music::getTime() + dt ) );
+	gDemoTimer.update( time_value::fromsec( dt ) );
+	music::setTime( gDemoTimer.getTimeS() );
 }
 
 void CDemo::onInputEvent( const CInputEvent& event )
