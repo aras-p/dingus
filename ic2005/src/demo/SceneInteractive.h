@@ -25,6 +25,8 @@ public:
 	void	processInput( float mov, float rot, bool attack, time_value demoTime, float dt );
 
 private:
+	void	animateAttack1Bolt( float animTime,
+		const SMatrix4x4& handMat, SMatrix4x4* mats, float ts, float th, float addY );
 	void	animateAttack1( time_value animTime );
 
 private:

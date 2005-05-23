@@ -46,6 +46,14 @@ CControllableCharacter::SAnimParams::SAnimParams( CAnimationBunch* anm, float mo
 	moveSpeed = moveAmount / duration;
 }
 
+CControllableCharacter::SWholeAttackParams::SWholeAttackParams( float tsL, float thL, float tsR, float thR, float ay )
+{
+	l.timeStart = tsL / ANIM_FPS;
+	l.timeHit = thL / ANIM_FPS;
+	r.timeStart = tsR / ANIM_FPS;
+	r.timeHit = thR / ANIM_FPS;
+	addY = ay;
+}
 
 
 CControllableCharacter::CControllableCharacter( float minX, float minZ, float maxX, float maxZ )
@@ -60,11 +68,6 @@ CControllableCharacter::CControllableCharacter( float minX, float minZ, float ma
 	mAnimsIdle.push_back( SAnimParams( RGET_ANIM("Idle_v01"), 0.0f ) );
 	
 	// walk animations, in increasing speed
-	//mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Slow01"), 0.5856f ) );	// 1.20525 m/s
-	////mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Slow01"), 1.2856f ) );	// 1.20525 m/s
-	//mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Slow02"), 1.2856f ) );	// 1.20525 m/s
-	//mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Fast"), 1.857f ) );		// 1.74094 m/s
-	
 	mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Back01"), -1.3381f ) );		// -0.637 m/s
 	mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Back01"), -0.3f ) );
 	mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Slow01"), 0.4679f ) );	// 1.20525 m/s
@@ -72,19 +75,26 @@ CControllableCharacter::CControllableCharacter( float minX, float minZ, float ma
 	mAnimsMove.push_back( SAnimParams( RGET_ANIM("LoopWalk_Fast"), 1.801f ) );		// 1.74094 m/s
 	
 
-	// start frame, bone (+y), hits after ~5 frames
+	// start frame, bone (+y), hits (bone +x)
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v01"), 0 ) );
-	// 19, R Hand
+	mAttackParams.push_back( SWholeAttackParams(-1,-1,17,22,1) );
 
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v01_2x"), 0 ) );
-	// 19, R Hand; 38, L Hand
+	mAttackParams.push_back( SWholeAttackParams(34,41,17,22,1) );
 
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v02"), 0 ) );
+	mAttackParams.push_back( SWholeAttackParams(-1,-1,-1,-1,0) );
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v02"), 0 ) ); // add two times to increase probability
+	mAttackParams.push_back( SWholeAttackParams(-1,-1,-1,-1,0) );
 
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03"), 0 ) );
+	mAttackParams.push_back( SWholeAttackParams(18,24,31,37,1) );
+
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03b"), 0 ) );
+	mAttackParams.push_back( SWholeAttackParams(18,26,35,43,1) );
+	
 	mAnimsAttack.push_back( SAnimParams( RGET_ANIM("Attack_v03c"), 0 ) );
+	mAttackParams.push_back( SWholeAttackParams(18,26,-1,-1,1) );
 
 	getAnimator().setDefaultAnim( *mAnimsIdle[0].anim, mAnimsIdle[0].duration, 0.5f );
 	getAnimator().playDefaultAnim( time_value(0) );

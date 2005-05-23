@@ -6,6 +6,7 @@
 #include <dingus/math/Line3.h>
 #include <dingus/utils/Random.h>
 #include <dingus/gfx/gui/Gui.h>
+#include <dingus/math/MathUtils.h>
 
 
 // --------------------------------------------------------------------------
@@ -22,8 +23,8 @@ CSceneInteractive::CSceneInteractive( CSceneSharedStuff* sharedStuff )
 	addAnimEntity( *mCharacter );
 
 	mSpineBoneIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "Spine" );
-	mHandLIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "L Hand" );
-	mHandRIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "R Hand" );
+	mHandLIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "L Finger2" );
+	mHandRIndex = mCharacter->getAnimator().getCurrAnim()->getCurveIndexByName( "R Finger2" );
 
 	// room
 	gReadScene( "data/scene.lua", mRoom );
@@ -68,38 +69,66 @@ void CSceneInteractive::start( time_value demoTime, CUIDialog& dlg )
 }
 
 
+void CSceneInteractive::animateAttack1Bolt( float animTime,
+		const SMatrix4x4& handMat, SMatrix4x4* mats, float ts, float th, float addY )
+{
+	const int MATRIX_COUNT = 4;
+
+	if( ts < 0.0f ) {
+		// make very small
+		SMatrix4x4 mbase;
+		mbase.identify();
+		mbase.getAxisX().x = mbase.getAxisY().y = mbase.getAxisZ().z = 1.0e-6f;
+		mbase.getOrigin() = handMat.getOrigin();
+		for( int i = 0; i < MATRIX_COUNT; ++i ) {
+			mats[i] = mbase;
+		}
+		return;
+	}
+
+	// figure out wanted length of the bold and direction lerper
+	float wantedLength;
+	float dirLerp;
+	const float MIN_LENGTH = 0.001f;
+	const float MAX_LENGTH = 4.0f / MATRIX_COUNT;
+	if( animTime <= th ) {
+		float a = clamp( (animTime-ts)/(th-ts) );
+		dirLerp = a;
+		wantedLength = a * MAX_LENGTH + MIN_LENGTH;
+	} else {
+		float a = clamp( 1 - (animTime-th)/(th-ts) );
+		dirLerp = 1.0f;
+		wantedLength = a * MAX_LENGTH + MIN_LENGTH;
+	}
+
+	// figure out wanted direction
+	SVector3 wantedDir = handMat.getAxisZ() * (1-dirLerp) + handMat.getAxisX() * dirLerp;
+	wantedDir.normalize();
+
+	// construct bolt skinning matrices
+	static const int MAT_INDEX_MAP[MATRIX_COUNT] = { 1, 2, 3, 0, }; // match animation!
+
+	// base matrix
+	SMatrix4x4 mbase;
+	mbase.identify();
+	mbase.getAxisZ() = -wantedDir;
+	mbase.spaceFromAxisZ();
+
+	for( int i = 0; i < MATRIX_COUNT; ++i ) {
+		mats[i] = mbase;
+		mats[i].getOrigin() = handMat.getOrigin() + wantedDir * (wantedLength * i);
+	}
+}
+
+
 void CSceneInteractive::animateAttack1( time_value animTime )
 {
-	animTime -= time_value::fromsec( 0.3f );
-	if( animTime.value < 0 )
-		animTime.zero();
-
+	const CControllableCharacter::SWholeAttackParams& atkParams = mCharacter->getAttackParams( mAttackIndex );
+	float animTimeS = animTime.tosec();
 	const SMatrix4x4& mhandL = mCharacter->getAnimator().getBoneWorldMatrices()[mHandLIndex];
 	const SMatrix4x4& mhandR = mCharacter->getAnimator().getBoneWorldMatrices()[mHandRIndex];
-	//mhandL.invert();
-	//mhandR.invert();
-	SMatrix4x4 offL = mInvMatLMid * mhandL;
-	SMatrix4x4 offR = mInvMatRMid * mhandR;
-	//offL.invert();
-	//offR.invert();
-	//mAttack1L->getWorldMatrix() = offL;
-	//mAttack1R->getWorldMatrix() = offR;
-	//SVector3 offL = mhandL.getOrigin() - mMatLMid.getOrigin();
-	//SVector3 offR = mhandR.getOrigin() - mMatRMid.getOrigin();
-	
-	//mAttack1L->update( animTime );
-	//mAttack1R->update( animTime );
-	mAttack1L->getAnimator().updateLocal( animTime );
-	mAttack1L->getAnimator().updateWorld();
-	mAttack1R->getAnimator().updateLocal( animTime );
-	mAttack1R->getAnimator().updateWorld();
-	const int BONES = 4;
-	for( int i = 0; i < BONES; ++i ) {
-		mAttack1L->getAnimator().getBoneWorldMatrices()[i] *= offL;
-		mAttack1R->getAnimator().getBoneWorldMatrices()[i] *= offR;
-		//mAttack1L->getAnimator().getBoneWorldMatrices()[i].getOrigin() += offL;
-		//mAttack1R->getAnimator().getBoneWorldMatrices()[i].getOrigin() += offR;
-	}
+	animateAttack1Bolt( animTimeS, mhandL, mAttack1L->getAnimator().getBoneWorldMatrices(), atkParams.l.timeStart, atkParams.l.timeHit, atkParams.addY );
+	animateAttack1Bolt( animTimeS, mhandR, mAttack1R->getAnimator().getBoneWorldMatrices(), atkParams.r.timeStart, atkParams.r.timeHit, atkParams.addY );
 	mAttack1L->getSkinUpdater().update();
 	mAttack1R->getSkinUpdater().update();
 }

@@ -8,12 +8,25 @@
 
 class CControllableCharacter : public CComplexStuffEntity {
 public:
+	struct SAttackParams {
+		float	timeStart;	// negative if none
+		float	timeHit;
+	};
+	struct SWholeAttackParams {
+		SWholeAttackParams( float tsL, float thL, float tsR, float thR, float ay );
+
+		SAttackParams l, r;
+		float	addY;
+	};
+public:
 	CControllableCharacter( float minX, float minZ, float maxX, float maxZ );
 	~CControllableCharacter();
 
 	void	move( float accel, time_value timenow, float dt );
 	void	rotate( float targetSpeed, float dt );
 	int		attack( time_value timenow );
+
+	const SWholeAttackParams& getAttackParams( int index ) const { return mAttackParams[index]; }
 	
 private:
 	struct SAnimParams {
@@ -31,6 +44,7 @@ private:
 	TAnimParamsVector	mAnimsIdle;
 	TAnimParamsVector	mAnimsMove;
 	TAnimParamsVector	mAnimsAttack;
+	std::vector<SWholeAttackParams>	mAttackParams;
 
 	float	mMinX, mMaxX;
 	float	mMinZ, mMaxZ;
