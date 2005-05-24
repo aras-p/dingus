@@ -27,12 +27,12 @@ static const float DOOR_END_FRAME = 5400 + 800;
 static const float GUY2_BEGIN_FRAME = 5500 + 800;
 static const float GUY3_BEGIN_FRAME = 5639 + 800;
 
-static const float TIMEBLEND_BEGIN_FRAME = 2450 + 950;
-static const float TIMEBLEND_END_FRAME = 3770 + 950;
+static const float TIMEBLEND_BEGIN_FRAME = 2410 + 950;
+static const float TIMEBLEND_END_FRAME = 3700 + 950;
 
 
 static const float ROOM2_BEGIN_FRAME = 5304 + 800;
-static const float LIGHT_SWITCH_FRAME = 5402 + 800;
+static const float LIGHT_SWITCH_FRAME = 5497 + 800;
 
 static const float ATK1_BEGIN_FRAME = 2404 + 800;
 static const float ATK1_END_FRAME = 2813 + 800;
@@ -62,6 +62,7 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 ,	mAnimDuration(0)
 ,	mCurrAnimFrame(0)
 ,	mCurrAnimAlpha(0)
+,	mWasLight1(true)
 {
 	// characters
 	mCharacter = new CComplexStuffEntity( "Bicas", "Electricity", "BicasAnim" );
@@ -302,7 +303,17 @@ void CSceneMain::update( time_value demoTime, float dt )
 	mCurrAnimAlpha = demoTimeS / mAnimDuration;
 	mCurrAnimFrame = mCurrAnimAlpha * mAnimFrameCount;
 
+	int i, n;
+
 	bool secondLight = (mCurrAnimFrame >= LIGHT_SWITCH_FRAME);
+	if( secondLight == mWasLight1 ) {
+		// switched light, update 1st room
+		n = mRoom.size();
+		for( i = 0; i < n; ++i ) {
+			mRoom[i]->setMoved();
+		}
+	}
+	mWasLight1 = !secondLight;
 
 	// animate characters
 	gCharTimeBlend = clamp( (mCurrAnimFrame-TIMEBLEND_BEGIN_FRAME)/(TIMEBLEND_END_FRAME-TIMEBLEND_BEGIN_FRAME) );
@@ -348,10 +359,9 @@ void CSceneMain::update( time_value demoTime, float dt )
 	}
 
 	// update rooms
-	int i;
-	int n = mRoom.size();
+	n = mRoom.size();
 	for( i = 0; i < n; ++i ) {
-		mRoom[i]->update( LIGHT_POS_1 );
+		mRoom[i]->update( (secondLight ? LIGHT_POS_2 : LIGHT_POS_1) );
 	}
 	if( mCurrAnimFrame >= ROOM2_BEGIN_FRAME ) {
 		n = mRoom2.size();

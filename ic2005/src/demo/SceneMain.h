@@ -78,6 +78,7 @@ private:
 	// outside rooms
 	std::vector<CRoomObjectEntity*>	mRoom;
 	std::vector<CRoomObjectEntity*>	mRoom2;
+	bool					mWasLight1;
 };
 
 
