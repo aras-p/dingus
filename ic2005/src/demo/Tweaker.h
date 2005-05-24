@@ -18,6 +18,7 @@ namespace tweaker {
 		bool	dof;
 		bool	normalmaps;
 		bool	ao;
+		bool	funky;
 	};
 
 

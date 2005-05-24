@@ -26,6 +26,7 @@ tweaker::SOptions::SOptions()
 ,	dof(true)
 ,	normalmaps(true)
 ,	ao(true)
+,	funky(false)
 {
 }
 
@@ -37,6 +38,7 @@ void tweaker::SOptions::apply()
 	bfx.setMacro( "D_REFLECTIONS", reflections ? "1" : "0" );
 	bfx.setMacro( "D_NORMALMAPS", normalmaps ? "1" : "0" );
 	bfx.setMacro( "D_AO", ao ? "1" : "0" );
+	bfx.setMacro( "D_FUNKY", funky ? "1" : "0" );
 	bfx.reload();
 	CEffectParamsNotifier::getInstance().notify();
 }
@@ -50,6 +52,7 @@ enum eTweakControls {
 	GID_CHK_DOF,
 	GID_CHK_NORMALMAPS,
 	GID_CHK_AO,
+	GID_CHK_FUNKY,
 };
 
 
@@ -86,6 +89,11 @@ void CALLBACK dlgCallback( UINT evt, int ctrlID, CUIControl* ctrl )
 			break;
 		case GID_CHK_AO:
 			options.ao = checked;
+			if( fullyInited )
+				options.apply();
+			break;
+		case GID_CHK_FUNKY:
+			options.funky = checked;
 			if( fullyInited )
 				options.apply();
 			break;
@@ -127,6 +135,7 @@ void tweaker::init()
 	yline = 10;
 	dialog->addStatic( 0, "Graphics options", xcol-10, yline, 200, 22, false, &lab );
 	lab->getElement(0)->setFont( 1, false, DT_LEFT | DT_VCENTER );
+	yline += DYLINE/2;
 
 	dialog->addCheckBox( GID_CHK_WIREFRAME, "Wireframe", xcol, yline+=DYLINE, 130, HC, options.wireframe );
 	dialog->addCheckBox( GID_CHK_SHADOWS, "Shadows", xcol, yline+=DYLINE, 130, HC, options.shadows );
@@ -134,6 +143,7 @@ void tweaker::init()
 	dialog->addCheckBox( GID_CHK_DOF, "Depth of field", xcol, yline+=DYLINE, 130, HC, options.dof );
 	dialog->addCheckBox( GID_CHK_NORMALMAPS, "Normal mapping", xcol, yline+=DYLINE, 130, HC, options.normalmaps );
 	dialog->addCheckBox( GID_CHK_AO, "Ambient occlusion", xcol, yline+=DYLINE, 130, HC, options.ao );
+	dialog->addCheckBox( GID_CHK_FUNKY, "I want more colors!", xcol, yline+=DYLINE+5, 130, HC, options.funky );
 	
 	// buttons
 	dialog->addButton( IDOK, "Close", 340, dialog->getHeight()-35, 58, 20 );

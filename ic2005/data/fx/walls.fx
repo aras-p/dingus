@@ -122,7 +122,9 @@ half4 psMain( SOutput i ) : COLOR {
 	half4 col = l;
 
 	// want more colours - uncomment this!
-	//col.rgb = cross( n.rgb, tol.rgb )*0.5+0.5;
+#if D_FUNKY==1
+	col.rgb = cross( n.rgb, tol.rgb )*0.5+0.5;
+#endif
 
 #ifdef WALL_SHADOW
 	half shadow = tex2Dproj( smpShadow, i.WALL_SHCRD ).r;
