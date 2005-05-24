@@ -24,7 +24,6 @@ CODE
 
 ART
 
-. Add final 1st attacks anim (waiting for anim)
 . (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
 + Tweak attack effect animations
 
@@ -72,6 +71,7 @@ CODE
 * Light pos in object space via fx params
 
 ART
+* Add final 1st attacks anim
 * Change fx texture borders to white from black
 * DDS all textures, experiment with mip filters
 * Fix tiny blinking polys on bed model

@@ -35,7 +35,7 @@ static const float ROOM2_BEGIN_FRAME = 5304 + 800;
 static const float LIGHT_SWITCH_FRAME = 5402 + 800;
 
 static const float ATK1_BEGIN_FRAME = 2404 + 800;
-static const float ATK1_END_FRAME = 2636 + 800;
+static const float ATK1_END_FRAME = 2813 + 800;
 
 static const float ATK2_BEGIN_FRAME = 3160 + 800;
 static const float ATK2_END_FRAME = 3230 + 800;
