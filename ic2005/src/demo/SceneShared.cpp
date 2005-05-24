@@ -227,7 +227,7 @@ float CSceneSharedStuff::intersectRay( const SLine3& ray ) const
 	return minWallT;
 }
 
-void CSceneSharedStuff::fractureSphere( float demoTimeS, const SVector3& pos, float radius )
+void CSceneSharedStuff::fractureSphere( float demoTimeS, const SVector3& pos, float radius, float restoreAfter )
 {
 	TIntVector pieces;
 	const int LOD_IDX = 0;
@@ -237,7 +237,7 @@ void CSceneSharedStuff::fractureSphere( float demoTimeS, const SVector3& pos, fl
 			continue;
 
 		mWalls[LOD_IDX][i]->fracturePiecesInSphere(
-			demoTimeS, pos, radius, pieces, 10.0f, 1.0f, false );
+			demoTimeS, pos, radius, pieces, restoreAfter, 1.0f, false );
 		int npc = pieces.size();
 		for( int k = 0; k < npc; ++k ) {
 			wall_phys::spawnPiece( LOD_IDX, i, pieces[k], false );

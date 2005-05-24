@@ -56,6 +56,8 @@ CSceneInteractive::~CSceneInteractive()
 void CSceneInteractive::start( time_value demoTime, CUIDialog& dlg )
 {
 	mSharedStuff->clearPieces();
+	mCharacter->getAnimator().playDefaultAnim( demoTime - time_value::fromsec(1.0f) );
+	mCharacter->getAnimator().updateLocal( demoTime );
 }
 
 
@@ -252,7 +254,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 	if( mWallHitTime.value >= 0 && demoTime >= mWallHitTime ) {
 		mWallHitTime = time_value(-1);
 
-		mSharedStuff->fractureSphere( demoTimeS, mWallHitPos, mWallHitRadius );
+		mSharedStuff->fractureSphere( demoTimeS, mWallHitPos, mWallHitRadius, 20.0f );
 		CConsole::CON_WARNING.write( "hit!" );
 	}
 }

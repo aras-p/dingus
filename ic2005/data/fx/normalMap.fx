@@ -60,8 +60,8 @@ half4 psMain( SOutput i ) : COLOR {
 	normal = normalize( normal );
 
 	half amb = 0.1;
-	half ambBias = 0.1;
-	half ambMul = 0.9;
+	half ambBias = -0.2;
+	half ambMul = 1.3;
 #if D_AO==1
 	half occ = normalAO.a * ambMul;
 #else
@@ -77,7 +77,7 @@ half4 psMain( SOutput i ) : COLOR {
 	float spec = 0;
 #endif
 
-	diffuse = diffuse * occ + ambBias;
+	diffuse = saturate( diffuse * occ + ambBias );
 
 	// sample diffuse/gloss map
 	half4 cBase = tex2D( smpBase, i.uv );

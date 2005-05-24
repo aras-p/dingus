@@ -27,7 +27,7 @@ public:
 	CWall3D** getWalls( int lodIndex ) { return mWalls[lodIndex]; }
 
 	float	intersectRay( const SLine3& ray ) const;
-	void	fractureSphere( float demoTimeS, const SVector3& pos, float radius );
+	void	fractureSphere( float demoTimeS, const SVector3& pos, float radius, float restoreAfter );
 	void	clearPieces();
 
 private:

@@ -44,10 +44,6 @@ static const float ATK3_BEGIN_FRAME = 3800 + 800;
 static const float ATK3_END_FRAME = 3960 + 800;
 
 
-static const float TITLE_FRAMES = 150;
-static const float TITLE_FADE_FRAMES = 30;
-
-
 static const float BLUR_BEGIN_FRAMES = 90;
 static const float BLUR_END_FRAMES = 90;
 static const float BLUR_END_START = 90;
@@ -437,22 +433,14 @@ void CSceneMain::renderUI( CUIDialog& dlg )
 
 	SFRect textRC;
 
-	// title at start
-	textRC.left = 0.1f * GUI_X;
-	textRC.right = GUI_X - 20;
-	textRC.top = 0.1f * GUI_Y;
-	textRC.bottom = GUI_Y - 20;
-
-	textElem.colorFont.current.a = clamp( 1-(mCurrAnimFrame-TITLE_FRAMES)/TITLE_FADE_FRAMES );
-	textElem.fontIdx = 1;
-	dlg.drawText( "in.out.side: the shell", &textElem, &textRC, false );
-
 	// "press space" during the demo
-	textElem.colorFont.current.a = (1 - textElem.colorFont.current.a)*0.5f;
+	textElem.colorFont.current.a = 0.50f;
+	textRC.left = 0.1f * GUI_X;
+	textRC.top = 0.1f * GUI_Y;
 	textRC.right = GUI_X - 5;
 	textRC.bottom = GUI_Y - 5;
 	textElem.fontIdx = 0;
-	dlg.drawText( "press space to enter interactive mode", &textElem, &textRC, false );
+	dlg.drawText( "press [space] to enter interactive mode", &textElem, &textRC, false );
 
 	// scene poetry at end
 	if( mCurrAnimFrame >= mAnimFrameCount ) {
