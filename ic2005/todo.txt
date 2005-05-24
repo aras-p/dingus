@@ -8,7 +8,6 @@ IN PROGRESS
 
 CODE
 
-+ Tweak rendering contast/gamma
 . Turn on electricity at needed point
 + Interactive mode
 + Test on various hardware
@@ -26,15 +25,15 @@ CODE
 
 ART
 
-. Darken niches
-. (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
-+ Tweak attack effect animations
++ Fake lightmaps to the rescue!
+- Adjust room layout to fill 1-px gaps somewhere.
 
 
 -----------------------------------------------------------------------------
 RECENTLY DONE
 
 CODE
+* Tweak rendering contast
 * Attack effects
 * Scene poetry at the end
 * Take time source from music
@@ -74,6 +73,7 @@ CODE
 * Light pos in object space via fx params
 
 ART
+* Tweak attack effect animations
 * Hand edited character's AO texture to fix bad places :)
 * Add final 1st attacks anim
 * Change fx texture borders to white from black

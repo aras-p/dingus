@@ -433,6 +433,14 @@ SOURCE=.\data\fx\normalMap.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\normalMapL.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\normalMaps.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\scrollerFloor.fx
 # End Source File
 # Begin Source File

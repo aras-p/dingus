@@ -222,8 +222,8 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 	//const float dofDist = SVector3(getCamera().mWorldMat.getOrigin() - getLightTargetMatrix()->getOrigin()).length() * 1.2f;
 	//const float dofRange = dofDist * 3.0f;
-	const float dofDist = 4.0f;
-	const float dofRange = 5.0f;
+	const float dofDist = 5.0f;
+	const float dofRange = 9.0f;
 	gDOFParams.set( dofDist, 1.0f / dofRange, 0.0f, 0.0f );
 	gSetDOFBlurBias( 0.0f );
 
@@ -262,7 +262,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 void CSceneInteractive::render( eRenderMode renderMode )
 {
-	mSharedStuff->renderWalls( 0, renderMode, false );
+	//mSharedStuff->renderWalls( 0, renderMode, false );
 	
 	mCharacter->render( renderMode );
 

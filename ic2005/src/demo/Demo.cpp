@@ -870,6 +870,7 @@ void CDemo::perform()
 		break;
 	case SCENE_INTERACTIVE:
 		curScene = gSceneInt;
+		clearColor = 0xFF404040;
 		break;
 	}
 	assert( curScene );
