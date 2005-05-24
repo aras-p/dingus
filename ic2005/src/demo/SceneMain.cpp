@@ -103,10 +103,10 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	gReadScene( "data/scene2.lua", mRoom2 );
 
 	mRoom2Top = new CMeshEntity( "Room2Top" );
-	mRoom2Top->addLightToParams( LIGHT_POS_2 );
+	mRoom2Top->addLightToParams( LIGHT_POS_2 + LIGHT_WOFF );
 	addEntity( *mRoom2Top );
 	mRoom2Bottom = new CMeshEntity( "Room2Bottom" );
-	mRoom2Top->addLightToParams( LIGHT_POS_2 );
+	mRoom2Top->addLightToParams( LIGHT_POS_2 + LIGHT_WOFF );
 	addEntity( *mRoom2Bottom );
 
 	// animating doors

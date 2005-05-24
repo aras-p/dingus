@@ -122,7 +122,7 @@ void wall_phys::initialize( float updDT, const SVector3& boundMin, const SVector
 
 	renderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 1 );
 	renderables[RM_NORMAL]->getParams().setEffect( *RGET_FX("wall_DnSA") );
-	renderables[RM_NORMAL]->getParams().addVector3( "vLightPos", LIGHT_POS_1 );
+	renderables[RM_NORMAL]->getParams().addVector3( "vLightPos", LIGHT_POS_1 + LIGHT_WOFF );
 	renderables[RM_CASTERSIMPLE] = new CRenderableIndexedBuffer( NULL, 1 );
 	renderables[RM_CASTERSIMPLE]->getParams().setEffect( *RGET_FX("casterSimpleA") );
 	

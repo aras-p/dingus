@@ -72,7 +72,7 @@ half4 psMain( SOutput i ) : COLOR {
 	half3 normal = normalAO.rgb*2-1;
 
 #if D_AO==1
-	half occ = normalAO.a * 0.5 + 0.5;
+	half occ = normalAO.a * 0.8 + 0.2;
 #else
 	half occ = 1;
 #endif
@@ -93,11 +93,13 @@ half4 psMain( SOutput i ) : COLOR {
 	const half3 cDiff = half3( 1.05, 1.1, 1.2 );
 
 	const half3 cRim = half3( 0.99, 0.98, 0.96 );
-	half3 col = cDiff * diffuse + cRim * rim;
+	half3 col = cDiff * diffuse;
 
-	col = col * 0.5 + 0.6 * occ;
+	col = col * 0.4 + 0.65 * occ;
 
 	col *= colChar;
+
+	col += cRim * rim;
 
 	return half4( col, gBluriness(i.z) );
 }

@@ -8,6 +8,13 @@ float3		vLightPos;
 
 #define WALL_DOF
 
+#ifndef WALL_DIFF
+#define WALL_DIFF	DEF_WALL_DIFF
+#endif
+#ifndef WALL_AMB
+#define WALL_AMB	DEF_WALL_AMB
+#endif
+
 
 #ifdef WALL_NCOL
 	#define WALL_INPUT SPosCol
@@ -111,7 +118,7 @@ half4 psMain( SOutput i ) : COLOR {
 	// lighting
 	half3 n = i.na.xyz*2-1;
 	half3 tol = normalize( i.tol*2-1 );
-	half l = gWallLightPS( n, tol );
+	half l = gWallLightPS( n, tol, WALL_DIFF, WALL_AMB );
 	half4 col = l;
 
 	// want more colours - uncomment this!
@@ -126,7 +133,7 @@ half4 psMain( SOutput i ) : COLOR {
 	col.xyz *= shadow;
 #endif
 #ifdef WALL_REFL
-	col.xyz += tex2Dproj( smpRefl, i.WALL_RFCRD ) * 0.2;
+	col.xyz += tex2Dproj( smpRefl, i.WALL_RFCRD ) * 0.25;
 #endif
 
 	half4 color = col;

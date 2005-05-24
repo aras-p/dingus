@@ -8,6 +8,8 @@ IN PROGRESS
 
 CODE
 
++ Tweak rendering contast/gamma
+. Turn on electricity at needed point
 + Interactive mode
 + Test on various hardware
 . Benchmark mode!
@@ -24,6 +26,7 @@ CODE
 
 ART
 
+. Darken niches
 . (Paulius?) Adjust room layout to fill 1-px gaps somewhere.
 + Tweak attack effect animations
 
@@ -71,6 +74,7 @@ CODE
 * Light pos in object space via fx params
 
 ART
+* Hand edited character's AO texture to fix bad places :)
 * Add final 1st attacks anim
 * Change fx texture borders to white from black
 * DDS all textures, experiment with mip filters

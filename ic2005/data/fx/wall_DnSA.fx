@@ -7,4 +7,6 @@
 
 #define WALL_ALPHA
 
+#define WALL_AMB 0.35
+
 #include "walls.fx"

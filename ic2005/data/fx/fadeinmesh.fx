@@ -51,7 +51,7 @@ half4 psMain( SOutput i ) : COLOR {
 	// lighting
 	half3 n = vNormal;
 	half3 tol = normalize( i.tol*2-1 );
-	half l = gWallLightPS( n, tol );
+	half l = gWallLightPS( n, tol, DEF_WALL_DIFF, DEF_WALL_AMB );
 	half3 col = l;
 
 	col += tex2Dproj( smpRefl, i.uvp ).rgb * 0.2;

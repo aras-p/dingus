@@ -40,6 +40,7 @@ static const SVector3 ROOM_HSIZE = ROOM_SIZE*0.5f;
 
 static const SVector3 LIGHT_POS_1 = SVector3( ROOM_MID.x, ROOM_MAX.y*1.5f, ROOM_MID.z );
 static const SVector3 LIGHT_POS_2 = SVector3( LIGHT_POS_1.x + ROOM_SIZE.x, LIGHT_POS_1.y, LIGHT_POS_1.z );
+static const SVector3 LIGHT_WOFF = SVector3( 0, -ROOM_MAX.y*0.8f, 0 );
 
 static const double ANIM_FPS = 30.0;
 
