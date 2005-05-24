@@ -43,10 +43,10 @@ half4 psMain20( float2 tc0 : TEXCOORD0 ) : COLOR
 	//return col.b;
 	//return col.g;
 
-	half scaling = col.g + 0.02;
+	half scaling = col.g + 0.1;
 	
 	half colorSum = col.b;
-	half scale = 12.0/SHADOW_MAP_SIZE;
+	half scale = 11.0/SHADOW_MAP_SIZE;
 	
 	for( int k = 0; k < NUM_TAPS; ++k ) {
 		float2 tapCoord = tc0 + filterTaps[k] * (scale * scaling);
