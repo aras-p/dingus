@@ -30,6 +30,7 @@ static const float GUY3_BEGIN_FRAME = 5639 + 800;
 static const float TIMEBLEND_BEGIN_FRAME = 2410 + 950;
 static const float TIMEBLEND_END_FRAME = 3700 + 950;
 
+static const float EL_BEGIN_FRAME = 20 + 800;
 
 static const float ROOM2_BEGIN_FRAME = 5304 + 800;
 static const float LIGHT_SWITCH_FRAME = 5497 + 800;
@@ -386,7 +387,7 @@ void CSceneMain::render( eRenderMode renderMode )
 	mSharedStuff->renderWalls( wallsLod, renderMode, mCurrAnimFrame >= FLOOR_FR_FRAME );
 
 	// characters
-	mCharacter->render( renderMode );
+	mCharacter->render( renderMode, mCurrAnimFrame >= EL_BEGIN_FRAME );
 	if( mCurrAnimFrame >= DOOR_BEGIN_FRAME ) {
 		mCharacter2->render( renderMode );
 		mCharacter3->render( renderMode );

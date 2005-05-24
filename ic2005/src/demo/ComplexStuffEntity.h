@@ -24,7 +24,7 @@ public:
 	CComplexStuffEntity( const char* name, const char* name2, const char* defaultAnim, float defAnimFadeInTime = 0.1f );
 	~CComplexStuffEntity();
 
-	void	render( eRenderMode renderMode );
+	void	render( eRenderMode renderMode, bool mesh2 = true );
 	void	update( time_value timenow );
 	void	setLightPos( const SVector3& lpos ) { mLightPos = lpos; }
 

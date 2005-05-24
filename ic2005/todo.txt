@@ -8,7 +8,6 @@ IN PROGRESS
 
 CODE
 
-. Turn on electricity at needed point
 + Interactive mode
 + Test on various hardware
 . Benchmark mode!
@@ -33,6 +32,7 @@ ART
 RECENTLY DONE
 
 CODE
+* Turn on electricity at needed point
 * Tweak rendering contast
 * Attack effects
 * Scene poetry at the end

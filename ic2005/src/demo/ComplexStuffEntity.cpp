@@ -71,11 +71,11 @@ CComplexStuffEntity::~CComplexStuffEntity()
 	safeDelete( mAnimator );
 }
 
-void CComplexStuffEntity::render( eRenderMode renderMode )
+void CComplexStuffEntity::render( eRenderMode renderMode, bool mesh2 )
 {
 	if( mMesh[renderMode] )
 		G_RENDERCTX->attach( *mMesh[renderMode] );
-	if( mMesh2[renderMode] )
+	if( mMesh2[renderMode] && mesh2 )
 		G_RENDERCTX->attach( *mMesh2[renderMode] );
 }
 
