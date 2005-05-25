@@ -164,8 +164,9 @@ void tweaker::init()
 	dialog->addCheckBox( GID_CHK_HIDEWALLS, "Hide room walls", xcol, yline+=DYLINE, 130, HC, options.hideWalls );
 	
 	// buttons
-	dialog->addStatic( 0, "[f1] hides options", 0, dialog->getHeight()-DYLINE-DYLINE/2, dialog->getWidth()-14, HC, false, &lab );
+	dialog->addStatic( 0, "[f1] hides/shows this dialog", 0, dialog->getHeight()-DYLINE-DYLINE/2, dialog->getWidth()-14, HC, false, &lab );
 	lab->getElement(0)->setFont( 0, false, DT_RIGHT | DT_VCENTER );
+	lab->setTextColor( 0xA0ffffff );
 
 	fullyInited = true;
 }

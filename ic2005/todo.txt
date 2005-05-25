@@ -9,9 +9,9 @@ IN PROGRESS
 CODE
 
 . Benchmark mode!
-. Shadows for other guys (needed?)
 . Look at asm of the shaders, profile
 . Aniso filter for some objects?
+- Shadows for other guys
 - Fresnel for reflections?
 - Reflections into single RT, with stencil/Z masks for fast culling
 - Tweak character lighting
@@ -29,6 +29,7 @@ ART
 RECENTLY DONE
 
 CODE
+* Shadows for main char in 2nd room
 * Interactive mode
 * Test on various hardware
 * Blur in/out in several places

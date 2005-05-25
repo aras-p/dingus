@@ -199,6 +199,7 @@ public:
 
 // Main, tightly targeted at character. Soft shadows.
 SShadowLight	gSLight;
+SShadowLight	gSLightSecond;
 SMatrix4x4		gSShadowProj;
 
 // Secondary, covers floor, misc. pieces render into it. Standard proj. shadows.
@@ -215,7 +216,11 @@ void gShadowRender( CScene& scene )
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
 	// target the light where needed
-	gSLight.initialize( LIGHT_POS_1, lightTargetMat->getOrigin(), D3DX_PI/5 );
+	SVector3 lpos = LIGHT_POS_1;
+	if( gCurScene == SCENE_MAIN && gSceneMain->isLightSecond() )
+		lpos = LIGHT_POS_2;
+
+	gSLight.initialize( lpos, lightTargetMat->getOrigin(), D3DX_PI/5 );
 
 	// Leave one texel padding...
 	D3DVIEWPORT9 vp;
@@ -752,7 +757,6 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			}
 			break;
 
-		/*
 		case DIK_1:
 			gAdjustTime( -dt*10 );
 			break;
@@ -774,7 +778,6 @@ void CDemo::onInputEvent( const CInputEvent& event )
 		case DIK_7:
 			gAdjustTime( dt*100 );
 			break;
-		*/
 		}
 	}
 }

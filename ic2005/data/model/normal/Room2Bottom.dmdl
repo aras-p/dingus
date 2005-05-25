@@ -1,8 +1,9 @@
 name = 'Room2Bottom'
 groups = {
 {
-  fx = 'wall_St', pri = 0,
+  fx = 'wall_StS', pri = 0,
   params = {
+	  { 'stex', 'tShadow', 'shadowBlur' },
   },
 },
 }

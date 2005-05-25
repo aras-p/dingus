@@ -33,7 +33,7 @@ static const float TIMEBLEND_END_FRAME = 3700 + 950;
 static const float EL_BEGIN_FRAME = 20 + 800;
 
 static const float ROOM2_BEGIN_FRAME = 5304 + 800;
-static const float LIGHT_SWITCH_FRAME = 5497 + 800;
+const float CSceneMain::LIGHT_SWITCH_FRAME = 5497 + 800;
 
 static const float ATK1_BEGIN_FRAME = 2404 + 800;
 static const float ATK1_END_FRAME = 2813 + 800;
@@ -104,7 +104,7 @@ CSceneMain::CSceneMain( CSceneSharedStuff* sharedStuff )
 	mRoom2Top->addLightToParams( LIGHT_POS_2 + LIGHT_WOFF );
 	addEntity( *mRoom2Top );
 	mRoom2Bottom = new CMeshEntity( "Room2Bottom" );
-	mRoom2Top->addLightToParams( LIGHT_POS_2 + LIGHT_WOFF );
+	mRoom2Bottom->addLightToParams( LIGHT_POS_2 + LIGHT_WOFF );
 	addEntity( *mRoom2Bottom );
 
 	// animating doors

@@ -15,6 +15,7 @@ namespace dingus {
 class CSceneMain : public CScene {
 public:
 	static const float EXTRA_FRAMES;
+	static const float LIGHT_SWITCH_FRAME;
 public:
 	CSceneMain( CSceneSharedStuff* sharedStuff );
 	~CSceneMain();
@@ -24,6 +25,7 @@ public:
 	virtual void	renderUI( CUIDialog& dlg );
 	virtual const SMatrix4x4* getLightTargetMatrix() const;
 	bool	isEnded() const { return mCurrAnimFrame >= mAnimFrameCount + EXTRA_FRAMES; }
+	bool	isLightSecond() const { return mCurrAnimFrame >= LIGHT_SWITCH_FRAME; }
 
 private:
 	void	animateCamera();
