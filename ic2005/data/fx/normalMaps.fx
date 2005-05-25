@@ -74,7 +74,7 @@ SOutput vsMain( INPUT i ) {
 #else
 	o.uv = i.uv;
 #endif
-	
+
 	return o;
 }
 
@@ -90,7 +90,7 @@ half4 psMain( SOutput i ) : COLOR {
 #if D_AO==1
 	half occ = normalAO.a * ambMul;
 	#ifdef NM_LMAP
-		occ *= tex2D( smpLmap, i.uvL ).r;
+		occ *= tex2D( smpLmap, i.uvL ).g;
 	#endif
 #else
 	half occ = ambMul;
@@ -111,7 +111,7 @@ half4 psMain( SOutput i ) : COLOR {
 	// sample diffuse/gloss map
 	half4 cBase = tex2D( smpBase, i.uv );
 	half3 cDiff = cBase.rgb;
-	
+
 	half3 cSpec = lerp( cDiff, half3(1,1,1), 0.5 );
 	spec *= cBase.a;
 
