@@ -8,8 +8,6 @@ IN PROGRESS
 
 CODE
 
-+ Interactive mode
-+ Test on various hardware
 . Benchmark mode!
 . Shadows for other guys (needed?)
 . Look at asm of the shaders, profile
@@ -23,6 +21,7 @@ CODE
 
 ART
 
+. Lightmap seam in 2nd room
 - Adjust room layout to fill 1-px gaps somewhere.
 
 
@@ -30,6 +29,8 @@ ART
 RECENTLY DONE
 
 CODE
+* Interactive mode
+* Test on various hardware
 * Blur in/out in several places
 * Shared textures with tex2Dproj bug fixed (affected geforceFX)
 * Turn on electricity at needed point

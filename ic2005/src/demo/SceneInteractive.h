@@ -26,9 +26,11 @@ public:
 	void	processInput( float mov, float rot, bool attack, time_value demoTime, float dt );
 
 private:
-	void	animateAttack1Bolt( float animTime,
+	void	animateAttack1Bolt( float demoTimeS, float animTime,
 		const SMatrix4x4& handMat, SMatrix4x4* mats, float ts, float th, const SVector3& target );
-	void	animateAttack1( time_value animTime );
+	void	animateAttack1( float demoTimeS, time_value animTime );
+	void	animateAttack2( float demoTimeS, time_value animTime );
+	bool	calcAttackTargetPos( SVector3& pos, float addY, float range );
 
 private:
 	CSceneSharedStuff*	mSharedStuff;
@@ -43,11 +45,10 @@ private:
 	// attacks related
 	int				mAttackIndex;
 	int				mAttackType;
-	time_value		mAttackStartTime;	// negative if no attack
 	time_value		mAttackAnimStartTime;
-	time_value		mWallHitTime;		// negative if no attack
-	SVector3		mWallHitPos;
+	SVector3		mWallHitPosL, mWallHitPosR;
 	float			mWallHitRadius;
+	int				mFracIntervalCounter;
 
 	// 1st attack type
 	CComplexStuffEntity*	mAttack1L;
