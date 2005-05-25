@@ -29,6 +29,7 @@ ART
 RECENTLY DONE
 
 CODE
+* Fixed loading screen contrast bug
 * Shadows for main char in 2nd room
 * Interactive mode
 * Test on various hardware

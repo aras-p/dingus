@@ -552,7 +552,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setFont( 6, "Verdana", 28, FW_BOLD );
 
 	gUIDlg->addImage( 0, 0, 0, GUI_X, GUI_Y, *RGET_TEX("Title"), 0, 0, 1024, 768, &gUIImgLoading );
-	gUIImgLoading->getElement(0)->colorTexture.current = 0xFFffffff;
+	gUIImgLoading->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = 0xFFffffff;
 
 	// bulk of the demo will be loaded later, when loading screen is drawn
 }
@@ -757,6 +757,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			}
 			break;
 
+		/*
 		case DIK_1:
 			gAdjustTime( -dt*10 );
 			break;
@@ -778,6 +779,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 		case DIK_7:
 			gAdjustTime( dt*100 );
 			break;
+		*/
 		}
 	}
 }
@@ -817,7 +819,7 @@ void CDemo::perform()
 		dx.clearTargets( true, true, false, 0xFFffffff, 1.0f, 0L );
 		dx.sceneBegin();
 		G_RENDERCTX->applyGlobalEffect();
-		gUIDlg->onRender( 0.01f );
+		gUIDlg->onRender( 1.0f );
 		dx.sceneEnd();
 
 		gUIImgLoading->setVisible( false );
