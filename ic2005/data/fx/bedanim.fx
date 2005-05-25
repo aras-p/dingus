@@ -6,6 +6,13 @@
 
 float3 vLightPos;
 
+texture	tShadow;
+sampler2D	smpShadow = sampler_state {
+	Texture = (tShadow);
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+	AddressU = Clamp; AddressV = Clamp;
+};
+
 
 int			iBones;
 

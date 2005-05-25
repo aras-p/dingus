@@ -468,8 +468,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	ssb.registerSurface( RT_SHADOWBLUR, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWBLUR),0)) );
 	ssb.registerSurface( RT_SHADOWZ, *(new CFixedSurfaceCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,true,D3DFMT_D16)) );
 
-	G_RENDERCTX->getGlobalParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
-
 	stb.registerTexture( RT_SHADOWMAP2_SM, *new CFixedTextureCreator(
 		SZ_SHADOWMAP2_SM, SZ_SHADOWMAP2_SM, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT ) );
 	ssb.registerSurface( RT_SHADOWMAP2_SM, *(new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_SHADOWMAP2_SM),0)) );
@@ -477,8 +475,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	ssb.registerSurface( RT_SHADOWMAP2_BIG, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2_BIG,SZ_SHADOWMAP2_BIG,false,D3DFMT_R5G6B5)) );
 	ssb.registerSurface( RT_SHADOWZ2, *(new CFixedSurfaceCreator(SZ_SHADOWMAP2_BIG,SZ_SHADOWMAP2_BIG,true,D3DFMT_D16)) );
 
-	G_RENDERCTX->getGlobalParams().addTexture( "tShadow2", *RGET_S_TEX(RT_SHADOWMAP2_SM) );
-	
 	// misc
 	stb.registerTexture( RT_FULLSCREEN, *new CScreenBasedTextureCreator(1.0f,1.0f,1,D3DUSAGE_RENDERTARGET,D3DFMT_A8R8G8B8,D3DPOOL_DEFAULT) );
 	ssb.registerSurface( RT_FULLSCREEN, *new CTextureLevelSurfaceCreator(*RGET_S_TEX(RT_FULLSCREEN),0) );

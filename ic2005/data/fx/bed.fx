@@ -6,6 +6,14 @@
 float3 vLightPos;
 
 
+texture	tShadow;
+sampler2D	smpShadow = sampler_state {
+	Texture = (tShadow);
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+	AddressU = Clamp; AddressV = Clamp;
+};
+
+
 SPosColTexp vsMain( SPosN i ) {
 	SPosColTexp o;
 	o.pos = mul( i.pos, mViewProj );

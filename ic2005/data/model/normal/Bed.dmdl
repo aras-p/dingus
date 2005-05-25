@@ -3,6 +3,7 @@ groups = {
 {
   fx = 'bed', pri = 0,
   params = {
+	  { 'stex', 'tShadow', 'shadowBlur' },
   },
 },
 }

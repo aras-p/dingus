@@ -3,6 +3,7 @@ groups = {
 {
   fx = 'wall_StS', pri = 0,
   params = {
+	  { 'stex', 'tShadow', 'shadowBlur' },
   },
 },
 }

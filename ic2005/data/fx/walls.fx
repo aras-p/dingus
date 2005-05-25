@@ -71,6 +71,23 @@ float3		vLightPos;
 #endif
 
 
+#ifdef WALL_SHADOW
+	texture	tShadow;
+	sampler2D	smpShadow = sampler_state {
+		Texture = (tShadow);
+		MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+		AddressU = Clamp; AddressV = Clamp;
+	};
+#endif
+
+#ifdef WALL_SH2REFL
+	texture	tShadow2;
+	sampler2D	smpShadow2 = sampler_state {
+		Texture = (tShadow2);
+		MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+		AddressU = Clamp; AddressV = Clamp;
+	};
+#endif
 
 #ifdef WALL_REFL
 	texture		tRefl;

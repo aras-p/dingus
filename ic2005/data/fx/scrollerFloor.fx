@@ -2,6 +2,13 @@
 #include "lib/structs.fx"
 #include "lib/commonWalls.fx"
 
+texture	tShadow;
+sampler2D	smpShadow = sampler_state {
+	Texture = (tShadow);
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
+	AddressU = Clamp; AddressV = Clamp;
+};
+
 
 SPosTexTexp vsMain( SPosNTex i ) {
 	SPosTexTexp o;

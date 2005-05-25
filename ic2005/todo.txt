@@ -32,6 +32,7 @@ ART
 RECENTLY DONE
 
 CODE
+* Shared textures with tex2Dproj bug fixed (affected geforceFX)
 * Turn on electricity at needed point
 * Tweak rendering contast
 * Attack effects

@@ -777,6 +777,7 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	
 	mRenderables[RM_NORMAL] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_NORMAL]->getParams().setEffect( *RGET_FX( restoreTextureID ? "wall_DnSR" : "wall_DnR" ) );
+	mRenderables[RM_NORMAL]->getParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
 	mRenderables[RM_NORMAL]->getParams().addVector3( "vLightPos", LIGHT_POS_1 + LIGHT_WOFF );
 	if( reflTextureID ) {
 		mRenderables[RM_NORMAL]->getParams().addTexture( "tRefl", *RGET_S_TEX(reflTextureID) );
@@ -784,6 +785,7 @@ CWall3D::CWall3D( const SVector2& size, float smallestElemSize, const char* refl
 	
 	mRenderables[RM_REFLECTED] = new CRenderableIndexedBuffer( NULL, 0 );
 	mRenderables[RM_REFLECTED]->getParams().setEffect( *RGET_FX( restoreTextureID ? "wall_DnS" : "wall_Dn" ) );
+	mRenderables[RM_REFLECTED]->getParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
 	mRenderables[RM_REFLECTED]->getParams().addVector3( "vLightPos", LIGHT_POS_1 + LIGHT_WOFF );
 
 	if( restoreTextureID ) {
