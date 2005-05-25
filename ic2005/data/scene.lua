@@ -176,4 +176,5 @@ scene = {
 { name='uvGarg1Cage', parent='', pos={-3.25699,2.73232,5.38945}, rot={0.0,-1.0,0.0,0.0}, },
 { name='uvFloorBrick', parent='', pos={3.52192,-0.0385591,-4.68248}, rot={0.0,0.0,0.0,1.0}, },
 { name='uvCeilsBrick', parent='', pos={-4.47808,6.13505,-2.68248}, rot={0.0,-1.0,0.0,5.20549e-007}, },
+{ name='uvRosetteCenter', parent='', pos={5.2004,3.25583,0.81761}, rot={0.0,0.707107,0.0,0.707107}, },
 }

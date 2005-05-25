@@ -7,6 +7,7 @@
 #include <dingus/utils/Random.h>
 #include <dingus/gfx/gui/Gui.h>
 #include <dingus/math/MathUtils.h>
+#include "Tweaker.h"
 
 
 // --------------------------------------------------------------------------
@@ -58,6 +59,7 @@ void CSceneInteractive::start( time_value demoTime, CUIDialog& dlg )
 	mSharedStuff->clearPieces();
 	mCharacter->getAnimator().playDefaultAnim( demoTime - time_value::fromsec(1.0f) );
 	mCharacter->getAnimator().updateLocal( demoTime );
+	tweaker::show();
 }
 
 
@@ -223,7 +225,7 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 	//const float dofDist = SVector3(getCamera().mWorldMat.getOrigin() - getLightTargetMatrix()->getOrigin()).length() * 1.2f;
 	//const float dofRange = dofDist * 3.0f;
 	const float dofDist = 5.0f;
-	const float dofRange = 9.0f;
+	const float dofRange = 14.0f;
 	gDOFParams.set( dofDist, 1.0f / dofRange, 0.0f, 0.0f );
 	gSetDOFBlurBias( 0.0f );
 
@@ -262,7 +264,8 @@ void CSceneInteractive::update( time_value demoTime, float dt )
 
 void CSceneInteractive::render( eRenderMode renderMode )
 {
-	//mSharedStuff->renderWalls( 0, renderMode, false );
+	if( !tweaker::getOptions().hideWalls )
+		mSharedStuff->renderWalls( 0, renderMode, false );
 	
 	mCharacter->render( renderMode );
 
@@ -278,6 +281,36 @@ void CSceneInteractive::render( eRenderMode renderMode )
 	n = mRoom.size();
 	for( i = 0; i < n; ++i ) {
 		mRoom[i]->render( renderMode );
+	}
+}
+
+
+void CSceneInteractive::renderUI( CUIDialog& dlg )
+{
+	SUIElement textElem;
+	memset( &textElem, 0, sizeof(textElem) );
+	textElem.fontIdx = 1;
+	textElem.textFormat = DT_RIGHT | DT_BOTTOM | DT_NOCLIP;
+	textElem.colorFont.current = 0xFF404040;
+
+	SFRect textRC;
+
+	// key instructions
+	textElem.colorFont.current.a = 1.0f;
+	textRC.left = 0.1f * GUI_X;
+	textRC.top = 0.1f * GUI_Y;
+	textRC.right = GUI_X - 5;
+	textRC.bottom = GUI_Y - 5;
+	textElem.fontIdx = 0;
+	
+	dlg.drawText( "[esc] exits", &textElem, &textRC, false );
+
+	textRC.bottom -= 16;
+	dlg.drawText( "arrow keys and [space] control character", &textElem, &textRC, false );
+
+	if( !tweaker::isVisible() ) {
+		textRC.bottom -= 16;
+		dlg.drawText( "[f1] shows options", &textElem, &textRC, false );
 	}
 }
 

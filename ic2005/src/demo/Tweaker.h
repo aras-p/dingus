@@ -18,6 +18,9 @@ namespace tweaker {
 		bool	dof;
 		bool	normalmaps;
 		bool	ao;
+		
+		bool	showFPS;
+		bool	hideWalls;
 		bool	funky;
 	};
 

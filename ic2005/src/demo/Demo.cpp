@@ -547,6 +547,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setFont( 6, "Verdana", 28, FW_BOLD );
 
 	gUIDlg->addImage( 0, 0, 0, GUI_X, GUI_Y, *RGET_TEX("Title"), 0, 0, 1024, 768, &gUIImgLoading );
+	gUIImgLoading->getElement(0)->colorTexture.current = 0xFFffffff;
 
 	// bulk of the demo will be loaded later, when loading screen is drawn
 }
@@ -692,6 +693,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gShowStats = !gShowStats;
 			break;
+		/*
 		case DIK_0:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gPaused = !gPaused;
@@ -709,6 +711,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 					gStartInteractiveMode();
 			}
 			break;
+		*/
 		case DIK_SPACE:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
 				if( gCurScene == SCENE_INTERACTIVE ) {
@@ -718,11 +721,14 @@ void CDemo::onInputEvent( const CInputEvent& event )
 				}
 			}
 			break;
-		case DIK_F3:
+
+		case DIK_F1:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED ) {
 				// show tweaker UI
 				if( !tweaker::isVisible() ) {
 					tweaker::show();
+				} else {
+					tweaker::hide();
 				}
 			}
 			break;
@@ -746,6 +752,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			}
 			break;
 
+		/*
 		case DIK_1:
 			gAdjustTime( -dt*10 );
 			break;
@@ -767,6 +774,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 		case DIK_7:
 			gAdjustTime( dt*100 );
 			break;
+		*/
 		}
 	}
 }
@@ -881,17 +889,16 @@ void CDemo::perform()
 	gScreenFixUVs.set( 0.5f/dx.getBackBufferWidth(), 0.5f/dx.getBackBufferHeight(), 0.0f, 0.0f );
 	
 	
-	// FPS
-	sprintf( buf, "fps=%.1f  time=%.1f (%.1f)",
-		dx.getStats().getFPS(),
-		demoTime.tosec(),
-		demoTime.tosec()*ANIM_FPS
-	);
-	gUILabFPS->setText( buf );
-	//gUILabFPS->setVisible( false );
-
 	// rendering options
 	const tweaker::SOptions& options = tweaker::getOptions();
+
+	// FPS
+	if( options.showFPS ) {
+		sprintf( buf, "FPS: %.1f", dx.getStats().getFPS() );
+		gUILabFPS->setText( buf );
+	}
+	gUILabFPS->setVisible( options.showFPS );
+
 
 	// use solid fill to render shadows/reflections - faster!
 	dx.getStateManager().SetRenderState( D3DRS_FILLMODE, D3DFILL_SOLID );
@@ -937,21 +944,6 @@ void CDemo::perform()
 	}
 	dx.sceneEnd();
 
-
-	/*
-	static int maxVerts = 0;
-	if( gWallVertCount + stats.vertexCount > maxVerts )
-		maxVerts = gWallVertCount + stats.vertexCount;
-	static int maxTris = 0;
-	if( gWallTriCount + stats.triCount > maxTris )
-		maxTris = gWallTriCount + stats.triCount;
-
-	if( gShowStats ) {
-		CConsole::getChannel("system") << "wall geom: verts=" << gWallVertCount << " tris=" << gWallTriCount << endl;
-		CConsole::getChannel("system") << "phys geom: verts=" << stats.vertexCount << " tris=" << stats.triCount << endl;
-		CConsole::getChannel("system") << "max: verts=" << maxVerts << " (" << int(maxVerts*sizeof(SVertexXyzDiffuse)) << ")  tris=" << maxTris << " (" << maxTris*2*3 << ")" << endl;
-	}
-	*/
 
 	// manage scene transitions
 	if( gCurScene == SCENE_MAIN && gSceneMain->isEnded() ) { 

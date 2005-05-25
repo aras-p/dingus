@@ -20,11 +20,9 @@ CODE
 - Glow; render extra brightness to alpha
 
 + Demo tweak UI
-+ Blur in/out in several places
 
 ART
 
-+ Fake lightmaps to the rescue!
 - Adjust room layout to fill 1-px gaps somewhere.
 
 
@@ -32,6 +30,7 @@ ART
 RECENTLY DONE
 
 CODE
+* Blur in/out in several places
 * Shared textures with tex2Dproj bug fixed (affected geforceFX)
 * Turn on electricity at needed point
 * Tweak rendering contast
@@ -74,6 +73,7 @@ CODE
 * Light pos in object space via fx params
 
 ART
+* Fake lightmaps to the rescue!
 * Tweak attack effect animations
 * Hand edited character's AO texture to fix bad places :)
 * Add final 1st attacks anim

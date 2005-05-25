@@ -110,7 +110,7 @@ CSceneScroller::CSceneScroller()
 	mScroller.push_back( STextLine( "this guy on the right side. But you", 2, sy ) );
 	mScroller.push_back( STextLine( "can be sure he's a good person!", 2, sy ) );
 	mScroller.push_back( STextLine( NULL, 2, sy ) );
-	mScroller.push_back( STextLine( "You may press Esc to exit or wait a bit to enter", 3, sy ) );
+	mScroller.push_back( STextLine( "You may press [esc] to exit or wait a bit to enter", 3, sy ) );
 	mScroller.push_back( STextLine( "interactive mode. Yay!", 3, sy ) );
 }
 

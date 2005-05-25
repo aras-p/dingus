@@ -93,7 +93,7 @@ half4 psMain( SOutput i ) : COLOR {
 		occ *= tex2D( smpLmap, i.uvL ).r;
 	#endif
 #else
-	half occ = 1;
+	half occ = ambMul;
 #endif
 
 

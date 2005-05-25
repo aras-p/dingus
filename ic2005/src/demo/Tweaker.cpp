@@ -26,6 +26,8 @@ tweaker::SOptions::SOptions()
 ,	dof(true)
 ,	normalmaps(true)
 ,	ao(true)
+,	showFPS(false)
+,	hideWalls(false)
 ,	funky(false)
 {
 }
@@ -52,6 +54,9 @@ enum eTweakControls {
 	GID_CHK_DOF,
 	GID_CHK_NORMALMAPS,
 	GID_CHK_AO,
+
+	GID_CHK_SHOWFPS,
+	GID_CHK_HIDEWALLS,
 	GID_CHK_FUNKY,
 };
 
@@ -97,11 +102,13 @@ void CALLBACK dlgCallback( UINT evt, int ctrlID, CUIControl* ctrl )
 			if( fullyInited )
 				options.apply();
 			break;
+		case GID_CHK_HIDEWALLS:
+			options.hideWalls = checked;
+			break;
+		case GID_CHK_SHOWFPS:
+			options.showFPS = checked;
+			break;
 		}
-	}
-	if( evt == UIEVENT_BUTTON_CLICKED && ctrlID == IDOK ) {
-		assert( visible );
-		visible = false;
 	}
 }
 
@@ -120,8 +127,8 @@ void tweaker::init()
 	dialog->enableNonUserEvents( true );
 	dialog->setCallback( dlgCallback );
 	dialog->setBackgroundColors( 0x80303030 );
-	dialog->setLocation( 120, 70 );
-	dialog->setSize( 420, 340 );
+	dialog->setLocation( 420, 20 );
+	dialog->setSize( 200, 340 );
 	dialog->setFont( 1, "Verdana", 22, 50 );
 	dialog->setFont( 2, "Verdana", 14, 50 );
 
@@ -143,10 +150,22 @@ void tweaker::init()
 	dialog->addCheckBox( GID_CHK_DOF, "Depth of field", xcol, yline+=DYLINE, 130, HC, options.dof );
 	dialog->addCheckBox( GID_CHK_NORMALMAPS, "Normal mapping", xcol, yline+=DYLINE, 130, HC, options.normalmaps );
 	dialog->addCheckBox( GID_CHK_AO, "Ambient occlusion", xcol, yline+=DYLINE, 130, HC, options.ao );
-	dialog->addCheckBox( GID_CHK_FUNKY, "I want more colors!", xcol, yline+=DYLINE+5, 130, HC, options.funky );
+	
+	dialog->addStatic( 0, "Various", xcol-10, yline+=DYLINE+5, 200, 22, false, &lab );
+	lab->getElement(0)->setFont( 2, false, DT_LEFT | DT_VCENTER );
+	
+	dialog->addCheckBox( GID_CHK_SHOWFPS, "Display FPS", xcol, yline+=DYLINE+5, 130, HC, options.showFPS );
+	dialog->addCheckBox( GID_CHK_FUNKY, "I want more colors!", xcol, yline+=DYLINE, 130, HC, options.funky );
+	
+	dialog->addStatic( 0, "Interactive mode", xcol-10, yline+=DYLINE+DYLINE/2, 200, 22, false, &lab );
+	lab->getElement(0)->setFont( 1, false, DT_LEFT | DT_VCENTER );
+	yline += DYLINE/2;
+
+	dialog->addCheckBox( GID_CHK_HIDEWALLS, "Hide room walls", xcol, yline+=DYLINE, 130, HC, options.hideWalls );
 	
 	// buttons
-	dialog->addButton( IDOK, "Close", 340, dialog->getHeight()-35, 58, 20 );
+	dialog->addStatic( 0, "[f1] hides options", 0, dialog->getHeight()-DYLINE-DYLINE/2, dialog->getWidth()-14, HC, false, &lab );
+	lab->getElement(0)->setFont( 0, false, DT_RIGHT | DT_VCENTER );
 
 	fullyInited = true;
 }
