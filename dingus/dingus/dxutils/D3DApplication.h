@@ -168,6 +168,8 @@ protected:
 	virtual HRESULT shutdown()							   { return S_OK; }
 	
 public:
+	void	getOutOfFullscreen();
+
 	virtual HRESULT performOneTime() { return S_OK; }
 
 	// override for custom settings dialogs

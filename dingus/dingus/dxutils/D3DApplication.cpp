@@ -1894,6 +1894,30 @@ void CD3DApplication::pause( bool pause )
 	}
 }
 
+void CD3DApplication::getOutOfFullscreen()
+{
+	if( mWindowed )
+		return;
+
+	mWindowed = false;
+	adjustWindowForChange();
+	
+	if( mD3DDevice != NULL ) {
+		/*
+		if( mDeviceObjectsRestored ) {
+			mDeviceObjectsRestored = false;
+			internalPassivateDevice();
+		}
+		if( mDeviceObjectsInited ) {
+			mDeviceObjectsInited = false;
+			internalDeleteDevice();
+		}
+		*/
+		
+		mD3DDevice->Release();
+		mD3DDevice = NULL;
+	}
+}
 
 /** Cleanup scene objects. */
 void CD3DApplication::cleanup3DEnvironment()
@@ -1959,16 +1983,14 @@ HRESULT CD3DApplication::displayErrorMsg( HRESULT hr, eAppMsg type )
 			_T("Could not initialize Direct3D. You may\n")
 			_T("want to check that the latest version of\n")
 			_T("DirectX is correctly installed on your\n")
-			_T("system.  Also make sure that this program\n")
-			_T("was compiled with header files that match\n")
-			_T("the installed DirectX DLLs.") );
+			_T("system.\nThis application requires DirectX 9.0c") );
 		break;
 		
 	case NOCOMPATIBLEDEVICES:
 		{
 			int i;
 			std::string msg;
-			msg  = "Could not find any compatible D3D devices.\n\n";
+			msg  = "Could not find any compatible Direct3D devices.\n\n";
 			msg += "Devices present on the system:\n";
 			int n = mEnumeration.mIncompatAdapterInfos.size();
 			for( i = 0; i < n; ++i ) {
@@ -1979,7 +2001,7 @@ HRESULT CD3DApplication::displayErrorMsg( HRESULT hr, eAppMsg type )
 				CD3DEnumErrors::TStringSet::const_iterator it, itEnd = adapter.errors.getErrors().end();
 				for( it = adapter.errors.getErrors().begin(); it != itEnd; ++it ) {
 					const std::string& err = *it;
-					msg += "    ";
+					msg += "    Error: ";
 					msg += err;
 					msg += "\n";
 				}
@@ -1993,7 +2015,7 @@ HRESULT CD3DApplication::displayErrorMsg( HRESULT hr, eAppMsg type )
 				CD3DEnumErrors::TStringSet::const_iterator it, itEnd = adapter.errors.getErrors().end();
 				for( it = adapter.errors.getErrors().begin(); it != itEnd; ++it ) {
 					const std::string& err = *it;
-					msg += "    ";
+					msg += "    Error: ";
 					msg += err;
 					msg += "\n";
 				}
