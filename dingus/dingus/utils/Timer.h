@@ -133,7 +133,9 @@ public:
 	}
 
 	void	setTime( const time_value& t ) {
-		update( t - mTime );
+		mDeltaTime = t - mTime;
+		mTime = t;
+		setTimesS();
 	}
 
 	// ITimeSource

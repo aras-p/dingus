@@ -2,7 +2,7 @@
 #include "WallFracturer.h"
 #include "WallPieces.h"
 #include "Triangulate.h"
-#include <dingus/utils/CpuTimer.h>
+//#include <dingus/utils/CpuTimer.h>
 
 #include <dingus/utils/Random.h>
 
@@ -361,12 +361,12 @@ void wallFractureCompute( CWall2D& wall )
 
 	// init
 	{
-		cputimer::debug_interval ttt( "frac create" );
+		//cputimer::debug_interval ttt( "frac create" );
 		fracGrid = new CFracGrid( rows, cols, wall.getSize() );
 	}
 	// distort
 	{
-		cputimer::debug_interval ttt( "frac distort" );
+		//cputimer::debug_interval ttt( "frac distort" );
 		const int DISTORT_ITERS = 6;
 		for( int i = 0; i < DISTORT_ITERS; ++i )
 			fracGrid->distort();
@@ -374,13 +374,13 @@ void wallFractureCompute( CWall2D& wall )
 
 	// combine
 	{
-		cputimer::debug_interval ttt( "frac distort" );
+		//cputimer::debug_interval ttt( "frac distort" );
 		fracGrid->combine();
 	}
 
 	// turn into pieces
 	{
-		cputimer::debug_interval ttt( "frac to pieces" );
+		//cputimer::debug_interval ttt( "frac to pieces" );
 		fracGrid->toPieces( wall );
 	}
 

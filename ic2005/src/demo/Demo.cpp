@@ -21,7 +21,7 @@
 #include <dingus/gfx/geometry/DynamicVBManager.h>
 #include <dingus/gfx/geometry/DynamicIBManager.h>
 #include "PostProcess.h"
-#include <ctime>
+//#include <ctime>
 
 
 // --------------------------------------------------------------------------
@@ -562,7 +562,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 // actually load the demo
 void CDemo::loadDemo()
 {
-	clock_t t1 = clock();
+	//clock_t t1 = clock();
 
 	// scenes
 	gSceneShared = new CSceneSharedStuff();
@@ -605,6 +605,7 @@ void CDemo::loadDemo()
 	// if we loaded too fast, annoy users more and show the loading screen!
 	// ok, it's at most 3 seconds; let's say that's needed because the beamers
 	// switch resolutions slowly
+	/*
 	const float MIN_LOAD_TIME = 3.0f;
 	clock_t t2 = clock();
 	float loaded = float(t2-t1)/CLOCKS_PER_SEC;
@@ -612,6 +613,7 @@ void CDemo::loadDemo()
 	if( towait > 0 ) {
 		Sleep( towait * 1000 );
 	}
+	*/
 }
 
 
@@ -698,6 +700,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gShowStats = !gShowStats;
 			break;
+
 		/*
 		case DIK_0:
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
@@ -900,6 +903,7 @@ void CDemo::perform()
 	// FPS
 	if( options.showFPS ) {
 		sprintf( buf, "FPS: %.1f", dx.getStats().getFPS() );
+		//sprintf( buf, "FPS: %.1f, time: %.1f", dx.getStats().getFPS(), demoTime.tosec() );
 		gUILabFPS->setText( buf );
 	}
 	gUILabFPS->setVisible( options.showFPS );

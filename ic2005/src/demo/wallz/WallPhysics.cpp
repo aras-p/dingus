@@ -7,7 +7,7 @@
 #include <dingus/gfx/Vertices.h>
 #include <dingus/gfx/geometry/DynamicVBManager.h>
 #include <dingus/gfx/geometry/DynamicIBManager.h>
-#include <dingus/utils/CpuTimer.h>
+//#include <dingus/utils/CpuTimer.h>
 #include <dingus/utils/Random.h>
 #include <dingus/renderer/RenderableBuffer.h>
 
@@ -212,7 +212,7 @@ void wall_phys::update()
 
 
 	{
-		cputimer::ticks_type t1 = cputimer::ticks();
+		//cputimer::ticks_type t1 = cputimer::ticks();
 		// update pieces
 		lastActivePieceCount = 0;
 		TPieceVector::iterator it, itEnd = pieces.end();
@@ -228,8 +228,8 @@ void wall_phys::update()
 				++it;
 			}
 		}
-		cputimer::ticks_type t2 = cputimer::ticks();
-		stats.msUpdate = double(t2-t1) * cputimer::secsPerTick() * 1000.0f;
+		//cputimer::ticks_type t2 = cputimer::ticks();
+		//stats.msUpdate = double(t2-t1) * cputimer::secsPerTick() * 1000.0f;
 	}
 
 	stats.msColl = physics::getStats().msColl;

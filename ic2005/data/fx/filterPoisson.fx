@@ -40,8 +40,9 @@ half4 psMain20( float2 tc0 : TEXCOORD0 ) : COLOR
 
 	//return col;
 	//return col.r;
-	//return col.b;
+	//return col.b*0.4+0.6;
 	//return col.g;
+
 
 	half scaling = col.g + 0.1;
 	

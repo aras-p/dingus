@@ -3,7 +3,7 @@
 #include <dingus/math/Plane.h>
 #include <dingus/math/MathUtils.h>
 #include <dingus/renderer/RenderableBuffer.h>
-#include <dingus/utils/CpuTimer.h>
+//#include <dingus/utils/CpuTimer.h>
 #include "../MeshEntity.h"
 
 
@@ -826,7 +826,7 @@ CWall3D::~CWall3D()
 
 void CWall3D::initPieces()
 {
-	cputimer::debug_interval tt0( "w3d init" );
+	//cputimer::debug_interval tt0( "w3d init" );
 
 	assert( !mPiecesInited );
 	assert( !mFracturedPieces );

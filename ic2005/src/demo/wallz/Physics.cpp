@@ -2,7 +2,7 @@
 #include "Physics.h"
 #include <dingus/math/ODEMarshal.h>
 #include <dingus/math/Plane.h>
-#include <dingus/utils/CpuTimer.h>
+//#include <dingus/utils/CpuTimer.h>
 #include <dingus/utils/Random.h>
 #include <dingus/math/MathUtils.h>
 #include "../DemoResources.h"
@@ -257,21 +257,21 @@ void	nearCallback( void *data, dGeomID o1, dGeomID o2 )
 void physics::update( int lod )
 {
 	{
-		cputimer::ticks_type t1 = cputimer::ticks();
+		//cputimer::ticks_type t1 = cputimer::ticks();
 		dJointGroupEmpty( contacts );
 		dSpaceCollide( space, NULL, nearCallback );
-		cputimer::ticks_type t2 = cputimer::ticks();
-		stats.msColl = double(t2-t1) * cputimer::secsPerTick() * 1000.0f;
+		//cputimer::ticks_type t2 = cputimer::ticks();
+		//stats.msColl = double(t2-t1) * cputimer::secsPerTick() * 1000.0f;
 	}
 	{
-		cputimer::ticks_type t1 = cputimer::ticks();
+		//cputimer::ticks_type t1 = cputimer::ticks();
 		dWorldSetQuickStepNumIterations( world, 5-lod );
 		//dWorldSetAutoDisableLinearThreshold( world, 0.4f + lod*0.2f );
 		//dWorldSetAutoDisableAngularThreshold( world, 0.4f + lod*0.2f );
 
 		dWorldQuickStep( world, updateDT );
-		cputimer::ticks_type t2 = cputimer::ticks();
-		stats.msPhys = double(t2-t1) * cputimer::secsPerTick() * 1000.0f;
+		//cputimer::ticks_type t2 = cputimer::ticks();
+		//stats.msPhys = double(t2-t1) * cputimer::secsPerTick() * 1000.0f;
 	}
 }
 
