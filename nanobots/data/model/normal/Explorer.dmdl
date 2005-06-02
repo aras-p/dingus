@@ -1,0 +1,9 @@
+name = 'Explorer'
+groups = {
+{
+  fx = 'entity', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'NanoExplorer' },
+  },
+},
+}

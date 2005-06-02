@@ -1,0 +1,9 @@
+name = 'AI'
+groups = {
+{
+  fx = 'entity', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'NanoAI' },
+  },
+},
+}

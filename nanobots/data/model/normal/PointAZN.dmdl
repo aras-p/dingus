@@ -1,0 +1,8 @@
+name = 'PointAZN'
+groups = {
+{
+  fx = 'Point', pri = 1,
+  params = {
+  },
+},
+}

@@ -1,0 +1,9 @@
+name = 'Points'
+groups = {
+{
+  fx = 'points', pri = 1,
+  params = {
+	  { 'tex', 'tBase', 'Spark' },
+  },
+},
+}

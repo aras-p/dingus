@@ -1,0 +1,9 @@
+name = 'PointHoshimi'
+groups = {
+{
+  fx = 'PointInjection', pri = 1,
+  params = {
+	  { 'tex', 'tBase', 'PointInjection' },
+  },
+},
+}

@@ -1,0 +1,19 @@
+name = 'Collector'
+groups = {
+-- reservoir
+{
+  --fx = 'entityTank', pri = 1,
+  fx = 'entity', pri = 0,
+  params = {
+	  --{ 'tex', 'tBase', 'CollectorTank' },
+	  { 'tex', 'tBase', 'NanoCollector' },
+  },
+},
+-- body
+{
+  fx = 'entity', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'NanoCollector' },
+  },
+},
+}

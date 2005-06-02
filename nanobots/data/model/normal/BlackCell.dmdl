@@ -1,0 +1,14 @@
+name = 'BlackCell'
+groups = {
+{
+  fx = 'BlackCell', pri = 1,
+  params = {
+	  { 'tex', 'tBase', 'BlackCell' },
+  },
+},
+{
+  fx = 'Black', pri = 0,
+  params = {
+  },
+},
+}
