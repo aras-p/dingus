@@ -1,0 +1,7 @@
+MeshTexer changelog
+
+050604: MeshTexer added to repository. This tool was used for in.out.side
+		demo to generate textures on arbitrary models from tileable textures
+		by projecting them. The initial release could generate diffuse and
+		gloss map into one texture, but that was never used; so I'll throw
+		the gloss part out really soon.
