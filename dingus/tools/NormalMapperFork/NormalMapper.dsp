@@ -144,7 +144,15 @@ SOURCE=.\Types.h
 # End Group
 # Begin Source File
 
-SOURCE=.\ArasChanges.txt
+SOURCE=.\changes.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\logo.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\readme.txt
 # End Source File
 # End Target
 # End Project

@@ -71,8 +71,6 @@ class AtiOctreeCell
       int32 m_numItems;
       int32* m_item;
 
-	  bool  m_leaf;
-
       // Con/de-struction
       AtiOctreeCell (void);
       ~AtiOctreeCell (void);

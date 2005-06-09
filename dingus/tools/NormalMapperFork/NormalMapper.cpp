@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
-#include <time.h>
 
 #include "NmFileIO.h"
 #include "TGAIO.h"
@@ -155,13 +154,6 @@ enum
 };
 static int gComputeMipLevels = MIP_NONE;
 
-
-// Aras
-static inline void PrintTime( const char* msg, clock_t t1, clock_t t2 ) {
-	float64 secs = float64(t2-t1) / CLOCKS_PER_SEC;
-	NmPrint( "%s - %.1f sec\n", msg, secs );
-}
-
 // How quiet we should be.
 enum
 {
@@ -178,7 +170,6 @@ static int gOcclIdx = 0;
 static bool gBentNormal = false;    // Save off bent normal?
 static double gEpsilon = 0.0;       // Tolerance value
 static double gDistance = FLT_MAX;  // Maximum distance a normal is considered
-//static double gDistanceAO = FLT_MAX;  // Maximum distance AO/bent normal rays are shoot
 static bool gInTangentSpace = true; // Put the normals into tangent space?
 static bool gExpandTexels = true;   // Expand the border texels so we don't get
                                     // crud when bi/trilinear filtering
@@ -205,8 +196,6 @@ static int gTrianglePad = 2;        // How many texels to pad around each
                                     // possible relevant samples.
 static bool gAddTexelCorners = false;// Add texel corners to samples
 static int gDilateTexels = 10;      // How many texels to dilate.
-
-static bool gSwapNormalYZ = false; // Aras: if true, swaps Y/Z in normals
 
 // Some statistic counters.
 static int gMaxTrisTested = 0;
@@ -672,7 +661,7 @@ IntersectTriangle (double *orig, double *dir,
 ///////////////////////////////////////////////////////////////////////////////
 static inline bool
 RayIntersectsBox (NmRawPointD* position, NmRawPointD* direction,
-                  AtiOctBoundingBox* box, float64 length )
+                  AtiOctBoundingBox* box)
 {
 #ifdef _DEBUG
    if ((position == NULL) || (direction == NULL) || (box == NULL))
@@ -680,49 +669,6 @@ RayIntersectsBox (NmRawPointD* position, NmRawPointD* direction,
       return false;
    }
 #endif
-
-   /*
-   // Aras: replaced original algorithm with segment intersection
-   // code adapted from Opcode 1.3
-
-	// check ray parallel to planes cases
-	if( direction->v[0] == 0.0 ) {
-	   if( (position->v[0] < box->min[0]) || position->v[0] > box->max[0] )
-		   return false;
-	}
-	if( direction->v[1] == 0.0 ) {
-	   if( (position->v[1] < box->min[1]) || position->v[1] > box->max[1] )
-		   return false;
-	}
-	if( direction->v[2] == 0.0 ) {
-	   if( (position->v[2] < box->min[2]) || position->v[2] > box->max[2] )
-		   return false;
-	}
-
-	// segment-box intersection
-	NmRawPoint data, data2, fdir;
-	data.x = float32( 0.5 * direction->x * length );
-	data.y = float32( 0.5 * direction->y * length );
-	data.z = float32( 0.5 * direction->z * length );
-	data2.x = float32(position->x) + data.x;
-	data2.y = float32(position->y) + data.y;
-	data2.z = float32(position->z) + data.z;
-	fdir.x = fabsf( data.x );
-	fdir.y = fabsf( data.y );
-	fdir.z = fabsf( data.z );
-	
-	float32 Dx = data2.x - box->centerX;		if(fabsf(Dx) > box->halfX + fdir.x)	return false;
-	float32 Dy = data2.y - box->centerY;		if(fabsf(Dy) > box->halfY + fdir.y)	return false;
-	float32 Dz = data2.z - box->centerZ;		if(fabsf(Dz) > box->halfZ + fdir.z)	return false;
-
-	float f;
-	f = data.y * Dz - data.z * Dy;	if(fabsf(f) > box->halfY*fdir.z + box->halfZ*fdir.y)	return false;
-	f = data.z * Dx - data.x * Dz;	if(fabsf(f) > box->halfX*fdir.z + box->halfZ*fdir.x)	return false;
-	f = data.x * Dy - data.y * Dx;	if(fabsf(f) > box->halfX*fdir.y + box->halfY*fdir.x)	return false;
-   
-	return true;
-	*/
-
    // Clear near/far intersection.
    double tNear = -FLT_MAX;
    double tFar = FLT_MAX;
@@ -870,10 +816,6 @@ RayIntersectsBox (NmRawPointD* position, NmRawPointD* direction,
          return false;
       }
    } // end else not parallel
-
-   // Aras: cap max distance
-   if( tNear > length )
-	   return false; // Ray does not reach box
 
    return true;
 } // end RayIntersectsBox
@@ -2041,9 +1983,6 @@ ComputeOcclusion (NmRawPointD* newPos, NmRawPointD* newNorm, int numTris,
          AtiOctreeCell* currCell = gCell[numCells];
 
          // See if this is a leaf node
-		 // Aras
-		 bool leaf = currCell->m_leaf;
-		 /*
          bool leaf = true;
          for (int c = 0; c < 8; c++)
          {
@@ -2053,7 +1992,6 @@ ComputeOcclusion (NmRawPointD* newPos, NmRawPointD* newNorm, int numTris,
                break;
             }
          }
-		 */
 
          // If we are a leaf check the triangles
          if (leaf)
@@ -2090,7 +2028,7 @@ ComputeOcclusion (NmRawPointD* newPos, NmRawPointD* newNorm, int numTris,
                   AtiOctreeCell* child = currCell->m_children[c];
                   
                   // If the ray intersects the box
-                  if (RayIntersectsBox (&pos, &oRay, &child->m_boundingBox, gDistance*4.0 )) // Aras: TBD: gDistanceAO!
+                  if (RayIntersectsBox (&pos, &oRay, &child->m_boundingBox))
                   {
                      AddCell (child, &numCells);
                   } // end if the ray intersects this bounding box.
@@ -2175,9 +2113,6 @@ FindBestIntersection (NmRawPointD& pos, NmRawPointD& norm, AtiOctree* octree,
       AtiOctreeCell* currCell = gCell[numCells];
 
       // See if this is a leaf node
-	  // Aras
-	  bool leaf = currCell->m_leaf;
-	  /*
       bool leaf = true;
       for (int c = 0; c < 8; c++)
       {
@@ -2187,7 +2122,6 @@ FindBestIntersection (NmRawPointD& pos, NmRawPointD& norm, AtiOctree* octree,
             break;
          }
       }
-	  */
 
       // If we are a leaf check the triangles
       if (leaf)
@@ -2273,11 +2207,11 @@ FindBestIntersection (NmRawPointD& pos, NmRawPointD& norm, AtiOctree* octree,
                AtiOctreeCell* child = currCell->m_children[c];
                   
                // If the ray intersects the box
-               if (RayIntersectsBox (&pos, &norm, &child->m_boundingBox, gDistance ))
+               if (RayIntersectsBox (&pos, &norm, &child->m_boundingBox))
                {
                   AddCell (child, &numCells);
                } // end if the ray intersects this bounding box.
-               else if (RayIntersectsBox (&pos, &negNorm, &child->m_boundingBox, gDistance ))
+               else if (RayIntersectsBox (&pos, &negNorm, &child->m_boundingBox))
                {
                   AddCell (child, &numCells);
                } // end if the ray intersects this bounding box.
@@ -2355,9 +2289,6 @@ PrintOctreeStats (AtiOctree* octree)
       AtiOctreeCell* currCell = gCell[numCells];
 
       // See if this is a leaf node
-	  // Aras
-	  bool leaf = currCell->m_leaf;
-	  /*
       bool leaf = true;
       for (int c = 0; c < 8; c++)
       {
@@ -2367,7 +2298,6 @@ PrintOctreeStats (AtiOctree* octree)
             break;
          }
       }
-	  */
 
       // If we are a leaf check the triangles
       if (leaf)
@@ -3585,11 +3515,6 @@ TestArgs (char* args)
    {
       gAddTexelCorners = true;
    }
-
-   if (strstr (args, "J") != NULL) // Aras
-   {
-	   gSwapNormalYZ = true;
-   }
 } // TestArgs
 
 //////////////////////////////////////////////////////////////////////////
@@ -3601,7 +3526,7 @@ ProcessArgs (int argc, char **argv, char** lowName, char** highName,
 {
    // A common usage line so everything is consistent.
    char* flags = NULL;
-   static char* usage = "Usage: NormalMapper [-0123456789aAbBcCdDeEfFgGhHiklLmMnNoOpPqQrRtTvwXyzJ] lowres highres Width Height [value] [heightmap heightscale] outputname\n";
+   static char* usage = "Usage: NormalMapper [-0123456789aAbBcCdDeEfFgGhHiklLmMnNoOpPqQrRtTvwXyz] lowres highres Width Height [value] [heightmap heightscale] outputname\n";
 
    // Print out verbose message if 0 or 1 arguments given.
    if ((argc == 1) || (argc == 2))
@@ -3664,7 +3589,6 @@ ProcessArgs (int argc, char **argv, char** lowName, char** highName,
       NmPrint ("                          normal closer to low res if equidistant,\n");
       NmPrint ("                          closest intersection behind,\n");
       NmPrint ("                     b  - normal closest to low res\n");
-      NmPrint ("                     J  - swap Y/Z in normals\n");
       exit (-1);
    }
 
@@ -3904,12 +3828,6 @@ ProcessArgs (int argc, char **argv, char** lowName, char** highName,
    {
       NmPrint ("No postprocess filter\n");
    }
-
-   // Aras
-   if( gSwapNormalYZ )
-   {
-	   NmPrint ("Swap Y and Z in normal map\n" );
-   }
 } // ProcessArgs
 
 //////////////////////////////////////////////////////////////////////////
@@ -3991,8 +3909,6 @@ main (int argc, char **argv)
 
    // Create and fill the octree.
    NmPrint ("Creating octree\n");
-   clock_t clkOctree1 = clock();
-
    octree = new AtiOctree;
    if (octree == NULL)
    {
@@ -4009,10 +3925,7 @@ main (int argc, char **argv)
    {
       printf ("\r");
    }
-   
-   clock_t clkOctree2 = clock();
    PrintOctreeStats (octree);
-   PrintTime( "     time", clkOctree2, clkOctree2 );
 
    // If we are doing occlusion stuff get ray hemisphere.
    if (gOcclusion || gBentNormal)
@@ -4072,8 +3985,6 @@ main (int argc, char **argv)
          // Loop over the triangles in the low res model and rasterize them
          // into the normal texture based on the texture coordinates.
          NmPrint ("Computing normals\n");
-         clock_t clkNormals1 = clock();
-
          if (gQuiet == NM_VERBOSE)
          {
             printf ("  0%%");
@@ -4336,19 +4247,11 @@ main (int argc, char **argv)
                   // If we found a normal put it in the image.
                   if (sFound > 0)
                   {
- 					// Swap Y/Z if needed
-					if( gSwapNormalYZ ) {
-						double tmp = sNorm[1];
-						sNorm[1] = sNorm[2];
-						sNorm[2] = tmp;
-					}
-
                      // Convert to tangent space if needed
                      if (gInTangentSpace == true)
                      {
                         ConvertToTangentSpace (ts, sNorm, sNorm);
                      }
-
 
                      // Add it to the image.
                      int idx = y*gWidth*numComponents + x*numComponents;
@@ -4459,12 +4362,6 @@ main (int argc, char **argv)
                            }
                         } // do ambient occlusion if needed
 
-						// Swap Y/Z if needed
-						if( gSwapNormalYZ ) {
-							double tmp = newNorm[1];
-							newNorm[1] = newNorm[2];
-							newNorm[2] = tmp;
-						}
                         
                         // Convert to tangent space if needed
                         if (gInTangentSpace == true)
@@ -4498,8 +4395,6 @@ main (int argc, char **argv)
          {
             printf ("\r100.00%%\r");
          }
-         
-		 clock_t clkNormals2 = clock();
 
          // Write out some stats.
          NmPrint ("Maximum octree cells tested for a ray: %d\n", gMaxCellsTested);
@@ -4512,7 +4407,6 @@ main (int argc, char **argv)
             NmPrint ("Maximum triangles tested for occlusion ray: %d\n",
                      gAOMaxCellsTested);
          }
-		 PrintTime( "Time", clkNormals1, clkNormals2 );
 
          // Now renormalize
          if (gEdgeCopy)
