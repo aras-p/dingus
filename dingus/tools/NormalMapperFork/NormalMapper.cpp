@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
+#include <time.h>
 
 #include "NmFileIO.h"
 #include "TGAIO.h"
@@ -153,6 +154,12 @@ enum
    MIP_BOX
 };
 static int gComputeMipLevels = MIP_NONE;
+
+
+static inline void PrintTime( const char* msg, clock_t t1, clock_t t2 ) {
+	float64 secs = float64(t2-t1) / CLOCKS_PER_SEC;
+	NmPrint( "%s - %.1f sec\n", msg, secs );
+}
 
 // How quiet we should be.
 enum
@@ -3885,6 +3892,8 @@ main (int argc, char **argv)
 
    // Create and fill the octree.
    NmPrint ("Creating octree\n");
+   clock_t clkOctree1 = clock();
+
    octree = new AtiOctree;
    if (octree == NULL)
    {
@@ -3901,7 +3910,10 @@ main (int argc, char **argv)
    {
       printf ("\r");
    }
+   
+   clock_t clkOctree2 = clock();
    PrintOctreeStats (octree);
+   PrintTime( "     time", clkOctree1, clkOctree2 );
 
    // If we are doing occlusion stuff get ray hemisphere.
    if (gOcclusion || gBentNormal)
@@ -3961,6 +3973,8 @@ main (int argc, char **argv)
          // Loop over the triangles in the low res model and rasterize them
          // into the normal texture based on the texture coordinates.
          NmPrint ("Computing normals\n");
+         clock_t clkNormals1 = clock();
+
          if (gQuiet == NM_VERBOSE)
          {
             printf ("  0%%");
@@ -4371,6 +4385,8 @@ main (int argc, char **argv)
          {
             printf ("\r100.00%%\r");
          }
+         
+		 clock_t clkNormals2 = clock();
 
          // Write out some stats.
          NmPrint ("Maximum octree cells tested for a ray: %d\n", gMaxCellsTested);
@@ -4383,6 +4399,7 @@ main (int argc, char **argv)
             NmPrint ("Maximum triangles tested for occlusion ray: %d\n",
                      gAOMaxCellsTested);
          }
+		 PrintTime( "Time", clkNormals1, clkNormals2 );
 
          // Now renormalize
          if (gEdgeCopy)
