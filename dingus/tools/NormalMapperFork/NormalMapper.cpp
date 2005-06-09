@@ -1983,15 +1983,7 @@ ComputeOcclusion (NmRawPointD* newPos, NmRawPointD* newNorm, int numTris,
          AtiOctreeCell* currCell = gCell[numCells];
 
          // See if this is a leaf node
-         bool leaf = true;
-         for (int c = 0; c < 8; c++)
-         {
-            if (currCell->m_children[c] != NULL)
-            {
-               leaf = false;
-               break;
-            }
-         }
+		 bool leaf = currCell->m_leaf;
 
          // If we are a leaf check the triangles
          if (leaf)
@@ -2113,15 +2105,7 @@ FindBestIntersection (NmRawPointD& pos, NmRawPointD& norm, AtiOctree* octree,
       AtiOctreeCell* currCell = gCell[numCells];
 
       // See if this is a leaf node
-      bool leaf = true;
-      for (int c = 0; c < 8; c++)
-      {
-         if (currCell->m_children[c] != NULL)
-         {
-            leaf = false;
-            break;
-         }
-      }
+	  bool leaf = currCell->m_leaf;
 
       // If we are a leaf check the triangles
       if (leaf)
@@ -2289,15 +2273,7 @@ PrintOctreeStats (AtiOctree* octree)
       AtiOctreeCell* currCell = gCell[numCells];
 
       // See if this is a leaf node
-      bool leaf = true;
-      for (int c = 0; c < 8; c++)
-      {
-         if (currCell->m_children[c] != NULL)
-         {
-            leaf = false;
-            break;
-         }
-      }
+	  bool leaf = currCell->m_leaf;
 
       // If we are a leaf check the triangles
       if (leaf)

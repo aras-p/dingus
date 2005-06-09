@@ -30,6 +30,7 @@ AtiOctreeCell::AtiOctreeCell (void)
 {
    memset (&m_boundingBox, 0, sizeof (AtiOctBoundingBox));
    memset (&m_children, 0, sizeof (AtiOctreeCell*) * 8);
+   m_leaf = true;
    m_numItems = 0;
    m_item = NULL;
 }
@@ -256,13 +257,14 @@ AtiOctree::FillTree (int32 numItems, void* itemList,
       {
          // First create a new cell.
          currCell->m_children[c] = new AtiOctreeCell;
+		 currCell->m_leaf = false;
          if (currCell->m_children[c] == NULL)
          {
             delete [] cell;
             return FALSE;
          }
          AtiOctreeCell* child = currCell->m_children[c];
-         memset (child, 0, sizeof (AtiOctreeCell));
+         //memset (child, 0, sizeof (AtiOctreeCell)); // Aras
          
          // Allocate items, use parent since that's the maximum we can have.
          child->m_numItems = 0;
@@ -293,6 +295,16 @@ AtiOctree::FillTree (int32 numItems, void* itemList,
          {
             delete currCell->m_children[c];
             currCell->m_children[c] = NULL;
+			bool hasChildren = false;
+			for( int z = 0; z < 8; ++z ) {
+				if( currCell->m_children[z] != NULL ) {
+					hasChildren = true;
+					break;
+				}
+			}
+			if( !hasChildren )
+				currCell->m_leaf = true;
+
             child = NULL;
             continue;
          }

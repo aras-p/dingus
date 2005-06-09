@@ -1,0 +1,3 @@
+Changelog of ATI's NormalMapper fork
+
+050513: Flag leaf nodes in octree; no need for big checks during traversal.
