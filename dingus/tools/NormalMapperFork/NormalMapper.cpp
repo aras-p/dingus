@@ -204,6 +204,8 @@ static int gTrianglePad = 2;        // How many texels to pad around each
 static bool gAddTexelCorners = false;// Add texel corners to samples
 static int gDilateTexels = 10;      // How many texels to dilate.
 
+static bool gSwapNormalYZ = false; // If true, swaps Y/Z in normals
+
 // Some statistic counters.
 static int gMaxTrisTested = 0;
 static int gMaxTrisHit = 0;
@@ -3498,6 +3500,11 @@ TestArgs (char* args)
    {
       gAddTexelCorners = true;
    }
+
+   if (strstr (args, "J") != NULL)
+   {
+	   gSwapNormalYZ = true;
+   }
 } // TestArgs
 
 //////////////////////////////////////////////////////////////////////////
@@ -3509,7 +3516,7 @@ ProcessArgs (int argc, char **argv, char** lowName, char** highName,
 {
    // A common usage line so everything is consistent.
    char* flags = NULL;
-   static char* usage = "Usage: NormalMapper [-0123456789aAbBcCdDeEfFgGhHiklLmMnNoOpPqQrRtTvwXyz] lowres highres Width Height [value] [heightmap heightscale] outputname\n";
+   static char* usage = "Usage: NormalMapper [-0123456789aAbBcCdDeEfFgGhHiklLmMnNoOpPqQrRtTvwXyzJ] lowres highres Width Height [value] [heightmap heightscale] outputname\n";
 
    // Print out verbose message if 0 or 1 arguments given.
    if ((argc == 1) || (argc == 2))
@@ -3572,6 +3579,7 @@ ProcessArgs (int argc, char **argv, char** lowName, char** highName,
       NmPrint ("                          normal closer to low res if equidistant,\n");
       NmPrint ("                          closest intersection behind,\n");
       NmPrint ("                     b  - normal closest to low res\n");
+      NmPrint ("                     J  - swap Y/Z in normals\n");
       exit (-1);
    }
 
@@ -3810,6 +3818,11 @@ ProcessArgs (int argc, char **argv, char** lowName, char** highName,
    else
    {
       NmPrint ("No postprocess filter\n");
+   }
+
+   if( gSwapNormalYZ )
+   {
+	   NmPrint ("Swap Y and Z in normal map\n" );
    }
 } // ProcessArgs
 
@@ -4237,6 +4250,13 @@ main (int argc, char **argv)
                   // If we found a normal put it in the image.
                   if (sFound > 0)
                   {
+ 					// Swap Y/Z if needed
+					if( gSwapNormalYZ ) {
+						double tmp = sNorm[1];
+						sNorm[1] = sNorm[2];
+						sNorm[2] = tmp;
+					}
+
                      // Convert to tangent space if needed
                      if (gInTangentSpace == true)
                      {
@@ -4352,6 +4372,12 @@ main (int argc, char **argv)
                            }
                         } // do ambient occlusion if needed
 
+						// Swap Y/Z if needed
+						if( gSwapNormalYZ ) {
+							double tmp = newNorm[1];
+							newNorm[1] = newNorm[2];
+							newNorm[2] = tmp;
+						}
                         
                         // Convert to tangent space if needed
                         if (gInTangentSpace == true)

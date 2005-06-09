@@ -1,4 +1,5 @@
 Changelog of ATI's NormalMapper fork
 
+050513: Option 'J' swaps Y and Z channels in resulting normal map.
 050513: Print computation times.
 050513: Flag leaf nodes in octree; no need for big checks during traversal.
