@@ -1329,80 +1329,70 @@ ConvertToExpPixel (double x, double y, double z, NmExpPixel* jp)
    jp->a = PACKINTOBYTE_0TO1(max);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Fetch from the normal map given the uv.
-//////////////////////////////////////////////////////////////////////////
-static void
-Fetch (float* map, int width, int height, double u, double v, double bumpN[3])
+// --------------------------------------------------------------------------
+//  Fetch bilinear sample from the map
+
+
+static void Fetch( const float* map, int width, int height, double u, double v, double* texel, int channels )
 {
-   if ((map == NULL) || (bumpN == NULL))
-   {
-      NmPrint ("ERROR: NULL pointer passed to Fetch\n");
-      exit (-1);
-   }
-   if (width < 1) 
-   {
-      NmPrint ("ERROR: Invaild width %d! (Fetch)\n", width);
-      exit (-1);
-   }
-   if (height < 1)
-   {
-      NmPrint ("ERROR: Invaild height %d! (Fetch)\n", height);
-      exit (-1);
-   }
+#ifdef _DEBUG
+	if ((map == NULL) || (texel == NULL))
+	{
+		NmPrint ("ERROR: NULL pointer passed to Fetch\n");
+		exit (-1);
+	}
+	if (width < 1) 
+	{
+		NmPrint ("ERROR: Invalid width %d! (Fetch)\n", width);
+		exit (-1);
+	}
+	if (height < 1)
+	{
+		NmPrint ("ERROR: Invalid height %d! (Fetch)\n", height);
+		exit (-1);
+	}
+#endif
+	
+	// Get coordinates in 0-1 range
+	if( u < 0.0 ) u = 0.0;
+	else if( u > 1.0 ) u = 1.0;
+	if( v < 0.0 ) v = 0.0;
+	else if( v > 1.0 ) v = 1.0;
+	
+	// Now figure out information for bilinear filtering
+	double up = (double)(width-1) * u;
+	double umin = floor (up);
+	double umax = ceil (up);
+	double ufrac = up - umin;
+	
+	double vp = (double)(height-1) * v;
+	double vmin = floor (vp);
+	double vmax = ceil (vp);
+	double vfrac = vp - vmin;
+	
+	// Get address of 4 bilinear samples
+	int idx00 = (int(vmin)*width + int(umin)) * channels;
+	int idx01 = (int(vmin)*width + int(umax)) * channels;
+	int idx10 = (int(vmax)*width + int(umin)) * channels;
+	int idx11 = (int(vmax)*width + int(umax)) * channels;
 
-   // Get coordinates in 0-1 range
-   if ((u < 0.0) || (u > 1.0))
-   {
-      u -= floor(u);
-   }
-   if ((v < 0.0) || (v > 1.0))
-   {
-      v -= floor(v);
-   }
-
-   // Now figure out the texel information for u coordinate
-   double up = (double)(width-1) * u;
-   double umin = floor (up);
-   double umax = ceil (up);
-   double ufrac = up - umin;
-
-   // Now figure out the texel information for v coordinate
-   double vp = (double)(height-1) * v;
-   double vmin = floor (vp);
-   double vmax = ceil (vp);
-   double vfrac = vp - vmin;
-
-   // First term umin/vmin
-   int idx = (int)(vmin)*width*3 + (int)(umin)*3;
-   bumpN[0] = ((1.0-ufrac)*(1.0-vfrac)*(double)(map[idx]));
-   bumpN[1] = ((1.0-ufrac)*(1.0-vfrac)*(double)(map[idx+1]));
-   bumpN[2] = ((1.0-ufrac)*(1.0-vfrac)*(double)(map[idx+2]));
-
-   // Second term umax/vmin
-   idx = (int)(vmin)*width*3 + (int)(umax)*3;
-   bumpN[0] += (ufrac*(1.0-vfrac)*(double)(map[idx]));
-   bumpN[1] += (ufrac*(1.0-vfrac)*(double)(map[idx+1]));
-   bumpN[2] += (ufrac*(1.0-vfrac)*(double)(map[idx+2]));
-
-   // Third term umin/vmax
-   idx = (int)(vmax)*width*3 + (int)(umin)*3;
-   bumpN[0] += ((1.0-ufrac)*vfrac*(double)(map[idx]));
-   bumpN[1] += ((1.0-ufrac)*vfrac*(double)(map[idx+1]));
-   bumpN[2] += ((1.0-ufrac)*vfrac*(double)(map[idx+2]));
-
-   // Fourth term umax/vmax
-   idx = (int)(vmax)*width*3 + (int)(umax)*3;
-   bumpN[0] += (ufrac*vfrac*(double)(map[idx]));
-   bumpN[1] += (ufrac*vfrac*(double)(map[idx+1]));
-   bumpN[2] += (ufrac*vfrac*(double)(map[idx+2]));
+	// Sample
+	for( int i = 0; i < channels; ++i ) {
+		double value;
+		value  = ((1.0-ufrac)*(1.0-vfrac)*(double)(map[idx00]));
+		value += (     ufrac *(1.0-vfrac)*(double)(map[idx01]));
+		value += ((1.0-ufrac)*     vfrac *(double)(map[idx10]));
+		value += (     ufrac *     vfrac *(double)(map[idx11]));
+		texel[i] = value;
+	}
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 // Get a pixel from the image.
 //////////////////////////////////////////////////////////////////////////
 static inline void 
-ReadPixel (BYTE* image, int width, int off, pixel* pix, int x, int y)
+ReadPixel (const BYTE* image, int width, int off, pixel* pix, int x, int y)
 {
 #ifdef _DEBUG
    if ((image == NULL) || (pix == NULL))
@@ -1426,12 +1416,64 @@ ReadPixel (BYTE* image, int width, int off, pixel* pix, int x, int y)
    }
 }
 
+
+// Converts byte-based pixel into float [red,green,blue,alpha]
+static inline void ConvertPixelFloat( const BYTE* image, int off, float* pix )
+{
+	if( off == 1 ) {
+		float v = image[0];
+		pix[0] = v;
+		pix[1] = v;
+		pix[2] = v;
+		pix[3] = 255.0f;
+	} else if( off == 2 ) {
+		float vr = image[0];
+		float vg = image[1];
+		pix[0] = vr;
+		pix[1] = vg;
+		pix[2] = 0.0f;
+		pix[3] = 255.0f;
+	} else if( off == 3 ) {
+		float vr = image[0];
+		float vg = image[1];
+		float vb = image[2];
+		pix[0] = vr;
+		pix[1] = vg;
+		pix[2] = vb;
+		pix[3] = 255.0f;
+	} else if( off == 4 ) {
+		float vr = image[0];
+		float vg = image[1];
+		float vb = image[2];
+		float va = image[3];
+		pix[0] = vr;
+		pix[1] = vg;
+		pix[2] = vb;
+		pix[3] = va;
+	}
+}
+
+
+static int GetOffsetFromBPP( int bpp )
+{
+	int off = 0;
+	switch( bpp ) {
+	case 8:  off = 1; break;
+	case 16: off = 2; break;
+	case 24: off = 3; break;
+	case 32: off = 4; break;
+	default:
+		NmPrint( "ERROR: Unhandled bit depth for input map!\n" );
+		exit( -1 );
+	}
+	return off;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Reads a height field file from disk and converts it into a normal for
 // use in perturbing the normals generated from the high res model
 //////////////////////////////////////////////////////////////////////////
-static void
-GetBumpMapFromHeightMap (const char* bumpName, int* bumpWidth,  int* bumpHeight,
+static void GetBumpMapFromHeightMap (const char* bumpName, int* bumpWidth,  int* bumpHeight,
                          float** bumpMap, float scale)
 {
    if ((bumpWidth == NULL) ||(bumpHeight == NULL) || (bumpMap == NULL))
@@ -1474,25 +1516,7 @@ GetBumpMapFromHeightMap (const char* bumpName, int* bumpWidth,  int* bumpHeight,
    }
    
    // Get offset
-   int off = 0;
-   switch (bpp)
-   {
-      case 8:
-         off = 1;
-         break;
-      case 16:
-         off = 2;
-         break;
-      case 24:
-         off = 3;
-         break;
-      case 32:
-         off = 4;
-         break;
-      default:
-         NmPrint ("ERROR: Unhandled bit depth for bump map!\n");
-         exit (-1);
-   }
+   int off = GetOffsetFromBPP( bpp );
 
    // Sobel the image to get normals.
    float dX, dY, nX, nY, nZ, oolen;
@@ -1570,6 +1594,65 @@ GetBumpMapFromHeightMap (const char* bumpName, int* bumpWidth,  int* bumpHeight,
       }
    }
 } // GetBumpMapFromHeightMap
+
+
+
+// --------------------------------------------------------------------------
+//  Reads a texture file for re-casting onto low-res model
+//  Returns 4 floats for each texel
+
+static void ReadTextureOfHires( const char* texName, int& texWidth, int& texHeight, float** texture )
+{
+	if( !texture )
+	{
+		NmPrint( "ERROR: NULL pointer passed to ReadTextureOfHires!\n" );
+		exit( -1 );
+	}
+	
+	// No texture
+	if( texName == NULL )
+	{
+		texWidth = 0;
+		texHeight = 0;
+		*texture = NULL;
+		return;
+	}
+	
+	// Read the texture
+	FILE* fp = fopen( texName, "rb" );
+	if( fp == NULL )
+	{
+		NmPrint( "ERROR: Unable to open %s\n", texName );
+		exit( -1 );
+	}
+	BYTE* image;
+	int bpp;
+	if( !TGAReadImage( fp, &texWidth, &texHeight, &bpp, &image ) )
+	{
+		NmPrint( "ERROR: Unable to read %s\n", texName );
+		exit( -1 );
+	}
+	fclose( fp );
+	
+	// Allocate float4 image.
+	*texture = new float[ texWidth*texHeight*4 ];
+	if( (*texture) == NULL)
+	{
+		NmPrint( "ERROR: Unable to allocate input texture memory!" );
+		exit( -1 );
+	}
+	
+	// Get offset and convert the image
+	int offset = GetOffsetFromBPP( bpp );
+
+	const BYTE* img = image;
+	float* tex = *texture;
+	int n = texWidth * texHeight;
+	for( int i = 0; i < n; ++i, img += offset, tex += 4 ) {
+		ConvertPixelFloat( img, offset, tex );
+	}
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Read in a model file
@@ -1861,48 +1944,48 @@ GetXMinMax (NmEdge edge[3], int y, int* minX, int* maxX)
    }
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Normalize the given image.
-//////////////////////////////////////////////////////////////////////////
-static inline void
-GetPerturbedNormal (NmRawTriangle* tri, double b0, double b1, double b2,
-                    float* bumpMap, int bumpWidth, int bumpHeight,
-                    double m[3][9], double norm[3])
+// --------------------------------------------------------------------------
+//  Perturb normal with bump-map from the hi-res model
+
+static inline void GetPerturbedNormal( const NmRawTriangle* tri, double b0, double b1, double b2,
+									  const float* bumpMap, int bumpWidth, int bumpHeight,
+									  double m[3][9], double norm[3] )
 {
-   // Check parameters
+	// Check parameters
 #ifdef _DEBUG
-   if ((tri == NULL) || (bumpMap == NULL) || (m == NULL) || (norm == NULL))
-   {
-      NmPrint ("ERROR: NULL pointer passed to GetPerturbedNormal!\n");
-      exit (-1);
-   }
+	if ((tri == NULL) || (bumpMap == NULL) || (m == NULL) || (norm == NULL))
+	{
+		NmPrint ("ERROR: NULL pointer passed to GetPerturbedNormal!\n");
+		exit (-1);
+	}
 #endif
-
-   // Figure out texture coordinates.
-   double u = (tri->texCoord[0].u * b0) +
-              (tri->texCoord[1].u * b1) +
-              (tri->texCoord[2].u * b2);
-   double v = (tri->texCoord[0].v * b0) +
-              (tri->texCoord[1].v * b1) +
-              (tri->texCoord[2].v * b2);
-                                 
-   // Fetch from the bump map.
-   double bumpN[3];
-   Fetch (bumpMap, bumpWidth, bumpHeight, u, v, bumpN);
-
-   // Interpolate tangent space on high res model
-   double ts[9];
-   for (int t = 0; t < 9; t++)
-   {
-      ts[t] = (m[0][t] * b0) + (m[1][t] * b1) + (m[2][t] * b2);
-   }
-
-   // Convert normal into object space.
-   ConvertFromTangentSpace (ts, bumpN, bumpN);
-   norm[0] = bumpN[0];
-   norm[1] = bumpN[1];
-   norm[2] = bumpN[2];
+	
+	// Figure out texture coordinates.
+	double u = (tri->texCoord[0].u * b0) +
+		(tri->texCoord[1].u * b1) +
+		(tri->texCoord[2].u * b2);
+	double v = (tri->texCoord[0].v * b0) +
+		(tri->texCoord[1].v * b1) +
+		(tri->texCoord[2].v * b2);
+	
+	// Fetch from the bump map.
+	double bumpN[3];
+	Fetch( bumpMap, bumpWidth, bumpHeight, u, v, bumpN, 3 );
+	
+	// Interpolate tangent space on high res model
+	double ts[9];
+	for (int t = 0; t < 9; t++)
+	{
+		ts[t] = (m[0][t] * b0) + (m[1][t] * b1) + (m[2][t] * b2);
+	}
+	
+	// Convert normal into object space.
+	ConvertFromTangentSpace (ts, bumpN, bumpN);
+	norm[0] = bumpN[0];
+	norm[1] = bumpN[1];
+	norm[2] = bumpN[2];
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 // Add a cell into our list.
@@ -3312,6 +3395,8 @@ static SArgument APP_ARGS[] = {
 	{ ARGT_FLAG,	"-swapyz",	"Swap Y/Z in resulting normals", },
 	{ ARGT_STRING,	"-bump",	"Input bumpmap name", },
 	{ ARGT_FLOAT,	"-bscale",	"Input bumpmap scale (default 1.0)", },
+	{ ARGT_STRING,	"-tex",		"Input texture name", },
+	{ ARGT_STRING,	"-outt",	"Output texture (recast from hires) name", },
 };
 static const int APP_ARGCOUNT = sizeof(APP_ARGS)/sizeof(APP_ARGS[0]);
 
@@ -3445,7 +3530,8 @@ static void PrintoutOptions()
 
 
 static void ProcessArgs( int argc, char **argv, const char** lowName, const char** highName,
-						const char** bumpName, double* bumpScale, const char** outName )
+						const char** bumpName, double* bumpScale, const char** outName,
+						const char** textureName, const char** outTexName )
 {
 	CmdlineArgs args( argc, argv );
 
@@ -3472,6 +3558,10 @@ static void ProcessArgs( int argc, char **argv, const char** lowName, const char
 		// if bump name is given, set different default normal rule
 		gNormalRules = NORM_RULE_CLOSEST;
 	}
+
+	// texture
+	*textureName = args.getString( "-tex" );
+	*outTexName = args.getString( "-outt" );
 
 	// super sampling
 	gNumSamples = args.getInt( gNumSamples, "-ss" );
@@ -3609,8 +3699,10 @@ main (int argc, char **argv)
    const char* bumpName = NULL;
    double bumpScale = 1.0;
    const char* outName = NULL;
+   const char* textureName = NULL;
+   const char* outTexName = NULL;
    ProcessArgs (argc, argv, &lowName, &highName, &bumpName, &bumpScale,
-                &outName);
+                &outName, &textureName, &outTexName);
 
    // Get bump map from height map.
    float* bumpMap = NULL;
@@ -3623,6 +3715,16 @@ main (int argc, char **argv)
       GetBumpMapFromHeightMap (bumpName, &bumpWidth,  &bumpHeight, &bumpMap,
                                (float)bumpScale);
    }
+
+   // If needed, read high-res model texture
+   float* textureIn = NULL;
+   int textureInWidth = 0;
+   int textureInHeight = 0;
+   if( textureName != NULL ) {
+	   NmPrint( "Reading in texture: %s\n", textureName );
+	   ReadTextureOfHires( textureName, textureInWidth, textureInHeight, &textureIn );
+   }
+  
 
    // Read in the low res model
    int lowNumTris;
