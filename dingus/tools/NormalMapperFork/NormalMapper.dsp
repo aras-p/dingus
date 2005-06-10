@@ -95,6 +95,14 @@ SOURCE=.\ArgFileIO.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\args.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\args.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\AtiOctree.cpp
 # End Source File
 # Begin Source File

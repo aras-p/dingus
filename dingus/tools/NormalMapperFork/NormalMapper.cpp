@@ -20,8 +20,9 @@
 #include "ArgFileIO.h"
 #include "AtiOctree.h"
 #include "AtiTriBoxMoller.h"
+#include "args.h"
 
-static char* versionString =  "NormalMapper v03.02.02\n";
+static char* versionString =  "NormalMapper v03.02.02 fork 050610\n";
 
 //#define USE_SMD_FILES
 
@@ -178,14 +179,14 @@ static bool gBentNormal = false;    // Save off bent normal?
 static double gEpsilon = 0.0;       // Tolerance value
 static double gDistance = FLT_MAX;  // Maximum distance a normal is considered
 static bool gInTangentSpace = true; // Put the normals into tangent space?
-static bool gExpandTexels = true;   // Expand the border texels so we don't get
-                                    // crud when bi/trilinear filtering
+//static bool gExpandTexels = true;   // Expand the border texels so we don't get // TBD
+//                                    // crud when bi/trilinear filtering
 static bool gBoxFilter = false;     // Perform a post-box filter on normal map?
 static double gMaxAngle = 0.1;      // Determines cutoff angle to see if the
                                     // normal is roughly in the right direction
 static int gNumDivisions = 8;       // Number of divisions for the hemisphere
-                                    // of rays (controls number of rays for
-                                    // occlusion and bent normal.
+                                    // of rays (number of rays for
+                                    // occlusion and bent normal is num*num*4+5).
 static int gMaxInBox = 30;          // "Maximum" number of triangles per
                                     // octree node. This is a trade off between
                                     // speed of building the tree and speed of
@@ -1430,7 +1431,7 @@ ReadPixel (BYTE* image, int width, int off, pixel* pix, int x, int y)
 // use in perturbing the normals generated from the high res model
 //////////////////////////////////////////////////////////////////////////
 static void
-GetBumpMapFromHeightMap (char* bumpName, int* bumpWidth,  int* bumpHeight,
+GetBumpMapFromHeightMap (const char* bumpName, int* bumpWidth,  int* bumpHeight,
                          float** bumpMap, float scale)
 {
    if ((bumpWidth == NULL) ||(bumpHeight == NULL) || (bumpMap == NULL))
@@ -1574,7 +1575,7 @@ GetBumpMapFromHeightMap (char* bumpName, int* bumpWidth,  int* bumpHeight,
 // Read in a model file
 //////////////////////////////////////////////////////////////////////////
 static void
-ReadModel (char* name, char* type, int* numTris, NmRawTriangle** tris,
+ReadModel (const char* name, const char* type, int* numTris, NmRawTriangle** tris,
            double bbox[6], bool checkTex)
 {
    // Check arguments
@@ -2345,7 +2346,7 @@ PrintOctreeStats (AtiOctree* octree)
 // a number designating the mip level.
 //////////////////////////////////////////////////////////////////////////
 static void
-GetOutputFilename (char* name, char* original, int mipCount)
+GetOutputFilename (char* name, const char* original, int mipCount)
 {
    // Check arguments
    if ((name == NULL) || (original == NULL))
@@ -3260,571 +3261,340 @@ WriteOutputImage (char* fName, float* img, int numComponents)
    } // end if we are writing displacements.
 } // WriteOutputImage
 
-//////////////////////////////////////////////////////////////////////////
-// Check argument flags and set the appropriate values.
-//////////////////////////////////////////////////////////////////////////
-static void
-TestArgs (char* args)
+
+// --------------------------------------------------------------------------
+//  Process arguments
+
+enum eArgType {
+	ARGT_FLAG,
+	ARGT_INT,
+	ARGT_STRING,
+	ARGT_FLOAT,
+};
+static const char* ARG_TYPES[] = {
+	"     ",
+	"[int]",
+	"[str]",
+	"[flt]",
+};
+
+struct SArgument {
+	eArgType type;
+	const char* arg;
+	const char* desc;
+};
+
+static SArgument APP_ARGS[] = {
+	{ ARGT_STRING,	"-low",		"Low resolution mesh", },
+	{ ARGT_STRING,	"-high",	"High resolution mesh", },
+	{ ARGT_INT,		"-x",		"Witdh of result map", },
+	{ ARGT_INT,		"-y",		"Height of result map", },
+	{ ARGT_INT,		"-outn",	"Output normalmap name", },
+	{ ARGT_STRING,	"-fmtn",	"Out normalmap format [rgba,rg16,rgba16,rgb10;rgb10ms;rgb11]", },
+	{ ARGT_FLAG,	"-w",		"Output world space normals", },
+	{ ARGT_STRING,	"-mip",		"Create mip chain [recomp,box]", },
+	{ ARGT_FLAG,	"-boxf",	"Box filter final image", },
+	{ ARGT_INT,		"-dilate",	"Border texel expansion (default 10)", },
+	{ ARGT_FLOAT,	"-tol",		"Compare tolerance (default 0)", },
+	{ ARGT_FLOAT,	"-angle",	"Cutoff angle (-0.4 to 0.7; default 0.1)", },
+	{ ARGT_FLAG,	"-noedge",	"Don't perform edge copy", },
+	{ ARGT_INT,		"-occ",		"Generate occlusion term (4..12: val*val*4+5 rays)", },
+	{ ARGT_FLAG,	"-bentn",	"Generate bent normal", },
+	{ ARGT_FLAG,	"-displ",	"Generate displacement values", },
+	{ ARGT_INT,		"-tpad",	"Triangle padding (2..4; default 2)", },
+	{ ARGT_FLAG,	"-q",		"Quiet mode, no spinners or percentages", },
+	{ ARGT_FLAG,	"-Q",		"Very quiet mode, no output", },
+	{ ARGT_FLOAT,	"-maxd",	"Maximum distance (default infinity)", },
+	{ ARGT_INT,		"-ss",		"Supersampling (0..11: val*val+1 samples)", },
+	{ ARGT_FLAG,	"-corner",	"Add four samples for texel corners", },
+	{ ARGT_STRING,	"-rule",	"Intersection rule [c,C,f,F,d,D,b; default C]", },
+	{ ARGT_FLAG,	"-front",	"Only front intersections", },
+	{ ARGT_FLAG,	"-swapyz",	"Swap Y/Z in resulting normals", },
+	{ ARGT_STRING,	"-bump",	"Input bumpmap name", },
+	{ ARGT_FLOAT,	"-bscale",	"Input bumpmap scale (default 1.0)", },
+};
+static const int APP_ARGCOUNT = sizeof(APP_ARGS)/sizeof(APP_ARGS[0]);
+
+static const char* APP_USAGE = "NormalMapper -low <file> -high <file> -x <int> -y <int> -outn <file> [flags]\n";
+
+
+static void PrintUsage()
 {
-   // Super-sample number
-   if (strstr (args, "1") != NULL)
-   {
-      gNumSamples = 1;
-   }
-   if (strstr (args, "2") != NULL)
-   {
-      gNumSamples = 2;
-   }
-   if (strstr (args, "3") != NULL)
-   {
-      gNumSamples = 3;
-   }
-   if (strstr (args, "4") != NULL)
-   {
-      gNumSamples = 4;
-   }
-   if (strstr (args, "5") != NULL)
-   {
-      gNumSamples = 5;
-   }
-   if (strstr (args, "6") != NULL)
-   {
-      gNumSamples = 6;
-   }
-   if (strstr (args, "7") != NULL)
-   {
-      gNumSamples = 7;
-   }
-   if (strstr (args, "8") != NULL)
-   {
-      gNumSamples = 8;
-   }
-   if (strstr (args, "9") != NULL)
-   {
-      gNumSamples = 9;
-   }
-   if (strstr (args, "0") != NULL)
-   {
-      gNumSamples = 10;
-   }
+	NmPrint( APP_USAGE );
+	for( int i = 0; i < APP_ARGCOUNT; ++i ) {
+		const SArgument& arg = APP_ARGS[i];
+		NmPrint( "  %-10s %s %s\n", arg.arg, ARG_TYPES[arg.type], arg.desc );
+	}
+	exit( -1 );
+}
 
-   // Rulesets for determining best normals
-   if (strstr (args, "c") != NULL)
-   {
-      gNormalRules = NORM_RULE_CLOSEST;
-      if (strstr (args, "X") != NULL)
-      {
-         gNormalRules = NORM_RULE_FRONT_CLOSEST;
-      }
-   }
-   if (strstr (args, "C") != NULL)
-   {
-      gNormalRules = NORM_RULE_BEST_CLOSEST;
-      if (strstr (args, "X") != NULL)
-      {
-         gNormalRules = NORM_RULE_FRONT_BEST_CLOSEST;
-      }
-   }
-   if (strstr (args, "f") != NULL)
-   {
-      gNormalRules = NORM_RULE_FARTHEST;
-      if (strstr (args, "X") != NULL)
-      {
-         gNormalRules = NORM_RULE_FRONT_FURTHEST;
-      }
-   }
-   if (strstr (args, "F") != NULL)
-   {
-      gNormalRules = NORM_RULE_BEST_FARTHEST;
-      if (strstr (args, "X") != NULL)
-      {
-         gNormalRules = NORM_RULE_FRONT_BEST_FURTHEST;
-      }
-   }
-   if (strstr (args, "d") != NULL)
-   {
-      gNormalRules = NORM_RULE_MIXED;
-   }
-   if (strstr (args, "D") != NULL)
-   {
-      gNormalRules = NORM_RULE_BEST_MIXED;
-   }
-   if (strstr (args, "b") != NULL)
-   {
-      gNormalRules = NORM_RULE_BEST;
-   }
-
-   // Misc flags
-   if (strstr (args, "r") != NULL)
-   {
-      gOcclusion = true;
-      gNumDivisions = 4;
-   }
-   if (strstr (args, "R") != NULL)
-   {
-      gOcclusion = true;
-      gNumDivisions = 6;
-   }
-   if (strstr (args, "o") != NULL)
-   {
-      gOcclusion = true;
-      gNumDivisions = 8;
-   }
-   if (strstr (args, "O") != NULL)
-   {
-      gOcclusion = true;
-      gNumDivisions = 12;
-   }
-   if (strstr (args, "n") != NULL)
-   {
-      gBentNormal = true;
-   }
-   if (strstr (args, "N") != NULL)
-   {
-      gBentNormal = true;
-      gNumDivisions = 12;
-   }
-   if (strstr (args, "m") != NULL)
-   {
-      gComputeMipLevels = MIP_RECOMPUTE;
-   }
-   if (strstr (args, "M") != NULL)
-   {
-      gComputeMipLevels = MIP_BOX;
-   }
-   if ((strstr (args, "w") != NULL) ||
-       (strstr (args, "W") != NULL))
-   {
-      gInTangentSpace = false;
-   }
-   if (strstr (args, "e") != NULL)
-   {
-      gExpandTexels = false;
-   }
-   if (strstr (args, "E") != NULL)
-   {
-      gDilateTexels = 15;
-   }
-   if (strstr (args, "g") != NULL)
-   {
-      gDilateTexels = 20;
-   }
-   if (strstr (args, "G") != NULL)
-   {
-      gDilateTexels = 30;
-   }
-   if (strstr (args, "t") != NULL)
-   {
-      gEpsilon = EPSILON;
-   }
-   if (strstr (args, "T") != NULL)
-   {
-      gEpsilon = 0.1;
-   }
-   if (strstr (args, "h") != NULL)
-   {
-      gOutput = NORM_OUTPUT_16_16_ARG;
-   }
-   if (strstr (args, "H") != NULL)
-   {
-      gOutput = NORM_OUTPUT_16_16_16_16_ARG;
-   }
-   if (strstr (args, "i") != NULL)
-   {
-      gOutput = NORM_OUTPUT_10_10_10_2_ARG;
-   }
-   if (strstr (args, "s") != NULL)
-   {
-      gOutput = NORM_OUTPUT_10_10_10_2_ARG_MS;
-   }
-   if (strstr (args, "S") != NULL)
-   {
-      gOutput = NORM_OUTPUT_11_11_10_ARG_MS;
-   }
-   if (gOcclusion)
-   {
-      if (gOutput == NORM_OUTPUT_8_8_8_TGA)
-      {
-         gOutput = NORM_OUTPUT_8_8_8_8_TGA;
-      }
-      else if (gOutput != NORM_OUTPUT_16_16_16_16_ARG)
-      {
-         NmPrint ("Warning: Specified output format will NOT output occlusion. Right now only 8x8x8x8 TARGA (default) and 16x16x16x16 ARG (-H) will output occlusion!\n");
-      }
-   }
-   if (strstr (args, "B") != NULL)
-   {
-      gBoxFilter = true;
-   }
-   if (strstr (args, "a") != NULL)
-   {
-      gMaxAngle = 0.4;
-   }
-   if (strstr (args, "A") != NULL)
-   {
-      gMaxAngle = 0.7;
-   }
-   if (strstr (args, "l") != NULL)
-   {
-      gMaxAngle = -0.1;
-   }
-   if (strstr (args, "L") != NULL)
-   {
-      gMaxAngle = -0.4;
-   }
-   if (strstr (args, "q") != NULL)
-   {
-      gQuiet = NM_QUIET;
-   }
-   if (strstr (args, "Q") != NULL)
-   {
-      gQuiet = NM_SILENT;
-   }
-   if (strstr (args, "z") != NULL)
-   {
-      gEdgeCopy = false;
-   }
-   if (strstr (args, "p") != NULL)
-   {
-      gTrianglePad = 3;
-   }
-   if (strstr (args, "P") != NULL)
-   {
-      gTrianglePad = 4;
-   }
-   if (strstr (args, "y") != NULL)
-   {
-      gDisplacements = true;
-   }
-   if (strstr (args, "k") != NULL)
-   {
-      gAddTexelCorners = true;
-   }
-
-   if (strstr (args, "J") != NULL)
-   {
-	   gSwapNormalYZ = true;
-   }
-} // TestArgs
-
-//////////////////////////////////////////////////////////////////////////
-// Process arguments
-//////////////////////////////////////////////////////////////////////////
-static void
-ProcessArgs (int argc, char **argv, char** lowName, char** highName,
-             char** bumpName, double* bumpScale, char** outName)
+static void PrintoutOptions()
 {
-   // A common usage line so everything is consistent.
-   char* flags = NULL;
-   static char* usage = "Usage: NormalMapper [-0123456789aAbBcCdDeEfFgGhHiklLmMnNoOpPqQrRtTvwXyzJ] lowres highres Width Height [value] [heightmap heightscale] outputname\n";
+	// Print out options
+	NmPrint( versionString );
+	NmPrint ("Width: %d Height: %d\n", gWidth, gHeight);
+	GetSamples (&gNumSamples, &gSamples);
+	NmPrint ("%d sample(s) per texel\n", gNumSamples);
+	NmPrint ("%d texel triangle pad\n", gTrianglePad);
+	if (gBentNormal)
+	{
+		NmPrint ("Storing bent normal\n");
+	}
+	if (gOcclusion)
+	{
+		NmPrint ("Storing occlusion term\n");
+	}
+	switch (gNormalRules)
+	{
+	case NORM_RULE_CLOSEST:
+		NmPrint ("Normal Rule: Closest\n");
+		break;
+	case NORM_RULE_BEST_CLOSEST:
+		NmPrint ("Normal Rule: Best Closest\n");
+		break;
+	case NORM_RULE_BEST_FARTHEST:
+		NmPrint ("Normal Rule: Best Furthest\n");
+		break;
+	case NORM_RULE_FARTHEST:
+		NmPrint ("Normal Rule: Furthest\n");
+		break;
+	case NORM_RULE_MIXED:
+		NmPrint ("Normal Rule: Mixed\n");
+		break;
+	case NORM_RULE_BEST_MIXED:
+		NmPrint ("Normal Rule: Best Mixed\n");
+		break;
+	case NORM_RULE_BEST:
+		NmPrint ("Normal Rule: Best\n");
+		break;
+	case NORM_RULE_FRONT_FURTHEST:
+		NmPrint ("Normal Rule: Front Furthest\n");
+		break;
+	case NORM_RULE_FRONT_BEST_FURTHEST:
+		NmPrint ("Normal Rule: Front Best Furthest\n");
+		break;
+	case NORM_RULE_FRONT_CLOSEST:
+		NmPrint ("Normal Rule: Front Closest\n");
+		break;
+	case NORM_RULE_FRONT_BEST_CLOSEST:
+		NmPrint ("Normal Rule: Front Best Closest\n");
+		break;
+	default:
+		NmPrint ("Normal Rule: UKNOWN!\n");
+		break;
+	}
+	if (gDistance != FLT_MAX)
+	{
+		NmPrint ("Max distance: %4.12f\n", gDistance);
+	}
+	NmPrint ("Epsilon: %1.10f\n", gEpsilon);
+	NmPrint ("Cutoff Angle: %5.1f\n", (acos (gMaxAngle) * (180.0/PI))*2.0);
+	switch (gComputeMipLevels)
+	{
+	case MIP_NONE:
+		NmPrint ("No mipmap generation\n");
+		break;
+	case MIP_RECOMPUTE:
+		NmPrint ("Re-cast mipmap generation.\n");
+		break;
+	case MIP_BOX:
+		NmPrint ("Box filter mip map generation.\n");
+		break;
+	default:
+		NmPrint ("Unknown mip map generation\n");
+		break;
+	}
+	if (gInTangentSpace)
+	{
+		NmPrint ("Normals in tangent space\n");
+	}
+	else
+	{
+		NmPrint ("Normals in world space\n");
+	}
+	if (gDilateTexels>0)
+	{
+		NmPrint ("Expand border texels by %d\n", gDilateTexels);
+	}
+	else
+	{
+		NmPrint ("Don't Expand border texels\n");
+	}
+	if (gEdgeCopy)
+	{
+		NmPrint ("Perform edge copy\n");
+	}
+	else
+	{
+		NmPrint ("Don't perform edge copy\n");
+	}
+	if (gBoxFilter)
+	{
+		NmPrint ("Postprocess box filter\n");
+	}
+	else
+	{
+		NmPrint ("No postprocess filter\n");
+	}
+	
+	if( gSwapNormalYZ )
+	{
+		NmPrint ("Swap Y and Z in normal map\n" );
+	}
+}
 
-   // Print out verbose message if 0 or 1 arguments given.
-   if ((argc == 1) || (argc == 2))
-   {
-      NmPrint (usage);
-      NmPrint ("                     h  - Output 16x16 .arg texture\n");
-      NmPrint ("                     H  - Output 16x16x16x16 .arg texture\n");
-      NmPrint ("                     i  - Output 10x10x10x2 .arg texture\n");
-      NmPrint ("                     w  - Use worldspace normals\n");
-      NmPrint ("                     m  - Create mip chain (remap)\n");
-      NmPrint ("                     M  - Create mip chain (box filter)\n");
-      NmPrint ("                     B  - Box filter final image\n");
-      NmPrint ("                     e  - Don't expand border texels\n");
-      NmPrint ("                     E  - expand border texels more (15 texels)\n");
-      NmPrint ("                     g  - more dilation (20 texels)\n");
-      NmPrint ("                     G  - even more dilation (30 texels)\n");
-      NmPrint ("                     t  - larger tolerance on compare\n");
-      NmPrint ("                     T  - largest tolerance on compare\n");
-      NmPrint ("                     a  - smaller angle for cutoff\n");
-      NmPrint ("                     A  - smallest angle for cutoff\n");
-      NmPrint ("                     l  - larger angle for cutoff\n");
-      NmPrint ("                     L  - largest angle for cutoff\n");
-      NmPrint ("                     X  - only normals in front\n");
-      NmPrint ("                     z  - don't perform edge copy\n");
-      NmPrint ("                     r  - Generate occlusion term (69 rays)\n");
-      NmPrint ("                     R  - Generate occlusion term (149 rays)\n");
-      NmPrint ("                     o  - Generate occlusion term (261 rays)\n");
-      NmPrint ("                     O  - Generate occlusion term (581 rays)\n");
-      NmPrint ("                     n  - Generate bent normal (261 rays)\n");
-      NmPrint ("                     N  - Generate bent normal (581 rays)\n");
-      NmPrint ("                     y  - Generate displacement values\n");
-      NmPrint ("                     p  - more triangle padding\n");
-      NmPrint ("                     P  - even more triangle padding\n");
-      NmPrint ("                     q  - Quiet mode, no spinners or percentages\n");
-      NmPrint ("                     Q  - Very quiet mode, no messages\n");
-      NmPrint ("                     v  - value is the maximum distance\n");
-      NmPrint ("                     1  - Five samples per texel\n");
-      NmPrint ("                     2  - Ten samples per texel\n");
-      NmPrint ("                     3  - Seventeen samples per texel\n");
-      NmPrint ("                     4  - Twenty six samples per texel\n");
-      NmPrint ("                     5  - Thirty seven samples per texel\n");
-      NmPrint ("                     6  - Fifty samples per texel\n");
-      NmPrint ("                     7  - Sixty five samples per texel\n");
-      NmPrint ("                     8  - Eighty two samples per texel\n");
-      NmPrint ("                     9  - One hundred and one samples per texel\n");
-      NmPrint ("                     0  - One hundred and twenty two samples per texel\n");
-      NmPrint ("                     k  - Add four samples for texel corners\n");
-      NmPrint ("                     c  - Pick closest intersection,\n");
-      NmPrint ("                          first if equidistant\n");
-      NmPrint ("                     C  - Pick closest intersection,\n");
-      NmPrint ("                          normal closer to low res if equidistant\n");
-      NmPrint ("                     f  - Pick furthest intersection,\n");
-      NmPrint ("                          first if equidistant\n");
-      NmPrint ("                     F  - Pick furthest intersection,\n");
-      NmPrint ("                          normal closer to low res if equidistant\n");
-      NmPrint ("                     d  - Pick furthest intersection in front,\n");
-      NmPrint ("                          closest intersection behind,\n");
-      NmPrint ("                          first if equidistant\n");
-      NmPrint ("                     D  - Pick Pick furthest intersection in front,\n");
-      NmPrint ("                          normal closer to low res if equidistant,\n");
-      NmPrint ("                          closest intersection behind,\n");
-      NmPrint ("                     b  - normal closest to low res\n");
-      NmPrint ("                     J  - swap Y/Z in normals\n");
-      exit (-1);
-   }
 
-   // Make sure the right number of arguments are present.
-   if ((argc != 6) && (argc != 7) && (argc != 8) && (argc != 9) && (argc != 10))
-   {
-      NmPrint (usage);
-      exit (-1);
-   }
+static void ProcessArgs( int argc, char **argv, const char** lowName, const char** highName,
+						const char** bumpName, double* bumpScale, const char** outName )
+{
+	CmdlineArgs args( argc, argv );
 
-   // No heightmap, no arguments.
-   gEpsilon = 0.0;
-   if (argc == 6)
-   {
-      (*lowName) = argv[1];
-      (*highName) = argv[2];
-      gWidth = atoi (argv[3]);
-      gHeight = atoi (argv[4]);
-      (*outName) = argv[5];
-   }
+	bool badArgs = false;
 
-   // Command line arguments
-   if (argc == 7)
-   {
-      (*lowName) = argv[2];
-      (*highName) = argv[3];
-      gWidth = atoi (argv[4]);
-      gHeight = atoi (argv[5]);
-      (*outName) = argv[6];
-      TestArgs (argv[1]);
-      flags = argv[1];
-   }
+	gEpsilon = 0.0;
 
-   // Height map no command line args, or distance with arguments.
-   if (argc == 8)
-   {
+	// get required arguments
+	*lowName = args.getString( "-low" );
+	*highName = args.getString( "-high" );
+	gWidth = args.getInt( -1, "-x" );
+	gHeight = args.getInt( -1, "-y" );
+	*outName = args.getString( "-outn" );
+	if( !lowName || !highName || gWidth < 1 || gHeight < 1 || !outName )
+		badArgs = true;
 
-      if (strstr (argv[1], "-") != NULL)
-      {
-         if (strstr (argv[1], "v") == NULL)
-         {
-            NmPrint (usage);
-            exit (-1);
-         }
-         (*lowName) = argv[2];
-         (*highName) = argv[3];
-         gWidth = atoi (argv[4]);
-         gHeight = atoi (argv[5]);
-         gDistance = atof (argv[6]);
-         (*outName) = argv[7];
-         TestArgs (argv[1]);
-         flags = argv[1];
-      }
-      else
-      {
-         gNormalRules = NORM_RULE_CLOSEST;
-         (*lowName) = argv[1];
-         (*highName) = argv[2];
-         gWidth = atoi (argv[3]);
-         gHeight = atoi (argv[4]);
-         (*bumpName) = argv[5];
-         (*bumpScale) = atof (argv[6]);
-         (*outName) = argv[7];
-      }
-   }
+	// distance
+	gDistance = args.getFloat( gDistance, "-maxd" );
+	
+	// bump map
+	*bumpName = args.getString( "-bump" );
+	*bumpScale = args.getFloat( 1.0, "-bscale" );
+	if( *bumpName ) {
+		// if bump name is given, set different default normal rule
+		gNormalRules = NORM_RULE_CLOSEST;
+	}
 
-   // Commandline arguments and heightmap
-   if (argc == 9)
-   {
-         gNormalRules = NORM_RULE_CLOSEST;
-         (*lowName) = argv[2];
-         (*highName) = argv[3];
-         gWidth = atoi (argv[4]);
-         gHeight = atoi (argv[5]);
-         (*bumpName) = argv[6];
-         (*bumpScale) = atof (argv[7]);
-         (*outName) = argv[8];
-         TestArgs (argv[1]);
-         flags = argv[1];
-   }
+	// super sampling
+	gNumSamples = args.getInt( gNumSamples, "-ss" );
+	gAddTexelCorners = args.contains( "-corner" );
+	
+	// rules for determining best normals
+	bool ruleFront = args.contains( "-front" );
+	const char* rule = args.getString( "-rule" );
+	if( rule != NULL ) {
+		if( !strcmp(rule,"c") ) {
+			gNormalRules = ruleFront ? NORM_RULE_FRONT_CLOSEST : NORM_RULE_CLOSEST;
+		}
+		if( !strcmp(rule,"C") ) {
+			gNormalRules = ruleFront ? NORM_RULE_FRONT_BEST_CLOSEST : NORM_RULE_BEST_CLOSEST;
+		}
+		if( !strcmp(rule,"f") ) {
+			gNormalRules = ruleFront ? NORM_RULE_FRONT_FURTHEST : NORM_RULE_FARTHEST;
+		}
+		if( !strcmp(rule,"F") ) {
+			gNormalRules = ruleFront ? NORM_RULE_FRONT_BEST_FURTHEST : NORM_RULE_BEST_FARTHEST;
+		}
+		if( !strcmp(rule,"d") ) {
+			gNormalRules = NORM_RULE_MIXED;
+		}
+		if( !strcmp(rule,"D") ) {
+			gNormalRules = NORM_RULE_BEST_MIXED;
+		}
+		if( !strcmp(rule,"b") ) {
+			gNormalRules = NORM_RULE_BEST;
+		}
+	}
+	
+	// ambient occlusion and bent normal
+	gNumDivisions = args.getInt( 0, "-occ" );
+	if( gNumDivisions > 0 ) {
+		gOcclusion = true;
+	}
+	gBentNormal = args.contains( "-bentn" );
 
-   // Commandline arguments, heightmap, and distance
-   if (argc == 10)
-   {
-         if (strstr (argv[1], "v") == NULL)
-         {
-            NmPrint (usage);
-            exit (-1);
-         }
+	// mip-levels and filtering
+	const char* mip = args.getString( "-mip" );
+	if( mip ) {
+		if( !strcmp(mip,"box") )
+			gComputeMipLevels = MIP_BOX;
+		else if( !strcmp(mip,"recomp") )
+			gComputeMipLevels = MIP_RECOMPUTE;
+	}
+	gBoxFilter = args.contains( "-boxf" );
 
-         gNormalRules = NORM_RULE_CLOSEST;
-         (*lowName) = argv[2];
-         (*highName) = argv[3];
-         gWidth = atoi (argv[4]);
-         gHeight = atoi (argv[5]);
-         gDistance = atof (argv[6]);
-         (*bumpName) = argv[7];
-         (*bumpScale) = atof (argv[8]);
-         (*outName) = argv[9];
-         TestArgs (argv[1]);
-         flags = argv[1];
-   }
+	// output format
+	const char* outfmt = args.getString( "-fmtn" );
+	if( outfmt ) {
+		if( !strcmp(outfmt,"rg16") )
+			gOutput = NORM_OUTPUT_16_16_ARG;
+		else if( !strcmp(outfmt,"rgba16") )
+			gOutput = NORM_OUTPUT_16_16_16_16_ARG;
+		else if( !strcmp(outfmt,"rgb10") )
+			gOutput = NORM_OUTPUT_10_10_10_2_ARG;
+		else if( !strcmp(outfmt,"rgb10ms") )
+			gOutput = NORM_OUTPUT_10_10_10_2_ARG_MS;
+		else if( !strcmp(outfmt,"rgb11") )
+			gOutput = NORM_OUTPUT_11_11_10_ARG_MS;
+	}
+	if (gOcclusion)
+	{
+		if (gOutput == NORM_OUTPUT_8_8_8_TGA)
+		{
+			gOutput = NORM_OUTPUT_8_8_8_8_TGA;
+		}
+		else if (gOutput != NORM_OUTPUT_16_16_16_16_ARG)
+		{
+			NmPrint ("Warning: Specified output format will NOT output occlusion. Right now only 8x8x8x8 TGA (default) and 16x16x16x16 ARG (-rgba16) will output occlusion!\n");
+		}
+	}
 
-   // Check width and height
-   if ((gWidth % 2) != 0)
-   {
-      NmPrint ("ERROR: Width must be a power of two!\n");
-      exit (-1);
-   }
-   if ((gHeight % 2) != 0)
-   {
-      NmPrint ("ERROR: Height must be a power of two!\n");
-      exit (-1);
-   }
-   if (gWidth < 1)
-   {
-      NmPrint ("ERROR: Width must be greater than 0\n");
-      exit (-1);
-   }
-   if (gHeight < 1)
-   {
-      NmPrint ("ERROR: Height must be greater than 0\n");
-      exit (-1);
-   }
+	// quiet
+	if( args.contains( "-q" ) )
+		gQuiet = NM_QUIET;
+	if( args.contains( "-Q" ) )
+		gQuiet = NM_SILENT;
 
-   // Print out options
-   NmPrint (versionString);
-   if (flags != NULL)
-   {
-      NmPrint ("Flags: %s\n", flags);
-   }
-   else
-   {
-      NmPrint ("Flags:\n");
-   }
-   NmPrint ("Width: %d Height: %d\n", gWidth, gHeight);
-   GetSamples (&gNumSamples, &gSamples);
-   NmPrint ("%d sample(s) per texel\n", gNumSamples);
-   NmPrint ("%d texel triangle pad\n", gTrianglePad);
-   if (gBentNormal)
-   {
-      NmPrint ("Storing bent normal\n");
-   }
-   if (gOcclusion)
-   {
-      NmPrint ("Storing occlusion term\n");
-   }
-   switch (gNormalRules)
-   {
-      case NORM_RULE_CLOSEST:
-         NmPrint ("Normal Rule: Closest\n");
-         break;
-      case NORM_RULE_BEST_CLOSEST:
-         NmPrint ("Normal Rule: Best Closest\n");
-         break;
-      case NORM_RULE_BEST_FARTHEST:
-         NmPrint ("Normal Rule: Best Furthest\n");
-         break;
-      case NORM_RULE_FARTHEST:
-         NmPrint ("Normal Rule: Furthest\n");
-         break;
-      case NORM_RULE_MIXED:
-         NmPrint ("Normal Rule: Mixed\n");
-         break;
-      case NORM_RULE_BEST_MIXED:
-         NmPrint ("Normal Rule: Best Mixed\n");
-         break;
-      case NORM_RULE_BEST:
-         NmPrint ("Normal Rule: Best\n");
-         break;
-      case NORM_RULE_FRONT_FURTHEST:
-         NmPrint ("Normal Rule: Front Furthest\n");
-         break;
-      case NORM_RULE_FRONT_BEST_FURTHEST:
-         NmPrint ("Normal Rule: Front Best Furthest\n");
-         break;
-      case NORM_RULE_FRONT_CLOSEST:
-         NmPrint ("Normal Rule: Front Closest\n");
-         break;
-      case NORM_RULE_FRONT_BEST_CLOSEST:
-         NmPrint ("Normal Rule: Front Best Closest\n");
-         break;
-      default:
-         NmPrint ("Normal Rule: UKNOWN!\n");
-         break;
-   }
-   if (gDistance != FLT_MAX)
-   {
-      NmPrint ("Max distance: %4.12f\n", gDistance);
-   }
-   NmPrint ("Epsilon: %1.10f\n", gEpsilon);
-   NmPrint ("Cutoff Angle: %5.1f\n", (acos (gMaxAngle) * (180.0/PI))*2.0);
-   switch (gComputeMipLevels)
-   {
-      case MIP_NONE:
-         NmPrint ("No mipmap generation\n");
-         break;
-      case MIP_RECOMPUTE:
-         NmPrint ("Re-cast mipmap generation.\n");
-         break;
-      case MIP_BOX:
-         NmPrint ("Box filter mip map generation.\n");
-         break;
-      default:
-         NmPrint ("Unknown mip map generation\n");
-         break;
-   }
-   if (gInTangentSpace)
-   {
-      NmPrint ("Normals in tangent space\n");
-   }
-   else
-   {
-      NmPrint ("Normals in world space\n");
-   }
-   if (gExpandTexels)
-   {
-      NmPrint ("Expand border texels (%d texels)\n", gDilateTexels);
-   }
-   else
-   {
-      NmPrint ("Don't Expand border texels\n");
-   }
-   if (gEdgeCopy)
-   {
-      NmPrint ("Perform edge copy\n");
-   }
-   else
-   {
-      NmPrint ("Don't perform edge copy\n");
-   }
-   if (gBoxFilter)
-   {
-      NmPrint ("Postprocess box filter\n");
-   }
-   else
-   {
-      NmPrint ("No postprocess filter\n");
-   }
+	// others
+	gInTangentSpace = !args.contains( "-w" );
+	gDilateTexels = args.getInt( gDilateTexels, "-dilate" );
+	gEpsilon = args.getFloat( gEpsilon, "-tol" );
+	gMaxAngle = args.getFloat( gMaxAngle, "-angle" );
+	gEdgeCopy = !args.contains( "-noedge" );
+	gTrianglePad = args.getInt( gTrianglePad, "-tpad" );
+	gDisplacements = args.contains( "-displ" );
+	gSwapNormalYZ = args.contains( "-swapyz" );
 
-   if( gSwapNormalYZ )
-   {
-	   NmPrint ("Swap Y and Z in normal map\n" );
-   }
-} // ProcessArgs
+	if( badArgs )
+		PrintUsage();
+
+	// Check width and height
+	// TBD: hey, this code doesn't do what it thinks it does!
+	
+	if (gWidth < 1)
+	{
+		badArgs = true;
+		NmPrint ("ERROR: Width must be greater than 0\n");
+	} else if ((gWidth % 2) != 0) {
+		badArgs = true;
+		NmPrint ("ERROR: Width must be a power of two!\n");
+	}
+
+	if (gHeight < 1)
+	{
+		badArgs = true;
+		NmPrint ("ERROR: Height must be greater than 0\n");
+	} else if ((gHeight % 2) != 0) {
+		badArgs = true;
+		NmPrint ("ERROR: Height must be a power of two!\n");
+	}
+
+	if( badArgs )
+		exit( -1 );
+
+	// Print out options
+	PrintoutOptions();
+}
+
+
 
 //////////////////////////////////////////////////////////////////////////
 // Entry point
@@ -3834,11 +3604,11 @@ main (int argc, char **argv)
 {
 
    // Get the arguments.
-   char* lowName = NULL;
-   char* highName = NULL;
-   char* bumpName = NULL;
+   const char* lowName = NULL;
+   const char* highName = NULL;
+   const char* bumpName = NULL;
    double bumpScale = 1.0;
-   char* outName = NULL;
+   const char* outName = NULL;
    ProcessArgs (argc, argv, &lowName, &highName, &bumpName, &bumpScale,
                 &outName);
 
@@ -4435,7 +4205,7 @@ main (int argc, char **argv)
          NormalizeImage (img, numComponents);
          
          // Fill unused areas based on surrounding colors to prevent artifacts.
-         if (gExpandTexels)
+         if ( gDilateTexels > 0 )
          {
             DilateImage (&img, &img2, numComponents);
          }

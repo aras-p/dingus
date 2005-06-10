@@ -1,4 +1,4 @@
 Tools changelog
 
-
+050609: NormalMapper fork added to repository.
 050604: MeshTexer added to repository.
