@@ -127,7 +127,7 @@ public:
 		}
 
 	protected:
-		TPoolletVector::const_iterator	mPoollet;
+		typename TPoolletVector::const_iterator	mPoollet;
 		int								mIndex;
 	};
 
@@ -139,7 +139,7 @@ public:
 	public:
 		iterator()
 			{}
-		iterator( const TPoolletVector::iterator& plt, int idx = 0 )
+		iterator( const typename TPoolletVector::iterator& plt, int idx = 0 )
 			: mPoollet(plt), mIndex( idx ) { }
 		iterator( const iterator& ci )
 			: mPoollet(ci.mPoollet), mIndex(ci.mIndex) { }
@@ -171,13 +171,13 @@ public:
 			return !(*this == ci);
 		}
 
-		TPoolletVector::iterator&	getPoollet() { return mPoollet; }
-		const TPoolletVector::iterator& getPoollet() const { return mPoollet; }
+		typename TPoolletVector::iterator&	getPoollet() { return mPoollet; }
+		const typename TPoolletVector::iterator& getPoollet() const { return mPoollet; }
 		int& getIndex() { return mIndex; }
 		const int& getIndex() const { return mIndex; }
 
 	protected:
-		TPoolletVector::iterator	mPoollet;
+		typename TPoolletVector::iterator	mPoollet;
 		int							mIndex;
 	};
 
@@ -247,9 +247,9 @@ T& CPool<T>::add( const T& value = T() )
 }
 
 template<class T>
-CPool<T>::iterator CPool<T>::erase( iterator it )
+typename CPool<T>::iterator CPool<T>::erase( iterator it )
 {
-	TPoolletVector::iterator plti = it.getPoollet();
+	typename TPoolletVector::iterator plti = it.getPoollet();
 	CPoollet& plt = **plti;
 	int idx = it.getIndex();
 	// remove and place last in place of it

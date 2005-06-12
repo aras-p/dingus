@@ -1,4 +1,9 @@
 
+no codename yet
+========
+050612: utils/Pool.h fixes to make it compile with VC7.1. Fixed by
+		Rich Thomson.
+
 Dingus codenamed "IC2005 demo"
 ========
 
