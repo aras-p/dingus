@@ -1171,8 +1171,7 @@ NmOctreeProgress (float progress)
 // Multiply a 3x3 matrix with a 3 space vector (assuming w = 1), ignoring
 // the last row of the matrix
 ////////////////////////////////////////////////////////////////////
-static void
-ConvertFromTangentSpace (double* m, double *vec, double *result)
+static void ConvertFromTangentSpace (double* m, double *vec, double *result)
 {
    if ((m == NULL) || (vec == NULL) || (result == NULL))
    {
@@ -1199,7 +1198,7 @@ ConvertToTangentSpace (double* m, double *vec, double *result)
 {
    if ((m == NULL) || (vec == NULL) || (result == NULL))
    {
-      NmPrint ("ERROR: NULL pointer pased to ConvertFromTangentSpace\n");
+      NmPrint ("ERROR: NULL pointer pased to ConvertToTangentSpace\n");
       exit (-1);
    }
 
@@ -1383,7 +1382,7 @@ static void Fetch( const float* map, int width, int height, double u, double v, 
 		value += (     ufrac *(1.0-vfrac)*(double)(map[idx01]));
 		value += ((1.0-ufrac)*     vfrac *(double)(map[idx10]));
 		value += (     ufrac *     vfrac *(double)(map[idx11]));
-		texel[i] = value;
+		texel[i] = float(value);
 	}
 }
 
@@ -1942,6 +1941,34 @@ GetXMinMax (NmEdge edge[3], int y, int* minX, int* maxX)
 #endif
       return;
    }
+}
+
+// --------------------------------------------------------------------------
+//  Sample the texture from the hi-res model
+
+static inline void GetTextureSample( const NmRawTriangle* tri, double b0, double b1, double b2,
+									  const float* texture, int texWidth, int texHeight,
+									  double texel[4] )
+{
+	// Check parameters
+#ifdef _DEBUG
+	if ((tri == NULL) || (texture == NULL) || (texel == NULL))
+	{
+		NmPrint ("ERROR: NULL pointer passed to GetTextureSample!\n");
+		exit (-1);
+	}
+#endif
+	
+	// Figure out texture coordinates.
+	double u = (tri->texCoord[0].u * b0) +
+		(tri->texCoord[1].u * b1) +
+		(tri->texCoord[2].u * b2);
+	double v = (tri->texCoord[0].v * b0) +
+		(tri->texCoord[1].v * b1) +
+		(tri->texCoord[2].v * b2);
+	
+	// Fetch texel
+	Fetch( texture, texWidth, texHeight, u, v, texel, 4 );
 }
 
 // --------------------------------------------------------------------------
