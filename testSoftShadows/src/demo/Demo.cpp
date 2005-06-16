@@ -419,7 +419,7 @@ void gRenderShadowMaps()
 
 	dx.setRenderTarget( RGET_S_SURF(RT_SHADOW) );
 	dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
-	dx.clearTargets( true, true, false, 0xFFff00ff, 0.0f );
+	dx.clearTargets( true, true, false, 0xFF00ffff, 0.0f );
 
 	// leave one texel padding
 	D3DVIEWPORT9 vp;

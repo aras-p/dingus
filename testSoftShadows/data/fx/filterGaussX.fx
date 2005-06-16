@@ -46,10 +46,10 @@ static const float COEFFS[25] = {
 
 half4 psMain20( float2 uv : TEXCOORD0 ) : COLOR {
 	half4 col = tex2D( smpBase, uv );
-	col.g = 0;
+	col.r = 0;
 	float texel = 1.0 / SHADOW_MAP_SIZE;
 	for( int r = -12; r <= 12; r+=1 ) {
-		col.g += tex2D( smpBase, uv + float2(texel*r,0) ).g * COEFFS[r+12];
+		col.r += tex2D( smpBase, uv + float2(texel*r,0) ).r * COEFFS[r+12];
 	}
 	return col * 1.1;
 }

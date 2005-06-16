@@ -45,14 +45,14 @@ half4 psMain20( float2 tc0 : TEXCOORD0 ) : COLOR
 	//return col.g;
 	//return col.b;
 
-	half scaling = col.g + 0.02;
+	half scaling = col.r + 0.02;
 	
-	half colorSum = col.b;
+	half colorSum = col.g;
 	half scale = 12.0/SHADOW_MAP_SIZE * scaling;
 	
 	for( int k = 0; k < NUM_TAPS; ++k ) {
 		float2 tapCoord = tc0 + filterTaps[k] * scale;
-		colorSum += tex2D( smpBase, tapCoord ).b;
+		colorSum += tex2D( smpBase, tapCoord ).g;
 	}
 
 	half shadow = colorSum / (NUM_TAPS+1);
