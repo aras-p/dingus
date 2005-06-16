@@ -35,15 +35,11 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 {
 	bool ok = true;
 
-	//if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
-	//	errors.addError( "ps2.0 required" );
-	//	ok = false;
-	//}
+	if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
+		errors.addError( "pixel shaders 2.0 required" );
+		ok = false;
+	}
 
-	//if( caps.getCaps().MaxSimultaneousTextures < 2 ) {
-	//	errors.addError( "Dual texturing is required" );
-	//	ok = false;
-	//}
 	if( caps.getVShaderVersion() < CD3DDeviceCaps::VS_1_1 ) {
 		if( vproc != CD3DDeviceCaps::VP_SW )
 			ok = false;
@@ -178,10 +174,9 @@ SLine3		gMouseRay;
 
 
 // interaction
-int		gNodePointed = -1;
-int		gNodeDragged = -1;
-float	gNodeDragStartDist;
-SVector3	gNodeDragPoint;
+int		gMeshPointed = -1;
+int		gMeshDragged = -1;
+float	gMeshDragStartDist;
 
 
 void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
@@ -234,11 +229,11 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gMeshBox = new CRenderableMesh( *RGET_MESH("Box"), 0 );
 	gMeshBox->getParams().setEffect( *RGET_FX("box") );
 	gMeshBox->getParams().addTexture( "tBase", *RGET_TEX("HellEdges") );
+	gMeshBox->getParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOWBLUR) );
 
 	for( int i = 0; i < ENTITY_NAME_COUNT; ++i )
 		gAddEntity( i );
 
-	// TBD: scene
 	gTargetPos.set( 0, 1, 0 );
 	gTargetVel.set(0,0,0);
 
@@ -298,12 +293,11 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 			return true;
 	}
 	// track mouse...
-	/*
 	if( msg == WM_LBUTTONDOWN ) {
-		gNodeDragged = gNodePointed;
-		if( gNodeDragged != -1 ) {
-			SVector3 toNode = gFEMMesh->getNodes()[gNodeDragged].p - gCamera.mWorldMat.getOrigin();
-			gNodeDragStartDist = gCamera.mWorldMat.getAxisZ().dot( toNode );
+		gMeshDragged = gMeshPointed;
+		if( gMeshDragged != -1 ) {
+			SVector3 toNode = gEntities[gMeshDragged]->mWorldMat.getOrigin() - gCamera.mWorldMat.getOrigin();
+			gMeshDragStartDist = gCamera.mWorldMat.getAxisZ().dot( toNode );
 		}
 	}
 	if( msg == WM_MOUSEMOVE ) {
@@ -311,10 +305,9 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 		gMouseX = (float(LOWORD(lparam)) / dx.getBackBufferWidth()) * 2 - 1;
 		gMouseY = (float(HIWORD(lparam)) / dx.getBackBufferHeight()) * 2 - 1;
 		if( !(wparam & MK_LBUTTON) ) {
-			gNodeDragged = -1;
+			gMeshDragged = -1;
 		}
 	}
-	*/
 	return false;
 }
 
@@ -336,21 +329,22 @@ void CDemo::onInputStage()
 }
 
 
-/*
-static int gFEMMousePick( CMeshFEM& mesh ) {
+static int gMousePick()
+{
 	int index = -1;
 	float minDist = DINGUS_BIG_FLOAT;
 
-	// go through all nodes
+	// go through all meshes
 	int i;
-	int n = mesh.getNodeCount();
+	int n = gEntities.size();
 	for( i = 0; i < n; ++i ) {
-		const SMeshNode& n = mesh.getNodes()[i];
-		if( gMouseRay.project( n.p ) < 0.0f )
+		const SVector3& p = gEntities[i]->mWorldMat.getOrigin();
+
+		if( gMouseRay.project( p ) < 0.0f )
 			continue;
-		if( gMouseRay.distance( n.p ) > 0.1f )
+		if( gMouseRay.distance( p ) > 0.2f )
 			continue;
-		float dist2 = SVector3(n.p-gMouseRay.pos).lengthSq();
+		float dist2 = SVector3(p-gMouseRay.pos).lengthSq();
 		if( dist2 < minDist ) {
 			index = i;
 			minDist = dist2;
@@ -360,40 +354,19 @@ static int gFEMMousePick( CMeshFEM& mesh ) {
 }
 
 
-#define CONSTRAINT_MIN(crd,val) { \
-	if( node->p.crd < val ) { \
-		node->f.crd -= (node->p.crd - val) * 10.0f; \
-		node->v *= 0.9f; \
-	} \
-}
-#define CONSTRAINT_MAX(crd,val) { \
-	if( node->p.crd > val ) { \
-		node->f.crd += (val - node->p.crd) * 10.0f; \
-		node->v *= 0.9f; \
-	} \
-}
+static void gInteraction() {
+	if( gMeshDragged != -1 ) {
+		SVector3 pt = gMouseRay.pos + gMouseRay.vec * gMeshDragStartDist;
+		//SVector3 force = gMeshDragPoint - node[gMeshDragged].p;
+		//node[gNodeDragged].f += force * 1.0f;
 
-static void gFEMConstraints( CMeshFEM& mesh ) {
-	int n = mesh.getNodeCount();
-	SMeshNode* node = mesh.getNodes();
-	if( gNodeDragged != -1 ) {
-		gNodeDragPoint = gMouseRay.pos + gMouseRay.vec * gNodeDragStartDist;
-		SVector3 force = gNodeDragPoint - node[gNodeDragged].p;
-		node[gNodeDragged].f += force * 1.0f;
-	}
-
-	for( int i = 0; i < n; ++i, ++node ) {
-		// constaint box...
-		CONSTRAINT_MIN( x, -5.0f );
-		CONSTRAINT_MAX( x,  5.0f );
-		CONSTRAINT_MIN( y, 0.0f );
-		CONSTRAINT_MIN( z, -5.0f );
-		CONSTRAINT_MAX( z,  5.0f );
-		// gravity...
-		node->f.y -= node->mass * 0.1f;
+		pt.x = clamp( pt.x, -5.0f, 5.0f );
+		pt.y = clamp( pt.y,  0.0f, 10.0f );
+		pt.z = clamp( pt.z, -5.0f, 5.0f );
+	
+		gEntities[gMeshDragged]->mWorldMat.getOrigin() = pt;
 	}
 }
-*/
 
 
 static void gComputeTexProjs()
@@ -403,12 +376,13 @@ static void gComputeTexProjs()
 }
 
 
-/*
+
 void gRenderShadowMaps()
 {
 	//
 	// compute tight fitting shadow projection
 
+	/*
 	const CAABox& aabb = gFEMMesh->getAABB();
 	SVector3 target = aabb.getCenter();
 	SVector3 size = aabb.getMax() - aabb.getMin();
@@ -422,6 +396,7 @@ void gRenderShadowMaps()
 	gLightCam.mWorldMat.spaceFromAxisZ();
 
 	gLightCam.setProjectionParams( fov, 1.0f, 0.1f, 20.0f );
+	*/
 
 	//
 	// render shadow map
@@ -442,7 +417,7 @@ void gRenderShadowMaps()
 	dx.getDevice().SetViewport( &vp );
 	
 	dx.sceneBegin();
-	gFEMRenderer->render( RM_CASTER );
+	gRenderEntities( RM_CASTERSOFT );
 	G_RENDERCTX->applyGlobalEffect();
 	dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_GREATER );
 	G_RENDERCTX->perform();
@@ -478,7 +453,7 @@ void gRenderShadowMaps()
 	G_RENDERCTX->perform();
 	dx.sceneEnd();
 }
-*/
+
 
 /// Main loop code.
 void CDemo::perform()
@@ -518,17 +493,16 @@ void CDemo::perform()
 	gMouseRay.pos = eyePos;
 	gMouseRay.vec = mouseRay;
 
-	/*
-	if( gNodeDragged == -1 ) {
-		gNodePointed = gFEMMousePick( *gFEMMesh );
+	if( gMeshDragged == -1 ) {
+		gMeshPointed = gMousePick();
 	} else {
-		gNodePointed = gNodeDragged;
+		gMeshPointed = gMeshDragged;
 	}
-	*/
+	gInteraction();
 
 	// render
 	
-	//gRenderShadowMaps();
+	gRenderShadowMaps();
 	
 	gCamera.setOntoRenderContext();
 	gComputeTexProjs();
@@ -548,7 +522,7 @@ void CDemo::perform()
 	gUIDlgHUD->onRender( dt );
 	dx.sceneEnd();
 
-	//dx.getDevice().StretchRect( RGET_S_SURF(RT_SHADOW)->getObject(), NULL, dx.getBackBuffer(), NULL, D3DTEXF_NONE );
+	//dx.getDevice().StretchRect( RGET_S_SURF(RT_SHADOWBLUR)->getObject(), NULL, dx.getBackBuffer(), NULL, D3DTEXF_NONE );
 }
 
 

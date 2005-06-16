@@ -2,9 +2,6 @@
 #include "lib/structs.fx"
 
 
-float3	vMin;
-float3	vMax;
-
 /*
 float evalDistance( float3 p ) {
 	return p.y;

@@ -27,7 +27,8 @@ shared int		iCull = 2;
 
 
 static const float3 vLightDir = -normalize( float3(0.4, -1.0, 0.2) );
-
+static const float3 vMax = float3( 5.0, 10.0, 5.0 );
+static const float3 vMin = float3( -5.0, 0.0, -5.0 );
 
 // shadow mapping
 

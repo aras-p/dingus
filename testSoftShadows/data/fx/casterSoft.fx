@@ -2,8 +2,9 @@
 #include "lib/structs.fx"
 
 
-float3	vMin;
-float3	vMax;
+float4x4 mWorld;
+float4x4 mWVP;
+
 
 /*
 float evalDistance( float3 p ) {
@@ -36,13 +37,14 @@ float evalDistance( float3 p ) {
 
 SPosCol vsMain11( SPos i ) {
 	SPosCol o;
-	o.pos = mul( i.pos, mViewProj );
+	float3 wpos = mul( i.pos, mWorld );
+	o.pos = mul( i.pos, mWVP );
 	
-	float dist = evalDistance( i.pos );
+	float dist = evalDistance( wpos );
 
 	o.color.ra = 0;
-	o.color.g = dist * 0.3;
-	o.color.b = dist * 0.15;
+	o.color.g = dist * 0.25;
+	o.color.b = dist * 0.1;
 
 	return o;
 }
