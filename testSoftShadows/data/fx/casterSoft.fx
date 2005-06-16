@@ -6,11 +6,9 @@ float4x4 mWorld;
 float4x4 mWVP;
 
 
-/*
 float evalDistance( float3 p ) {
 	return p.y;
 }
-*/
 
 /*
 float evalDistance( float3 p ) {
@@ -28,12 +26,14 @@ float evalDistance( float3 p ) {
 	return max( 0, dist );
 }*/
 
+/*
 float evalDistance( float3 p ) {
     float3 toMax = vMax - p;
 	float3 toMin = p - vMin;
 	float3 d = min( toMax, toMin );
 	return min( min( d.x, d.y ), d.z );
 }
+*/
 
 SPosCol vsMain11( SPos i ) {
 	SPosCol o;
@@ -43,7 +43,7 @@ SPosCol vsMain11( SPos i ) {
 	float dist = evalDistance( wpos );
 
 	o.color.ra = 0;
-	o.color.g = dist * 0.25;
+	o.color.g = dist * 0.3;
 	o.color.b = dist * 0.1;
 
 	return o;

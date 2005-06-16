@@ -234,7 +234,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	for( int i = 0; i < ENTITY_NAME_COUNT; ++i )
 		gAddEntity( i );
 
-	gTargetPos.set( 0, 1, 0 );
+	gTargetPos.set( 0, 0, 0 );
 	gTargetVel.set(0,0,0);
 
 	// gauss X shadowmap -> shadowblur
@@ -313,6 +313,8 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 
 void CDemo::onInputEvent( const CInputEvent& event )
 {
+	float dt = CSystemTimer::getInstance().getDeltaTimeS();
+
 	if( event.getType() == CKeyEvent::EVENT_TYPE ) {
 		const CKeyEvent& ke = (const CKeyEvent&)event;
 		switch( ke.getKeyCode() ) {
@@ -320,6 +322,11 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gShowStats = !gShowStats;
 			break;
+
+		case DIK_LEFT:	gTargetPos.x -= dt; break;
+		case DIK_RIGHT:	gTargetPos.x += dt; break;
+		case DIK_UP:	gTargetPos.z -= dt; break;
+		case DIK_DOWN:	gTargetPos.z += dt; break;
 		}
 	}
 }
@@ -339,10 +346,12 @@ static int gMousePick()
 	int n = gEntities.size();
 	for( i = 0; i < n; ++i ) {
 		const SVector3& p = gEntities[i]->mWorldMat.getOrigin();
+		const CAABox& aabb = gEntities[i]->getAABB();
+		float radius = SVector3(aabb.getMax() - aabb.getMin()).length() * 0.4f;
 
 		if( gMouseRay.project( p ) < 0.0f )
 			continue;
-		if( gMouseRay.distance( p ) > 0.2f )
+		if( gMouseRay.distance( p ) > radius )
 			continue;
 		float dist2 = SVector3(p-gMouseRay.pos).lengthSq();
 		if( dist2 < minDist ) {
@@ -360,9 +369,11 @@ static void gInteraction() {
 		//SVector3 force = gMeshDragPoint - node[gMeshDragged].p;
 		//node[gNodeDragged].f += force * 1.0f;
 
-		pt.x = clamp( pt.x, -5.0f, 5.0f );
-		pt.y = clamp( pt.y,  0.0f, 10.0f );
-		pt.z = clamp( pt.z, -5.0f, 5.0f );
+		const CAABox& aabb = gEntities[gMeshDragged]->getAABB();
+
+		pt.x = clamp( pt.x, -5.0f - aabb.getMin().x, 5.0f - aabb.getMax().x );
+		pt.y = clamp( pt.y,  0.0f - aabb.getMin().y, 10.0f - aabb.getMax().y );
+		pt.z = clamp( pt.z, -5.0f - aabb.getMin().z, 5.0f - aabb.getMax().z );
 	
 		gEntities[gMeshDragged]->mWorldMat.getOrigin() = pt;
 	}
