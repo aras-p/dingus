@@ -176,6 +176,10 @@ static int gDispIdx;
 static bool gOcclusion = false;     // Generate the occlusion term?
 static int gOcclIdx = 0;
 static bool gBentNormal = false;    // Save off bent normal?
+
+static bool gRecastTexture = false; // Re-cast texture from hi-res?
+static int gTextureIdx = 0;
+
 static double gEpsilon = 0.0;       // Tolerance value
 static double gDistance = FLT_MAX;  // Maximum distance a normal is considered
 static bool gInTangentSpace = true; // Put the normals into tangent space?
@@ -335,9 +339,9 @@ Normalize(double v[3])
 // Test if the new normal is a better fit than the last one.
 //////////////////////////////////////////////////////////////////////////
 static inline bool
-IntersectionIsBetter (int rule, NmRawPointD* norm,
-                      double nNorm[3], NmRawPointD* nIntersect,
-                      double lNorm[3], NmRawPointD* lIntersect)
+IntersectionIsBetter (int rule, const NmRawPointD* norm,
+                      const double nNorm[3], const NmRawPointD* nIntersect,
+                      const double lNorm[3], const NmRawPointD* lIntersect)
 {
 #ifdef _DEBUG
    if ((rule < 0) || (rule > NORM_RULE_FRONT_BEST_CLOSEST))
@@ -589,8 +593,8 @@ IntersectionIsBetter (int rule, NmRawPointD* norm,
 // http://www.ce.chalmers.se/staff/tomasm/raytri/raytri.c
 //////////////////////////////////////////////////////////////////////////
 static inline bool
-IntersectTriangle (double *orig, double *dir,
-                   float *v1, float *v2, float *v3,
+IntersectTriangle( const double *orig, const double *dir,
+                   const float *v1, const float *v2, const float *v3,
                    double *t, double *u, double *v)
 {
 #ifdef _DEBUG
@@ -670,8 +674,8 @@ IntersectTriangle (double *orig, double *dir,
 // http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
 ///////////////////////////////////////////////////////////////////////////////
 static inline bool
-RayIntersectsBox (NmRawPointD* position, NmRawPointD* direction,
-                  AtiOctBoundingBox* box)
+RayIntersectsBox (const NmRawPointD* position, const NmRawPointD* direction,
+                  const AtiOctBoundingBox* box)
 {
 #ifdef _DEBUG
    if ((position == NULL) || (direction == NULL) || (box == NULL))
@@ -833,8 +837,7 @@ RayIntersectsBox (NmRawPointD* position, NmRawPointD* direction,
 ///////////////////////////////////////////////////////////////////////////////
 // Routine to determine if the given triangle is in the box
 ///////////////////////////////////////////////////////////////////////////////
-bool8
-TriInBox (int32 itemIndex, void* itemList, AtiOctBoundingBox* bbox)
+bool8 TriInBox (int32 itemIndex, void* itemList, AtiOctBoundingBox* bbox)
 {
 #ifdef _DEBUG
    if ((itemIndex < 0) || (itemList == NULL) || (bbox == NULL))
@@ -977,7 +980,7 @@ GetRays (int numDivisions, int* numRays, NmRawPointD** rays,
 //   Code:  http://www.acm.org/jgt/papers/MollerHughes99/code.html
 //==========================================================================
 static void 
-FromToRotation (double mtx[16], double from[3], double to[3])
+FromToRotation (double mtx[16], const double from[3], const double to[3])
 {
    mtx[3] = 0.0f;
    mtx[7] = 0.0f;
@@ -1075,7 +1078,7 @@ FromToRotation (double mtx[16], double from[3], double to[3])
 // Get edge info
 /////////////////////////////////////
 static inline void
-GetEdge (NmEdge* edge, NmRawTriangle* tri, int idx0, int idx1)
+GetEdge (NmEdge* edge, const NmRawTriangle* tri, int idx0, int idx1)
 {
 #ifdef _DEBUG
    if ((idx0 < 0) || (idx0 > 3))
@@ -1171,7 +1174,7 @@ NmOctreeProgress (float progress)
 // Multiply a 3x3 matrix with a 3 space vector (assuming w = 1), ignoring
 // the last row of the matrix
 ////////////////////////////////////////////////////////////////////
-static void ConvertFromTangentSpace (double* m, double *vec, double *result)
+static void ConvertFromTangentSpace (const double* m, const double *vec, double *result)
 {
    if ((m == NULL) || (vec == NULL) || (result == NULL))
    {
@@ -1194,7 +1197,7 @@ static void ConvertFromTangentSpace (double* m, double *vec, double *result)
 // the last row of the matrix
 ////////////////////////////////////////////////////////////////////
 static void
-ConvertToTangentSpace (double* m, double *vec, double *result)
+ConvertToTangentSpace (const double* m, const double *vec, double *result)
 {
    if ((m == NULL) || (vec == NULL) || (result == NULL))
    {
@@ -1216,7 +1219,7 @@ ConvertToTangentSpace (double* m, double *vec, double *result)
 // Compute plane equation
 //////////////////////////////////////////////////////////////////////////
 static void
-ComputePlaneEqn (float v0[3], float v1[3], float norm[3], double plane[4])
+ComputePlaneEqn (const float v0[3], const float v1[3], const float norm[3], double plane[4])
 {
    if ((v0 == NULL) || (v1 == NULL) || (norm == NULL) || (plane == NULL))
    {
@@ -1252,7 +1255,7 @@ ComputePlaneEqn (float v0[3], float v1[3], float norm[3], double plane[4])
 // plane equation above if the dot product with ABC is >= D it's in!
 //////////////////////////////////////////////////////////////////////////
 static inline bool
-IsInside (NmRawTriangle* tri, double plane[4])
+IsInside (const NmRawTriangle* tri, const double plane[4])
 {
 #ifdef _DEBUG
    if ((tri == NULL) || (plane == NULL))
@@ -1805,7 +1808,7 @@ GenerateTangents (NmTangentMatrix** tangentSpace, int numTris,
 // Interpolate position and normal given the Barycentric cooridnates.
 //////////////////////////////////////////////////////////////////////////
 static inline void
-BaryInterpolate (NmRawTriangle* tri, double b1, double b2, double b3,
+BaryInterpolate( const NmRawTriangle* tri, double b1, double b2, double b3,
                  double pos[3], double nrm[3])
 {
    pos[0] = (tri->vert[0].x * b1)+(tri->vert[1].x * b2)+(tri->vert[2].x * b3);
@@ -1822,7 +1825,7 @@ BaryInterpolate (NmRawTriangle* tri, double b1, double b2, double b3,
 // Get the sorted edges from the given triangle
 //////////////////////////////////////////////////////////////////////////
 static void
-GetSortedEdges (NmEdge edge[3], NmRawTriangle* tri)
+GetSortedEdges (NmEdge edge[3], const NmRawTriangle* tri)
 {
    if (tri == NULL)
    {
@@ -1855,7 +1858,7 @@ GetSortedEdges (NmEdge edge[3], NmRawTriangle* tri)
 // Find the minimum and maximum Y value for the given set of edges.
 //////////////////////////////////////////////////////////////////////////
 static void
-GetYMinMax (NmEdge edge[3], int* minY, int* maxY)
+GetYMinMax (const NmEdge edge[3], int* minY, int* maxY)
 {
    // Make sure we have valid parameters
    if ((minY == NULL) || (maxY == NULL))
@@ -1976,7 +1979,7 @@ static inline void GetTextureSample( const NmRawTriangle* tri, double b0, double
 
 static inline void GetPerturbedNormal( const NmRawTriangle* tri, double b0, double b1, double b2,
 									  const float* bumpMap, int bumpWidth, int bumpHeight,
-									  double m[3][9], double norm[3] )
+									  const double m[3][9], double norm[3] )
 {
 	// Check parameters
 #ifdef _DEBUG
@@ -2047,9 +2050,9 @@ AddCell (AtiOctreeCell* cell, int* numCells)
 // occlusion term.
 //////////////////////////////////////////////////////////////////////////
 static void
-ComputeOcclusion (NmRawPointD* newPos, NmRawPointD* newNorm, int numTris,
-                  NmRawTriangle* tri, AtiOctree* octree, int numRays,
-                  NmRawPointD* rays, double* rayWeights,
+ComputeOcclusion (const NmRawPointD* newPos, const NmRawPointD* newNorm, int numTris,
+                  const NmRawTriangle* tri, const AtiOctree* octree, int numRays,
+                  const NmRawPointD* rays, const double* rayWeights,
                   NmRawPointD* bentNormal, double* occlusion)
 {
 #ifdef _DEBUG
@@ -2112,7 +2115,7 @@ ComputeOcclusion (NmRawPointD* newPos, NmRawPointD* newNorm, int numTris,
             for (int t = 0; t < currCell->m_numItems; t++)
             {
                // Save off current triangle.
-               NmRawTriangle* currTri = &(tri[currCell->m_item[t]]);
+               const NmRawTriangle* currTri = &(tri[currCell->m_item[t]]);
                triCount++;
 
                // See if it intersects.
@@ -2187,11 +2190,12 @@ ComputeOcclusion (NmRawPointD* newPos, NmRawPointD* newNorm, int numTris,
 // newPos.
 //////////////////////////////////////////////////////////////////////////
 static inline bool
-FindBestIntersection (NmRawPointD& pos, NmRawPointD& norm, AtiOctree* octree,
-                      NmRawTriangle* highTris, NmTangentMatrix* hTangentSpace,
-                      float* bumpMap, int bumpHeight, int bumpWidth,
+FindBestIntersection( const NmRawPointD& pos, const NmRawPointD& norm, AtiOctree* octree,
+                      const NmRawTriangle* highTris, const NmTangentMatrix* hTangentSpace,
+                      const float* bumpMap, int bumpHeight, int bumpWidth,
+					  const float* texture, int texHeight, int texWidth,
                       double newNorm[3], double newPos[3],
-                      double* displacement)
+                      double* displacement, double* texel )
 {
    // Clear outputs.
    newNorm[0] = 0.0;
@@ -2234,7 +2238,7 @@ FindBestIntersection (NmRawPointD& pos, NmRawPointD& norm, AtiOctree* octree,
          for (int t = 0; t < currCell->m_numItems; t++)
          {
             // Save off current triangle.
-            NmRawTriangle* hTri = &highTris[currCell->m_item[t]];
+            const NmRawTriangle* hTri = &highTris[currCell->m_item[t]];
             
             // See if it intersects.
             triCount++;
@@ -2279,11 +2283,16 @@ FindBestIntersection (NmRawPointD& pos, NmRawPointD& norm, AtiOctree* octree,
                   if (bumpMap != NULL)
                   {
                      GetPerturbedNormal (hTri, b0, intersect.y,
-                                         intersect.z, bumpMap,
-                                         bumpWidth, bumpHeight,
+                                         intersect.z, bumpMap, bumpWidth, bumpHeight,
                                          hTangentSpace[currCell->m_item[t]].m,
                                          nn);
                   }
+
+				  // re-cast texture
+				  if( texture != NULL )
+				  {
+					  GetTextureSample( hTri, b0, intersect.y, intersect.z, texture, texWidth, texHeight, texel );
+				  }
             
                   // Copy over values
                   memcpy (newNorm, nn, sizeof (double)*3);
@@ -2353,8 +2362,7 @@ FindBestIntersection (NmRawPointD& pos, NmRawPointD& norm, AtiOctree* octree,
 //////////////////////////////////////////////////////////////////////////
 // Print out the bounding box.
 //////////////////////////////////////////////////////////////////////////
-static void
-PrintBBox (AtiOctBoundingBox* bbox)
+static void PrintBBox( const AtiOctBoundingBox* bbox )
 {
    NmPrint ("min:    %7.3f %7.3f %7.3f\n", bbox->minX, bbox->minY, bbox->minZ);
    NmPrint ("max:    %7.3f %7.3f %7.3f\n", bbox->maxX, bbox->maxY, bbox->maxZ);
@@ -2365,8 +2373,7 @@ PrintBBox (AtiOctBoundingBox* bbox)
 //////////////////////////////////////////////////////////////////////////
 // Print out some stats about the octree.
 //////////////////////////////////////////////////////////////////////////
-static void
-PrintOctreeStats (AtiOctree* octree)
+static void PrintOctreeStats( const AtiOctree* octree )
 {
    // Bail if we don't have an octree
    if (octree == NULL)
@@ -2455,8 +2462,7 @@ PrintOctreeStats (AtiOctree* octree)
 // Figure out the name for the output file, we possibly need to tack on
 // a number designating the mip level.
 //////////////////////////////////////////////////////////////////////////
-static void
-GetOutputFilename (char* name, const char* original, int mipCount)
+static void GetOutputFilename (char* name, const char* original, int mipCount)
 {
    // Check arguments
    if ((name == NULL) || (original == NULL))
@@ -2489,8 +2495,7 @@ GetOutputFilename (char* name, const char* original, int mipCount)
 //////////////////////////////////////////////////////////////////////////
 // Normalize the given image.
 //////////////////////////////////////////////////////////////////////////
-static void
-ComputeNextMipLevel (int* lastWidth, int* lastHeight)
+static void ComputeNextMipLevel (int* lastWidth, int* lastHeight)
 {
 #ifdef _DEBUG
    if ( (lastWidth == NULL) || (lastHeight == NULL) )
@@ -2527,8 +2532,7 @@ ComputeNextMipLevel (int* lastWidth, int* lastHeight)
 //////////////////////////////////////////////////////////////////////////
 // Copy over any texels in img2 where img1 is empty
 //////////////////////////////////////////////////////////////////////////
-static void
-CopyEdges (float* img1, float* img2, int numComponents)
+static void CopyEdges (float* img1, float* img2, int numComponents)
 {
 #ifdef _DEBUG
    if ((img1 == NULL) || (img2 == NULL) || (numComponents < 1))
@@ -3572,7 +3576,7 @@ static void ProcessArgs( int argc, char **argv, const char** lowName, const char
 	gWidth = args.getInt( -1, "-x" );
 	gHeight = args.getInt( -1, "-y" );
 	*outName = args.getString( "-outn" );
-	if( !lowName || !highName || gWidth < 1 || gHeight < 1 || !outName )
+	if( !(*lowName) || !(*highName) || gWidth < 1 || gHeight < 1 || !(*outName) )
 		badArgs = true;
 
 	// distance
@@ -3750,6 +3754,7 @@ main (int argc, char **argv)
    if( textureName != NULL ) {
 	   NmPrint( "Reading in texture: %s\n", textureName );
 	   ReadTextureOfHires( textureName, textureInWidth, textureInHeight, &textureIn );
+	   gRecastTexture = true; // TBD: only if output is given
    }
   
 
@@ -3780,8 +3785,7 @@ main (int argc, char **argv)
       GenerateTangents (&hTangentSpace, highNumTris, highTris);
    }
    
-   // If we are doing occlusion term or bent normal put the high res model
-   // into an octree to speed up the ray casting.
+   // Create the octree for the hi-res model
    AtiOctree* octree = NULL;
    int numRays = 0;
    NmRawPointD* rays = NULL;
@@ -3852,6 +3856,12 @@ main (int argc, char **argv)
       gDispIdx = numComponents;
       numComponents++;
    }
+   if( gRecastTexture ) // if we have the input texture, create 4 more channels for it
+   {
+	   gTextureIdx = numComponents;
+	   numComponents += 4;
+   }
+
    float* img = new float[gWidth*gHeight*numComponents+numComponents];
    if (img == NULL)
    {
@@ -4099,10 +4109,11 @@ main (int argc, char **argv)
                      double newNorm[3];
                      double newPos[3];
                      double newDisplacement = 0.0f;
-                     if (FindBestIntersection (pos, norm, octree, highTris,
-                                               hTangentSpace, bumpMap, 
-                                               bumpHeight, bumpWidth, newNorm, 
-                                               newPos, &newDisplacement))
+					 double newTexel[4];
+                     if( FindBestIntersection( pos, norm, octree, highTris, hTangentSpace,
+							bumpMap, bumpHeight, bumpWidth,
+							textureIn, textureInWidth, textureInHeight,
+							newNorm, newPos, &newDisplacement, newTexel ) )
                      {
                         // Normalize the new normal
                         sDisplacement += newDisplacement;
@@ -4243,10 +4254,11 @@ main (int argc, char **argv)
                      double newPos[3];
                      double newOcclusion = 0.0;
                      double newDisplacement = 0.0;
-                     if (FindBestIntersection (pos, norm, octree, highTris,
-                                               hTangentSpace, bumpMap, 
-                                               bumpHeight, bumpWidth, newNorm, 
-                                               newPos, &newDisplacement))
+					 double newTexel[4];
+                     if( FindBestIntersection( pos, norm, octree, highTris, hTangentSpace,
+							bumpMap, bumpHeight, bumpWidth,
+							textureIn, textureInWidth, textureInHeight,
+							newNorm, newPos, &newDisplacement, newTexel ) )
                      {
                         // Normalize the new normal
                         Normalize (newNorm);

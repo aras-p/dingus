@@ -52,8 +52,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 ///////////////////////////////////////////////////////////////////////////////
-static inline bool8
-AtiPlaneBoxOverlap (TBM_FLOAT normal[3], TBM_FLOAT d, TBM_FLOAT maxbox[3])
+static inline bool8 AtiPlaneBoxOverlap( const TBM_FLOAT normal[3], const TBM_FLOAT d, const TBM_FLOAT maxbox[3])
 {
    TBM_FLOAT vmin[3];
    TBM_FLOAT vmax[3];
@@ -130,10 +129,9 @@ AtiPlaneBoxOverlap (TBM_FLOAT normal[3], TBM_FLOAT d, TBM_FLOAT maxbox[3])
 ///////////////////////////////////////////////////////////////////////////////
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool8
-AtiTriBoxMoller (TBM_FLOAT boxcenter[3], TBM_FLOAT boxhalfsize[3],
-                 TBM_FLOAT triVert0[3], TBM_FLOAT triVert1[3],
-                 TBM_FLOAT triVert2[3])
+bool8 AtiTriBoxMoller( const TBM_FLOAT boxcenter[3], const TBM_FLOAT boxhalfsize[3],
+                 const TBM_FLOAT triVert0[3], const TBM_FLOAT triVert1[3],
+                 const TBM_FLOAT triVert2[3])
 {
    // use separating axis theorem to test overlap between triangle and box
    // need to test for overlap in these directions:

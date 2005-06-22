@@ -26,8 +26,8 @@
 
 // FUNCTIONS ===================================================================
 
-extern bool8 AtiTriBoxMoller (TBM_FLOAT boxcenter[3], TBM_FLOAT boxhalfsize[3],
-                              TBM_FLOAT triVert0[3], TBM_FLOAT triVert1[3],
-                              TBM_FLOAT triVert2[3]);
+extern bool8 AtiTriBoxMoller( const TBM_FLOAT boxcenter[3], const TBM_FLOAT boxhalfsize[3],
+                              const TBM_FLOAT triVert0[3], const TBM_FLOAT triVert1[3],
+                              const TBM_FLOAT triVert2[3]);
 
 #endif
