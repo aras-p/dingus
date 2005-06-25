@@ -7,14 +7,14 @@
 
 
 // --------------------------------------------------------------------------
-// Demo variables, constants, etc.
+//  Common stuff
 
 IDingusAppContext*	gAppContext;
 
 bool	gFinished = false;
 bool	gShowStats = false;
 
-// --------------------------------------------------------------------------
+
 
 CDemo::CDemo()
 {
@@ -49,9 +49,10 @@ bool CDemo::shouldShowStats()
 
 
 // --------------------------------------------------------------------------
-// Demo initialization
+// Demo data
 
-CUIDialog*		gUIDlgHUD;
+
+CUIDialog*		gUIDlg;
 CUISlider*		gUISliderYaw;
 CUISlider*		gUISliderPitch;
 CUISlider*		gUISliderZoom;
@@ -60,6 +61,39 @@ CUICheckBox*	gUIChkDilate;
 
 CUIStatic*		gUIFPS;
 
+
+enum eFont {
+	FNT_NORMAL = 0,
+	FNT_HUGE = 1,
+	FNT_LARGE = 2,
+};
+
+
+CUIStatic*		gUILetter;		///< The big letter
+CUIStatic*		gUIPressKey;	///< Press the key
+
+
+
+// --------------------------------------------------------------------------
+//  game logic
+
+static const char* LETTERS = "ABCDEFGHIYJKLMNOPRSTUVZ";
+
+int	gCurrLetterIdx;
+
+
+void CDemo::nextLetter()
+{
+	++gCurrLetterIdx;
+	if( LETTERS[gCurrLetterIdx] == 0 )
+		gCurrLetterIdx = 0;
+
+	// set new letter
+	char buf[10];
+	buf[0] = LETTERS[gCurrLetterIdx];
+	buf[1] = 0;
+	gUILetter->setText( buf );
+}
 
 
 // --------------------------------------------------------------------------
@@ -83,31 +117,42 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// GUI
 
-	gUIDlgHUD = new CUIDialog();
-	gUIDlgHUD->setCallback( gUICallback );
+	gUIDlg = new CUIDialog();
+	gUIDlg->setFont( FNT_HUGE, "Comic Sans MS", 240, FW_BOLD );
+	gUIDlg->setFont( FNT_LARGE, "Comic Sans MS", 32, FW_BOLD );
+
+	gUIDlg->setCallback( gUICallback );
 
 	const int hctl = 16;
 	const int hrol = 14;
 
 	// fps
 	{
-		gUIDlgHUD->addStatic( 0, "(wait)", 5,  460, 200, 20, false, &gUIFPS );
+		gUIDlg->addStatic( 0, "(wait)", 5,  460, 200, 20, false, &gUIFPS );
 	}
 	// zoom
 	{
-		gUIDlgHUD->addStatic( 0, "yaw ", 210,  5, 40, hctl );
-		gUIDlgHUD->addSlider( 0, 250,  5, 100, hctl, -180, 180, 10, false, &gUISliderYaw );
-		gUIDlgHUD->addStatic( 0, "ptch", 210, 25, 40, hctl );
-		gUIDlgHUD->addSlider( 0, 250, 25, 100, hctl, 0, 90, 5, false, &gUISliderPitch );
-		gUIDlgHUD->addStatic( 0, "zoom", 210, 45, 40, hctl );
-		gUIDlgHUD->addSlider( 0, 250, 45, 100, hctl, 5, 20, 6, false, &gUISliderZoom );
+		gUIDlg->addStatic( 0, "yaw ", 210,  5, 40, hctl );
+		gUIDlg->addSlider( 0, 250,  5, 100, hctl, -180, 180, 10, false, &gUISliderYaw );
+		gUIDlg->addStatic( 0, "ptch", 210, 25, 40, hctl );
+		gUIDlg->addSlider( 0, 250, 25, 100, hctl, 0, 90, 5, false, &gUISliderPitch );
+		gUIDlg->addStatic( 0, "zoom", 210, 45, 40, hctl );
+		gUIDlg->addSlider( 0, 250, 45, 100, hctl, 5, 20, 6, false, &gUISliderZoom );
 	}
 	//
 	{
-		gUIDlgHUD->addCheckBox( 0, "Preblur shadows", 5, 50, 100, 20, true, 0, false, &gUIChkDilate );
+		gUIDlg->addCheckBox( 0, "Preblur shadows", 5, 50, 100, 20, true, 0, false, &gUIChkDilate );
+	}
+	// game
+	{
+		gUIDlg->addStatic( 0, "A", 160, 80, 320, 300, false, &gUILetter );
+		gUILetter->getElement(0)->setFont( FNT_HUGE, true, DT_CENTER | DT_VCENTER );
+		gCurrLetterIdx = 0;
+
+		gUIDlg->addStatic( 0, "Spausk bet kuri klavisa", 0, 400, 640, 80, false, &gUIPressKey );
+		gUIPressKey->getElement(0)->setFont( FNT_LARGE, true, DT_CENTER | DT_VCENTER );
 	}
 }
-
 
 
 // --------------------------------------------------------------------------
@@ -116,8 +161,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
 	bool done = false;
-	if( gUIDlgHUD ) {
-		done = gUIDlgHUD->msgProc( hwnd, msg, wparam, lparam );
+	if( gUIDlg ) {
+		done = gUIDlg->msgProc( hwnd, msg, wparam, lparam );
 		if( done )
 			return true;
 	}
@@ -135,6 +180,11 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gShowStats = !gShowStats;
 			break;
+
+		default:
+			if( ke.getAscii() >= ' ' && ke.getMode() == CKeyEvent::KEY_PRESSED ) {
+				nextLetter();
+			}
 		}
 	}
 }
@@ -162,11 +212,11 @@ void CDemo::perform()
 	// render
 	dx.setDefaultRenderTarget();
 	dx.setDefaultZStencil();
-	dx.clearTargets( true, true, false, 0xFF000000, 1.0f, 0L );
+	dx.clearTargets( true, true, false, 0xFFe0e0e0, 1.0f, 0L );
 	dx.sceneBegin();
 
 	// render GUI
-	gUIDlgHUD->onRender( dt );
+	gUIDlg->onRender( dt );
 
 	dx.sceneEnd();
 
@@ -182,5 +232,5 @@ void CDemo::perform()
 
 void CDemo::shutdown()
 {
-	safeDelete( gUIDlgHUD );
+	safeDelete( gUIDlg );
 }

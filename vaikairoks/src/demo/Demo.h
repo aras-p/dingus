@@ -22,6 +22,9 @@ public:
 	// IInputListener
 	virtual void onInputEvent( const CInputEvent& event );
 	virtual void onInputStage();
+
+private:
+	void	nextLetter();
 };
 
 
