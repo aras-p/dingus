@@ -53,13 +53,13 @@ bool CDemo::shouldShowStats()
 
 
 CUIDialog*		gUIDlg;
-CUISlider*		gUISliderYaw;
-CUISlider*		gUISliderPitch;
-CUISlider*		gUISliderZoom;
+//CUISlider*		gUISliderYaw;
+//CUISlider*		gUISliderPitch;
+//CUISlider*		gUISliderZoom;
 
-CUICheckBox*	gUIChkDilate;
+//CUICheckBox*	gUIChkDilate;
 
-CUIStatic*		gUIFPS;
+//CUIStatic*		gUIFPS;
 
 
 enum eFont {
@@ -127,6 +127,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	const int hrol = 14;
 
 	// fps
+	/*
 	{
 		gUIDlg->addStatic( 0, "(wait)", 5,  460, 200, 20, false, &gUIFPS );
 	}
@@ -143,6 +144,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	{
 		gUIDlg->addCheckBox( 0, "Preblur shadows", 5, 50, 100, 20, true, 0, false, &gUIChkDilate );
 	}
+	*/
 	// game
 	{
 		gUIDlg->addStatic( 0, "A", 160, 80, 320, 300, false, &gUILetter );
@@ -205,9 +207,9 @@ void CDemo::perform()
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
 	// FPS
-	char buf[100];
-	sprintf( buf, "fps: %6.2f", dx.getStats().getFPS() );
-	gUIFPS->setText( buf );
+	//char buf[100];
+	//sprintf( buf, "fps: %6.2f", dx.getStats().getFPS() );
+	//gUIFPS->setText( buf );
 
 	// render
 	dx.setDefaultRenderTarget();
