@@ -1,0 +1,182 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define IDC_STATIC -1
+#include <windows.h>
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON    DISCARDABLE     "DirectX.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define IDC_STATIC -1\r\n"
+    "#include <windows.h>\r\n"
+    "\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAIN_ACCEL ACCELERATORS DISCARDABLE 
+BEGIN
+    VK_ESCAPE,      IDM_EXIT,               VIRTKEY, NOINVERT
+    VK_F2,          IDM_CHANGEDEVICE,       VIRTKEY, NOINVERT
+    VK_RETURN,      IDM_TOGGLEFULLSCREEN,   VIRTKEY, ALT, NOINVERT
+    "X",            IDM_EXIT,               VIRTKEY, ALT, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_SELECTDEVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 222
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 67
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SELECTDEVICE DIALOG DISCARDABLE  0, 0, 252, 226
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Direct3D Settings"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         146,IDC_S_IMAGE,"Static",SS_BITMAP,5,10,84,181
+    GROUPBOX        "3D Device",IDC_STATIC,95,5,150,45
+    LTEXT           "Adapter:",IDC_STATIC,100,15,28,8
+    COMBOBOX        IDC_ADAPTER_COMBO,135,15,105,45,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Type:",IDC_STATIC,100,30,19,8
+    COMBOBOX        IDC_DEVICE_COMBO,135,30,105,40,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Display mode",IDC_STATIC,95,50,150,90
+    CONTROL         "Fullscreen",IDC_CHK_FULLSCREEN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,100,60,48,10
+    CONTROL         "Vertical sync",IDC_CHK_VSYNC,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,165,60,56,10
+    LTEXT           "Resolution:",IDC_STATIC,115,75,36,8
+    COMBOBOX        IDC_RESOLUTION_COMBO,165,75,75,175,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Refresh rate:",IDC_STATIC,115,90,42,8
+    COMBOBOX        IDC_REFRESHRATE_COMBO,165,90,75,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Adapter format:",IDC_STATIC,115,105,49,8
+    COMBOBOX        IDC_ADAPTERFORMAT_COMBO,165,105,75,50,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Antialiasing:",IDC_STATIC,115,120,38,8
+    COMBOBOX        IDC_MULTISAMPLE_COMBO,165,120,50,70,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MULTISAMPLE_QUALITY_COMBO,216,120,25,55,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Advanced settings",IDC_STATIC,95,140,150,60
+    LTEXT           "Backbuffer:",IDC_STATIC,100,150,38,8
+    COMBOBOX        IDC_BACKBUFFERFORMAT_COMBO,165,150,76,75,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Depth/stencil:",IDC_STATIC,100,165,46,8
+    COMBOBOX        IDC_DEPTHSTENCILBUFFERFORMAT_COMBO,165,165,76,65,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Vertex processing:",IDC_STATIC,100,180,59,8
+    COMBOBOX        IDC_VERTEXPROCESSING_COMBO,165,180,76,55,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,140,205,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,195,205,50,14
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Unknown language: 0x27, 0x1 resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_LTH)
+#ifdef _WIN32
+LANGUAGE 0x27, 0x1
+#pragma code_page(1257)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_LOGO                BITMAP  DISCARDABLE     "logo.bmp"
+#endif    // Unknown language: 0x27, 0x1 resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
