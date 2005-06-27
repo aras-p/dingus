@@ -9,7 +9,10 @@ Currently the fork is based on 2.0 (1.0.0826.1700) version.
 
 Changes are:
 
-* Supports non-pow-2 input textures.
+* Supports non-pow-2 input textures. Now, it packs them much better than with
+  original packer, but this isn't that good for mipmaps. However, I use it
+  to pack arbitrary non-pow-2 (for UI) images into atlases, and mipmaps
+  aren't an issue for my case.
 
 * Removed dependency on D3D sample framework. Now it's really just a simple
   command line application.
