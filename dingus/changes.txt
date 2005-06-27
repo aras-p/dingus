@@ -1,6 +1,7 @@
 
 no codename yet
 ========
+050627: Poor unicode text support in GUI (drawText() only for now).
 050612: utils/Pool.h fixes to make it compile with VC7.1. Fixed by
 		Rich Thomson.
 

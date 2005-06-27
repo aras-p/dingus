@@ -214,6 +214,7 @@ public:
 	HRESULT drawSprite( SUIElement* element, const SFRect* dest );
 	//HRESULT calcTextRect( const char* text, SUIElement* element, SFRect* dest, int count = -1 );
 	HRESULT drawText( const char* text, SUIElement* element, SFRect* dest, bool shadow = false, int count = -1 );
+	HRESULT drawText( const wchar_t* text, SUIElement* element, SFRect* dest, bool shadow = false, int count = -1 );
 
 	// Attributes
 	bool isMinimized() const { return mMinimized; }

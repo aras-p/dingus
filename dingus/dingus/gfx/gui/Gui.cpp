@@ -1180,6 +1180,54 @@ HRESULT CUIDialog::drawText( const char* text, SUIElement* element, SFRect* dest
 }
 
 
+HRESULT CUIDialog::drawText( const wchar_t* text, SUIElement* element, SFRect* dest, bool shadow, int count )
+{
+	HRESULT hr = S_OK;
+
+	// No need to draw fully transparent layers
+	if( element->colorFont.current.a == 0 )
+		return S_OK;
+
+	CD3DDevice& dx = CD3DDevice::getInstance();
+	CUIResourceManager& resmgr = CUIResourceManager::getInstance();
+
+	SFRect rcScreen = *dest;
+	rcScreen.offset( mX, mY );
+
+	// If caption is enabled, offset the Y position by its height.
+	if( mHasCaption )
+		rcScreen.offset( 0, mCaptionHeight );
+
+	rcScreen.left   = resmgr.xToBB( rcScreen.left,   dx.getBackBufferWidth() );
+	rcScreen.right  = resmgr.xToBB( rcScreen.right,  dx.getBackBufferWidth() );
+	rcScreen.top    = resmgr.yToBB( rcScreen.top,    dx.getBackBufferHeight() );
+	rcScreen.bottom = resmgr.yToBB( rcScreen.bottom, dx.getBackBufferHeight() );
+
+	D3DXMATRIXA16 matrix;
+	D3DXMatrixIdentity( &matrix );
+	resmgr.mSprite->SetTransform( &matrix );
+
+	SUIFontNode* fontNode = getFont( element->fontIdx );
+
+	RECT drawRC;
+	rcScreen.toRect( drawRC );
+	
+	if( shadow ) {
+		RECT rcShadow = drawRC;
+		OffsetRect( &rcShadow, 1, 1 );
+		hr = fontNode->font->DrawTextW( resmgr.mSprite, text, count, &rcShadow, element->textFormat, D3DCOLOR_ARGB(DWORD(element->colorFont.current.a * 255), 0, 0, 0) );
+		if( FAILED(hr) )
+			return hr;
+	}
+
+	hr = fontNode->font->DrawTextW( resmgr.mSprite, text, count, &drawRC, element->textFormat, element->colorFont.current );
+	if( FAILED(hr) )
+		return hr;
+
+	return S_OK;
+}
+
+
 // --------------------------------------------------------------------------
 
 void CUIDialog::setBackgroundColors( D3DCOLOR colorUL, D3DCOLOR colorUR, D3DCOLOR colorDL, D3DCOLOR colorDR )

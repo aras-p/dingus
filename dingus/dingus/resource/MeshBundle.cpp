@@ -107,7 +107,7 @@ bool CMeshBundle::loadMesh( const CResourceId& id, const CResourceId& fullName, 
 	} else {
 
 		// our own format
-		assert( !mesh.isCreated() );
+		//assert( !mesh.isCreated() );
 		bool ok = CMeshSerializer::loadMeshFromFile( fullName.getUniqueName().c_str(), mesh );
 		if( !ok )
 			return false;
