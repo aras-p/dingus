@@ -103,22 +103,6 @@ SOURCE=.\CmdLineOptions.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetFilePath.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\NV_Common.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\NV_Error.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\nvFileSearch.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\Packer.cpp
 # End Source File
 # Begin Source File
