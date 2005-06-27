@@ -49,13 +49,6 @@ bool CDemo::shouldShowStats()
 
 
 CUIDialog*		gUIDlg;
-//CUISlider*		gUISliderYaw;
-//CUISlider*		gUISliderPitch;
-//CUISlider*		gUISliderZoom;
-
-//CUICheckBox*	gUIChkDilate;
-
-//CUIStatic*		gUIFPS;
 
 
 enum eFont {
@@ -223,8 +216,6 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 	gUIElem.colorFont.current = 0xFF808080;
 	r.left = 0; r.right = 640; r.top = 400; r.bottom = 480;
 	dlg.drawText( PRESSAKEY, &gUIElem, &r, true );
-	//gUIDlg->addStatic( 0, "Spausk bet kuri klavisa", 0, 400, 640, 80, false, &gUIPressKey );
-	//gUIPressKey->getElement(0)->setFont( FNT_LARGE, true, DT_CENTER | DT_VCENTER );
 
 	// draw picture if we have one
 	if( gCurrPictureIdx >= 0 ) {
@@ -237,7 +228,7 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 		float dy = (pict.uvs.bottom - pict.uvs.top) * 0.5f;
 		r.left = 280;
 		r.right = r.left + dx - 2;
-		r.top = 80;
+		r.top = 220 - dy/2 - 20;
 		r.bottom = r.top + dy - 2;
 
 		// rectangle
