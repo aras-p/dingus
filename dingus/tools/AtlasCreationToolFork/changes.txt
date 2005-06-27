@@ -1,0 +1,7 @@
+Changelog of nVidia's AtlasCreationTool fork
+
+050610: Remade cmdline arguments from weird one-letter system to "normal" one.
+		Hey, it was running out of available letters!
+050513: Option 'J' swaps Y and Z channels in resulting normal map.
+050513: Print computation times.
+050513: Flag leaf nodes in octree; no need for big checks during traversal.
