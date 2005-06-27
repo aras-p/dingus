@@ -25,11 +25,6 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 {
 	bool ok = true;
 
-	//if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
-	//	errors.addError( "pixel shaders 2.0 required" );
-	//	ok = false;
-	//}
-
 	if( caps.getVShaderVersion() < CD3DDeviceCaps::VS_1_1 ) {
 		if( vproc != CD3DDeviceCaps::VP_SW )
 			ok = false;
@@ -70,110 +65,24 @@ enum eFont {
 };
 
 
-CUIStatic*		gUIPressKey;	///< Press the key
-
-
 
 // --------------------------------------------------------------------------
 //  game logic
 
-static const char* LETTERS = "ABCDEFGHIYJKLMNOPRSTUVZ";
-static const char* WORDS[][2] = {
-	{ "Antis",		"antis" },
-	{ "Arbuzas",	"arbuzas" },
-	{ "Arklys",		"arklys" },
-	{ "Asilas",		"asilas" },
-	{ "Avis",		"avis" },
-	{ "Balandis",	"balandis" },
-	{ "Batai",		"batai" },
-	{ "Bezdzione",	"bezdzione" },
-	{ "Bite",		"bite" },
-	{ "Bokstas",	"bokstas" },
-	{ "Boruze",		"boruze" },
-	{ "Braske",		"braske" },
-	{ "Cesnakas",	"cesnakas" },
-	{ "Ciaupas",	"ciaupas" },
-	{ "Citrina",	"citrina" },
-	{ "Debesys",	"debesys" },
-	{ "Dramblys",	"dramblys" },
-	{ "Drugelis",	"drugelis" },
-	{ "Ekskavatorius",	"ekskavatorius" },
-	{ "Ezys",		"ezys" },
-	{ "Feja",		"feja" },
-	{ "Fejerverkai","fejerverkai" },
-	{ "Flamingas",	"flamingas" },
-	{ "Fotoaparatas","fotikas" },
-	{ "Gele",		"gele" },
-	{ "Gerve",		"gerve" },
-	{ "Grybas",		"grybas" },
-	{ "Hidrantas",	"hidrantas" },
-	{ "Jautis",		"jautis" },
-	{ "Jura",		"jura" },
-	{ "Kalnai",		"kalnai" },
-	{ "Kamane",		"kamane" },
-	{ "Kamuolys",	"kamuolys" },
-	{ "Kankorezis",	"kankorezis" },
-	{ "Karve",		"karve" },
-	{ "Kate",		"kate" },
-	{ "Kengura",	"kengura" },
-	{ "Kepure",		"kepure" },
-	{ "Kiaule",		"kiaule" },
-	{ "Kivi",		"kivi" },
-	{ "Laivas",		"laivas" },
-	{ "Lapai",		"lapai" },
-	{ "Lekste",		"lekste" },
-	{ "Lektuvas",	"lektuvas" },
-	{ "Liutas",		"liutas" },
-	{ "Masina",		"masina" },
-	{ "Medis",		"medis" },
-	{ "Meska",		"meska" },
-	{ "Morka",		"morka" },
-	{ "Namas",		"namas" },
-	{ "Nykstukas",	"nykstukas" },
-	{ "Obuolys",	"obuolys" },
-	{ "Ozys",		"ozys" },
-	{ "Paprika",	"paprika" },
-	{ "Papuga",		"papuga" },
-	{ "Paukstis",	"paukstis" },
-	{ "Pilis",		"pilis" },
-	{ "Pingvinas",	"pingvinas" },
-	{ "Raganosis",	"raganosis" },
-	{ "Raktai",		"raktai" },
-	{ "Ratas",		"ratas" },
-	{ "Sachmatai",	"sachmatai" },
-	{ "Sakute",		"sakute" },
-	{ "Saldainiai",	"saldainiai" },
-	{ "Saukstas",	"saukstas" },
-	{ "Siulai",		"siulai" },
-	{ "Sraige",		"sraige" },
-	{ "Stirna",		"stirna" },
-	{ "Suo",		"suo" },
-	{ "Svogunas",	"svogunas" },
-	{ "Telefonas",	"telefonas" },
-	{ "Televizorius",	"televizorius" },
-	{ "Tigras",		"tigras" },
-	{ "Tiltas",		"tiltas" },
-	{ "Traukinys",	"traukinys" },
-	{ "Tvora",		"tvora" },
-	{ "Ugnis",		"ugnis" },
-	{ "Upe",		"upe" },
-	{ "Varle",		"varle" },
-	{ "Varna",		"varna" },
-	{ "Vysnia",		"vysnia" },
-	{ "Zasis",		"zasis" },
-	{ "Zebras",		"zebras" },
-	{ "Ziogas",		"ziogas" },
-	{ "Zirafa",		"zirafa" },
-	{ "Zuvedra",	"zuvedra" },
-	{ "Zuvis",		"zuvis" },
+wchar_t LETTERS[1000];
+wchar_t PRESSAKEY[1000];
+
+struct SWordDesc {
+	wchar_t	word[100];
+	char	picture[100];
 };
-static const int WORDS_COUNT = sizeof(WORDS) / sizeof(WORDS[0]);
+std::vector<SWordDesc>	gWordDescs;
 
 
 struct SPicture {
 	CD3DTexture*	texture;
 	RECT			uvs;
-	const char*		word;
+	const wchar_t*	word;
 };
 typedef std::vector<SPicture>	TPictureVector;
 
@@ -191,10 +100,32 @@ SUIElement	gUIElem;
 
 void CDemo::initLetters()
 {
-	// resize letter pictures vector
-	gLetterPictures.resize( strlen(LETTERS) );
+	FILE* f;
 
-	FILE* f = fopen( "data/Atlas.tai", "rt" );
+	// read available words
+	f = fopen( "data/words.txt", "rb" );
+	// skip unicode mark
+	fgetc( f ); fgetc( f );
+	// first line - letters
+	fwscanf( f, L"%ls\n", LETTERS );
+	// secong line - press a key
+	fgetws( PRESSAKEY, 100, f );
+	// remaining lines - words
+	while( !feof(f) ) {
+		wchar_t apict[100];
+		gWordDescs.push_back( SWordDesc() );
+		SWordDesc& wd = gWordDescs.back();
+		fwscanf( f, L"%ls", wd.word );
+		fwscanf( f, L"%s\n", apict );
+		wcstombs( wd.picture, apict, sizeof(wd.picture) );
+	}
+	fclose( f );
+
+	// resize letter pictures vector
+	gLetterPictures.resize( wcslen(LETTERS) );
+
+	// read picture atlas definitions
+	f = fopen( "data/Atlas.tai", "rt" );
 	while( !feof(f) ) {
 		char apict[100];
 		char aatlas[100];
@@ -209,13 +140,12 @@ void CDemo::initLetters()
 
 		// see if we have this word
 		bool found = false;
-		char letter = 0;
-		const char* word = 0;
-		for( int i = 0; i < WORDS_COUNT; ++i ) {
-			if( 0 == stricmp( apict, WORDS[i][1] ) ) {
+		const wchar_t* word = 0;
+		for( int i = 0; i < gWordDescs.size(); ++i ) {
+			const SWordDesc& wd = gWordDescs[i];
+			if( 0 == stricmp( apict, wd.picture ) ) {
 				found = true;
-				letter = WORDS[i][0][0];
-				word = WORDS[i][0];
+				word = wd.word;
 				break;
 			}
 		}
@@ -223,7 +153,7 @@ void CDemo::initLetters()
 			continue;
 
 		// have this word, remember picture info
-		int letterIdx = strchr( LETTERS, letter ) - LETTERS;
+		int letterIdx = wcschr( LETTERS, word[0] ) - LETTERS;
 		assert( letterIdx >= 0 && letterIdx < gLetterPictures.size() );
 
 		SPicture pict;
@@ -282,11 +212,19 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 	gUIElem.fontIdx = FNT_HUGE;
 	gUIElem.textFormat = DT_CENTER | DT_VCENTER;
 
-	char buf[10];
+	wchar_t buf[10];
 	buf[0] = LETTERS[gCurrLetterIdx];
 	buf[1] = 0;
 	r.left = 80; r.right = 270; r.top = 80; r.bottom = 300;
 	dlg.drawText( buf, &gUIElem, &r, true );
+
+	// draw "press a key"
+	gUIElem.fontIdx = FNT_LARGE;
+	gUIElem.colorFont.current = 0xFF808080;
+	r.left = 0; r.right = 640; r.top = 400; r.bottom = 480;
+	dlg.drawText( PRESSAKEY, &gUIElem, &r, true );
+	//gUIDlg->addStatic( 0, "Spausk bet kuri klavisa", 0, 400, 640, 80, false, &gUIPressKey );
+	//gUIPressKey->getElement(0)->setFont( FNT_LARGE, true, DT_CENTER | DT_VCENTER );
 
 	// draw picture if we have one
 	if( gCurrPictureIdx >= 0 ) {
@@ -317,7 +255,7 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 		r.top = r.bottom + 5;
 		r.bottom = r.top + 50;
 		gUIElem.fontIdx = FNT_LARGE;
-		gUIElem.textFormat = DT_CENTER | DT_TOP;
+		gUIElem.textFormat = DT_CENTER | DT_TOP | DT_NOCLIP;
 		dlg.drawText( pict.word, &gUIElem, &r, true );
 	}
 }
@@ -360,9 +298,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	// UI
 	{
-		gUIDlg->addStatic( 0, "Spausk bet kuri klavisa", 0, 400, 640, 80, false, &gUIPressKey );
-		gUIPressKey->getElement(0)->setFont( FNT_LARGE, true, DT_CENTER | DT_VCENTER );
-
 		gUIElem.fontIdx = FNT_HUGE;
 		gUIElem.colorFont.current = 0xFF000000;
 	}
