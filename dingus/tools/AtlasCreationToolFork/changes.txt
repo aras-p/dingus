@@ -1,4 +1,5 @@
 Changelog of nVidia's AtlasCreationTool fork
 
 050627: Removed dependency on D3D sample framework.
-		Support non-pow-2 input textures. This messes up mipmaps though.
+		Support non-pow-2 input textures with pretty good packing. This messes
+		up mipmaps though.

@@ -64,18 +64,11 @@ long Region::GetHeight() const
 //-----------------------------------------------------------------------------
 bool Region::Intersect(Region const &region) const
 {
-    // Note Region is defined as [left, right) and [top, bottom)!
-    // general tests: test whether region's edges are inside this region
-    bool const leftIsInside   = (region.mLeft   >= mLeft) && (region.mLeft   <  mRight);
-    bool const rightIsInside  = (region.mRight  >  mLeft) && (region.mRight  <= mRight);
-    bool const topIsInside    = (region.mTop    >= mTop ) && (region.mTop    <  mBottom);
-    bool const bottomIsInside = (region.mBottom >  mTop ) && (region.mBottom <= mBottom);
-
-    // if and only if (at least) one of the horizontal edges and 
-    //                (at least) one of the vertical edges inside than the two inersect
-    if ((leftIsInside || rightIsInside) && (topIsInside || bottomIsInside))
-        return true;
-    return false;
+	if( region.mLeft >= mRight ) return false;
+	if( region.mRight <= mLeft ) return false;
+	if( region.mTop >= mBottom ) return false;
+	if( region.mBottom <= mTop ) return false;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -242,16 +235,29 @@ bool Packer2D::Insert(Texture2D *pTexture)
     // always try to attach to one or more edges of existing regions.
     //
     // loop in v: slide test-region vertically across atlas
-    for (v = 0; (v+1)*pTexture->GetHeight() <= mpAtlas->GetHeight(); ++v)
+
+	long du = pTexture->GetWidth();
+	long dv = pTexture->GetHeight();
+	long uStep = du / 32;
+	long vStep = dv / 32;
+	// make steps divisable by 8 texels
+	uStep &= ~8;
+	vStep &= ~8;
+	if( uStep < 8 )
+		uStep = 8;
+	if( vStep < 8 )
+		vStep = 8;
+
+    for (v = 0; v+dv <= mpAtlas->GetHeight(); v += vStep)
     {
-        pTest->mTop    = v     * pTexture->GetHeight();
-        pTest->mBottom = (v+1) * pTexture->GetHeight();
+        pTest->mTop    = v;
+        pTest->mBottom = v + dv;
 
         // loop in u: slide test-region horizontally across atlas
-        for (u = 0; (u+1)*pTexture->GetWidth() <= mpAtlas->GetWidth(); ++u)
+        for (u = 0; u+du <= mpAtlas->GetWidth(); u += uStep)
         {
-            pTest->mLeft  = u     * pTexture->GetWidth();
-            pTest->mRight = (u+1) * pTexture->GetWidth();
+            pTest->mLeft  = u;
+            pTest->mRight = u + du;
 
             // go through all Used regions and see if they overlap
             Region const *pIntersection = Intersects(*pTest);

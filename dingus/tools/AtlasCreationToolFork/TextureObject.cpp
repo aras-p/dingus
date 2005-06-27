@@ -409,6 +409,15 @@ void Texture2D::WriteTAILine(CmdLineOptionCollection const &options, FILE *fp) c
 // Desc: Constructor for class: set everything to good defaults 
 //       Create a suitable atlas texture.
 //-----------------------------------------------------------------------------
+
+void WINAPI GrayFiller( D3DXVECTOR4* texel, const D3DXVECTOR2* uv, const D3DXVECTOR2* texelSize, void* userData )
+{
+	texel->x = 0.5f;
+	texel->y = 0.5f;
+	texel->z = 0.5f;
+	texel->w = 1.0f;
+}
+
 Atlas2D::Atlas2D(CmdLineOptionCollection const &options, Texture2D *pTexture, int num)
     : AtlasObject()
     , mpTexture2D(NULL)
@@ -456,6 +465,8 @@ Atlas2D::Atlas2D(CmdLineOptionCollection const &options, Texture2D *pTexture, in
         PrintError(string);
         return;
     }
+
+	D3DXFillTexture( mpTexture2D, GrayFiller, NULL );
     
     mpPacker2D = new Packer2D(this);
 
