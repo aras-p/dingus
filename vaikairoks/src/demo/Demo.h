@@ -24,7 +24,9 @@ public:
 	virtual void onInputStage();
 
 private:
+	void	initLetters();
 	void	nextLetter();
+	void	fillLetterParams();
 };
 
 

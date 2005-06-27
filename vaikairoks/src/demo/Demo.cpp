@@ -4,6 +4,7 @@
 
 #include <dingus/gfx/gui/Gui.h>
 #include <dingus/utils/Random.h>
+#include <ctime>
 
 
 // --------------------------------------------------------------------------
@@ -24,10 +25,10 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 {
 	bool ok = true;
 
-	if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
-		errors.addError( "pixel shaders 2.0 required" );
-		ok = false;
-	}
+	//if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
+	//	errors.addError( "pixel shaders 2.0 required" );
+	//	ok = false;
+	//}
 
 	if( caps.getVShaderVersion() < CD3DDeviceCaps::VS_1_1 ) {
 		if( vproc != CD3DDeviceCaps::VP_SW )
@@ -69,7 +70,6 @@ enum eFont {
 };
 
 
-CUIStatic*		gUILetter;		///< The big letter
 CUIStatic*		gUIPressKey;	///< Press the key
 
 
@@ -78,9 +78,173 @@ CUIStatic*		gUIPressKey;	///< Press the key
 //  game logic
 
 static const char* LETTERS = "ABCDEFGHIYJKLMNOPRSTUVZ";
+static const char* WORDS[][2] = {
+	{ "Antis",		"antis" },
+	{ "Arbuzas",	"arbuzas" },
+	{ "Arklys",		"arklys" },
+	{ "Asilas",		"asilas" },
+	{ "Avis",		"avis" },
+	{ "Balandis",	"balandis" },
+	{ "Batai",		"batai" },
+	{ "Bezdzione",	"bezdzione" },
+	{ "Bite",		"bite" },
+	{ "Bokstas",	"bokstas" },
+	{ "Boruze",		"boruze" },
+	{ "Braske",		"braske" },
+	{ "Cesnakas",	"cesnakas" },
+	{ "Ciaupas",	"ciaupas" },
+	{ "Citrina",	"citrina" },
+	{ "Debesys",	"debesys" },
+	{ "Dramblys",	"dramblys" },
+	{ "Drugelis",	"drugelis" },
+	{ "Ekskavatorius",	"ekskavatorius" },
+	{ "Ezys",		"ezys" },
+	{ "Feja",		"feja" },
+	{ "Fejerverkai","fejerverkai" },
+	{ "Flamingas",	"flamingas" },
+	{ "Fotoaparatas","fotikas" },
+	{ "Gele",		"gele" },
+	{ "Gerve",		"gerve" },
+	{ "Grybas",		"grybas" },
+	{ "Hidrantas",	"hidrantas" },
+	{ "Jautis",		"jautis" },
+	{ "Jura",		"jura" },
+	{ "Kalnai",		"kalnai" },
+	{ "Kamane",		"kamane" },
+	{ "Kamuolys",	"kamuolys" },
+	{ "Kankorezis",	"kankorezis" },
+	{ "Karve",		"karve" },
+	{ "Kate",		"kate" },
+	{ "Kengura",	"kengura" },
+	{ "Kepure",		"kepure" },
+	{ "Kiaule",		"kiaule" },
+	{ "Kivi",		"kivi" },
+	{ "Laivas",		"laivas" },
+	{ "Lapai",		"lapai" },
+	{ "Lekste",		"lekste" },
+	{ "Lektuvas",	"lektuvas" },
+	{ "Liutas",		"liutas" },
+	{ "Masina",		"masina" },
+	{ "Medis",		"medis" },
+	{ "Meska",		"meska" },
+	{ "Morka",		"morka" },
+	{ "Namas",		"namas" },
+	{ "Nykstukas",	"nykstukas" },
+	{ "Obuolys",	"obuolys" },
+	{ "Ozys",		"ozys" },
+	{ "Paprika",	"paprika" },
+	{ "Papuga",		"papuga" },
+	{ "Paukstis",	"paukstis" },
+	{ "Pilis",		"pilis" },
+	{ "Pingvinas",	"pingvinas" },
+	{ "Raganosis",	"raganosis" },
+	{ "Raktai",		"raktai" },
+	{ "Ratas",		"ratas" },
+	{ "Sachmatai",	"sachmatai" },
+	{ "Sakute",		"sakute" },
+	{ "Saldainiai",	"saldainiai" },
+	{ "Saukstas",	"saukstas" },
+	{ "Siulai",		"siulai" },
+	{ "Sraige",		"sraige" },
+	{ "Stirna",		"stirna" },
+	{ "Suo",		"suo" },
+	{ "Svogunas",	"svogunas" },
+	{ "Telefonas",	"telefonas" },
+	{ "Televizorius",	"televizorius" },
+	{ "Tigras",		"tigras" },
+	{ "Tiltas",		"tiltas" },
+	{ "Traukinys",	"traukinys" },
+	{ "Tvora",		"tvora" },
+	{ "Ugnis",		"ugnis" },
+	{ "Upe",		"upe" },
+	{ "Varle",		"varle" },
+	{ "Varna",		"varna" },
+	{ "Vysnia",		"vysnia" },
+	{ "Zasis",		"zasis" },
+	{ "Zebras",		"zebras" },
+	{ "Ziogas",		"ziogas" },
+	{ "Zirafa",		"zirafa" },
+	{ "Zuvedra",	"zuvedra" },
+	{ "Zuvis",		"zuvis" },
+};
+static const int WORDS_COUNT = sizeof(WORDS) / sizeof(WORDS[0]);
 
-int	gCurrLetterIdx;
 
+struct SPicture {
+	CD3DTexture*	texture;
+	RECT			uvs;
+	const char*		word;
+};
+typedef std::vector<SPicture>	TPictureVector;
+
+
+std::vector<TPictureVector>	gLetterPictures;
+
+
+
+int			gCurrLetterIdx = 0;
+int			gCurrPictureIdx = -1;
+D3DXCOLOR	gLetterColor = D3DXCOLOR(0,0,0,1);
+
+SUIElement	gUIElem;
+
+
+void CDemo::initLetters()
+{
+	// resize letter pictures vector
+	gLetterPictures.resize( strlen(LETTERS) );
+
+	FILE* f = fopen( "data/Atlas.tai", "rt" );
+	while( !feof(f) ) {
+		char apict[100];
+		char aatlas[100];
+		int aindex;
+		float au, av;
+		float adu, adv;
+		float dummy;
+		fscanf( f, "%s %s %i, 2D, %f, %f, %f, %f, %f\n", apict, aatlas, &aindex, &au, &av, &dummy, &adu, &adv );
+
+		// remove '?.png' from apict
+		apict[strlen(apict)-5] = 0;
+
+		// see if we have this word
+		bool found = false;
+		char letter = 0;
+		const char* word = 0;
+		for( int i = 0; i < WORDS_COUNT; ++i ) {
+			if( 0 == stricmp( apict, WORDS[i][1] ) ) {
+				found = true;
+				letter = WORDS[i][0][0];
+				word = WORDS[i][0];
+				break;
+			}
+		}
+		if( !found )
+			continue;
+
+		// have this word, remember picture info
+		int letterIdx = strchr( LETTERS, letter ) - LETTERS;
+		assert( letterIdx >= 0 && letterIdx < gLetterPictures.size() );
+
+		SPicture pict;
+		// remove '.dds,' from aatlas
+		aatlas[strlen(aatlas)-5] = 0;
+		pict.texture = RGET_TEX(aatlas);
+		D3DSURFACE_DESC desc;
+		pict.texture->getObject()->GetLevelDesc( 0, &desc );
+		pict.uvs.left = au * desc.Width;
+		pict.uvs.top = av * desc.Height;
+		pict.uvs.right = (au+adu) * desc.Width;
+		pict.uvs.bottom = (av+adv) * desc.Height;
+		pict.word = word;
+		gLetterPictures[letterIdx].push_back( pict );
+	}
+	fclose( f );
+
+	// initial data
+	gCurrLetterIdx = 0;
+	fillLetterParams();
+}
 
 void CDemo::nextLetter()
 {
@@ -88,31 +252,98 @@ void CDemo::nextLetter()
 	if( LETTERS[gCurrLetterIdx] == 0 )
 		gCurrLetterIdx = 0;
 
-	// set new letter
+	fillLetterParams();
+}
+
+void CDemo::fillLetterParams()
+{
+	// color
+	gLetterColor.r = gRandom.getFloat( 0.1f, 0.6f );
+	gLetterColor.g = gRandom.getFloat( 0.1f, 0.6f );
+	gLetterColor.b = gRandom.getFloat( 0.1f, 0.6f );
+
+	// picture index
+	const TPictureVector& picts = gLetterPictures[gCurrLetterIdx];
+	if( picts.empty() )
+		gCurrPictureIdx = -1;
+	else {
+		gCurrPictureIdx = picts.size() * ((gRandom.getUInt()&1023)/1024.0f);
+		CConsole::CON_WARNING << "picts: " << int(picts.size()) << " idx: " << gCurrPictureIdx << endl;
+	}
+}
+
+
+void CALLBACK gUIRenderCallback( CUIDialog& dlg )
+{
+	SFRect r;
+
+	// draw letter
+	gUIElem.colorFont.current = gLetterColor;
+	gUIElem.fontIdx = FNT_HUGE;
+	gUIElem.textFormat = DT_CENTER | DT_VCENTER;
+
 	char buf[10];
 	buf[0] = LETTERS[gCurrLetterIdx];
 	buf[1] = 0;
-	gUILetter->setText( buf );
+	r.left = 80; r.right = 270; r.top = 80; r.bottom = 300;
+	dlg.drawText( buf, &gUIElem, &r, true );
+
+	// draw picture if we have one
+	if( gCurrPictureIdx >= 0 ) {
+		gUIElem.colorTexture.current = 0xFFffffff;
+		const SPicture& pict = gLetterPictures[gCurrLetterIdx][gCurrPictureIdx];
+		gUIElem.texture = pict.texture;
+		gUIElem.textureRect = pict.uvs;
+
+		float dx = (pict.uvs.right - pict.uvs.left) * 0.5f;
+		float dy = (pict.uvs.bottom - pict.uvs.top) * 0.5f;
+		r.left = 280;
+		r.right = r.left + dx - 2;
+		r.top = 80;
+		r.bottom = r.top + dy - 2;
+
+		// rectangle
+		dlg.drawRect( &r, 0xC0000000 );
+
+		r.left += 1;
+		r.right -= 1;
+		r.top += 1;
+		r.bottom -= 1;
+		
+		// picture
+		dlg.drawSprite( &gUIElem, &r );
+
+		// the word
+		r.top = r.bottom + 5;
+		r.bottom = r.top + 50;
+		gUIElem.fontIdx = FNT_LARGE;
+		gUIElem.textFormat = DT_CENTER | DT_TOP;
+		dlg.drawText( pict.word, &gUIElem, &r, true );
+	}
 }
 
 
 // --------------------------------------------------------------------------
-// objects
-
+// initialization
 
 
 void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 {
 }
 
-
 void CDemo::initialize( IDingusAppContext& appContext )
 {
+	gRandom.seed( time( NULL ) );
 	gAppContext = &appContext;
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
 	G_INPUTCTX->addListener( *this );
+
+	// --------------------------------
+	//  letter pictures
+
+	initLetters();
 
 	// --------------------------------
 	// GUI
@@ -122,37 +353,18 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setFont( FNT_LARGE, "Comic Sans MS", 32, FW_BOLD );
 
 	gUIDlg->setCallback( gUICallback );
+	gUIDlg->setRenderCallback( gUIRenderCallback );
 
 	const int hctl = 16;
 	const int hrol = 14;
 
-	// fps
-	/*
+	// UI
 	{
-		gUIDlg->addStatic( 0, "(wait)", 5,  460, 200, 20, false, &gUIFPS );
-	}
-	// zoom
-	{
-		gUIDlg->addStatic( 0, "yaw ", 210,  5, 40, hctl );
-		gUIDlg->addSlider( 0, 250,  5, 100, hctl, -180, 180, 10, false, &gUISliderYaw );
-		gUIDlg->addStatic( 0, "ptch", 210, 25, 40, hctl );
-		gUIDlg->addSlider( 0, 250, 25, 100, hctl, 0, 90, 5, false, &gUISliderPitch );
-		gUIDlg->addStatic( 0, "zoom", 210, 45, 40, hctl );
-		gUIDlg->addSlider( 0, 250, 45, 100, hctl, 5, 20, 6, false, &gUISliderZoom );
-	}
-	//
-	{
-		gUIDlg->addCheckBox( 0, "Preblur shadows", 5, 50, 100, 20, true, 0, false, &gUIChkDilate );
-	}
-	*/
-	// game
-	{
-		gUIDlg->addStatic( 0, "A", 160, 80, 320, 300, false, &gUILetter );
-		gUILetter->getElement(0)->setFont( FNT_HUGE, true, DT_CENTER | DT_VCENTER );
-		gCurrLetterIdx = 0;
-
 		gUIDlg->addStatic( 0, "Spausk bet kuri klavisa", 0, 400, 640, 80, false, &gUIPressKey );
 		gUIPressKey->getElement(0)->setFont( FNT_LARGE, true, DT_CENTER | DT_VCENTER );
+
+		gUIElem.fontIdx = FNT_HUGE;
+		gUIElem.colorFont.current = 0xFF000000;
 	}
 }
 
@@ -214,7 +426,7 @@ void CDemo::perform()
 	// render
 	dx.setDefaultRenderTarget();
 	dx.setDefaultZStencil();
-	dx.clearTargets( true, true, false, 0xFFe0e0e0, 1.0f, 0L );
+	dx.clearTargets( true, true, false, 0xFFf0f0f0, 1.0f, 0L );
 	dx.sceneBegin();
 
 	// render GUI
