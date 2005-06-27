@@ -8,3 +8,6 @@ the atlas viewer nor other stuff.
 Currently the fork is based on 2.0 (1.0.0826.1700) version.
 
 Changes are:
+
+* Removed dependency on D3D sample framework. Now it's really just a simple
+  command line application.
