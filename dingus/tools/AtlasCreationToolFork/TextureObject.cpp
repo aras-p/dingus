@@ -296,9 +296,10 @@ HRESULT Texture2D::LoadTexture(CmdLineOptionCollection const &options)
     // Note: D3DX does the right thing and only generates the ones that do not exist.
     // Unless -nomipmap was spec'd: in that case we force everything to one surface only
 
-    UINT const      kMipLevels = (options.IsSet(CLO_NOMIPMAP)) ? 1 : 0;
+    UINT const      kMipLevels = 0; //(options.IsSet(CLO_NOMIPMAP)) ? 1 : 0;
+
     HRESULT const   hr = D3DXCreateTextureFromFileEx(mpD3DDev, mpFilename, 
-                                                 D3DX_DEFAULT, D3DX_DEFAULT, kMipLevels, 
+                                                 D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, D3DX_FROM_FILE/*kMipLevels*/, 
                                                  0, D3DFMT_UNKNOWN, D3DPOOL_SYSTEMMEM, 
                                                  D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, 
                                                  &mpTexture2D);
