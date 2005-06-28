@@ -153,10 +153,6 @@ SOURCE=.\src\DirectX.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\history.txt
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\logo.bmp
 # End Source File
 # Begin Source File
