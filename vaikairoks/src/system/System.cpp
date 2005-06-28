@@ -10,13 +10,13 @@
 #include <dingus/input/DIMouse.h>
 
 
-const bool DEV_MODE = true;
+const bool DEV_MODE = false;
 
 
 SAppStartupParams CSystem::getStartupParams()
 {
 	SAppStartupParams sp;
-	sp.windowTitle = "VaikaiRoks TBD";
+	sp.windowTitle = "VaikaiRoks Raides";
 	sp.dataPath = "data/";
 	sp.windowWidth = 640;
 	sp.windowHeight = 480;
@@ -29,7 +29,7 @@ SAppStartupParams CSystem::getStartupParams()
 	sp.showCursorFullscreen = true;
 	sp.vsyncFullscreen = !DEV_MODE;
 	sp.debugTimer = false;
-	sp.selectDeviceAtStartup = !DEV_MODE;
+	sp.selectDeviceAtStartup = false; //!DEV_MODE;
 	return sp;
 }
 

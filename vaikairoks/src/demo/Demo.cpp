@@ -17,7 +17,6 @@ bool	gFinished = false;
 bool	gShowStats = false;
 
 
-
 CDemo::CDemo()
 {
 }
@@ -57,7 +56,6 @@ enum eFont {
 	FNT_HUGE = 1,
 	FNT_LARGE = 2,
 };
-
 
 
 // --------------------------------------------------------------------------
@@ -308,14 +306,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setCallback( gUICallback );
 	gUIDlg->setRenderCallback( gUIRenderCallback );
 
-	const int hctl = 16;
-	const int hrol = 14;
-
-	// UI
-	{
-		gUIElem.fontIdx = FNT_HUGE;
-		gUIElem.colorFont.current = 0xFF000000;
-	}
+	gUIElem.fontIdx = FNT_HUGE;
+	gUIElem.colorFont.current = 0xFF000000;
 }
 
 
@@ -363,19 +355,11 @@ void CDemo::perform()
 {
 	G_INPUTCTX->perform();
 	
-	double t = CSystemTimer::getInstance().getTimeS();
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
-	// FPS
-	//char buf[100];
-	//sprintf( buf, "fps: %6.2f", dx.getStats().getFPS() );
-	//gUIFPS->setText( buf );
-
 	// render
-	dx.setDefaultRenderTarget();
-	dx.setDefaultZStencil();
 	dx.clearTargets( true, true, false, 0xFFf0f0f0, 1.0f, 0L );
 	dx.sceneBegin();
 
@@ -384,7 +368,7 @@ void CDemo::perform()
 
 	dx.sceneEnd();
 
-	// sleep a bit
+	// sleep a bit - don't hog the CPU
 	Sleep( 1 );
 }
 
