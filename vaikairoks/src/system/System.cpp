@@ -41,9 +41,13 @@ IConsoleRenderingContext* CSystem::createStdConsoleCtx( HWND hwnd )
 		return NULL;
 }
 
+static std::string gSavedDataPath;
+
 
 void CSystem::setupBundles( const std::string& dataPath, dingus::CReloadableBundleManager& reloadManager )
 {
+	gSavedDataPath = dataPath;
+	
 	CTextureBundle::getInstance().addDirectory( dataPath + "tex/" );
 
 	//
@@ -72,6 +76,11 @@ void CSystem::setupContexts( HWND hwnd )
 	assert( directInput8 );
 	G_INPUTCTX->addDevice( *(new CDIKeyboard(hwnd,*directInput8)) );
 	G_INPUTCTX->addDevice( *(new CDIMouse(hwnd,*directInput8)) );
+
+	// sound
+	new CAudioContext( hwnd );
+	G_AUDIOCTX->open();
+	CSoundBundle::getInstance().initialize( gSavedDataPath + "sound/" );
 }
 
 
@@ -79,6 +88,10 @@ void CSystem::destroyContexts()
 {
 	assert( G_INPUTCTX );
 	safeDelete( G_INPUTCTX );
+	
+	assert( G_AUDIOCTX );
+	CSoundBundle::finalize();
+	safeDelete( G_AUDIOCTX );
 }
 
 void CSystem::destroyBundles()

@@ -5,6 +5,7 @@
 #include <dingus/gfx/gui/Gui.h>
 #include <dingus/utils/Random.h>
 #include <ctime>
+#include <dingus/audio/Sound.h>
 
 
 // --------------------------------------------------------------------------
@@ -65,6 +66,10 @@ enum eFont {
 wchar_t LETTERS[1000];
 wchar_t PRESSAKEY[1000];
 
+
+CSound* gLetterSounds[1000];
+
+
 struct SWordDesc {
 	wchar_t	word[100];
 	char	picture[100];
@@ -99,10 +104,25 @@ void CDemo::initLetters()
 	f = fopen( "data/words.txt", "rb" );
 	// skip unicode mark
 	fgetc( f ); fgetc( f );
+
 	// first line - letters
 	fwscanf( f, L"%ls\n", LETTERS );
-	// secong line - press a key
+	int nletters = wcslen( LETTERS );
+	// second line - sounds for letters
+	wchar_t soundbuf[100];
+	for( int i = 0; i < nletters; ++i ) {
+		fwscanf( f, L"%ls", soundbuf );
+		char soundID[100];
+		wcstombs( soundID, soundbuf, sizeof(soundID) );
+		gLetterSounds[i] = new CSound( *RGET_SOUND(CSoundDesc(soundID, true)) );
+		gLetterSounds[i]->setLooping( false );
+	}
+	fgetws( soundbuf, 100, f );
+
+
+	// "press a key"
 	fgetws( PRESSAKEY, 100, f );
+
 	// remaining lines - words
 	while( !feof(f) ) {
 		wchar_t apict[100];
@@ -115,7 +135,7 @@ void CDemo::initLetters()
 	fclose( f );
 
 	// resize letter pictures vector
-	gLetterPictures.resize( wcslen(LETTERS) );
+	gLetterPictures.resize( nletters );
 
 	// read picture atlas definitions
 	f = fopen( "data/Atlas.tai", "rt" );
@@ -176,6 +196,9 @@ void CDemo::nextLetter()
 		gCurrLetterIdx = 0;
 
 	fillLetterParams();
+
+	// play sound
+	gLetterSounds[gCurrLetterIdx]->start();
 }
 
 void CDemo::fillLetterParams()
@@ -203,7 +226,7 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 	// draw letter
 	gUIElem.colorFont.current = gLetterColor;
 	gUIElem.fontIdx = FNT_HUGE;
-	gUIElem.textFormat = DT_CENTER | DT_VCENTER;
+	gUIElem.textFormat = DT_CENTER | DT_VCENTER | DT_NOCLIP;
 
 	wchar_t buf[10];
 	buf[0] = LETTERS[gCurrLetterIdx];
@@ -247,6 +270,7 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 		r.bottom = r.top + 50;
 		gUIElem.fontIdx = FNT_LARGE;
 		gUIElem.textFormat = DT_CENTER | DT_TOP | DT_NOCLIP;
+		gUIElem.colorFont.current = gLetterColor;
 		dlg.drawText( pict.word, &gUIElem, &r, true );
 	}
 }
@@ -373,4 +397,6 @@ void CDemo::perform()
 void CDemo::shutdown()
 {
 	safeDelete( gUIDlg );
+	for( int i = 0; i < gLetterPictures.size(); ++i )
+		delete gLetterSounds[i];
 }

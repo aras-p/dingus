@@ -1,9 +1,11 @@
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
 
+#include <dingus/audio/AudioContext.h>
 #include <dingus/kernel/D3DDevice.h>
 #include <dingus/input/InputContext.h>
 
+#include <dingus/resource/SoundBundle.h>
 #include <dingus/resource/TextureBundle.h>
 #include <dingus/resource/VertexDeclBundle.h>
 
