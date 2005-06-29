@@ -57,7 +57,9 @@ public:
 	int		getIndexStride() const { return mIndexStride; }
 	CD3DVertexDecl& getVertexDecl() const { return *mVertexDecl; }
 
+	const CD3DVertexBuffer&	getVB() const { return mVB; }
 	CD3DVertexBuffer&	getVB() { return mVB; }
+	const CD3DIndexBuffer&	getIB() const { return mIB; }
 	CD3DIndexBuffer&	getIB() { return mIB; }
 	const void*	lockVBRead() const;
 	void	unlockVBRead() const;
