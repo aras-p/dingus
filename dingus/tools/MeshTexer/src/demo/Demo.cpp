@@ -342,7 +342,6 @@ enum eUICtrlIDs {
 
 CUIDialog*		gUIDlg;
 
-CUIStatic*		gUILabelFPS;
 CUIButton*		gUIBtnOpenMesh;
 CUIButton*		gUIBtnOpenNMap;
 CUIButton*		gUIBtnOpenDiffTex;
@@ -486,7 +485,6 @@ static void	gSetupGUI()
 	gUIDlg->addSlider( 0, SLD_X+50, ctlY, 140, UIHCTL, 1, 70, 10, false, &gUISldScale );
 	gUIDlg->addStatic( 0, "", SLD_X+200, ctlY, 50, UIHCTL, false, &gUILabScale );
 
-	gUIDlg->addStatic( 0, "", 3, 480-UIHLAB-1, 100, UIHLAB, false, &gUILabelFPS );
 	gUIDlg->enableNonUserEvents( true );
 }
 
@@ -674,11 +672,6 @@ void CDemo::perform()
 	sprintf( buf, "%.1f", gTexerScale );
 	gUILabScale->setText( buf );
 	
-	// FPS
-	sprintf( buf, "fps: %.1f", dx.getStats().getFPS() );
-	gUILabelFPS->setText( buf );
-
-
 	dx.clearTargets( true, true, false, 0xFF8080a0, 1.0f, 0L );
 	dx.sceneBegin();
 	G_RENDERCTX->applyGlobalEffect();
