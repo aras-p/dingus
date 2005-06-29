@@ -251,7 +251,7 @@ void gLoadDiffuseTex( const std::string& fileName )
 }
 
 
-void gBakeTexture( int sizeX, int sizeY )
+void gBakeTexture( int sizeX, int sizeY, D3DXIMAGE_FILEFORMAT format )
 {
 	if( !gMesh )
 		return;
@@ -303,7 +303,13 @@ void gBakeTexture( int sizeX, int sizeY )
 	dxMesh->Release();
 
 	// save the texture
-	hr = D3DXSaveTextureToFile( "TexerBaked.dds", D3DXIFF_PNG, texture, NULL );
+	const char* fileName = "TexerBaked.dds";
+	switch( format ) {
+	case D3DXIFF_DDS: fileName = "TexerBaked.dds"; break;
+	case D3DXIFF_PNG: fileName = "TexerBaked.png"; break;
+	}
+
+	hr = D3DXSaveTextureToFile( fileName, format, texture, NULL );
 	texture->Release();
 
 	// remove it from our resource bundle and load again
@@ -395,7 +401,11 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 			break;
 		case GID_BTN_BAKE:
 			{
-				gBakeTexture( (int)gUICmbBakeSizeX->getSelectedData(), (int)gUICmbBakeSizeY->getSelectedData() );
+				gBakeTexture(
+					(int)gUICmbBakeSizeX->getSelectedData(),
+					(int)gUICmbBakeSizeY->getSelectedData(),
+					(D3DXIMAGE_FILEFORMAT)(DWORD)gUICmbBakeFormat->getSelectedData()
+				);
 				gUICmbRenderMode->setSelectedByData( (const void*)RM_BAKED );
 			}
 			break;
@@ -469,8 +479,6 @@ static void	gSetupGUI()
 	}
 	// make DDS selected by default
 	gUICmbBakeFormat->setSelectedByIndex( 0 );
-	gUICmbBakeFormat->setEnabled( false );
-
 
 	const int SLD_X = 400;
 	ctlY = 5 - UIHCTL;
