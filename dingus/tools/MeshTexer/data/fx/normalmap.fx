@@ -28,11 +28,9 @@ SOutput vsMain( SPosTex i ) {
 	o.pos = mul( i.pos, mWVP );
 
 	float3x3 wT = transpose( (float3x3)mWorld );
+	float3x3 wvT = transpose( (float3x3)mWorldView );
 	
-	float3 tolight = vLightPos - wpos;
-	//tolight.y *= 0.8; // make light more horizontal :)
-	tolight = normalize( tolight );
-	tolight = mul( tolight, wT );
+	float3 tolight = mul( vLightDir, wvT );
 	o.tolight = float4( tolight*0.5+0.5, 1 );
 
 	float3 toview = normalize( vEye - wpos );

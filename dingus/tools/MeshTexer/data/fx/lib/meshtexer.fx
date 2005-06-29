@@ -14,15 +14,7 @@ half3 gMapTexture( float3 pos, float scale, sampler2D smp, half3 scales )
 
 half3 gMapDiffuse( float3 pos, sampler2D smp, half3 scales )
 {
-	return gMapTexture( pos, fTexerScaleDiff, smp, scales );
-}
-
-half gMapGloss( float3 pos, sampler2D smp, half3 scales )
-{
-	half3 col = gMapTexture( pos, fTexerScaleGloss, smp, scales );
-	half gloss = dot( col, 1.0/3.0 );
-	gloss = saturate( gloss * fTexerGlossScale + fTexerGlossBias );
-	return gloss;
+	return gMapTexture( pos, fTexerScale, smp, scales );
 }
 
 

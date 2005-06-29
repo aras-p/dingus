@@ -6,7 +6,6 @@
 #include "Demo.h"
 #include "DemoResources.h"
 
-#include <dingus/gfx/DebugRenderer.h>
 #include <dingus/resource/IndexBufferFillers.h>
 #include <dingus/gfx/gui/Gui.h>
 #include <dingus/math/MathUtils.h>
@@ -96,7 +95,6 @@ void CMeshTexerEntity::render( eRenderMode renderMode )
 // --------------------------------------------------------------------------
 
 
-CDebugRenderer*	gDebugRenderer;
 IDingusAppContext*	gAppContext;
 SD3DSettingsPref*	gD3DSettingsPref;
 
@@ -165,21 +163,17 @@ bool CDemo::shouldShowStats()
 CCameraEntity		gCamera;
 float				gCameraYaw, gCameraPitch, gCameraDist;
 
-SVector3			gLightPos;
-
 CMeshTexerEntity*	gMesh; // Current mesh. May be NULL.
 
 std::string			gCurMeshName;
 std::string			gCurNormalMapName;
 std::string			gCurDiffTexName;
-std::string			gCurGlossTexName;
 
 float				gMeshRadius = 1.0f;
 SVector3			gMeshCenter;
 
 
-float	gTexerGlossScale = 1.0f, gTexerGlossBias = 0.0f;
-float	gTexerScaleDiff = 1.0f, gTexerScaleGloss = 1.0f;
+float	gTexerScale;
 
 
 
@@ -211,9 +205,6 @@ void	gLoadNewMesh( const std::string& meshName )
 	// position mesh in the origin
 	gMesh->mWorldMat.identify();
 	gMesh->mWorldMat.getOrigin() -= gMeshCenter;
-
-	// position light slightly above and in front of mesh
-	gLightPos.set( 0.0f, gMeshRadius, -gMeshRadius );
 
 	// position camera looking at mesh
 	gCameraDist = gMeshRadius*2;
@@ -255,25 +246,6 @@ void gLoadDiffuseTex( const std::string& fileName )
 			CEffectParams& ep = gMesh->getRenderMesh( eRenderMode(i) )->getParams();
 			ep.removeTexture( "tBase" );
 			ep.addTexture( "tBase", *tex );
-		}
-	}
-}
-
-
-void gLoadGlossTex( const std::string& fileName )
-{
-	// destroy old texture if there was one
-	if( !gCurGlossTexName.empty() ) {
-		CTextureBundle::getInstance().clearResourceById( gCurGlossTexName );
-	}
-
-	gCurGlossTexName = fileName;
-	CD3DTexture* tex = RGET_TEX(fileName);
-	if( gMesh ) {
-		for( int i = 0; i < RMCOUNT; ++i ) {
-			CEffectParams& ep = gMesh->getRenderMesh( eRenderMode(i) )->getParams();
-			ep.removeTexture( "tGloss" );
-			ep.addTexture( "tGloss", *tex );
 		}
 	}
 }
@@ -353,7 +325,6 @@ enum eUICtrlIDs {
 	GID_BTN_OPENMESH = 1000,
 	GID_BTN_OPENNMAP,
 	GID_BTN_OPENDIFFTEX,
-	GID_BTN_OPENGLOSSTEX,
 	GID_CMB_RENDERMODE,
 	GID_BTN_BAKE,
 	GID_CMB_BAKESIZEX,
@@ -369,7 +340,6 @@ CUIStatic*		gUILabelFPS;
 CUIButton*		gUIBtnOpenMesh;
 CUIButton*		gUIBtnOpenNMap;
 CUIButton*		gUIBtnOpenDiffTex;
-CUIButton*		gUIBtnOpenGlossTex;
 CUIButton*		gUIBtnBake;
 CUIComboBox*	gUICmbRenderMode;
 CUIComboBox*	gUICmbBakeSizeX;
@@ -381,18 +351,9 @@ CUICheckBox*	gUIChkWireframe;
 CUIStatic*		gUILabMesh;
 CUIStatic*		gUILabNMap;
 CUIStatic*		gUILabDiffTex;
-CUIStatic*		gUILabGlossTex;
 
-CUISlider*		gUISldScaleDiff;
-CUIStatic*		gUILabScaleDiff;
-CUISlider*		gUISldScaleGloss;
-CUIStatic*		gUILabScaleGloss;
-
-CUISlider*		gUISldGlossBias;
-CUIStatic*		gUILabGlossBias;
-CUISlider*		gUISldGlossScale;
-CUIStatic*		gUILabGlossScale;
-
+CUISlider*		gUISldScale;
+CUIStatic*		gUILabScale;
 
 
 void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
@@ -406,7 +367,6 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 				if( !fileName.empty() ) {
 					gUIDlg->getButton(GID_BTN_OPENNMAP)->setEnabled( true );
 					gUIDlg->getButton(GID_BTN_OPENDIFFTEX)->setEnabled( true );
-					gUIDlg->getButton(GID_BTN_OPENGLOSSTEX)->setEnabled( true );
 					gUIDlg->getButton(GID_BTN_BAKE)->setEnabled( true );
 					gUICmbBakeSizeX->setEnabled( true );
 					gUICmbBakeSizeY->setEnabled( true );
@@ -429,15 +389,6 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 				std::string fileName = gGetOpenFileName( FILE_FILTER_TEX );
 				if( !fileName.empty() ) {
 					gLoadDiffuseTex( fileName );
-					gUICmbRenderMode->setSelectedByData( (const void*)RM_MAPPED );
-				}
-			}
-			break;
-		case GID_BTN_OPENGLOSSTEX:
-			{
-				std::string fileName = gGetOpenFileName( FILE_FILTER_TEX );
-				if( !fileName.empty() ) {
-					gLoadGlossTex( fileName );
 					gUICmbRenderMode->setSelectedByData( (const void*)RM_MAPPED );
 				}
 			}
@@ -470,9 +421,6 @@ static void	gSetupGUI()
 	gUIDlg->addButton( GID_BTN_OPENDIFFTEX, "Open DiffTex (T)", 3, ctlY += UIHCTL, BTNW, UIHCTL, 'T', false, &gUIBtnOpenDiffTex );
 	gUIDlg->addStatic( 0, "", 5+BTNW, ctlY, 300, UIHCTL, false, &gUILabDiffTex );
 	gUIBtnOpenDiffTex->setEnabled( false );
-	gUIDlg->addButton( GID_BTN_OPENGLOSSTEX, "Open GlosTex (G)", 3, ctlY += UIHCTL, BTNW, UIHCTL, 'G', false, &gUIBtnOpenGlossTex );
-	gUIDlg->addStatic( 0, "", 5+BTNW, ctlY, 300, UIHCTL, false, &gUILabGlossTex );
-	gUIBtnOpenGlossTex->setEnabled( false );
 
 	gUIDlg->addComboBox( GID_CMB_RENDERMODE, 3, ctlY += UIHCTL*2, BTNW, UIHCTL, 0, false, &gUICmbRenderMode );
 	for( i = 0; i < RMCOUNT-1; ++i ) { // last is texture baker - not user selectable
@@ -514,8 +462,8 @@ static void	gSetupGUI()
 	gUICmbBakeAA->setEnabled( false );
 
 
-	const int BAKE_FMTS[] = { D3DXIFF_DDS, D3DXIFF_PNG, D3DXIFF_BMP };
-	const char* BAKE_FMTTEXTS[] = { "DDS", "PNG (2 files)", "BMP (2 files)" };
+	const int BAKE_FMTS[] = { D3DXIFF_DDS, D3DXIFF_PNG };
+	const char* BAKE_FMTTEXTS[] = { "DDS", "PNG" };
 	for( i = 0; i < sizeof(BAKE_FMTS)/sizeof(BAKE_FMTS[0]); ++i ) {
 		gUICmbBakeFormat->addItem( BAKE_FMTTEXTS[i], (const void*)BAKE_FMTS[i], true );
 	}
@@ -526,19 +474,9 @@ static void	gSetupGUI()
 
 	const int SLD_X = 400;
 	ctlY = 5 - UIHCTL;
-	gUIDlg->addStatic( 0, "Scale diff", SLD_X, ctlY += UIHCTL, 50, UIHCTL, false, NULL );
-	gUIDlg->addSlider( 0, SLD_X+50, ctlY, 140, UIHCTL, 1, 70, 10, false, &gUISldScaleDiff );
-	gUIDlg->addStatic( 0, "", SLD_X+200, ctlY, 50, UIHCTL, false, &gUILabScaleDiff );
-	gUIDlg->addStatic( 0, "Scale glos", SLD_X, ctlY += UIHCTL, 50, UIHCTL, false, NULL );
-	gUIDlg->addSlider( 0, SLD_X+50, ctlY, 140, UIHCTL, 1, 70, 10, false, &gUISldScaleGloss );
-	gUIDlg->addStatic( 0, "", SLD_X+200, ctlY, 50, UIHCTL, false, &gUILabScaleGloss );
-
-	gUIDlg->addStatic( 0, "Gloss mul", SLD_X, ctlY += UIHCTL*2, 50, UIHCTL, false, NULL );
-	gUIDlg->addSlider( 0, SLD_X+50, ctlY, 140, UIHCTL, -20, 20, 10, false, &gUISldGlossScale );
-	gUIDlg->addStatic( 0, "", SLD_X+200, ctlY, 50, UIHCTL, false, &gUILabGlossScale );
-	gUIDlg->addStatic( 0, "Gloss bias", SLD_X, ctlY += UIHCTL, 50, UIHCTL, false, NULL );
-	gUIDlg->addSlider( 0, SLD_X+50, ctlY, 140, UIHCTL, -10, 10, 0, false, &gUISldGlossBias );
-	gUIDlg->addStatic( 0, "", SLD_X+200, ctlY, 50, UIHCTL, false, &gUILabGlossBias );
+	gUIDlg->addStatic( 0, "Tex scale", SLD_X, ctlY += UIHCTL, 50, UIHCTL, false, NULL );
+	gUIDlg->addSlider( 0, SLD_X+50, ctlY, 140, UIHCTL, 1, 70, 10, false, &gUISldScale );
+	gUIDlg->addStatic( 0, "", SLD_X+200, ctlY, 50, UIHCTL, false, &gUILabScale );
 
 	gUIDlg->addStatic( 0, "", 3, 480-UIHLAB-1, 100, UIHLAB, false, &gUILabelFPS );
 	gUIDlg->enableNonUserEvents( true );
@@ -568,14 +506,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// common params
 
 	//G_RENDERCTX->getGlobalParams().addFloatRef( "fTime", &gTimeParam );
-	G_RENDERCTX->getGlobalParams().addVector3Ref( "vLightPos", gLightPos );
 	G_RENDERCTX->getGlobalParams().addIntRef( "iFill", &gGlobalFillMode );
-	G_RENDERCTX->getGlobalParams().addFloatRef( "fTexerScaleDiff", &gTexerScaleDiff );
-	G_RENDERCTX->getGlobalParams().addFloatRef( "fTexerScaleGloss", &gTexerScaleGloss );
-	G_RENDERCTX->getGlobalParams().addFloatRef( "fTexerGlossScale", &gTexerGlossScale );
-	G_RENDERCTX->getGlobalParams().addFloatRef( "fTexerGlossBias", &gTexerGlossBias );
-
-	gDebugRenderer = new CDebugRenderer( *G_RENDERCTX, *RGET_FX("debug") );
+	G_RENDERCTX->getGlobalParams().addFloatRef( "fTexerScale", &gTexerScale );
 
 	// --------------------------------
 	// game
@@ -728,24 +660,11 @@ void CDemo::perform()
 	if( !gCurDiffTexName.empty() ) {
 		gUILabDiffTex->setText( gGetFileNamePart(gCurDiffTexName) );
 	}
-	if( !gCurGlossTexName.empty() ) {
-		gUILabGlossTex->setText( gGetFileNamePart(gCurGlossTexName) );
-	}
 
 	// scales
-	gTexerScaleDiff = gUISldScaleDiff->getValue() * 0.1f;
-	sprintf( buf, "%.1f", gTexerScaleDiff );
-	gUILabScaleDiff->setText( buf );
-	gTexerScaleGloss = gUISldScaleGloss->getValue() * 0.1f;
-	sprintf( buf, "%.1f", gTexerScaleGloss );
-	gUILabScaleGloss->setText( buf );
-
-	gTexerGlossScale = gUISldGlossScale->getValue() * 0.1f;
-	sprintf( buf, "%.1f", gTexerGlossScale );
-	gUILabGlossScale->setText( buf );
-	gTexerGlossBias = gUISldGlossBias->getValue() * 0.1f;
-	sprintf( buf, "%.1f", gTexerGlossBias );
-	gUILabGlossBias->setText( buf );
+	gTexerScale = gUISldScale->getValue() * 0.1f;
+	sprintf( buf, "%.1f", gTexerScale );
+	gUILabScale->setText( buf );
 	
 	// FPS
 	sprintf( buf, "fps: %.1f", dx.getStats().getFPS() );
@@ -782,8 +701,6 @@ void CDemo::shutdown()
 
 	if( gMesh )
 		delete gMesh;
-
-	delete gDebugRenderer;
 
 	safeDelete( gUIDlg );
 	CONS << "Done!" << endl;

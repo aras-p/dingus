@@ -148,10 +148,6 @@ SOURCE=.\src\system\System.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\data\fx\lib\defines.fx
-# End Source File
-# Begin Source File
-
 SOURCE=.\data\fx\lib\global.fx
 # End Source File
 # Begin Source File
@@ -177,10 +173,6 @@ SOURCE=.\data\fx\checker.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\debug.fx
-# End Source File
-# Begin Source File
-
 SOURCE=.\data\fx\mapped.fx
 # End Source File
 # Begin Source File
@@ -192,6 +184,10 @@ SOURCE=.\data\fx\normalMap.fx
 SOURCE=.\data\fx\texbaker.fx
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\changes.txt
+# End Source File
 # Begin Source File
 
 SOURCE=.\src\Demo.rc

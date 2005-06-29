@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
-// Used by DXUtils.rc
+// Used by Demo.rc
 //
 #define IDI_MAIN_ICON                   101
 #define IDR_MAIN_ACCEL                  113

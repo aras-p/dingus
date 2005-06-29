@@ -35,10 +35,9 @@ SOutput vsMain( SPosTex i ) {
 	o.pos = mul( i.pos, mWVP );
 
 	float3x3 wT = transpose( (float3x3)mWorld );
+	float3x3 wvT = transpose( (float3x3)mWorldView );
 	
-	float3 tolight = vLightPos - wpos;
-	tolight = normalize( tolight );
-	tolight = mul( tolight, wT );
+	float3 tolight = mul( vLightDir, wvT );
 	o.tolight = float4( tolight*0.5+0.5, 1 );
 
 	float3 toview = normalize( vEye - wpos );
@@ -65,12 +64,12 @@ half4 psMain( SOutput i ) : COLOR {
 	half diffuse = saturate( dot( normal, i.tolight.xyz*2-1 ) ) * occ + ambBias;
 	float spec = pow( saturate( dot( normal, i.halfang ) ), 16 );
 
-	// sample diffuse/gloss map
+	// sample diffuse map
 	half4 cBase = tex2D( smpBaked, i.uv );
 	half3 cDiff = cBase.rgb;
-	spec *= cBase.a;
+	half3 cSpec = cDiff * 0.3;
 
-	half3 col = cDiff * diffuse + spec + amb;
+	half3 col = cDiff * diffuse + cSpec * spec + amb;
 
 	return half4( col, 1 );
 }

@@ -15,13 +15,6 @@ sampler2D	smpBase = sampler_state {
 	AddressU = Wrap; AddressV = Wrap;
 };
 
-texture		tGloss;
-sampler2D	smpGloss = sampler_state {
-	Texture = (tGloss);
-	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
-	AddressU = Wrap; AddressV = Wrap;
-};
-
 texture		tNormalAO;
 sampler2D	smpNormalAO = sampler_state {
 	Texture = (tNormalAO);
@@ -64,10 +57,8 @@ half4 psMain( SOutput i ) : COLOR {
 
 	// construct diffuse map
 	half3 cDiff = gMapDiffuse( i.opos, smpBase, scales );
-	// construct gloss map
-	half gloss = gMapGloss( i.opos, smpGloss, scales );
 
-	return half4( cDiff, gloss );
+	return half4( cDiff, 1 );
 }
 
 

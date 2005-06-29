@@ -14,13 +14,6 @@ sampler2D	smpBase = sampler_state {
 	AddressU = Wrap; AddressV = Wrap;
 };
 
-texture		tGloss;
-sampler2D	smpGloss = sampler_state {
-	Texture = (tGloss);
-	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
-	AddressU = Wrap; AddressV = Wrap;
-};
-
 texture		tNormalAO;
 sampler2D	smpNormalAO = sampler_state {
 	Texture = (tNormalAO);
@@ -45,10 +38,9 @@ SOutput vsMain( SPosTex i ) {
 	o.pos = mul( i.pos, mWVP );
 
 	float3x3 wT = transpose( (float3x3)mWorld );
+	float3x3 wvT = transpose( (float3x3)mWorldView );
 	
-	float3 tolight = vLightPos - wpos;
-	tolight = normalize( tolight );
-	tolight = mul( tolight, wT );
+	float3 tolight = mul( vLightDir, wvT );
 	o.tolight = float4( tolight*0.5+0.5, 1 );
 
 	float3 toview = normalize( vEye - wpos );
@@ -82,10 +74,9 @@ half4 psMain( SOutput i ) : COLOR {
 	// construct diffuse map
 	half3 cDiff = gMapDiffuse( i.opos, smpBase, scales );
 
-	// construct gloss map
-	spec *= gMapGloss( i.opos, smpGloss, scales );
+	half3 cSpec = cDiff * 0.3;
 
-	half3 col = cDiff * diffuse + spec + amb;
+	half3 col = cDiff * diffuse + cSpec * spec + amb;
 
 	return half4( col, 1 );
 }

@@ -3,8 +3,6 @@
 #ifndef __SHARED_FX
 #define __SHARED_FX
 
-#include "defines.fx"
-
 
 // --------------------------------------------------------------------------
 // time
@@ -32,33 +30,14 @@ shared int		iFill = 3;
 // --------------------------------------------------------------------------
 //  light
 
-shared float3	vLightPos;
+// view space
+static const float3	vLightDir = -normalize(float3(0.5,-0.5,1.0));
 
 
 // --------------------------------------------------------------------------
 //  mesh texer
 
-shared	float	fTexerScaleDiff = 1.0;
-shared	float	fTexerScaleGloss = 1.0;
-
-shared	float	fTexerGlossBias = 0.0;
-shared	float	fTexerGlossScale = 1.0;
-
-
-// --------------------------------------------------------------------------
-//  others
-
-
-const static float4x4 mIdentity = float4x4(
-	1,0,0,0,
-	0,1,0,0,
-	0,0,1,0,
-	0,0,0,1 );
-const static float4x4 mSphereMap = float4x4(
-	0.4,0,  0, 0,
-	0, -0.4,0, 0,
-	0,  0.0,0, 0,
-	0.5,0.5,0, 0 );
+shared	float	fTexerScale = 1.0;
 
 
 #endif
