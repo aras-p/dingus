@@ -1,5 +1,6 @@
 Tools changelog
 
+050629: MeshTexer somewhat polished, see article at dingus.berlios.de
 050627: AtlasCreationTool fork added to repository.
 050609: NormalMapper fork added to repository.
 050604: MeshTexer added to repository.
