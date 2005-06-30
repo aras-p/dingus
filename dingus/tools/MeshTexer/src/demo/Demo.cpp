@@ -128,6 +128,7 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 		errors.addError( "Pixel shader 2.0 required" );
 		ok = false;
 	}
+	// TBD
 
 	// require at least this amount of video memory
 	const int videoMB = 48;
