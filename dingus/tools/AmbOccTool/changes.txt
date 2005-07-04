@@ -1,0 +1,3 @@
+Changelog of Ambient Occlusion tool
+
+050704: Changed to June 2005 SDK.

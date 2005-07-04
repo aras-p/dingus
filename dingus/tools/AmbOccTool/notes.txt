@@ -1,0 +1,5 @@
+Misc notes
+
+050704: times, -m Garg2Cage.dmesh -n Garg2CageN.tga
+	Jun2005: 2.64s (2nd order)
+	Jun2005: 4.14s (3rd order)
