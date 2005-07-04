@@ -2,19 +2,14 @@
 #include "d3d.h"
 #include "args.h"
 #include <ctime>
+#include "crackdecl.h"
 
 
 const char* ARG_MESH = "-m";
-const char* ARG_MESH2 = "--mesh";
-
 const char* ARG_NORMALMAP = "-n";
-const char* ARG_NORMALMAP2 = "--normalmap";
-
-const char* ARG_NONM = "-N";
-const char* ARG_NONM2 = "--nonormalmap";
-
+const char* ARG_X = "-x";
+const char* ARG_Y = "-y";
 const char* ARG_SWAPYZ = "-s";
-const char* ARG_SWAPYZ2 = "--swapyz";
 
 
 const CCmdlineArgs* gArgs;
@@ -144,6 +139,62 @@ ID3DXMesh* loadMeshFromDMESH( const char* fileName )
 	return mesh;
 }
 
+HRESULT WINAPI gProgressCallback( float percentDone, void* user )
+{
+	printf( "  %3.1f%%...\n", percentDone*100.0f );
+	Sleep( 1 );
+	return S_OK;
+}
+
+
+static ID3DXMesh* maybeCreateUVs( ID3DXMesh* mesh, int texX, int texY )
+{
+	HRESULT hr;
+
+	// TBD: compute atlas not always
+	bool computeAtlas = true;
+	//CD3DXCrackDecl declCrack;
+
+	// get declaration of the mesh, check if has UVs
+	D3DVERTEXELEMENT9 vdecl[MAX_FVF_DECL_SIZE];
+	mesh->GetDeclaration( vdecl );
+	UINT declLen = D3DXGetDeclLength( vdecl );
+
+	if( NULL == GetDeclElement( vdecl, D3DDECLUSAGE_TEXCOORD, 0 ) ) {
+		printf( "adding UV slot to the mesh\n" );
+		// TBD: for now assume there's always space in decl available
+
+		D3DVERTEXELEMENT9 declElem;
+		declElem.Stream = 0;
+		declElem.Type = D3DDECLTYPE_FLOAT2;
+		declElem.Method = D3DDECLMETHOD_DEFAULT;
+		declElem.Usage = D3DDECLUSAGE_TEXCOORD;
+		declElem.UsageIndex = 0;
+
+		AppendDeclElement( &declElem, vdecl );
+
+		// clone the mesh into new declaration
+		ID3DXMesh* newMesh = NULL;
+		hr = mesh->CloneMesh( D3DXMESH_32BIT | D3DXMESH_SYSTEMMEM, vdecl, gD3DDevice.get(), &newMesh );
+		mesh->Release();
+		mesh = newMesh;
+
+		computeAtlas = true; // didn't have UVs - force atlas creation
+	}
+
+	if( computeAtlas ) {
+		printf( "computing UV atlas...\n" );
+		ID3DXMesh* newMesh = NULL;
+		float outMaxStretch;
+		UINT outNumCharts;
+		hr = D3DXUVAtlasCreate( mesh, 0, 0.6667f, texX, texY, 8.0f, 0, NULL, NULL, gProgressCallback, 0.05f, NULL, &newMesh, NULL, NULL, &outMaxStretch, &outNumCharts );
+		mesh->Release();
+		mesh = newMesh;
+	}
+
+	return mesh;
+}
+
 
 static IDirect3DTexture9*	gCreateSignedNormalMap( IDirect3DTexture9* inputNormalMap, bool swapYZ )
 {
@@ -203,12 +254,6 @@ static IDirect3DTexture9*	gCreateSignedNormalMap( IDirect3DTexture9* inputNormal
 }
 
 
-HRESULT WINAPI gPrtCallback( float percentDone, void* user )
-{
-	printf( "  %3.1f%%...\n", percentDone*100.0f );
-	Sleep( 1 );
-	return S_OK;
-}
 
 void WINAPI gFillBlack( D3DXVECTOR4* pOut, const D3DXVECTOR2* pTexCoord, const D3DXVECTOR2* pTexelSize, LPVOID pData )
 {
@@ -220,14 +265,14 @@ static const int SIM_SH_ORDER = 2;
 static const int SIM_SAMPLES = 1024;
 
 
-void processMesh( const char* meshFileName, const char* nmapFileName, bool noNormals, bool swapYZ )
+void processMesh( const char* meshFileName, const char* nmapFileName, int outX, int outY, bool swapYZ )
 {
 	HRESULT hr;
 
 	time_t time1 = clock();
 
-	std::string fileNoExt = stripExtension( nmapFileName );
-	std::string resFile = fileNoExt + "PRT.dds";
+	std::string fileNoExt = stripExtension( nmapFileName ? nmapFileName : meshFileName );
+	std::string resFile = fileNoExt + "AO.dds";
 
 	// load mesh
 	printf( "loading mesh '%s'...\n", meshFileName );
@@ -241,6 +286,26 @@ void processMesh( const char* meshFileName, const char* nmapFileName, bool noNor
 			throw std::runtime_error( "Failed to load mesh" );
 	}
 
+	// load normal map
+	IDirect3DTexture9* normalMap = NULL;
+	if( nmapFileName ) {
+		printf( "loading normal map '%s'...\n", nmapFileName );
+		hr = D3DXCreateTextureFromFileEx(
+			gD3DDevice.get(), nmapFileName, D3DX_DEFAULT, D3DX_DEFAULT, 0, 0, D3DFMT_UNKNOWN,
+			D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &normalMap );
+		if( FAILED(hr) )
+			throw std::runtime_error( "Failed to load texture" );
+		D3DSURFACE_DESC desc;
+		normalMap->GetLevelDesc( 0, &desc );
+
+		// input nmap size overrides output
+		outX = desc.Width;
+		outY = desc.Height;
+	}
+
+	// possibly create UV atlas
+	mesh = maybeCreateUVs( mesh, outX, outY );
+
 	// create PRT engine
 	printf( "creating PRT engine...\n" );
 	ID3DXPRTEngine* prtEngine = NULL;
@@ -248,42 +313,33 @@ void processMesh( const char* meshFileName, const char* nmapFileName, bool noNor
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to create PRT engine" );
 
-	prtEngine->SetCallBack( gPrtCallback, 1.0f / 20.0f, NULL );
+	prtEngine->SetCallBack( gProgressCallback, 1.0f / 20.0f, NULL );
+
+	// set per-texel normals onto PRT engine
+	if( normalMap ) {
+		// construct signed normal map
+		IDirect3DTexture9* signedNormalMap = gCreateSignedNormalMap( normalMap, swapYZ );
+		hr = prtEngine->SetPerTexelNormal( signedNormalMap );
+		if( FAILED(hr) )
+			throw std::runtime_error( "Failed to set per texel normal map" );
+		signedNormalMap->Release();
+	}
 
 	hr = prtEngine->SetSamplingInfo( SIM_SAMPLES, TRUE, FALSE, FALSE, 0.0f );
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to set PRT sampling params" );
 
-	// load normal map
-	printf( "loading normal map '%s'...\n", nmapFileName );
-	IDirect3DTexture9* normalMap = NULL;
-	hr = D3DXCreateTextureFromFileEx(
-		gD3DDevice.get(), nmapFileName, D3DX_DEFAULT, D3DX_DEFAULT, 0, 0, D3DFMT_UNKNOWN,
-		D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &normalMap );
-	if( FAILED(hr) )
-		throw std::runtime_error( "Failed to load texture" );
-	D3DSURFACE_DESC desc;
-	normalMap->GetLevelDesc( 0, &desc );
-
-	// construct signed normal map
-	IDirect3DTexture9* signedNormalMap = gCreateSignedNormalMap( normalMap, swapYZ );
-	if( !noNormals ) {
-		hr = prtEngine->SetPerTexelNormal( signedNormalMap );
-		if( FAILED(hr) )
-			throw std::runtime_error( "Failed to set per texel normal map" );
-	}
-
 	// create PRT buffer
 	printf( "creating PRT buffer...\n" );
 	ID3DXPRTBuffer* prtBuffer = NULL;
-	hr = D3DXCreatePRTBufferTex( desc.Width, desc.Height, SIM_SH_ORDER*SIM_SH_ORDER, 1, &prtBuffer );
+	hr = D3DXCreatePRTBufferTex( outX, outY, SIM_SH_ORDER*SIM_SH_ORDER, 1, &prtBuffer );
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to create PRT buffer" );
 
 	// create texture gutter helper
 	printf( "creating texture gutter...\n" );
 	ID3DXTextureGutterHelper* gutter = NULL;
-	hr = D3DXCreateTextureGutterHelper( desc.Width, desc.Height, mesh, float(desc.Width)/1024*8, &gutter );
+	hr = D3DXCreateTextureGutterHelper( outX, outY, mesh, float(outX)/1024*16, &gutter );
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to create texture gutter" );
 
@@ -310,7 +366,7 @@ void processMesh( const char* meshFileName, const char* nmapFileName, bool noNor
 	// create texture to store results
 	printf( "creating texture for results...\n" );
 	IDirect3DTexture9* prtTexture = NULL;
-	hr = D3DXCreateTexture( gD3DDevice.get(), desc.Width, desc.Height, 1,
+	hr = D3DXCreateTexture( gD3DDevice.get(), outX, outY, 1,
 		0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &prtTexture );
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to create texture" );
@@ -322,29 +378,46 @@ void processMesh( const char* meshFileName, const char* nmapFileName, bool noNor
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to extract to texture" );
 
-	// combine normal map and AO
-	printf( "combining input normal map and AO...\n" );
-	D3DLOCKED_RECT lrNM, lrPRT;
-	normalMap->LockRect( 0, &lrNM, NULL, D3DLOCK_READONLY );
+	// possibly combine normal map and ambient occlusion
+	D3DLOCKED_RECT lrPRT;
 	prtTexture->LockRect( 0, &lrPRT, NULL, 0 );
+	if( nmapFileName ) {
+		printf( "combining input normal map and AO...\n" );
+		D3DLOCKED_RECT lrNM;
+		normalMap->LockRect( 0, &lrNM, NULL, D3DLOCK_READONLY );
 
-	for( int y = 0; y < desc.Height; ++y ) {
-		const DWORD* rowNM = (const DWORD*)( ((char*)lrNM.pBits) + y*lrNM.Pitch );
-		DWORD* rowPRT = (DWORD*)( ((char*)lrPRT.pBits) + y*lrPRT.Pitch );
-		for( int x = 0; x < desc.Width; ++x ) {
-			DWORD n = *rowNM;
-			*rowPRT = ((*rowPRT) << 8) & 0xFF000000;
-			if( swapYZ ) {
-				*rowPRT |= (n&0x00ff0000) | ((n&0x0000ff00)>>8) | ((n&0x000000ff)<<8);
-			} else {
-				*rowPRT |= n & 0x00ffffff;
+		for( int y = 0; y < outY; ++y ) {
+			const DWORD* rowNM = (const DWORD*)( ((char*)lrNM.pBits) + y*lrNM.Pitch );
+			DWORD* rowPRT = (DWORD*)( ((char*)lrPRT.pBits) + y*lrPRT.Pitch );
+			for( int x = 0; x < outX; ++x ) {
+				DWORD n = *rowNM;
+				*rowPRT = ((*rowPRT) << 8) & 0xFF000000;
+				if( swapYZ ) {
+					*rowPRT |= (n&0x00ff0000) | ((n&0x0000ff00)>>8) | ((n&0x000000ff)<<8);
+				} else {
+					*rowPRT |= n & 0x00ffffff;
+				}
+				++rowPRT;
+				++rowNM;
 			}
-			++rowPRT;
-			++rowNM;
 		}
+
+		normalMap->UnlockRect( 0 );
+
+	} else {
+		printf( "filling AO texture...\n" );
+
+		for( int y = 0; y < outY; ++y ) {
+			DWORD* rowPRT = (DWORD*)( ((char*)lrPRT.pBits) + y*lrPRT.Pitch );
+			for( int x = 0; x < outX; ++x ) {
+				DWORD ao = (rowPRT[0] >> 16) & 0xFF;
+				*rowPRT = 0xFF000000 | (ao<<16) | (ao<<8) | ao;
+				++rowPRT;
+			}
+		}
+
 	}
 
-	normalMap->UnlockRect( 0 );
 	prtTexture->UnlockRect( 0 );
 
 	// save texture
@@ -354,12 +427,12 @@ void processMesh( const char* meshFileName, const char* nmapFileName, bool noNor
 		throw std::runtime_error( "Failed to save texture" );
 
 	// cleanup
-	signedNormalMap->Release();
 	gutter->Release();
 	prtTexture->Release();
 	prtBuffer->Release();
 	prtEngine->Release();
-	normalMap->Release();
+	if( normalMap )
+		normalMap->Release();
 	mesh->Release();
 
 	time_t time2 = clock();
@@ -371,9 +444,11 @@ void gPrintUsage()
 {
 	printf( "Usage: executable <options>\n" );
 	printf( "Options:\n" );
-	printf( "  -m or --mesh <filename>      (req) Input mesh file.\n" );
-	printf( "  -n or --normalmap <filename> (req) Input/output normal map.\n" );
-	printf( "  -s or --swapyz               Swap Y/Z of the normal map.\n" );
+	printf( "  -m <filename> Input mesh file.\n" );
+	printf( "  -n <filename> Input/output normal map.\n" );
+	printf( "  -x <width>    Output texture height.\n" );
+	printf( "  -y <width>    Output texture width.\n" );
+	printf( "  -s            Swap Y/Z of the normal map.\n" );
 }
 
 
@@ -383,25 +458,34 @@ int main( int argc, const char** argv )
 		//
 		// init
 
-		if( argc < 4 ) {
-			gPrintUsage();
-			return 0;
-		}
-
 		CCmdlineArgs args( argc, argv );
 		gArgs = &args;
+		const char* meshFileName = gArgs->getString( ARG_MESH );
+		const char* nmapFileName = gArgs->getString( ARG_NORMALMAP );
+		int outputX = gArgs->getInt( -1, ARG_X );
+		int outputY = gArgs->getInt( -1, ARG_Y );
+		bool swapYZ = gArgs->contains( ARG_SWAPYZ );
+
+		bool hadErrors = false;
+		if( !meshFileName ) {
+			printf( "ERROR: input mesh required\n" );
+			hadErrors = true;
+		}
+		if( !nmapFileName && (outputX < 0 && outputY < 0) ) {
+			printf( "ERROR: input normalmap or output width/height required\n" );
+			hadErrors = true;
+		}
+		if( hadErrors ) {
+			gPrintUsage();
+			return 1;
+		}
+
 		initD3D();
 
 		//
 		// process
 
-		const char* meshFileName = gArgs->getString( ARG_MESH, ARG_MESH2 );
-		const char* nmapFileName = gArgs->getString( ARG_NORMALMAP, ARG_NORMALMAP2 );
-		bool noNormals = gArgs->contains( ARG_NONM, ARG_NONM2 );
-		bool swapYZ = gArgs->contains( ARG_SWAPYZ, ARG_SWAPYZ2 );
-		
-		if( meshFileName && nmapFileName )
-			processMesh( meshFileName, nmapFileName, noNormals, swapYZ );
+		processMesh( meshFileName, nmapFileName, outputX, outputY, swapYZ );
 
 		//
 		// close

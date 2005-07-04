@@ -1,3 +1,4 @@
 Changelog of Ambient Occlusion tool
 
 050704: Changed to June 2005 SDK.
+		Adding automatic UV atlas generation for meshes without atlas.

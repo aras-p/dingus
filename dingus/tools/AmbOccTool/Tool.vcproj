@@ -144,6 +144,12 @@
 				RelativePath=".\src\args.h">
 			</File>
 			<File
+				RelativePath=".\src\crackdecl.cpp">
+			</File>
+			<File
+				RelativePath=".\src\crackdecl.h">
+			</File>
+			<File
 				RelativePath=".\src\d3d.cpp">
 			</File>
 			<File
