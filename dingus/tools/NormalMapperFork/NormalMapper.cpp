@@ -21,8 +21,9 @@
 #include "AtiOctree.h"
 #include "AtiTriBoxMoller.h"
 #include "args.h"
+#include <cassert>
 
-static char* versionString =  "NormalMapper v03.02.02 fork 050610\n";
+static char* versionString =  "NormalMapper v03.02.02 fork 050705\n";
 
 //#define USE_SMD_FILES
 
@@ -2609,14 +2610,6 @@ NormalizeImage (float* img, int numComponents)
             img[idx + 0] = (float)iNorm[0];
             img[idx + 1] = (float)iNorm[1];
             img[idx + 2] = (float)iNorm[2];
-            if (gOcclusion)
-            {
-               img[idx + gOcclIdx] = img[idx + gOcclIdx];
-            }
-            if (gDisplacements)
-            {
-               img[idx + gDispIdx] = img[idx + gDispIdx];
-            }
          }
       }
    }
@@ -2642,6 +2635,10 @@ DilateImage (float** img, float** scratch, int numComponents)
       exit (-1);
    }
    NmPrint ("\rFilling borders\n");
+
+   double nn[16];
+   assert( numComponents < 16 );
+
    for (int f = 0; f < gDilateTexels; f++)
    {
       // Loop over the old image and create a new one.
@@ -2657,7 +2654,7 @@ DilateImage (float** img, float** scratch, int numComponents)
                 (fabs((*img)[idx + 2]) <= EPSILON))
             {
                // Accumulate the near filled pixels
-               double nn[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+				memset( &nn, 0, numComponents * sizeof(nn[0]) );
                int ncount = 0;
                int yv;
                int xv;
@@ -2679,18 +2676,9 @@ DilateImage (float** img, float** scratch, int numComponents)
                    (fabs((*img)[nidx + 1]) > EPSILON) ||
                    (fabs((*img)[nidx + 2]) > EPSILON))
                {
-                  nn[0] += (*img)[nidx];
-                  nn[1] += (*img)[nidx+1];
-                  nn[2] += (*img)[nidx+2];
-                  if (gOcclusion)
-                  {
-                     nn[gOcclIdx] += (*img)[nidx + gOcclIdx];
-                  }
-                  if (gDisplacements)
-                  {
-                     nn[gDispIdx] += (*img)[nidx + gDispIdx];
-                  }
-                  ncount++;
+					for( int i = 0; i < numComponents; ++i )
+					   nn[i] += (*img)[nidx+i];
+					ncount++;
                }
                         
                // +Y
@@ -2709,18 +2697,9 @@ DilateImage (float** img, float** scratch, int numComponents)
                    (fabs((*img)[nidx + 1]) > EPSILON) ||
                    (fabs((*img)[nidx + 2]) > EPSILON))
                {
-                  nn[0] += (*img)[nidx];
-                  nn[1] += (*img)[nidx+1];
-                  nn[2] += (*img)[nidx+2];
-                  if (gOcclusion)
-                  {
-                     nn[gOcclIdx] += (*img)[nidx + gOcclIdx];
-                  }
-                  if (gDisplacements)
-                  {
-                     nn[gDispIdx] += (*img)[nidx + gDispIdx];
-                  }
-                  ncount++;
+					for( int i = 0; i < numComponents; ++i )
+					   nn[i] += (*img)[nidx+i];
+					ncount++;
                }
                
                // -X
@@ -2739,18 +2718,9 @@ DilateImage (float** img, float** scratch, int numComponents)
                    (fabs((*img)[nidx + 1]) > EPSILON) ||
                    (fabs((*img)[nidx + 2]) > EPSILON))
                {
-                  nn[0] += (*img)[nidx];
-                  nn[1] += (*img)[nidx+1];
-                  nn[2] += (*img)[nidx+2];
-                  if (gOcclusion)
-                  {
-                     nn[gOcclIdx] += (*img)[nidx + gOcclIdx];
-                  }
-                  if (gDisplacements)
-                  {
-                     nn[gDispIdx] += (*img)[nidx + gDispIdx];
-                  }
-                  ncount++;
+					for( int i = 0; i < numComponents; ++i )
+					   nn[i] += (*img)[nidx+i];
+					ncount++;
                }
                         
                // -X
@@ -2769,65 +2739,31 @@ DilateImage (float** img, float** scratch, int numComponents)
                    (fabs((*img)[nidx + 1]) > EPSILON) ||
                    (fabs((*img)[nidx + 2]) > EPSILON))
                {
-                  nn[0] += (*img)[nidx];
-                  nn[1] += (*img)[nidx+1];
-                  nn[2] += (*img)[nidx+2];
-                  if (gOcclusion)
-                  {
-                     nn[gOcclIdx] += (*img)[nidx + gOcclIdx];
-                  }
-                  if (gDisplacements)
-                  {
-                     nn[gDispIdx] += (*img)[nidx + gDispIdx];
-                  }
-                  ncount++;
+					for( int i = 0; i < numComponents; ++i )
+					   nn[i] += (*img)[nidx+i];
+					ncount++;
                }
                         
                // If we found some neighbors that were filled, fill
                // this one with the average, otherwise copy
                if (ncount > 0)
                {
-                  Normalize (nn);
-                  (*scratch)[idx] = (float)nn[0];
-                  (*scratch)[idx + 1] = (float)nn[1];
-                  (*scratch)[idx + 2] = (float)nn[2];
-                  if (gOcclusion)
-                  {
-                     (*scratch)[idx + gOcclIdx] = ((float)nn[gOcclIdx]/ncount);
-                  }
-                  if (gDisplacements)
-                  {
-                     (*scratch)[idx + gDispIdx] = ((float)nn[gDispIdx]/ncount);
-                  }
+				   Normalize (nn);
+				   for( int j = numComponents+3; j < numComponents; ++j )
+					   nn[j] /= ncount;
+				   for( int i = 0; i < numComponents; ++i )
+					   (*scratch)[idx+i] = (float)nn[i];
                }
                else
                {
-                  (*scratch)[idx] = (*img)[idx];
-                  (*scratch)[idx + 1] = (*img)[idx  + 1];
-                  (*scratch)[idx + 2] = (*img)[idx + 2];
-                  if (gOcclusion)
-                  {
-                     (*scratch)[idx + gOcclIdx] = (*img)[idx + gOcclIdx];
-                  }
-                  if (gDisplacements)
-                  {
-                     (*scratch)[idx + gDispIdx] = (*img)[idx + gDispIdx];
-                  }
+				   for( int i = 0; i < numComponents; ++i )
+					   (*scratch)[idx+i] = (*img)[idx+i];
                }
             } // end if this pixel is empty
             else
             {
-               (*scratch)[idx] = (*img)[idx];
-               (*scratch)[idx + 1] = (*img)[idx + 1];
-               (*scratch)[idx + 2] = (*img)[idx + 2];
-               if (gOcclusion)
-               {
-                  (*scratch)[idx + gOcclIdx] = (*img)[idx + gOcclIdx];
-               }
-               if (gDisplacements)
-               {
-                  (*scratch)[idx + gDispIdx] = (*img)[idx + gDispIdx];
-               }
+			   for( int i = 0; i < numComponents; ++i )
+				   (*scratch)[idx+i] = (*img)[idx+i];
             }
          } // end for x
       } // end for y
@@ -3373,6 +3309,43 @@ WriteOutputImage (char* fName, float* img, int numComponents)
       delete [] outImg;
       NmPrint ("Wrote %s\n", dName);
    } // end if we are writing displacements.
+
+	// if we're resampling a texture, write it out
+	if( gRecastTexture )
+	{
+		// Convert image
+		BYTE* outImg = new BYTE[gWidth*gHeight*4];
+		NmPrint ("\rConverting recast texture to 8x8x8x8 Targa\n");
+		int npixels = gHeight * gWidth;
+		for( int i = 0; i < npixels; ++i ) {
+			int idx = i * numComponents;
+			int oIdx = i * 4;
+			outImg[oIdx + 0] = BYTE(img[idx+0]); //PACKINTOBYTE_0TO1(img[idx+0]);
+			outImg[oIdx + 1] = BYTE(img[idx+1]); //PACKINTOBYTE_0TO1(img[idx+1]);
+			outImg[oIdx + 2] = BYTE(img[idx+2]); //PACKINTOBYTE_0TO1(img[idx+2]);
+			outImg[oIdx + 3] = BYTE(img[idx+3]); //PACKINTOBYTE_0TO1(img[idx+3]);
+		}
+		
+		// Write out image
+		char8 dName[256];
+		sprintf( dName, "%s.cast.tga", fName ); // TBD: the given name
+		FILE* fp = fopen( dName, "wb" );
+		if (fp == NULL)
+		{
+			NmPrint ("ERROR: Unable to open %s\n", dName);
+			exit (-1);
+		}
+		if (TGAWriteImage (fp, gWidth, gHeight, 32, outImg) != true)
+		{
+			NmPrint ("ERROR: Unable to write %s\n", dName);
+			fclose (fp);
+			exit (-1);
+		}
+		fclose (fp);
+		NmPrint ("Wrote %s\n", dName);
+		delete [] outImg;
+	}
+
 } // WriteOutputImage
 
 
@@ -4051,6 +4024,8 @@ main (int argc, char **argv)
                   double sDisplacement = 0.0;
                   int sFound = 0;
                   double aNorm[3] = {0.0, 0.0, 0.0};
+				  double sTexel[4] = {0,0,0,0};
+				  
                   for (int s = 0; s < gNumSamples; s++)
                   {
 #ifdef DEBUG_INTERSECTION
@@ -4145,15 +4120,23 @@ main (int argc, char **argv)
                               sNorm[2] += newNorm[2];
                            }
                            sOcclusion += occlusion;
-                           sFound++;
                         }
                         else
                         {  // Plain old normal map
                            sNorm[0] += newNorm[0];
                            sNorm[1] += newNorm[1];
                            sNorm[2] += newNorm[2];
-                           sFound++;
                         }
+
+						if( gRecastTexture ) {
+							sTexel[0] += newTexel[0];
+							sTexel[1] += newTexel[1];
+							sTexel[2] += newTexel[2];
+							sTexel[3] += newTexel[3];
+						}
+
+                        sFound++;
+
                      } // end if we found a normal
                   } // end for samples (s);
 
@@ -4186,6 +4169,12 @@ main (int argc, char **argv)
                      {
                         img[idx + gDispIdx] = (float)(sDisplacement/sFound);
                      }
+					 if( gRecastTexture ) {
+						 img[idx + gTextureIdx+0] = (float)(sTexel[0]/sFound);
+						 img[idx + gTextureIdx+1] = (float)(sTexel[1]/sFound);
+						 img[idx + gTextureIdx+2] = (float)(sTexel[2]/sFound);
+						 img[idx + gTextureIdx+3] = (float)(sTexel[3]/sFound);
+					 }
                   } // end if we found a normal
                   else if (gEdgeCopy)
                   {
@@ -4309,6 +4298,12 @@ main (int argc, char **argv)
                         {
                            img2[idx + gDispIdx] = (float)(newDisplacement);
                         }
+					    if( gRecastTexture ) {
+							img2[idx + gTextureIdx+0] = (float)(newTexel[0]);
+							img2[idx + gTextureIdx+1] = (float)(newTexel[1]);
+							img2[idx + gTextureIdx+2] = (float)(newTexel[2]);
+							img2[idx + gTextureIdx+3] = (float)(newTexel[3]);
+						}
                      } // end if we found a normal
                      // else don't add anything to either image.
                   } // end else find a "snapped" normal

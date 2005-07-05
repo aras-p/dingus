@@ -1,5 +1,6 @@
 Changelog of ATI's NormalMapper fork
 
+050705: Texture recasting from hi-poly model almost working!
 050610: Remade cmdline arguments from weird one-letter system to "normal" one.
 		Hey, it was running out of available letters!
 050513: Option 'J' swaps Y and Z channels in resulting normal map.
