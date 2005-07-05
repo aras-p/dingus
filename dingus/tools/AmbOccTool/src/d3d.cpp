@@ -18,18 +18,16 @@ void initD3D()
 
 	D3DPRESENT_PARAMETERS params;
 	ZeroMemory( &params, sizeof(params) );
-	params.BackBufferWidth = 400;
-	params.BackBufferHeight = 300;
+	params.BackBufferWidth = 1;
+	params.BackBufferHeight = 1;
 	params.BackBufferFormat = mode.Format;
 	params.BackBufferCount = 1;
-	params.EnableAutoDepthStencil = TRUE;
-	params.AutoDepthStencilFormat = D3DFMT_D24S8;
 	params.Windowed = TRUE;
-	params.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	params.SwapEffect = D3DSWAPEFFECT_COPY;
 
 	IDirect3DDevice9* dev = NULL;
-	if( FAILED( gD3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, GetDesktopWindow(),
-		D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE, &params, &dev ) ) )
+	if( FAILED( gD3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, GetConsoleWindow(),
+		D3DCREATE_HARDWARE_VERTEXPROCESSING, &params, &dev ) ) )
 		throw std::runtime_error("Failed to create D3D device");
 	assert( dev );
 	gD3DDevice = TD3DDevicePtr( dev );

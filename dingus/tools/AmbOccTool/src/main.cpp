@@ -141,12 +141,16 @@ ID3DXMesh* loadMeshFromDMESH( const char* fileName )
 
 HRESULT WINAPI gProgressCallback( float percentDone, void* user )
 {
-	printf( "  %3.1f%%...\n", percentDone*100.0f );
-	Sleep( 1 );
+	static float prevPercent = 0.0f;
+	if( fabsf(percentDone - prevPercent) > 0.1f ) {
+		printf( "  %3.1f%%...\n", percentDone*100.0f );
+		prevPercent = percentDone;
+		//Sleep( 1 );
+	}
 	return S_OK;
 }
 
-
+/*
 static ID3DXMesh* maybeCreateUVs( ID3DXMesh* mesh, int texX, int texY )
 {
 	HRESULT hr;
@@ -183,18 +187,24 @@ static ID3DXMesh* maybeCreateUVs( ID3DXMesh* mesh, int texX, int texY )
 	}
 
 	if( computeAtlas ) {
+		// calculate adjacency
+		DWORD *adj = new DWORD[mesh->GetNumFaces() * 3];
+		mesh->GenerateAdjacency( 1.0e-9f, adj );
+
 		printf( "computing UV atlas...\n" );
 		ID3DXMesh* newMesh = NULL;
 		float outMaxStretch;
 		UINT outNumCharts;
-		hr = D3DXUVAtlasCreate( mesh, 0, 0.6667f, texX, texY, 8.0f, 0, NULL, NULL, gProgressCallback, 0.05f, NULL, &newMesh, NULL, NULL, &outMaxStretch, &outNumCharts );
+		hr = D3DXUVAtlasCreate( mesh, 0, 1.0f / 6.0f, texX, texY, 2.5f, 0, adj, NULL, gProgressCallback, 0.05f, NULL, &newMesh, NULL, NULL, &outMaxStretch, &outNumCharts );
 		mesh->Release();
 		mesh = newMesh;
+
+		delete[] adj;
 	}
 
 	return mesh;
 }
-
+*/
 
 static IDirect3DTexture9*	gCreateSignedNormalMap( IDirect3DTexture9* inputNormalMap, bool swapYZ )
 {
@@ -304,7 +314,7 @@ void processMesh( const char* meshFileName, const char* nmapFileName, int outX, 
 	}
 
 	// possibly create UV atlas
-	mesh = maybeCreateUVs( mesh, outX, outY );
+	//mesh = maybeCreateUVs( mesh, outX, outY );
 
 	// create PRT engine
 	printf( "creating PRT engine...\n" );

@@ -16,6 +16,8 @@
 
 
 // windows
+#define _WIN32_WINNT 0x0500
+
 #ifdef _WINDLL
 
 #define VC_EXTRALEAN
