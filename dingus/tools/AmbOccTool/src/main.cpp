@@ -1,5 +1,6 @@
 #include "d3d.h"
 #include "args.h"
+#include "../../NormalMapperFork/TGAIO.h"
 #include <ctime>
 #include "crackdecl.h"
 
@@ -9,6 +10,7 @@ const char* ARG_NORMALMAP = "-n";
 const char* ARG_X = "-x";
 const char* ARG_Y = "-y";
 const char* ARG_SWAPYZ = "-s";
+const char* ARG_TGA = "-t";
 
 
 const CCmdlineArgs* gArgs;
@@ -274,14 +276,14 @@ static const int SIM_SH_ORDER = 2;
 static const int SIM_SAMPLES = 1024;
 
 
-void processMesh( const char* meshFileName, const char* nmapFileName, int outX, int outY, bool swapYZ )
+void processMesh( const char* meshFileName, const char* nmapFileName, int outX, int outY, bool swapYZ, bool outTGA )
 {
 	HRESULT hr;
 
 	time_t time1 = clock();
 
 	std::string fileNoExt = stripExtension( nmapFileName ? nmapFileName : meshFileName );
-	std::string resFile = fileNoExt + "AO.dds";
+	std::string resFile = fileNoExt + (outTGA ? "ao.tga" : "ao.dds");
 
 	// load mesh
 	printf( "loading mesh '%s'...\n", meshFileName );
@@ -431,9 +433,24 @@ void processMesh( const char* meshFileName, const char* nmapFileName, int outX, 
 
 	// save texture
 	printf( "saving texture '%s'...\n", resFile.c_str() );
-	hr = D3DXSaveTextureToFile( resFile.c_str(), D3DXIFF_DDS, prtTexture, NULL );
-	if( FAILED(hr) )
-		throw std::runtime_error( "Failed to save texture" );
+	if( outTGA ) {
+		// TBD: why the output is flipped???
+		FILE* tgaf = fopen( resFile.c_str(), "wb" );
+		if( !tgaf )
+			throw std::runtime_error( "Failed to create output texture file" );
+		prtTexture->LockRect( 0, &lrPRT, NULL, 0 );
+		if( lrPRT.Pitch != outX*4 )
+			throw std::runtime_error( "TBD: catch the case when texture Pitch != size*4" );
+		if( !TGAWriteImage( tgaf, outX, outY, 32, (BYTE*)lrPRT.pBits ) ) {
+			throw std::runtime_error( "Failed to save TGA texture" );
+		}
+		prtTexture->UnlockRect( 0 );
+		fclose( tgaf );
+	} else {
+		hr = D3DXSaveTextureToFile( resFile.c_str(), D3DXIFF_DDS, prtTexture, NULL );
+		if( FAILED(hr) )
+			throw std::runtime_error( "Failed to save texture" );
+	}
 
 	// cleanup
 	gutter->Release();
@@ -458,6 +475,7 @@ void gPrintUsage()
 	printf( "  -x <width>    Output texture height.\n" );
 	printf( "  -y <width>    Output texture width.\n" );
 	printf( "  -s            Swap Y/Z of the normal map.\n" );
+	printf( "  -t            Output TGA instead of DDS.\n" );
 }
 
 
@@ -474,6 +492,7 @@ int main( int argc, const char** argv )
 		int outputX = gArgs->getInt( -1, ARG_X );
 		int outputY = gArgs->getInt( -1, ARG_Y );
 		bool swapYZ = gArgs->contains( ARG_SWAPYZ );
+		bool outTGA = gArgs->contains( ARG_TGA );
 
 		bool hadErrors = false;
 		if( !meshFileName ) {
@@ -494,7 +513,7 @@ int main( int argc, const char** argv )
 		//
 		// process
 
-		processMesh( meshFileName, nmapFileName, outputX, outputY, swapYZ );
+		processMesh( meshFileName, nmapFileName, outputX, outputY, swapYZ, outTGA );
 
 		//
 		// close

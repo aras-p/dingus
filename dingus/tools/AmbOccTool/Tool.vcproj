@@ -185,6 +185,12 @@
 			<File
 				RelativePath="..\NormalMapperFork\NmFileIO.h">
 			</File>
+			<File
+				RelativePath="..\NormalMapperFork\TGAIO.cpp">
+			</File>
+			<File
+				RelativePath="..\NormalMapperFork\TGAIO.h">
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\changes.txt">
