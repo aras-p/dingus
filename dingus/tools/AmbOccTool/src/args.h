@@ -1,6 +1,9 @@
 #ifndef __ARGS_H
 #define __ARGS_H
 
+#include <string>
+#include <vector>
+
 
 class CCmdlineArgs {
 public:

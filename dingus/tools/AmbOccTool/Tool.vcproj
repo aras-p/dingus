@@ -24,9 +24,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\build/debug/Tool.pch"
+				UsePrecompiledHeader="0"
 				AssemblerListingLocation=".\build/debug/"
 				ObjectFile=".\build/debug/"
 				ProgramDataBaseFileName=".\build/debug/"
@@ -86,9 +84,7 @@
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\build/release/Tool.pch"
+				UsePrecompiledHeader="0"
 				AssemblerListingLocation=".\build/release/"
 				ObjectFile=".\build/release/"
 				ProgramDataBaseFileName=".\build/release/"
@@ -174,28 +170,20 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\stdafx.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\stdafx.h">
-			</File>
-			<File
 				RelativePath=".\src\VertexFormat.cpp">
 			</File>
 			<File
 				RelativePath=".\src\VertexFormat.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="normalmapper"
+			Filter="">
+			<File
+				RelativePath="..\NormalMapperFork\NmFileIO.cpp">
+			</File>
+			<File
+				RelativePath="..\NormalMapperFork\NmFileIO.h">
 			</File>
 		</Filter>
 		<File

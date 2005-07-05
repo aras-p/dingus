@@ -13,6 +13,7 @@
 #define __CRACKDECL_H__
 
 #include <d3dx9.h>
+#include <cassert>
 
 //----------------------------------------------------------------------------
 // CD3DXCrackDecl

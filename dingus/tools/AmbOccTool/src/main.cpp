@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "d3d.h"
 #include "args.h"
 #include <ctime>
@@ -233,10 +232,10 @@ static IDirect3DTexture9*	gCreateSignedNormalMap( IDirect3DTexture9* inputNormal
 	// go through our signed normal map and convert from 0..1 to -1..1 range
 	D3DLOCKED_RECT lr;
 	dstSurf->LockRect( &lr, NULL, 0 );
-	for( int y = 0; y < desc.Height; ++y )
+	for( UINT y = 0; y < desc.Height; ++y )
 	{
 		float* row = (float*)( ((char*)lr.pBits) + y*lr.Pitch );
-		for( int x = 0; x < desc.Width; ++x )
+		for( UINT x = 0; x < desc.Width; ++x )
 		{
 			D3DXVECTOR3 n;
 			n.x = row[0]*2-1;

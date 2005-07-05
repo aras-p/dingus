@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "args.h"
 #include <cstring>
 #include <cstdlib>

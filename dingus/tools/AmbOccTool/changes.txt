@@ -2,5 +2,7 @@ Changelog of Ambient Occlusion tool
 
 050705: Removed automatic UV atlas generation. Not practical with UVAtlas
 		on hi-poly meshes, better do in art package before subdivision.
+		Added dependency to NormalMapperFork source in adjacent directory.
+		Oh well, the tool was intended to use with NormalMapper anyway.
 050704: Changed to June 2005 SDK.
 		Adding automatic UV atlas generation for meshes without atlas.

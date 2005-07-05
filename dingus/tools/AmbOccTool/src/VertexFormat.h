@@ -5,6 +5,7 @@
 #ifndef __VERTEX_FORMAT_H
 #define __VERTEX_FORMAT_H
 
+#include "d3d.h"
 
 namespace dingus {
 
