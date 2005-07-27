@@ -109,7 +109,7 @@ static void gReadReplayMemory( const char* data, int size, CGameReplay& game )
 				eowner -= 1;
 				if( eowner < 0 ) {
 					eowner = game.getPlayerCount()-1;
-					if( ertype!=RENTITY_CELL_W && ertype!=RENTITY_CELL_B ) {
+					if( ertype!=RENTITY_CELL_W && ertype!=RENTITY_CELL_B && ertype!=RENTITY_CUREBOT ) {
 						// if we're computer, then we create w/b cells
 						//ertype = RENTITY_CELL_W;
 						ertype = RENTITY_CELL_B; // TODO: for VS2005 special build, black cells default
