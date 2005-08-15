@@ -39,8 +39,8 @@ SOutput11 vsMain( SPosNTex i ) {
 
 half4 psMain( SOutput11 i ) : COLOR
 {
-	//half4 col = tex2D( smpBase, i.uv );
-	half4 col = 1;
+	half4 col = tex2D( smpBase, i.uv );
+	//half4 col = 1;
 	half shadow = tex2Dproj( smpShadow, i.uvs ).g;
 	return col * i.color * shadow;
 }

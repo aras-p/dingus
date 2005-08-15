@@ -5,9 +5,7 @@
 /** Possible render modes. */
 enum eRenderMode {
 	RM_NORMAL = 0,
-	RM_CASTERSOFT,	// Proposed algorithm
-	RM_CASTERSOFTM,	// Mitchell's algorithm
-	RM_CASTER,		// Standard projected shadow
+	RM_CASTERSOFT,
 	RMCOUNT
 };
 

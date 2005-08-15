@@ -87,8 +87,6 @@ SMatrix4x4		gViewTexProjMat;	// Texture projection matrix for main camera
 static const char* ENTITY_FX[RMCOUNT] = {
 	"entity",
 	"casterSoft",
-	"casterSoftM",
-	"caster",
 };
 
 class CSceneEntity : public CMeshEntity {
@@ -390,25 +388,6 @@ static void gComputeTexProjs()
 
 void gRenderShadowMaps()
 {
-	//
-	// compute tight fitting shadow projection
-
-	/*
-	const CAABox& aabb = gFEMMesh->getAABB();
-	SVector3 target = aabb.getCenter();
-	SVector3 size = aabb.getMax() - aabb.getMin();
-	float radius = size.length() * 0.5f;
-	float dist = SVector3(gLightCam.mWorldMat.getOrigin() - target).length();
-
-	float fov = atan2f( radius, dist ) * 2.0f;
-
-	gLightCam.mWorldMat.getAxisZ() = target - gLightCam.mWorldMat.getOrigin();
-	gLightCam.mWorldMat.getAxisZ().normalize();
-	gLightCam.mWorldMat.spaceFromAxisZ();
-
-	gLightCam.setProjectionParams( fov, 1.0f, 0.1f, 20.0f );
-	*/
-
 	//
 	// render shadow map
 
