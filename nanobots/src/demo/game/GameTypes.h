@@ -6,6 +6,14 @@ enum {
 }; 
 
 
+/// Game states.
+enum eGameState {
+	GST_CONNECTING, ///< Connecting, waiting for game description
+	GST_GAMEINFO,	///< Map, missions, player list, join options
+	GST_GAME,		///< Game itself
+	GST_ENDED,		///< Game finished, show stats
+};
+
 /// Entity types.
 enum eEntityType {
 	ENTITY_NEEDLE = 0,
