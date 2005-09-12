@@ -1,11 +1,11 @@
-#ifndef __GAME_REPLAY_H
-#define __GAME_REPLAY_H
+#ifndef __GAME_STATE_H
+#define __GAME_STATE_H
 
 #include "ReplayEntity.h"
 #include <dingus/math/Vector4.h>
 
 
-class CGameReplay : public boost::noncopyable {
+class CGameState : public boost::noncopyable {
 public:
 	struct SPlayer {
 		std::string	guid;
@@ -18,8 +18,8 @@ public:
 	};
 
 public:
-	CGameReplay();
-	~CGameReplay();
+	CGameState();
+	~CGameState();
 
 	const std::string& getGameMapName() const { return mMapName; }
 	int		getGameRound() const { return mRound; }

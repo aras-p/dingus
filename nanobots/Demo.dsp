@@ -156,23 +156,31 @@ SOURCE=.\src\demo\game\GameColors.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\demo\game\GameReplay.cpp
+SOURCE=.\src\demo\game\GameDesc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\demo\game\GameReplay.h
+SOURCE=.\src\demo\game\GameDesc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\game\GameEntity.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\game\GameEntity.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\game\GameState.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\game\GameState.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\demo\game\GameTypes.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\game\ReplayEntity.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\game\ReplayEntity.h
 # End Source File
 # Begin Source File
 

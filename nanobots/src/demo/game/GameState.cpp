@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "GameReplay.h"
+#include "GameState.h"
 #include "GameColors.h"
 
 
-CGameReplay::CGameReplay()
+CGameState::CGameState()
 :	mPlayerCount(0),
 	mEntityCount(0),
 	mEntities(NULL),
@@ -15,7 +15,7 @@ CGameReplay::CGameReplay()
 {
 }
 
-CGameReplay::~CGameReplay()
+CGameState::~CGameState()
 {
 	if( mEntities ) {
 		for( int i = 0; i < mEntityCount; ++i )
@@ -24,14 +24,14 @@ CGameReplay::~CGameReplay()
 	}
 }
 
-void CGameReplay::setInfo( const std::string mapName, int round, int turnCount )
+void CGameState::setInfo( const std::string mapName, int round, int turnCount )
 {
 	mMapName = mapName;
 	mRound = round;
 	mTurnCount = turnCount;
 }
 
-void CGameReplay::setPlayer( int index, const std::string& guid, const std::string& name, const std::string& country, int finalScore, bool winner )
+void CGameState::setPlayer( int index, const std::string& guid, const std::string& name, const std::string& country, int finalScore, bool winner )
 {
 	assert( index == mPlayerCount );
 	assert( index >= 0 && index < G_MAX_PLAYER_COUNT );
@@ -46,7 +46,7 @@ void CGameReplay::setPlayer( int index, const std::string& guid, const std::stri
 	p.entityAI = 0; // will be set later
 }
 
-void CGameReplay::endPlayers()
+void CGameState::endPlayers()
 {
 	assert( G_MAX_PLAYER_COUNT == 3 );
 	const float CM = 0.50f;
@@ -69,7 +69,7 @@ void CGameReplay::endPlayers()
 	gColors.ptHoshimi.tone.set( 0xFFa03030 );
 }
 
-void CGameReplay::setTotalEntityCount( int ecount )
+void CGameState::setTotalEntityCount( int ecount )
 {
 	assert( !mEntities );
 	assert( ecount > 0 );
@@ -78,7 +78,7 @@ void CGameReplay::setTotalEntityCount( int ecount )
 	memset( mEntities, 0, ecount*sizeof(CReplayEntity*) );
 }
 
-void CGameReplay::setEntity( int index, CReplayEntity* e )
+void CGameState::setEntity( int index, CReplayEntity* e )
 {
 	assert( index >= 0 && index < mEntityCount );
 	assert( e );
