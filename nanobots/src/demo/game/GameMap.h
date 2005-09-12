@@ -1,8 +1,6 @@
 #ifndef __GAME_MAP_H
 #define __GAME_MAP_H
 
-#include <dingus/math/FPU.h>
-
 
 /// Wall-bounding cells have this height. The further from the walls, the higher height.
 const float MIN_CELL_HEIGHT = 1.5f;
@@ -20,6 +18,11 @@ public:
 		D3DCOLOR	colorTone;
 	};
 	
+	struct SMission {
+		std::string	desc;
+		std::vector< std::pair<int,int> > points;
+	};
+	
 	struct SCell {
 		float		height;	// half of floor-ceiling distance
 		eCellType	type;
@@ -31,7 +34,7 @@ public:
 	~CGameMap();
 	
 	/// @return Empty string if ok, error message on error.
-	std::string	initialize( const std::string& fileName, const std::string& mapName );
+	std::string	initialize( const BYTE* mapData );
 
 	static bool isBlood( int type ) { return type < CELL_PERF; }
 
@@ -46,6 +49,7 @@ public:
 	int		getPointCount() const { return mPoints.size(); }
 	const SPoint& getPoint( int i ) const { return mPoints[i]; }
 	void	addInjectionPoint( int player, int x, int y ) { mPoints.push_back( SPoint(PT_INJECTION,x,y,player) ); }
+	void	addObjectivePoint( int mission, int x, int y ) { mPoints.push_back( SPoint(PT_OBJECTIVE,x,y,mission) ); }
 
 	const std::string& getName() const { return mName; }
 	unsigned int getCRC() const { return mCRC; }
@@ -61,6 +65,9 @@ private:
 
 	// Special points
 	std::vector<SPoint>	mPoints;
+
+	std::string				mMissionSummary;
+	std::vector<SMission>	mMissions;
 
 	std::string		mName;	/// Map's name
 	unsigned int	mCRC;	/// CRC 32 of the cells

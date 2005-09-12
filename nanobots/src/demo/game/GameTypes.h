@@ -52,6 +52,7 @@ enum ePointType {
 	PT_AZN = 0,
 	PT_HOSHIMI,
 	PT_INJECTION,	// Is not in the maps
+	PT_OBJECTIVE,	// Part of mission
 	PTCOUNT
 };
 

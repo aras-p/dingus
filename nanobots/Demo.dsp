@@ -172,6 +172,14 @@ SOURCE=.\src\demo\game\GameEntity.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\demo\game\GameMap.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\game\GameMap.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\demo\game\GameState.cpp
 # End Source File
 # Begin Source File
@@ -205,14 +213,6 @@ SOURCE=.\src\demo\map\Collider.h
 # Begin Source File
 
 SOURCE=.\src\demo\map\ColliderMeshSphere.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\map\GameMap.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\map\GameMap.h
 # End Source File
 # Begin Source File
 

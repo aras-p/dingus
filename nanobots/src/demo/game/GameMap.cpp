@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "GameMap.h"
 #include "../GameInfo.h"
-#include "../ZipReader.h"
 #include "../DemoResources.h"
-#include "../game/GameColors.h"
+#include "GameColors.h"
 #include <dingus/utils/Random.h>
 #include <dingus/resource/TextureCreator.h>
 
@@ -27,6 +26,8 @@ CGameMap::SPoint::SPoint( ePointType atype, int ax, int ay, int d )
 		colorMain = gColors.team[data].main.c;
 		colorTone = gColors.team[data].tone.c;
 		break;
+	default:
+		assert( false );
 	}
 }
 
@@ -95,28 +96,54 @@ CGameMap::~CGameMap()
 }
 
 
-std::string CGameMap::initialize( const std::string& fileName, const std::string& mapName )
+static void gReadString( std::string& res, const BYTE*& data )
 {
-	mName = mapName;
+	res = (const char*)data;
+	data += res.length()+1;
+}
+
+static void gReadInt( int& res, const BYTE*& data )
+{
+	res = *(const int*)data;
+	data += 4;
+}
+
+
+std::string CGameMap::initialize( const BYTE* mapData )
+{
 	assert( !mCells );
 
-	//
-	// open zip file
-	
-	unzFile zipFile = unzOpen( fileName.c_str() );
-	if( zipFile == NULL )
-		return "Game map file '" + fileName + "' not found or is corrupt";
+	/*
+	Format of map data:
+
+	string	Tissue Name
+	int32	Tissue Bitmap Length
+	byte[]	Tissue Bitmap (200*200)
+	string	Entites text file
+	string	Streams text file
+	string	Walls text files
+	string	Briefing description
+	byte	Number of missions
+	//for each Mission
+		string	Mission description
+		byte	Number of objective points of the mission
+		//for each objective point
+			byte	X
+			byte	Y
+
+	*/
 
 	//
-	// read level bitmap
+	// parse name
+
+	gReadString( mName, mapData );
+
+	//
+	// read map bitmap
 
 	int bmpSize;
-	char* bmpFile = gReadFileInZip( zipFile, "map.bmp", bmpSize );
-	if( !bmpFile ) {
-		unzClose( zipFile );
-		return "Error in game map file '" + fileName + "' - no cells map";
-	}
-
+	gReadInt( bmpSize, mapData );
+	const char* bmpFile = (const char*)mapData;
 	// compute CRC of the bitmap
 	mCRC = boost::crc<32,0xFFFFFFFF,0,0,false,false>( bmpFile, bmpSize );
 
@@ -125,18 +152,15 @@ std::string CGameMap::initialize( const std::string& fileName, const std::string
 	D3DXIMAGE_INFO bitmapInfo;
 	hr = D3DXGetImageInfoFromFileInMemory( bmpFile, bmpSize, &bitmapInfo );
 	if( FAILED(hr) ) {
-		unzClose( zipFile );
-		return "Error in game map file '" + fileName + "' - incorrect cells map format";
+		return "Error in game map - incorrect tissue bitmap format";
 	}
 	assert( bitmapInfo.Width > 10 && bitmapInfo.Height > 10 );
 	assert( bitmapInfo.Width * bitmapInfo.Height <= 256*256 );
 	if( bitmapInfo.Width < 10 || bitmapInfo.Height < 10 ) {
-		unzClose( zipFile );
-		return "Error in game map file '" + fileName + "' - map is too small";
+		return "Error in game map - map is too small";
 	}
 	if( bitmapInfo.Width * bitmapInfo.Height > 256*256 ) {
-		unzClose( zipFile );
-		return "Error in game map file '" + fileName + "' - map is too large";
+		return "Error in game map - map is too large";
 	}
 
 	mCellsX = bitmapInfo.Width;
@@ -150,8 +174,7 @@ std::string CGameMap::initialize( const std::string& fileName, const std::string
 
 	hr = D3DXLoadSurfaceFromFileInMemory( surface, NULL, NULL, bmpFile, bmpSize, NULL, D3DX_DEFAULT, 0, NULL );
 	if( FAILED(hr) ) {
-		unzClose( zipFile );
-		return "Error in game map file '" + fileName + "' - incorrect cells map format";
+		return "Error in game map - incorrect cells map format";
 	}
 
 	D3DLOCKED_RECT lr;
@@ -177,11 +200,14 @@ std::string CGameMap::initialize( const std::string& fileName, const std::string
 	surface->UnlockRect();
 	surface->Release();
 
-	delete[] bmpFile;
+	mapData += bmpSize;
 
 	//
-	// read special points
+	// read entities
 
+	// TBD: entities, streams, walls, missions
+
+	/*
 	int ptsSize;
 	char* ptsFile = gReadFileInZip( zipFile, "entities.txt", ptsSize );
 	if( !ptsFile ) {
@@ -202,18 +228,14 @@ std::string CGameMap::initialize( const std::string& fileName, const std::string
 	} while( pline = strtok( NULL, tokens ) );
 
 	delete[] ptsFile;
+	*/
 
 	//
-	// close zip file
-
-	unzClose( zipFile );
-
-	//
-	// calc cell heights
-
+	// all is loaded now
+	
+	// calculate cell heights
 	calcCellHeights();
 
-	//
 	// register level texture
 	CSharedTextureBundle::getInstance().registerTexture( RID_TEX_LEVEL, *new CGameMapTextureCreator() );
 
