@@ -1,10 +1,13 @@
 #ifndef __GAME_ENTITY_H
 #define __GAME_ENTITY_H
 
+#include <dingus/utils/ringdeque.h>
 
 
 class CGameEntity {
 public:
+	enum { HISTORY_SIZE = 6*3 };
+
 	/// State info
 	struct SState {
 		short	posx, posy;		// entity position
@@ -39,6 +42,9 @@ private:
 
 	/// The turn entity is born.
 	int		mBornTurn;
+
+	/// Previous states history. Current is [0], previous is [1] etc.
+	ringdeque<SState,HISTORY_SIZE>	mStateHistory;
 };
 
 

@@ -5,7 +5,7 @@
 #include "../DemoResources.h"
 #include <dingus/audio/Sound.h>
 
-class CReplayEntity;
+class CGameEntity;
 
 
 class CActorEntity : public CMeshEntity {
@@ -13,13 +13,13 @@ public:
 	enum { LOD_COUNT = GFX_DETAIL_LEVELS };
 
 public:
-	CActorEntity( const CReplayEntity& re );
+	CActorEntity( const CGameEntity& re );
 	virtual ~CActorEntity();
 
 	void	update();
 	bool	isAlive() const;
 
-	const CReplayEntity& getReplayEntity() const { return *mReplayEntity; }
+	const CGameEntity& getGameEntity() const { return *mGameEntity; }
 	D3DCOLOR	getColorMinimap() const { return mColorMinimap; }
 	D3DCOLOR	getColorBlob() const { return mColorBlob; }
 
@@ -44,7 +44,7 @@ private:
 
 	int		mSoundPlayedTurn;
 
-	const CReplayEntity*	mReplayEntity;
+	const CGameEntity*	mGameEntity;
 	SVector3*	mPositions;
 
 	D3DCOLOR	mColorMinimap;

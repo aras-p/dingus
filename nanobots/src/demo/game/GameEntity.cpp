@@ -15,14 +15,13 @@ CGameEntity::CGameEntity( unsigned short eid, eEntityType type, int owner, int b
 :	mID( eid )
 ,	mType( type )
 ,	mOwner( owner )
+,	mMaxHealth( -1 )
 ,	mBornTurn( bornTurn )
 {
 	assert( type >= 0 && type < ENTITYCOUNT );
 	assert( bornTurn >= 0 );
 
 	mTypeName = ENT_TYPE_NAMES[type];
-
-	//mMaxHealth = mStates[0].health;
 }
 
 CGameEntity::~CGameEntity()
