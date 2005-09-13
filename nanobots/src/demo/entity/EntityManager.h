@@ -3,7 +3,7 @@
 
 #include "ActorEntity.h"
 #include "PointEntity.h"
-#include "../game/GameReplay.h"
+#include "../game/GameState.h"
 #include <dingus/math/Line3.h>
 
 
@@ -48,7 +48,7 @@ private:
 	std::vector<CPointEntity*>	mPointEntities;
 	CAttackEntityManager*		mAttackManager;
 
-	SPlayerStats	mStats[G_MAX_PLAYER_COUNT];
+	SPlayerStats	mStats[G_MAX_PLAYERS];
 
 	int		mLastMouseEntity;
 	int		mSelectedEntity;

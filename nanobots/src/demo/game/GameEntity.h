@@ -27,6 +27,9 @@ public:
 	int		getOwner() const { return mOwner; }
 	int		getMaxHealth() const { return mMaxHealth; }
 
+	bool	isAlive() const { return mState.state != ENTSTATE_DEAD; }
+	const SState& getState() const { return mState; }
+
 private:
 	/// Unique entity's ID
 	int		mID;

@@ -1,41 +1,41 @@
 #include "stdafx.h"
 #include "ActorEntity.h"
-#include "../game/ReplayEntity.h"
-#include "../game/GameReplay.h"
+#include "../game/GameEntity.h"
+#include "../game/GameState.h"
+#include "../game/GameDesc.h"
 #include "../game/GameColors.h"
 #include "../GameInfo.h"
 #include "../map/LevelMesh.h"
-#include "../map/GameMap.h"
 #include "../DemoResources.h"
 #include <dingus/utils/Random.h>
 
 
-CActorEntity::CActorEntity( const CReplayEntity& re )
-:	CMeshEntity( re.getTypeName(), LOD_COUNT ),
+CActorEntity::CActorEntity( const CGameEntity& ge )
+:	CMeshEntity( ge.getTypeName(), LOD_COUNT ),
 	mSoundPlayedTurn(-10),
-	mReplayEntity( &re ),
+	mGameEntity( &ge ),
 	mOutlineTTL(0.0f)
 {
 	const CGameInfo& gi = CGameInfo::getInstance();
 	const CLevelMesh& levelMesh = gi.getLevelMesh();
-	const CGameMap& gmap = gi.getGameMap();
+	const CGameMap& gmap = gi.getGameDesc().getMap();
 
-	eEntityType etype = re.getType();
+	eEntityType etype = ge.getType();
 
 	// set up colors
 	bool ai = (etype == ENTITY_AI);
-	mColorMinimap = ai ? gColors.team[re.getOwner()].main.c : gColors.team[re.getOwner()].tone.c;
+	mColorMinimap = ai ? gColors.team[ge.getOwner()].main.c : gColors.team[ge.getOwner()].tone.c;
 	mColorBlob = mColorMinimap & 0x40ffffff;
 
 	for( int lod = 0; lod < getLodCount(); ++lod ) {
 		TMeshVector* rms = getRenderMeshes(RM_NORMAL,lod);
 		for( int z = 0; z < rms->size(); ++z )
-			(*rms)[z]->getParams().addVector4Ref( "vColor", gColors.team[re.getOwner()].tone.v );
+			(*rms)[z]->getParams().addVector4Ref( "vColor", gColors.team[ge.getOwner()].tone.v );
 	}
 
-	bool	onGround = etype==ENTITY_NEEDLE;
-	bool	onAir = etype != ENTITY_COLLECTOR;
-	bool	onSine = etype==ENTITY_BLOCKER;
+	mOnGround = (etype==ENTITY_NEEDLE) || (etype==ENTITY_NEUROC);
+	mOnAir = (etype!=ENTITY_COLLECTOR) && (etype!=ENTITY_CONTAINER);
+	mOnSine = (etype==ENTITY_BLOCKER);
 
 	if( etype == ENTITY_NEEDLE ) {
 		mHealthBarDY =  1.3f;
@@ -51,15 +51,14 @@ CActorEntity::CActorEntity( const CReplayEntity& re )
 		mOutlineDY = 0.0f;
 	}
 
-	float	height;
-	if( onSine )
-		height = -0.6f;
-	else if( onAir )
-		height = gRandom.getFloat( -0.2f, 0.2f );
+	if( mOnSine )
+		mBaseAltitude = -0.6f;
+	else if( mOnAir )
+		mBaseAltitude = gRandom.getFloat( -0.2f, 0.2f );
 	else
-		height = gRandom.getFloat( -0.6f, -0.4f );
+		mBaseAltitude = gRandom.getFloat( -0.6f, -0.4f );
 
-
+	/*
 	int i;
 	int n = re.getAliveTurns();
 
@@ -114,6 +113,7 @@ CActorEntity::CActorEntity( const CReplayEntity& re )
 
 	mPositions = pos0;
 	delete[] pos1;
+	*/
 
 	// sounds
 	mSndAttack = new CSound( *RGET_SOUND(CSoundDesc("Attack",false)) );
@@ -131,19 +131,14 @@ CActorEntity::CActorEntity( const CReplayEntity& re )
 
 CActorEntity::~CActorEntity()
 {
-	delete[] mPositions;
+	//delete[] mPositions;
 	delete mSndAttack;
 	delete mSndBirth;
 	safeDelete( mSndInjured );
 }
 
 
-bool CActorEntity::isAlive() const
-{
-	float t = CGameInfo::getInstance().getTime();
-	return mReplayEntity->isAlive( t );
-}
-
+/*
 SVector3 CActorEntity::samplePos( float t ) const
 {
 	int n = mReplayEntity->getAliveTurns();
@@ -165,12 +160,14 @@ SVector3 CActorEntity::samplePos( float t ) const
 	D3DXVec3CatmullRom( &pos, &mPositions[turn0], &mPositions[turn1], &mPositions[turn2], &mPositions[turn3], alpha );
 	return pos;
 }
+*/
+
 
 void CActorEntity::update()
 {
-	float t = CGameInfo::getInstance().getTime();
+	//float t = CGameInfo::getInstance().getTime();
 	
-	bool alive = mReplayEntity->isAlive( t );
+	bool alive = mGameEntity->isAlive();
 	if( alive ) {
 		// fade out the outline
 		float dt = CSystemTimer::getInstance().getDeltaTimeS();
@@ -178,18 +175,22 @@ void CActorEntity::update()
 		if( mOutlineTTL < 0.0f )
 			mOutlineTTL = 0.0f;
 
-		float t0 = t + 2.1f;
+		//float t0 = t + 2.1f;
 
 		SMatrix4x4& m = mWorldMat;
-		SVector3 pos = samplePos( t );
-		//SVector3 dir = (samplePos( t0 ) + samplePos( t1 ) + samplePos( t2 )) - pos*3;
+		/*SVector3 pos = samplePos( t );
 		SVector3 dir = samplePos( t0 ) - pos;
 		if( dir.lengthSq() < 1.0e-6f )
 			dir = m.getAxisZ();
 		else
 			dir.normalize();
+		*/
+		// TBD
+		const CGameEntity::SState& st = mGameEntity->getState();
+		SVector3 pos = SVector3(st.posx,0,st.posy);
+		SVector3 dir(0,0,1);
 
-		if( mReplayEntity->getType() == ENTITY_BLOCKER ) {
+		if( mGameEntity->getType() == ENTITY_BLOCKER ) {
 			double tt = CSystemTimer::getInstance().getTimeS();
 			D3DXMatrixRotationY( &m, tt * 0.2f );
 			m.getOrigin() = pos;
@@ -220,6 +221,8 @@ void CActorEntity::updateSounds( bool dead )
 		return;
 	}
 
+	// TBD
+	/*
 	float t = CGameInfo::getInstance().getTime();
 	int turn = int(t);
 	float turnA = t - turn;
@@ -269,5 +272,6 @@ void CActorEntity::updateSounds( bool dead )
 			mSndInjured->start();
 		}
 	}
+	*/
 }
 
