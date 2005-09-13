@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "GameInfo.h"
-#include "map/GameMap.h"
+//#include "map/GameMap.h"
 #include "map/LevelMesh.h"
 #include "map/PointsMesh.h"
-#include "game/GameReplay.h"
-#include "game/ReplayReader.h"
+//#include "game/GameReplay.h"
+//#include "game/ReplayReader.h"
+#include "game/GameDesc.h"
+#include "game/GameState.h"
 #include "entity/EntityManager.h"
 #include "MinimapRenderer.h"
 #include "EntityInfoRenderer.h"
@@ -33,6 +35,7 @@ void CGameInfo::finalize()
 // --------------------------------------------------------------------------
 //  multi-step initialization
 
+/*
 const char* CGameInfo::initBegin()
 {
 	return "Loading replay...";
@@ -100,18 +103,22 @@ const char* CGameInfo::initStep()
 	assert( false ); // shouldn't get here...
 	return NULL;
 }
+*/
 
 
-CGameInfo::CGameInfo( const char* replayFile )
-:	mTime( 0.0f ),
-	mReplay(NULL),
-	mGameMap(NULL),
-	mLevelMesh(NULL),
+CGameInfo::CGameInfo( const char* server, int port )
+:	mServerName(server)
+,	mServerPort(port)
+//:	mTime( 0.0f ),
+//	mReplay(NULL),
+//	mGameMap(NULL),
+,	mGameDesc(NULL)
+,	mState(NULL)
+.	mLevelMesh(NULL),
 	mPointsMesh(NULL),
 	mMinimapRenderer(NULL), mEntityBlobsRenderer(NULL), mEntityInfoRenderer(NULL),
 	mEntities(NULL)
 {
-	mReplayFile = replayFile;
 }
 
 

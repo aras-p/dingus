@@ -2,7 +2,7 @@
 #define __POINT_ENTITY_H
 
 #include "MeshEntity.h"
-#include "../map/GameMap.h"
+#include "../game/GameMap.h"
 
 
 class CPointEntity : public CMeshEntity {

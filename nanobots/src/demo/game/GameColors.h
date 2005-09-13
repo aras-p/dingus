@@ -31,7 +31,7 @@ struct SColorSet {
 
 
 struct SColors {
-	SColorSet	team[G_MAX_PLAYERS+1];
+	SColorSet	team[G_MAX_PLAYERS];
 	SColorSet	ptAZN;
 	SColorSet	ptHoshimi;
 };

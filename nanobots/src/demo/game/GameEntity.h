@@ -6,7 +6,7 @@
 
 class CGameEntity {
 public:
-	enum { HISTORY_SIZE = 6*3 };
+	//enum { HISTORY_SIZE = 6*3 };
 
 	/// State info
 	struct SState {
@@ -43,8 +43,9 @@ private:
 	/// The turn entity is born.
 	int		mBornTurn;
 
+	SState	mState;
 	/// Previous states history. Current is [0], previous is [1] etc.
-	ringdeque<SState,HISTORY_SIZE>	mStateHistory;
+	//ringdeque<SState,HISTORY_SIZE>	mStateHistory;
 };
 
 

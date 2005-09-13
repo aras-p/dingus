@@ -5,6 +5,7 @@
 #include "GameColors.h"
 #include <dingus/utils/Random.h>
 #include <dingus/resource/TextureCreator.h>
+#include "../ByteUtils.h"
 
 #include <boost/crc.hpp>
 
@@ -96,18 +97,6 @@ CGameMap::~CGameMap()
 }
 
 
-static void gReadString( std::string& res, const BYTE*& data )
-{
-	res = (const char*)data;
-	data += res.length()+1;
-}
-
-static void gReadInt( int& res, const BYTE*& data )
-{
-	res = *(const int*)data;
-	data += 4;
-}
-
 
 std::string CGameMap::initialize( const BYTE* mapData )
 {
@@ -136,13 +125,12 @@ std::string CGameMap::initialize( const BYTE* mapData )
 	//
 	// parse name
 
-	gReadString( mName, mapData );
+	mName = bu::readStr( mapData );
 
 	//
 	// read map bitmap
 
-	int bmpSize;
-	gReadInt( bmpSize, mapData );
+	int bmpSize = bu::readInt( mapData );
 	const char* bmpFile = (const char*)mapData;
 	// compute CRC of the bitmap
 	mCRC = boost::crc<32,0xFFFFFFFF,0,0,false,false>( bmpFile, bmpSize );

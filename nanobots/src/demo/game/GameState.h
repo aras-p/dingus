@@ -18,9 +18,13 @@ public:
 		int		aiID;
 	};
 
+	typedef std::map<int,CGameEntity*>	TEntityMap;
+
 public:
 	CGameState();
 	~CGameState();
+
+	void updateState( const BYTE* data );
 
 	//int		getEntityCount() const { return mEntityCount; }
 	//const CReplayEntity& getEntity( int index ) const { return *mEntities[index]; }
@@ -32,6 +36,7 @@ public:
 
 private:
 	SPlayer		mPlayers[G_MAX_PLAYERS];
+	TEntityMap	mEntities;
 };
 
 

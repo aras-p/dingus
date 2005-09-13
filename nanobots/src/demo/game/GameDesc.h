@@ -2,6 +2,7 @@
 #define __GAME_DESC_H
 
 #include "GameTypes.h"
+#include "GameMap.h"
 
 
 class CGameDesc : public boost::noncopyable {
@@ -16,6 +17,7 @@ public:
 	CGameDesc();
 	~CGameDesc();
 
+	const CGameMap& getMap() const { return mMap; }
 	const std::string& getMapName() const { return mMapName; }
 	int		getTurnCount() const { return mTurnCount; }
 
@@ -31,7 +33,8 @@ public:
 	//void	endPlayers();
 
 private:
-	int			mPlayerCount; // players count (not incl. AI)
+	CGameMap	mMap;
+	int			mPlayerCount; // players count (incl AI)
 	SPlayer		mPlayers[G_MAX_PLAYERS];
 
 	std::string	mMapName;

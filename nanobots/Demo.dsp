@@ -296,6 +296,10 @@ SOURCE=.\src\demo\net\NetMessages.h
 # End Group
 # Begin Source File
 
+SOURCE=.\src\demo\ByteUtils.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\demo\Demo.cpp
 # End Source File
 # Begin Source File

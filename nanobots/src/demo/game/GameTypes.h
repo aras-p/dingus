@@ -2,7 +2,7 @@
 #define __GAME_TYPES_H
 
 enum {
-	G_MAX_PLAYERS = 2,	///< 2 players
+	G_MAX_PLAYERS = 3,	///< 2 players and computer. Indices are: 0=computer, 1&2=players
 }; 
 
 
@@ -34,6 +34,7 @@ enum eEntityState {
 	ENTSTATE_COLLECT,
 	ENTSTATE_TRANSFER,
 	ENTSTATE_BUILD,
+	ENTSTATE_DEAD, ///< Used only internally by the viewer
 	ENTSTATECOUNT
 };
 

@@ -2,7 +2,7 @@
 #include "PointEntity.h"
 #include "../GameInfo.h"
 #include "../game/GameColors.h"
-#include "../game/GameReplay.h"
+#include "../game/GameDesc.h"
 #include <dingus/utils/Random.h>
 
 
@@ -18,7 +18,7 @@ CPointEntity::CPointEntity( const CGameMap::SPoint& point )
 	mTimeOffset( gRandom.getFloat(0,10) ),
 	mPoint( &point )
 {
-	const CGameMap& gmap = CGameInfo::getInstance().getGameMap();
+	const CGameMap& gmap = CGameInfo::getInstance().getGameDesc().getMap();
 
 	D3DXMatrixRotationY( &mWorldMat, gRandom.getFloat(0,D3DX_PI*2) );
 	mWorldMat.getOrigin().x =  point.x;
@@ -52,6 +52,8 @@ CPointEntity::~CPointEntity()
 void CPointEntity::update()
 {
 	// if we're Hoshimi - go through all needles and see if any stands on me
+	// TBD
+	/*
 	if( mPoint->type == PT_HOSHIMI ) {
 		float t = CGameInfo::getInstance().getTime();
 		const CGameReplay& replay = CGameInfo::getInstance().getReplay();
@@ -69,6 +71,7 @@ void CPointEntity::update()
 			}
 		}
 	}
+	*/
 	double t = CSystemTimer::getInstance().getTimeS() - mTimeOffset;
 	mColor.w = mAlphaBase + cosf( t + sinf( t * 2.1f ) ) * mAlphaAmpl;
 }
