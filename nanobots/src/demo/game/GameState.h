@@ -16,6 +16,9 @@ public:
 		int		score;
 		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs;
 		int		aiID;
+		// stats
+		int		aliveCount;				// alive entity count
+		int		counts[ENTITYCOUNT];	// alive entity counts by type
 	};
 
 	typedef std::map<int,CGameEntity*>	TEntityMap;
@@ -26,8 +29,9 @@ public:
 
 	void updateState( const BYTE* data );
 
-	//int		getEntityCount() const { return mEntityCount; }
-	//const CReplayEntity& getEntity( int index ) const { return *mEntities[index]; }
+	int getEntityCount() const { return mEntities.size(); }
+	TEntityMap::const_iterator entitiesBegin() const { return mEntities.begin(); }
+	TEntityMap::const_iterator entitiesEnd() const { return mEntities.end(); }
 
 	//bool	isSinglePlayer() const { return mPlayerCount==2; }
 	//bool	isComputerPlayer( int index ) const { return index == mPlayerCount-1; }

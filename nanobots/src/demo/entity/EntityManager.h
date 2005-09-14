@@ -14,13 +14,8 @@ namespace dingus {
 
 class CEntityManager {
 public:
-	/// Player statistics at some time instance
-	struct SPlayerStats {
-		int		score;					// score
-		int		aliveCount;				// alive entity count
-		int		counts[ENTITYCOUNT];	// alive entity counts by type
-	};
-	
+	typedef std::map<int,CActorEntity*>	TActorEntityMap;
+
 public:
 	CEntityManager();
 	~CEntityManager();
@@ -32,26 +27,24 @@ public:
 
 	void	renderLabels( CUIDialog& dlg, bool thirdPerson );
 
-	const SPlayerStats& getStats( int index ) const { return mStats[index]; }
-
-	int		getSelectedEntity() const { return mSelectedEntity; }
-	void	setSelectedEntity( int i ) { mSelectedEntity = i; }
+	int		getSelectedEntityID() const { return mSelectedEntityID; }
+	void	setSelectedEntityID( int i ) { mSelectedEntityID = i; }
 	
-	const CActorEntity& getActorEntity( int i ) const { return *mActorEntities[i]; }
+	const CActorEntity* getActorEntityByID( int id ) const {
+		TActorEntityMap::const_iterator it = mActorEntities.find( id );
+		return (it==mActorEntities.end()) ? NULL : it->second;
+	}
 
 private:
-	int		getCollidedEntity( const SLine3& ray ) const;
+	int		getCollidedEntityID( const SLine3& ray ) const;
 
 private:
-	std::vector<CActorEntity*>	mActorEntities;
-	std::vector<char>			mNeedleOnHoshimi;
+	TActorEntityMap				mActorEntities;
 	std::vector<CPointEntity*>	mPointEntities;
 	CAttackEntityManager*		mAttackManager;
 
-	SPlayerStats	mStats[G_MAX_PLAYERS];
-
-	int		mLastMouseEntity;
-	int		mSelectedEntity;
+	int		mLastMouseEntityID;
+	int		mSelectedEntityID;
 };
 
 

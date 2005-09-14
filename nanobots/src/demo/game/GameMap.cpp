@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "GameMap.h"
-#include "../GameInfo.h"
 #include "../DemoResources.h"
 #include "GameColors.h"
 #include <dingus/utils/Random.h>
@@ -36,7 +35,9 @@ CGameMap::SPoint::SPoint( ePointType atype, int ax, int ay, int d )
 
 class CGameMapTextureCreator : public CFixedTextureCreator {
 public:
-	CGameMapTextureCreator() : CFixedTextureCreator( 256, 256, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED )
+	CGameMapTextureCreator( const CGameMap& gmap )
+	:	CFixedTextureCreator( 256, 256, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED )
+	,	mGameMap( &gmap )
 	{
 	}
 
@@ -45,19 +46,18 @@ public:
 
 		// create the offscreen surface
 		HRESULT hr;
-		const CGameMap& gmap = CGameInfo::getInstance().getGameMap();
 		CD3DDevice& dx = CD3DDevice::getInstance();
 		IDirect3DSurface9* srcSurf = 0;
-		hr = dx.getDevice().CreateOffscreenPlainSurface( gmap.getCellsX(), gmap.getCellsY(), D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, &srcSurf, NULL );
+		hr = dx.getDevice().CreateOffscreenPlainSurface( mGameMap->getCellsX(), mGameMap->getCellsY(), D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, &srcSurf, NULL );
 		assert( SUCCEEDED(hr) );
 
 		D3DLOCKED_RECT lr;
 		srcSurf->LockRect( &lr, NULL, D3DLOCK_DISCARD );
 		const char* linePtr = (const char*)lr.pBits;
-		for( int y = 0; y < gmap.getCellsY(); ++y ) {
+		for( int y = 0; y < mGameMap->getCellsY(); ++y ) {
 			D3DCOLOR* p = (D3DCOLOR*)linePtr;
-			for( int x = 0; x < gmap.getCellsX(); ++x ) {
-				const CGameMap::SCell& cell = gmap.getCell(x,y);
+			for( int x = 0; x < mGameMap->getCellsX(); ++x ) {
+				const CGameMap::SCell& cell = mGameMap->getCell(x,y);
 				switch( cell.type ) {
 				case CELL_BLOOD1:	*p = 0xFF400000; break;
 				case CELL_BLOOD2:	*p = 0xFF300000; break;
@@ -81,6 +81,9 @@ public:
 		D3DXFilterTexture( tex, NULL, 0, D3DX_FILTER_BOX );
 		return tex;
 	}
+
+private:
+	const CGameMap* mGameMap;
 };
 
 
@@ -225,7 +228,7 @@ std::string CGameMap::initialize( const BYTE* mapData )
 	calcCellHeights();
 
 	// register level texture
-	CSharedTextureBundle::getInstance().registerTexture( RID_TEX_LEVEL, *new CGameMapTextureCreator() );
+	CSharedTextureBundle::getInstance().registerTexture( RID_TEX_LEVEL, *new CGameMapTextureCreator( *this ) );
 
 	return ""; // all ok!
 }

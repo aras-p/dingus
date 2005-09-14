@@ -15,9 +15,6 @@ Package=<4>
     Project_Dep_Name dingus
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name zlib
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name OPCODE
     End Project Dependency
 }}}
@@ -37,18 +34,6 @@ Package=<4>
 ###############################################################################
 
 Project: "dingus"=..\dingus\dingus.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "zlib"=.\SRC\EXTERN\ZLIB\WIN32\zlib.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -190,14 +190,6 @@ SOURCE=.\src\demo\game\GameState.h
 
 SOURCE=.\src\demo\game\GameTypes.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\game\ReplayReader.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\game\ReplayReader.h
-# End Source File
 # End Group
 # Begin Group "map"
 
@@ -341,14 +333,6 @@ SOURCE=.\src\demo\MinimapRenderer.cpp
 # Begin Source File
 
 SOURCE=.\src\demo\MinimapRenderer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\ZipReader.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\ZipReader.h
 # End Source File
 # End Group
 # Begin Group "system"

@@ -3,8 +3,6 @@
 //#include "map/GameMap.h"
 #include "map/LevelMesh.h"
 #include "map/PointsMesh.h"
-//#include "game/GameReplay.h"
-//#include "game/ReplayReader.h"
 #include "game/GameDesc.h"
 #include "game/GameState.h"
 #include "entity/EntityManager.h"
@@ -20,10 +18,10 @@ std::string gErrorMsg = "";
 
 CGameInfo* CGameInfo::mSingleInstance = 0;
 
-void CGameInfo::initialize( const char* replayFile )
+void CGameInfo::initialize( const char* server, int port )
 {
 	assert( !mSingleInstance );
-	mSingleInstance = new CGameInfo( replayFile );
+	mSingleInstance = new CGameInfo( server, port );
 }
 
 void CGameInfo::finalize()
@@ -114,7 +112,7 @@ CGameInfo::CGameInfo( const char* server, int port )
 //	mGameMap(NULL),
 ,	mGameDesc(NULL)
 ,	mState(NULL)
-.	mLevelMesh(NULL),
+,	mLevelMesh(NULL),
 	mPointsMesh(NULL),
 	mMinimapRenderer(NULL), mEntityBlobsRenderer(NULL), mEntityInfoRenderer(NULL),
 	mEntities(NULL)
@@ -132,6 +130,6 @@ CGameInfo::~CGameInfo()
 	
 	safeDelete( mPointsMesh );
 	safeDelete( mLevelMesh );
-	safeDelete( mReplay );
-	safeDelete( mGameMap );
+	safeDelete( mState );
+	safeDelete( mGameDesc );
 }

@@ -2,7 +2,8 @@
 #include "EntityManager.h"
 #include "AttackEntity.h"
 #include "../GameInfo.h"
-#include "../map/GameMap.h"
+#include "../game/GameState.h"
+#include "../game/GameDesc.h"
 #include "../MinimapRenderer.h"
 #include "../EntityInfoRenderer.h"
 #include "../game/GameColors.h"
@@ -15,17 +16,18 @@ const float OUTLINE_TTL = 0.25f;
 
 
 CEntityManager::CEntityManager()
-:	mLastMouseEntity(-1),
-	mSelectedEntity(-1)
+:	mLastMouseEntityID(-1),
+	mSelectedEntityID(-1)
 {
-
 	mAttackManager = new CAttackEntityManager();
+
+	CGameInfo& gi = CGameInfo::getInstance();
+	const CGameDesc& desc = gi.getGameDesc();
+	const CGameMap& gmap = desc.getMap();
 
 	int i, n;
 
-	CGameInfo& gi = CGameInfo::getInstance();
-	const CGameReplay& replay = gi.getReplay();
-	CGameMap& gmap = gi.getGameMap();
+	/*
 
 	// actor entities
 	n = replay.getEntityCount();
@@ -49,43 +51,45 @@ CEntityManager::CEntityManager()
 			}
 		}
 	}
+	*/
 
 	// add injection points
-	int nplayers = replay.getPlayerCount();
+	/*
+	int nplayers = desc.getPlayerCount();
 	for( i = 0; i < nplayers; ++i ) {
-		const CReplayEntity::SState& s = replay.getEntity( replay.getPlayer(i).entityAI ).getTurnState(0);
+		const CGameEntity::SState& s = replay.getEntity( replay.getPlayer(i).entityAI ).getTurnState(0);
 		gmap.addInjectionPoint( i, s.posx, s.posy );
 	}
+	*/
 	// point entities
 	n = gmap.getPointCount();
 	mPointEntities.resize( n );
 	for( i = 0; i < n; ++i ) {
 		mPointEntities[i] = new CPointEntity( gmap.getPoint(i) );
 	}
-
-	memset( &mStats, 0, sizeof(mStats) );
 }
 
 CEntityManager::~CEntityManager()
 {
-	stl_utils::wipe( mActorEntities );
+	stl_utils::wipe_map( mActorEntities );
 	stl_utils::wipe( mPointEntities );
 	delete mAttackManager;
 }
 
 void CEntityManager::onMouseClick()
 {
-	mSelectedEntity = mLastMouseEntity;
+	mSelectedEntityID = mLastMouseEntityID;
 }
 
 void CEntityManager::update( const SLine3& mouseRay )
 {
-	int i, n;
+	//int i, n;
 
+	/*
 	// check mouse intersection
-	mLastMouseEntity = getCollidedEntity( mouseRay );
-	if( mLastMouseEntity != -1 ) {
-		mActorEntities[mLastMouseEntity]->setOutline( OUTLINE_TTL );
+	mLastMouseEntityID = getCollidedEntityID( mouseRay );
+	if( mLastMouseEntityID != -1 ) {
+		mActorEntities[mLastMouseEntityID]->setOutline( OUTLINE_TTL );
 	}
 
 	const CGameReplay& replay = CGameInfo::getInstance().getReplay();
@@ -134,11 +138,13 @@ void CEntityManager::update( const SLine3& mouseRay )
 	// set max. outline for selected entity
 	if( mSelectedEntity != -1 )
 		mActorEntities[mSelectedEntity]->setOutline( OUTLINE_TTL );
+	*/
 }
 
 
 void CEntityManager::renderMinimap()
 {
+	/*
 	CGameInfo& gi = CGameInfo::getInstance();
 	float t = gi.getTime();
 	int turn = (int)t;
@@ -175,11 +181,13 @@ void CEntityManager::renderMinimap()
 	}
 	minir.endEntities();
 	minir.render();
+	*/
 }
 
 
 void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson )
 {
+	/*
 	CGameInfo& gi = CGameInfo::getInstance();
 	float t = gi.getTime();
 	int turn = (int)t;
@@ -280,11 +288,13 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	for( i = 0; i < n; ++i ) {
 		mPointEntities[i]->renderPoint( rm );
 	}
+	*/
 }
 
 
 void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 {
+	/*
 	if( !gAppSettings.drawAznCollector && !gAppSettings.drawAznNeedle )
 		return;
 
@@ -369,20 +379,20 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 		itoa( s.azn, buf, 10 );
 		dlg.drawText( buf, &textElem, &textRC, false );
 	}
+	*/
 }
 
 
-int CEntityManager::getCollidedEntity( const SLine3& ray ) const
+int CEntityManager::getCollidedEntityID( const SLine3& ray ) const
 {
 	int index = -1;
 	float minDist = DINGUS_BIG_FLOAT;
 
-	int i;
-	int n = mActorEntities.size();
-	for( i = 0; i < n; ++i ) {
-		CActorEntity& e = *mActorEntities[i];
-		if( !e.isAlive() )
-			continue;
+	TActorEntityMap::const_iterator it, itEnd = mActorEntities.end();
+	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
+		const CActorEntity& e = *it->second;
+		//if( !e.isAlive() ) // TBD
+		//	continue;
 		const SVector3& pos = e.mWorldMat.getOrigin();
 		if( ray.project( pos ) < 0.0f )
 			continue;
@@ -390,7 +400,7 @@ int CEntityManager::getCollidedEntity( const SLine3& ray ) const
 			continue;
 		float dist2 = SVector3(pos-ray.pos).lengthSq();
 		if( dist2 < minDist ) {
-			index = i;
+			index = it->first;
 			minDist = dist2;
 		}
 	}
