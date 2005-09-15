@@ -13,6 +13,8 @@ namespace net {
 		NMSG_GAME_DESC = 50,
 	};
 
+	void	testConn();
+	void	reqGameDesc();
 };
 
 

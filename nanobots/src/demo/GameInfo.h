@@ -30,14 +30,14 @@ public:
 	/**
 	 *  Multi-step initialization start. Returns the first step's name.
 	 */
-	//const char* initBegin();
+	const char* initBegin();
 
 	/**
 	 *  Multi-step initialization. Performs a step and returns next step's
 	 *  description.
 	 *  @return Step description or NULL if no more steps left.
 	 */
-	//const char* initStep();
+	const char* initStep();
 
 	const CGameDesc& getGameDesc() const { return *mGameDesc; }
 	CGameDesc& getGameDesc() { return *mGameDesc; }

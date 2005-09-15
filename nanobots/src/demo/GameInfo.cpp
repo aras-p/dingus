@@ -8,6 +8,7 @@
 #include "entity/EntityManager.h"
 #include "MinimapRenderer.h"
 #include "EntityInfoRenderer.h"
+#include "net/NetInterface.h"
 
 
 std::string gErrorMsg = "";
@@ -33,16 +34,33 @@ void CGameInfo::finalize()
 // --------------------------------------------------------------------------
 //  multi-step initialization
 
-/*
 const char* CGameInfo::initBegin()
 {
-	return "Loading replay...";
+	return "Connecting to server...";
 	gErrorMsg = "";
 }
 
 const char* CGameInfo::initStep()
 {
 	gErrorMsg = "";
+
+	// connect to server?
+	if( !net::isConnected() ) {
+		try {
+			net::initialize( mServerName.c_str(), mServerPort );
+		} catch( const net::ENetException& e ) {
+			gErrorMsg = e.what();
+			return NULL;
+		}
+		return "Requesting game desc...";
+	}
+
+	// request game desc?
+	if( !mGameDesc ) {
+		
+	}
+
+	/*
 
 	// load replay?
 	if( !mReplay ) {
@@ -68,10 +86,12 @@ const char* CGameInfo::initStep()
 	}
 	assert( mGameMap );
 
+	*/
+
 	// calculate level mesh?
 	if( !mLevelMesh ) {
 		// TBD: error processing
-		mLevelMesh = new CLevelMesh( *mGameMap );
+		mLevelMesh = new CLevelMesh( mGameDesc->getMap() );
 		return "Initializing level points mesh...";
 	}
 	assert( mLevelMesh );
@@ -79,7 +99,7 @@ const char* CGameInfo::initStep()
 	// calculate level points mesh?
 	if( !mPointsMesh ) {
 		// TBD: error processing
-		mPointsMesh = new CPointsMesh( *mGameMap, *mLevelMesh );
+		mPointsMesh = new CPointsMesh( mGameDesc->getMap(), *mLevelMesh );
 		return "Creating renderers...";
 	}
 	assert( mPointsMesh );
@@ -101,7 +121,6 @@ const char* CGameInfo::initStep()
 	assert( false ); // shouldn't get here...
 	return NULL;
 }
-*/
 
 
 CGameInfo::CGameInfo( const std::string& server, int port )

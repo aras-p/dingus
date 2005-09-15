@@ -10,6 +10,7 @@ namespace net {
 
 	void	initialize( const char* serverName, int serverPort );
 	void	shutdown();
+	bool	isConnected();
 	
 	bool	receive( const unsigned char*& data, int& size );
 	void	send( const void* data, int size );

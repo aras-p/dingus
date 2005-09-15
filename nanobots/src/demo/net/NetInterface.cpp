@@ -75,6 +75,12 @@ void net::shutdown()
 }
 
 
+bool net::isConnected()
+{
+	return commSocket != INVALID_SOCKET;
+}
+
+
 bool net::receive( const unsigned char*& data, int& size )
 {
 	assert( commSocket != INVALID_SOCKET );

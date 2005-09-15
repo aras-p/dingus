@@ -1120,10 +1120,10 @@ void CDemo::perform()
 
 			BEGIN_T();
 			
-			//initStepName = gi.initBegin(); // TBD
+			initStepName = gi.initBegin();
 			gInitMainStarted = true;
 		} else if( !gInitMainDone ) {
-			//initStepName = gi.initStep(); // TBD
+			initStepName = gi.initStep();
 			if( !initStepName ) {
 				initStepName = "Initializing GUI...";
 				gInitMainDone = true;
@@ -1136,6 +1136,9 @@ void CDemo::perform()
 			END_T( "initialization" );
 			
 			return;
+		}
+		if( initStepName ) {
+			CONS << "Init step " << initStepName << endl;
 		}
 		// check for init errors...
 		if( !gErrorMsg.empty() ) {
