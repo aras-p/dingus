@@ -9,6 +9,7 @@
 #include "MinimapRenderer.h"
 #include "EntityInfoRenderer.h"
 #include "net/NetInterface.h"
+#include "net/NetMessages.h"
 
 
 std::string gErrorMsg = "";
@@ -57,7 +58,7 @@ const char* CGameInfo::initStep()
 
 	// request game desc?
 	if( !mGameDesc ) {
-		
+		net::testConn(); // TBD
 	}
 
 	/*

@@ -55,6 +55,10 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
 # ADD LINK32 d3dx9.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib d3d9.lib winmm.lib ../dingus/lib/lua.lib dinput8.lib dxguid.lib dsound.lib version.lib ws2_32.lib /nologo /subsystem:windows /machine:I386 /out:"CodeANDPlay3D.exe"
 # SUBTRACT LINK32 /debug
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=xcopy /Y CodeAndPlay3D.exe builds\server\demo9\viewers
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "Demo - Win32 Debug"
 
@@ -81,6 +85,10 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 d3dx9dt.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib d3d9.lib winmm.lib ../dingus/lib/lua.lib dinput8.lib dxguid.lib dsound.lib version.lib ws2_32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"CodeANDPlay3D_d.exe" /pdbtype:sept
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=xcopy /Y CodeAndPlay3D.exe builds\server\demo9\viewers
+# End Special Build Tool
 
 !ENDIF 
 
@@ -280,6 +288,10 @@ SOURCE=.\src\demo\net\NetInterface.cpp
 # Begin Source File
 
 SOURCE=.\src\demo\net\NetInterface.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\net\NetMessages.cpp
 # End Source File
 # Begin Source File
 

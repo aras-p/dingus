@@ -3,6 +3,7 @@
 
 
 namespace net {
+	extern CConsoleChannel& NETCONS;
 
 	struct ENetException : public std::runtime_error {
 		ENetException( const std::string& msg ) : runtime_error(msg) { }

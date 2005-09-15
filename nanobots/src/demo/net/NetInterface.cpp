@@ -3,8 +3,9 @@
 #include <winsock.h>
 
 
+CConsoleChannel& net::NETCONS = CConsole::getChannel("net");
+
 namespace {
-	CConsoleChannel& NETCONS = CConsole::getChannel("net");
 
 	SOCKET		commSocket = INVALID_SOCKET;
 	sockaddr_in	sockAddr;
@@ -85,23 +86,30 @@ bool net::receive( const unsigned char*& data, int& size )
 {
 	assert( commSocket != INVALID_SOCKET );
 
-	int bytes = ::recv( commSocket, (char*)recvBuffer, MAX_RECV_BUFFER, 0 );
-	if( bytes <= 0 ) {
-		size = 0;
-		data = 0;
+	int totalBytes = 0;
+	while(true) {
 
-		int wsaErr = WSAGetLastError();
-		if( wsaErr == WSAEWOULDBLOCK ) {
-			// no data available yet
+		int bytes = ::recv( commSocket, (char*)recvBuffer+totalBytes, MAX_RECV_BUFFER-totalBytes, 0 );
+		if( bytes == 0 )
+			break;
+		if( bytes < 0 ) {
+			// error or no more data
+			size = 0;
+			data = 0;
+			int wsaErr = WSAGetLastError();
+			if( wsaErr == WSAEWOULDBLOCK ) {
+				// no more data
+				break;
+			}
+			// TBD: throw?
+			NETCONS << "receive() error " << wsaErr << endl;
 			return false;
 		}
-		// TBD: throw?
-		NETCONS << "receive error " << wsaErr << endl;
-		return false;
+		totalBytes += bytes;
+		::Sleep(10);
 	}
 
-	// we have received something
-	size = bytes;
+	size = totalBytes;
 	data = recvBuffer;
 	return true;
 }
@@ -112,7 +120,7 @@ void net::send( const void* data, int size )
 	assert( INVALID_SOCKET != commSocket );
 	int res = ::send( commSocket, (const char*)data, size, 0 );
 	if( res <= 0 ) {
-		NETCONS << "sent failed: " << res << endl;
+		NETCONS << "send failed: " << res << endl;
 	} else if( res != size ) {
 		NETCONS << "sent only " << res << " bytes instead of " << size << endl;
 	}

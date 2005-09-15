@@ -18,9 +18,9 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR lpCmdLine, INT )
 		//MessageBox( 0, "Supply the server name and port in the command line!", "Error", MB_OK );
 		//return 0;
 
-		// assume localhost:8000
-		strcpy( serverName, "localhost" );
-		serverPort = 8000;
+		// assume localhost:9000
+		strcpy( serverName, "169.254.15.187" ); // TBD: this is only for me!
+		serverPort = 9000;
 	}
 	try {
 		CDemo* demo = new CDemo( serverName, serverPort );
