@@ -15,8 +15,12 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR lpCmdLine, INT )
 	sscanf( lpCmdLine, "%s %i", serverName, &serverPort );
 
 	if( serverName[0] == 0 || serverPort == 0 ) {
-		MessageBox( 0, "Supply the server name and port in the command line!", "Error", MB_OK );
-		return 0;
+		//MessageBox( 0, "Supply the server name and port in the command line!", "Error", MB_OK );
+		//return 0;
+
+		// assume localhost:8000
+		strcpy( serverName, "localhost" );
+		serverPort = 8000;
 	}
 	try {
 		CDemo* demo = new CDemo( serverName, serverPort );
