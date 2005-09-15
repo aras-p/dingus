@@ -1137,13 +1137,14 @@ void CDemo::perform()
 			
 			return;
 		}
-		if( initStepName ) {
-			CONS << "Init step " << initStepName << endl;
-		}
 		// check for init errors...
 		if( !gErrorMsg.empty() ) {
+			CONS << "Fatal error: " << gErrorMsg << endl;
 			gFinished = true;
 			return;
+		}
+		if( initStepName ) {
+			CONS << "Init step: " << initStepName << endl;
 		}
 		// render progress
 		assert( initStepName );

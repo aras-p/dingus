@@ -6,7 +6,7 @@
 namespace {
 	CConsoleChannel& NETCONS = CConsole::getChannel("net");
 
-	SOCKET		commSocket = 0;
+	SOCKET		commSocket = INVALID_SOCKET;
 	sockaddr_in	sockAddr;
 	in_addr		serverAddr;
 	std::string serverAddrString;
