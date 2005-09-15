@@ -89,6 +89,7 @@ bool net::receive( const unsigned char*& data, int& size )
 	int totalBytes = 0;
 	while(true) {
 
+		::Sleep(10); // TBD
 		int bytes = ::recv( commSocket, (char*)recvBuffer+totalBytes, MAX_RECV_BUFFER-totalBytes, 0 );
 		if( bytes == 0 )
 			break;
@@ -106,7 +107,6 @@ bool net::receive( const unsigned char*& data, int& size )
 			return false;
 		}
 		totalBytes += bytes;
-		::Sleep(10);
 	}
 
 	size = totalBytes;

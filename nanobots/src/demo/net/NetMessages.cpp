@@ -8,10 +8,17 @@ using namespace net;
 /*
 Message types:
 2 = TestConnection
-3 = SendGameState
+3 = SendGameDesc
 5 = ??? (len=2, 5 0)
 6 = Looks like GameData (len=33, 20 23 38 201 65 136 199 8 0 0 2 0 0 0 9 108 111 103 80 105 101 114 114 101 1 0 0 0 0 0 0 0)
 */
+
+enum eMessage {
+	NMSG_ERROR = 0,
+	NMSG_TEST_CONN = 2,
+	NMSG_REQ_GAME_DESC = 3,
+};
+
 
 static void gFetchResponse()
 {
@@ -33,7 +40,7 @@ static void gFetchResponse()
 	}
 }
 
-void net::testConn()
+static void gTestStuff()
 {
 	int MSGS[] = { 2, 3, 6 };
 	int COUNT = sizeof(MSGS) / sizeof(MSGS[0]);
@@ -46,4 +53,43 @@ void net::testConn()
 		net::send( &msg, 1 );
 		gFetchResponse();
 	}
+}
+
+
+bool net::testConn()
+{
+	NETCONS << "Connection protocol test" << endl;
+	// send
+	BYTE msg;
+	msg = NMSG_TEST_CONN;
+	net::send( &msg, sizeof(msg) );
+	// receive
+	BYTE* data;
+	int size;
+	net::receive( data, size );
+	if( size != 3 ||
+		data[0] != NMSG_TEST_CONN ||
+		data[1] != 1 || data[2] != 0 )
+		return false;
+
+	return true;
+}
+
+
+bool net::getGameDesc()
+{
+	NETCONS << "Fetch game description" << endl;
+	// send
+	BYTE msg;
+	msg = NMSG_REQ_GAME_DESC;
+	net::send( &msg, sizeof(msg) );
+	// receive
+	BYTE* data;
+	int size;
+	net::receive( data, size );
+	if( data[0] != NMSG_REQ_GAME_DESC )
+		return false;
+
+	gTestStuff();
+	return true;
 }

@@ -58,7 +58,17 @@ const char* CGameInfo::initStep()
 
 	// request game desc?
 	if( !mGameDesc ) {
-		net::testConn(); // TBD
+		bool connOk = net::testConn();
+		if( !connOk	) {
+			gErrorMsg = "Wrong connection protocol";
+			return NULL;
+		}
+		bool descOk = net::getGameDesc();
+		if( !descOk	) {
+			gErrorMsg = "Failed to get game description";
+			return NULL;
+		}
+		// TBD
 	}
 
 	/*
