@@ -18,7 +18,7 @@ std::string gErrorMsg = "";
 
 CGameInfo* CGameInfo::mSingleInstance = 0;
 
-void CGameInfo::initialize( const char* server, int port )
+void CGameInfo::initialize( const std::string& server, int port )
 {
 	assert( !mSingleInstance );
 	mSingleInstance = new CGameInfo( server, port );
@@ -104,7 +104,7 @@ const char* CGameInfo::initStep()
 */
 
 
-CGameInfo::CGameInfo( const char* server, int port )
+CGameInfo::CGameInfo( const std::string& server, int port )
 :	mServerName(server)
 ,	mServerPort(port)
 //:	mTime( 0.0f ),

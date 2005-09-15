@@ -18,7 +18,8 @@
 
 
 #include "GameInfo.h"
-#include "game/GameReplay.h"
+#include "game/GameState.h"
+#include "game/GameDesc.h"
 #include "map/LevelMesh.h"
 #include "map/PointsMesh.h"
 #include "entity/EntityManager.h"
@@ -31,7 +32,9 @@ const char* RMODE_PREFIX[RMCOUNT] = {
 	"normal/",
 };
 
-std::string	gReplayFile;
+std::string	gServerName;
+int			gServerPort;
+
 
 int			gGlobalCullMode;	// global cull mode
 SVector4	gScreenFixUVs;		// UV fixes for fullscreen quads
@@ -53,9 +56,10 @@ SAppSettings	gAppSettings;
 
 // --------------------------------------------------------------------------
 
-CDemo::CDemo( const std::string& replayFile )
+CDemo::CDemo( const std::string& serverName, int serverPort )
 {
-	gReplayFile = replayFile;
+	gServerName = serverName;
+	gServerPort = serverPort;
 }
 
 bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProcessing vproc, CD3DEnumErrors& errors )
@@ -219,7 +223,7 @@ CSound*	gSndHeart;
 const int	GID_CHK_MEGAMAP = 1001;
 const int	GID_ROL_MINIMAP = 1002;
 const int	GID_ROL_STATS = 1003;
-const int	GID_SLD_TIME = 1004;
+//const int	GID_SLD_TIME = 1004; // TBD
 const int	GID_SLD_ZOOM = 1005;
 const int	GID_SLD_TILT = 1006;
 const int	GID_ROL_ESTATS = 1007;
@@ -227,13 +231,13 @@ const int	GID_ROL_ESTATS = 1007;
 const int	GID_CHK_OPTIONS = 1050;
 const int	GID_CHK_HELP = 1051;
 
-const int	GID_BTN_SELAI1 = 1100;
-const int	GID_BTN_SELAI2 = 1101;
+//const int	GID_BTN_SELAI1 = 1100; // TBD
+//const int	GID_BTN_SELAI2 = 1101;
 
 const int	GID_CHK_AZN_NEED = 1110;
 const int	GID_CHK_AZN_COLL = 1111;
 
-const int	GID_BTN_PLAY = 1200;
+//const int	GID_BTN_PLAY = 1200; // TBD
 
 
 CUIDialog*		gUIDlg;
@@ -252,10 +256,10 @@ CUIRollout*		gUIRollMinimap;
 CUIStatic*		gUILabelTime;
 CUIStatic*		gUILabelFPS;
 
-CUIButton*		gUIBtnTimeRew;
-CUIButton*		gUIBtnTimePlay;
-CUIButton*		gUIBtnTimeFfwd;
-CUISlider*		gUISliderTime;
+//CUIButton*		gUIBtnTimeRew; // TBD
+//CUIButton*		gUIBtnTimePlay;
+//CUIButton*		gUIBtnTimeFfwd;
+//CUISlider*		gUISliderTime;
 
 CUIStatic*		gUILabelZoom;
 CUISlider*		gUISliderZoom;
@@ -277,8 +281,7 @@ struct SUIPlayerStats {
 	CUIStatic*	cntExp;
 	CUIStatic*	cntBlock;
 };
-SUIPlayerStats	gUIPlayerStats[G_MAX_PLAYER_COUNT];
-CUIStatic*		gUIWCStats;
+SUIPlayerStats	gUIPlayerStats[G_MAX_PLAYERS];
 
 CUIStatic*		gUIEStType;
 CUIStatic*		gUIEStLifetime;
@@ -290,8 +293,9 @@ CUIStatic*		gUIEStAZN;
 static void gSetPlayMode( bool play )
 {
 	gPlayMode = play;
-	gUIBtnTimePlay->getElement(0)->textureRect.left = play ? 32 : 128;
-	gUIBtnTimePlay->getElement(0)->textureRect.right = play ? 64 : 160;
+	// TBD
+	//gUIBtnTimePlay->getElement(0)->textureRect.left = play ? 32 : 128;
+	//gUIBtnTimePlay->getElement(0)->textureRect.right = play ? 64 : 160;
 }
 
 
@@ -301,6 +305,8 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 
 	switch( evt ) {
 	case UIEVENT_BUTTON_CLICKED:
+		/*
+		// TBD
 		switch( ctrlID ) {
 		case GID_BTN_PLAY:
 			gSetPlayMode( !gPlayMode );
@@ -312,6 +318,7 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 			gi.getEntities().setSelectedEntity( gi.getReplay().getPlayer(1).entityAI );
 			break;
 		}
+		*/
 		break;
 	case UIEVENT_CHECKBOX_CHANGED:
 		{
@@ -399,10 +406,12 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 		{
 			CUISlider* sld = (CUISlider*)ctrl;
 			switch( ctrlID ) {
+			/* // TBD
 			case GID_SLD_TIME:
 				gi.setTime( sld->getValue() );
 				gSetPlayMode( false );
 				break;
+			*/
 			case GID_SLD_ZOOM:
 				{
 					int oldSldVal = gAppSettings.megaZoom * 10;
@@ -453,8 +462,8 @@ const int UIHLAB = 14;
 static void	gSetupGUI()
 {
 	const CGameInfo& gi = CGameInfo::getInstance();
-	const CGameReplay& replay = gi.getReplay();
-	int nplayers = replay.getPlayerCount()-1;
+	const CGameDesc& desc = gi.getGameDesc();
+	int nplayers = desc.getPlayerCount();
 
 	// stats
 	{
@@ -465,11 +474,11 @@ static void	gSetupGUI()
 		gUIDlg->addRollout( GID_ROL_STATS, "Stats (S)", 0, sy, 130, UIHROL, 30 + nplayers*3*UIHLAB, true, 'S', false, &gUIRollStats );
 		// map name
 		gUIDlg->addStatic( 0,
-			("Map: "+replay.getGameMapName()).c_str(), 5, sy += UIHLAB, 120, UIHLAB, false, &label );
+			("Map: "+desc.getMapName()).c_str(), 5, sy += UIHLAB, 120, UIHLAB, false, &label );
 		UISTATS_LABEL;
 		// player stats
 		for( int p = 0; p < nplayers; ++p ) {
-			const CGameReplay::SPlayer& pl = replay.getPlayer(p);
+			const CGameDesc::SPlayer& pl = desc.getPlayer(p);
 			SUIPlayerStats& plui = gUIPlayerStats[p];
 			// name
 			std::string plstring = "P";
@@ -516,12 +525,6 @@ static void	gSetupGUI()
 			UISTATS_RLABEL;
 			plui.cntBlock = label;
 		}
-		// white cell stats
-		gUIDlg->addStatic( 0, "WC:", 5, sy += UIHLAB, 20, UIHLAB, false, &label );
-		UISTATS_LABEL;
-		gUIDlg->addStatic( 0, "??", 25, sy, 15, UIHLAB, false, &label );
-		UISTATS_RLABEL;
-		gUIWCStats = label;
 	}
 	// selected entity stats
 	{
@@ -582,7 +585,9 @@ static void	gSetupGUI()
 	}
 	// time controls
 	{
-		CUIButton* btn;
+		//CUIButton* btn;
+		/*
+		// TBD
 		gUIDlg->addButton( 0, "", 285-22*1, 440, 22, 22, 0, false, &btn );
 		SetRect( &btn->getElement(0)->textureRect, 64, 413, 96, 443 );
 		gUIBtnTimeRew = btn;
@@ -594,21 +599,24 @@ static void	gSetupGUI()
 		gUIDlg->addButton( 0, "", 355+22*1, 440, 22, 22, 0, false, &btn );
 		SetRect( &btn->getElement(0)->textureRect, 96, 413, 128, 443 );
 		gUIBtnTimeFfwd = btn;
+		*/
 		
 		gUIDlg->addStatic( 0, "foo", 289, 440, 62, 22, false, &gUILabelTime );
 		gUILabelTime->getElement(0)->setFont( 1, false, DT_RIGHT | DT_VCENTER );
 
-		gUIDlg->addSlider( GID_SLD_TIME, 285-22, 462, 355-285+22*3, UIHCTL, 0, gi.getReplay().getGameTurnCount()-1, 0, false, &gUISliderTime );
+		// TBD
+		//gUIDlg->addSlider( GID_SLD_TIME, 285-22, 462, 355-285+22*3, UIHCTL, 0, gi.getReplay().getGameTurnCount()-1, 0, false, &gUISliderTime );
 		
 		gUIDlg->addStatic( 0, "", 3, 480-UIHLAB-1, 100, UIHLAB, false, &gUILabelFPS );
-		//gUILabelFPS->getElement(0)->setFont( 0, false, DT_RIGHT | DT_VCENTER );
 	}
 	// other
 	{
+		/* // TBD
 		gUIDlg->addButton( GID_BTN_SELAI1, "Sel AI1 (1)", 2, 300, 60, UIHLAB, '1' );
 		gUIDlg->addButton( GID_BTN_SELAI2, "Sel AI2 (2)", 2, 316, 60, UIHLAB, '2' );
 		if( nplayers < 2 )
 			gUIDlg->getButton(GID_BTN_SELAI2)->setEnabled( false );
+		*/
 		
 		gUIDlg->addCheckBox( GID_CHK_AZN_NEED, "AZN Needles", 2, 332, 90, UIHCTL, gAppSettings.drawAznNeedle, 0, false, NULL );
 		gUIDlg->addCheckBox( GID_CHK_AZN_COLL, "AZN Collectors", 2, 348, 90, UIHCTL, gAppSettings.drawAznCollector, 0, false, NULL );
@@ -660,6 +668,8 @@ static void gProbablyInitSettings()
 
 static void gInitiallyPlaceViewer()
 {
+	// TBD
+	/*
 	const CGameInfo& gi = CGameInfo::getInstance();
 	const CGameMap& gmap = gi.getGameMap();
 	const CGameReplay& replay = gi.getReplay();
@@ -672,7 +682,9 @@ static void gInitiallyPlaceViewer()
 	const int XOFF[4] = { 2, 2, -2, -2 };
 	const int YOFF[4] = { 2, -2, 2, -2 };
 	const float ROT[4] = { D3DX_PI/4*7, D3DX_PI/4*5, D3DX_PI/4*1, D3DX_PI/4*3 };
+	*/
 	gViewer.identify();
+	/*
 	gViewer.getOrigin().set( posx, VIEWER_Y, -posy );
 	for( int i = 0; i < 4; ++i ) {
 		int px = posx+XOFF[i];
@@ -684,6 +696,7 @@ static void gInitiallyPlaceViewer()
 			break;
 		}
 	}
+	*/
 	gLastViewerValidPos = gViewer.getOrigin();
 
 	gViewerVel.set(0,0,0);
@@ -726,7 +739,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// game
 
-	CGameInfo::initialize( gReplayFile.c_str() );
+	CGameInfo::initialize( gServerName, gServerPort );
 
 	// GUI
 	gUIDlg = new CUIDialog();
@@ -829,7 +842,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 		dturn = 3.0f * dt;
 	}
 
-	float gameTime = CGameInfo::getInstance().getTime();
+	//float gameTime = CGameInfo::getInstance().getTime(); // TBD
 
 	if( event.getType() == CKeyEvent::EVENT_TYPE ) {
 		const CKeyEvent& ke = (const CKeyEvent&)event;
@@ -843,12 +856,10 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
 				gShowStats = !gShowStats;
 			break;
-		/*
-		case DIK_SPACE:
-			if( ke.getMode() == CKeyEvent::KEY_PRESSED )
-				gPlayMode = !gPlayMode;
-			break;
-		*/
+		//case DIK_SPACE:
+		//	if( ke.getMode() == CKeyEvent::KEY_PRESSED )
+		//		gPlayMode = !gPlayMode;
+		//	break;
 		case DIK_LEFT:
 			if( ctrlPressed ) {
 				SVector3 newPos = gViewer.getOrigin() - gViewer.getAxisX() * dmove;
@@ -879,6 +890,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 				gTryPositionViewer( newPos, newPos );
 			}
 			break;
+		/* TBD
 		case DIK_COMMA:
 			gameTime -= TURNS_PER_SEC * TIME_SPD_NORMAL * dt;
 			gSetPlayMode( false );
@@ -886,7 +898,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 		case DIK_PERIOD:
 			gameTime += TURNS_PER_SEC * TIME_SPD_NORMAL * dt;
 			gSetPlayMode( false );
-			break;
+			break; */
 		case DIK_PRIOR:
 			if( !gAppSettings.followMode ) {
 				gAppSettings.megaZoom += dt * 40;
@@ -918,12 +930,15 @@ void CDemo::onInputEvent( const CInputEvent& event )
 		}
 	}
 
+	/*
+	TBD
 	if( gameTime < 0 )
 		gameTime = 0;
 	if( gameTime > CGameInfo::getInstance().getReplay().getGameTurnCount()-1 )
 		gameTime = CGameInfo::getInstance().getReplay().getGameTurnCount()-1;
 	gUISliderTime->setValue( gameTime );
 	CGameInfo::getInstance().setTime( gameTime );
+	*/
 }
 
 void CDemo::onInputStage()
@@ -984,13 +999,12 @@ static const char* UIST_TYPENAMES[ENTITYCOUNT] = {
 	"Explorer",
 	"Collector",
 	"AI",
-	"CureBot",
-	"Pilot",
+	"Container",
+	"NeuroCtrl",
 	"Blocker",
-	"WCell",
-	"BCell",
 };
 
+/* TBD
 static void gUpdateSelEntityStats()
 {
 	char buf[200];
@@ -1058,7 +1072,7 @@ static void gUpdateSelEntityStats()
 	}
 	oldSelIdx = selIdx;
 }
-
+*/
 
 
 #include <time.h>
@@ -1092,7 +1106,9 @@ void CDemo::perform()
 	gScreenFixUVs.set( 0.5f/dx.getBackBufferWidth(), 0.5f/dx.getBackBufferHeight(), 0.0f, 0.0f );
 
 	CGameInfo& gi = CGameInfo::getInstance();
-	const CGameMap& gmap = gi.getGameMap();
+	const CGameDesc& desc = gi.getGameDesc();
+	const CGameState& state = gi.getState();
+	const CGameMap& gmap = desc.getMap();
 
 	//
 	// should we still perform some initialization steps?
@@ -1104,10 +1120,10 @@ void CDemo::perform()
 
 			BEGIN_T();
 			
-			initStepName = gi.initBegin();
+			//initStepName = gi.initBegin(); // TBD
 			gInitMainStarted = true;
 		} else if( !gInitMainDone ) {
-			initStepName = gi.initStep();
+			//initStepName = gi.initStep(); // TBD
 			if( !initStepName ) {
 				initStepName = "Initializing GUI...";
 				gInitMainDone = true;
@@ -1136,8 +1152,6 @@ void CDemo::perform()
 		dx.sceneEnd();
 		return;
 	}
-
-	const CGameReplay& replay = gi.getReplay();
 
 	//
 	// check if settings dialog just was closed
@@ -1186,6 +1200,8 @@ void CDemo::perform()
 	//
 	// control time
 
+	// TBD
+	/*
 	float gameTime = gi.getTime();
 	float oldGameTime = gameTime;
 	if( gUIBtnTimeRew->isPressed() )
@@ -1206,10 +1222,13 @@ void CDemo::perform()
 	gUISliderTime->setValue( gameTime );
 	gUIDlg->enableNonUserEvents( true );
 	gi.setTime( gameTime );
+	*/
 
 	//
 	// camera
 
+	// TBD
+	/*
 	int selEntityIdx = gi.getEntities().getSelectedEntity();
 	bool hasSelected = (selEntityIdx != -1);
 	if( hasSelected ) {
@@ -1253,6 +1272,7 @@ void CDemo::perform()
 		gViewerVel.set(0,0,0);
 		gViewerZVel.set(0,0,0);
 	}
+	*/
 
 	//
 	// check if current viewer's position is valid
@@ -1313,6 +1333,8 @@ void CDemo::perform()
 	gi.getEntities().update( mouseRay );
 	
 	// stats UI
+	// TBD
+	/*
 	int nplayers = replay.getPlayerCount()-1;
 	for( int p = 0; p < nplayers; ++p ) {
 		const CEntityManager::SPlayerStats& plstats = gi.getEntities().getStats( p );
@@ -1339,6 +1361,7 @@ void CDemo::perform()
 	// time UI
 	sprintf( buf, "%i", (int)CGameInfo::getInstance().getTime() );
 	gUILabelTime->setText( buf );
+	*/
 	sprintf( buf, "fps: %.1f", dx.getStats().getFPS() );
 	gUILabelFPS->setText( buf );
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PointsMesh.h"
 #include "LevelMesh.h"
-#include "GameMap.h"
+#include "../game/GameMap.h"
 #include "../game/GameColors.h"
 
 #include <dingus/resource/MeshCreator.h>

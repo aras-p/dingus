@@ -8,7 +8,7 @@
  */
 class CDemo : public CSystem, public IInputListener {
 public:
-	CDemo( const std::string& replayFile );
+	CDemo( const std::string& serverName, int serverPort );
 
 	// IDingusApplication
 	virtual bool checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProcessing vproc, CD3DEnumErrors& errors );

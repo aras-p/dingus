@@ -2,21 +2,24 @@
 
 #include "../demo/Demo.h"
 #include <dingus/app/DingusSystem.h>
-#include <dingus/utils/StringHelper.h>
 
 extern std::string gErrorMsg;
 
 
 INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR lpCmdLine, INT )
 {
-	std::string arg = lpCmdLine;
-	CStringHelper::trimString( arg );
-	if( arg.empty() ) {
-		MessageBox( 0, "Supply the name of replay file in the command line!", "Error", MB_OK );
+	char serverName[1000];
+	int serverPort = 0;
+	serverName[0] = 0;
+
+	sscanf( lpCmdLine, "%s %i", serverName, &serverPort );
+
+	if( serverName[0] == 0 || serverPort == 0 ) {
+		MessageBox( 0, "Supply the server name and port in the command line!", "Error", MB_OK );
 		return 0;
 	}
 	try {
-		CDemo* demo = new CDemo( arg );
+		CDemo* demo = new CDemo( serverName, serverPort );
 		CDingusSystem* system = new CDingusSystem( *demo );
 		if( SUCCEEDED( system->create( hInst, false ) ) )
 			system->run();

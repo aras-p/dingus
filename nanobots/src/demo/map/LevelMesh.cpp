@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "LevelMesh.h"
 #include "TriangleMesh.h"
-#include "GameMap.h"
+#include "../game/GameMap.h"
 #include "Collider.h"
 
 #include <dingus/renderer/Renderable.h>
