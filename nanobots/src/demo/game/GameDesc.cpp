@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GameDesc.h"
 #include "GameColors.h"
+#include "../ByteUtils.h"
 
 
 CGameDesc::CGameDesc()
@@ -13,6 +14,56 @@ CGameDesc::CGameDesc()
 CGameDesc::~CGameDesc()
 {
 }
+
+std::string CGameDesc::initialize( const BYTE* gameDescData )
+{
+	/*
+	Data format:
+
+	byte	GameServerState
+	byte	NumberOfPlayers (0, 1 or 2)
+	Int16	NumberOfTurn (-1 if replay)
+	byte	BlockerLength
+	//Player1
+		string	Player1 name
+		int32	Player1 Flag length
+		byte[]	Player1 Flag (64*64 bitmap)
+	//if NumOfPlayers == 2, Player2
+		string	Player2 name
+		int32	Player2 Flag length
+		byte[]	Player2 Flag (64*64 bitmap)
+	// Map data follows...
+	*/
+
+	// TBD: seems that this isn't present
+	//BYTE gameState = bu::readByte( gameDescData );
+	//if( gameState >= GST_NONE || gameState < GST_ENDED )
+	//	return "Invalid game server state";
+
+	mPlayerCount = bu::readByte( gameDescData ) + 1;
+	if( mPlayerCount < 1 || mPlayerCount > G_MAX_PLAYERS )
+		return "Invalid player count";
+
+	mTurnCount = bu::readShort( gameDescData );
+
+	mBlockerLength = bu::readByte( gameDescData );
+	if( mBlockerLength < 1 || mBlockerLength > 20 )
+		return "Invalid blocker length";
+
+	// read players, start at first player (1)
+	for( int i = 1; i < mPlayerCount; ++i ) {
+		mPlayers[i].name = bu::readStr( gameDescData );
+		// TBD: flag bitmap
+		int flagSize = bu::readInt( gameDescData );
+		gameDescData += flagSize;
+	}
+
+	// initialize game map
+	return mMap.initialize( gameDescData );
+
+	return "";
+}
+
 
 /*
 void CGameDesc::setInfo( const std::string mapName, int round, int turnCount )

@@ -129,6 +129,11 @@ std::string CGameMap::initialize( const BYTE* mapData )
 	// parse name
 
 	mName = bu::readStr( mapData );
+	// TBD: workaround around Richard's funky stuff
+	int lastSlash = mName.find_last_of( "\\//" );
+	if( lastSlash >= 0 )
+		mName = mName.substr( lastSlash+1, mName.length()-lastSlash );
+	CONS << "Game map name: " << mName << endl;
 
 	//
 	// read map bitmap
@@ -196,18 +201,11 @@ std::string CGameMap::initialize( const BYTE* mapData )
 	//
 	// read entities
 
-	// TBD: entities, streams, walls, missions
-
-	/*
-	int ptsSize;
-	char* ptsFile = gReadFileInZip( zipFile, "entities.txt", ptsSize );
-	if( !ptsFile ) {
-		unzClose( zipFile );
-		return "Error in game map file '" + fileName + "' - no entities info";
-	}
+	char* ptsFile = (char*)mapData;
+	int ptsSize = strlen( ptsFile );;
 
 	const char* tokens = "\n\r";
-	const char* pline = strtok( (char*)gSkipUTFStart( ptsFile, ptsSize ), tokens );
+	const char* pline = strtok( ptsFile, tokens );
 	do {
 		if( !pline )
 			break;
@@ -218,8 +216,8 @@ std::string CGameMap::initialize( const BYTE* mapData )
 		mPoints.push_back( SPoint(ePointType(etype), eposx, eposy ) );
 	} while( pline = strtok( NULL, tokens ) );
 
-	delete[] ptsFile;
-	*/
+
+	// TBD: streams, walls, missions
 
 	//
 	// all is loaded now

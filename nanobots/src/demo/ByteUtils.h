@@ -6,8 +6,15 @@ namespace bu {
 
 static inline std::string readStr( const BYTE*& data )
 {
-	std::string res = (const char*)data;
-	data += res.length()+1;
+	// asciiz
+	//std::string res = (const char*)data;
+	//data += res.length()+1;
+	//return res;
+
+	// len+data
+	int len = data[0];
+	std::string res( (const char*)(data+1), len );
+	data += len+1;
 	return res;
 }
 

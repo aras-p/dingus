@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "NetMessages.h"
 #include "NetInterface.h"
-
+#include "../game/GameDesc.h"
 
 using namespace net;
 
@@ -76,8 +76,10 @@ bool net::testConn()
 }
 
 
-bool net::getGameDesc()
+std::string net::getGameDesc( CGameDesc& desc )
 {
+	gTestStuff();
+	
 	NETCONS << "Fetch game description" << endl;
 	// send
 	BYTE msg;
@@ -88,8 +90,13 @@ bool net::getGameDesc()
 	int size;
 	net::receive( data, size );
 	if( data[0] != NMSG_REQ_GAME_DESC )
-		return false;
+		return "Didn't receive game description";
 
-	gTestStuff();
-	return true;
+	// initialize
+	std::string errmsg = desc.initialize( data+1 );
+	if( !errmsg.empty() )
+		return errmsg;
+
+
+	return "";
 }

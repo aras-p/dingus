@@ -63,41 +63,14 @@ const char* CGameInfo::initStep()
 			gErrorMsg = "Wrong connection protocol";
 			return NULL;
 		}
-		bool descOk = net::getGameDesc();
-		if( !descOk	) {
-			gErrorMsg = "Failed to get game description";
-			return NULL;
-		}
-		// TBD
-	}
-
-	/*
-
-	// load replay?
-	if( !mReplay ) {
-		mReplay = new CGameReplay();
-		bool ok = gReadReplay( ("replays/" + mReplayFile).c_str(), *mReplay );
-		if( !ok ) {
-			gErrorMsg = "Error loading replay '" + mReplayFile + "'";
-			return NULL;
-		}
-		return "Loading game map...";
-	}
-	assert( mReplay );
-
-	// load game map?
-	if( !mGameMap ) {
-		mGameMap = new CGameMap();
-		std::string errMsg = mGameMap->initialize( "tissues/" + mReplay->getGameMapName(), mReplay->getGameMapName() );
-		if( !errMsg.empty() ) {
-			gErrorMsg = "Error loading game map: " + errMsg;
+		mGameDesc = new CGameDesc();
+		std::string errmsg = net::getGameDesc( *mGameDesc );
+		if( !errmsg.empty()	) {
+			gErrorMsg = errmsg;
 			return NULL;
 		}
 		return "Calculating level mesh...";
 	}
-	assert( mGameMap );
-
-	*/
 
 	// calculate level mesh?
 	if( !mLevelMesh ) {

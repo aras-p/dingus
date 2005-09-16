@@ -6,12 +6,13 @@ enum {
 }; 
 
 
-/// Game states.
-enum eGameState {
-	GST_CONNECTING, ///< Connecting, waiting for game description
-	GST_GAMEINFO,	///< Map, missions, player list, join options
-	GST_GAME,		///< Game itself
-	GST_ENDED,		///< Game finished, show stats
+/// Game server states.
+enum eGameServerState {
+	GST_NONE = 0,	///< None: server not started yet
+	GST_WAITING,	///< Waiting for players
+	GST_STARTING,	///< Starting (countdown)
+	GST_STARTED,	///< Game itself
+	GST_ENDED,		///< Game ended
 };
 
 /// Entity types.

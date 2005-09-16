@@ -17,6 +17,9 @@ public:
 	CGameDesc();
 	~CGameDesc();
 
+	/// @return Empty string if ok, error message on error.
+	std::string	initialize( const BYTE* gameDescData );
+
 	const CGameMap& getMap() const { return mMap; }
 	const std::string& getMapName() const { return mMapName; }
 	int		getTurnCount() const { return mTurnCount; }
