@@ -250,7 +250,7 @@ CD3DSettings	gSettingsAtDlgStart;
 CDemoHelpDialog*	gUIHelpDlg;
 bool			gHelpDlgWasActive = false;
 
-CGameSetupUI	gGameSetupUI;
+CGameSetupDialog*	gUIGameSetupDlg;
 
 
 CUIStatic*		gUILabelProgress;
@@ -760,6 +760,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gSettingsDlgWasActive = false;
 	gUIHelpDlg = new CDemoHelpDialog();
 	gHelpDlgWasActive = false;
+	gUIGameSetupDlg = new CGameSetupDialog();
 
 	gSndHeart = new CSound( *RGET_SOUND(CSoundDesc("heart", true)) );
 	gSndHeart->setLooping( true );
@@ -785,6 +786,9 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 	}
 	if( gUIHelpDlg->isActive() ) {
 		return gUIHelpDlg->getDialog().msgProc( hwnd, msg, wparam, lparam );
+	}
+	if( gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE ) {
+		return gUIGameSetupDlg->getDialog().msgProc( hwnd, msg, wparam, lparam );
 	}
 
 	done = gUIDlg->msgProc( hwnd, msg, wparam, lparam );
@@ -1199,6 +1203,9 @@ void CDemo::perform()
 	}
 
 
+	bool gameSetupActive = (gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE);
+
+
 	G_INPUTCTX->perform();
 
 	G_AUDIOCTX->beginScene( CSystemTimer::getInstance().getTime() );
@@ -1301,11 +1308,11 @@ void CDemo::perform()
 	SMatrix4x4& mm = gCamera.mWorldMat;
 	mm = gViewer;
 	float camnear, camfar, camfov, fognear, fogfar;
-	if( !gAppSettings.followMode || !gGameSetupUI.isFinished() ) {
+	if( !gAppSettings.followMode || gameSetupActive ) {
 		float tilt = gAppSettings.megaTilt;
 		float zoom = gAppSettings.megaZoom;
-		if( !gGameSetupUI.isFinished() ) {
-			gGameSetupUI.updateViewer( gViewer, tilt, zoom );
+		if( gameSetupActive ) {
+			gUIGameSetupDlg->updateViewer( gViewer, tilt, zoom );
 		}
 
 		SMatrix4x4 mr;
@@ -1422,6 +1429,11 @@ void CDemo::perform()
 		gUIHelpDlg->getDialog().onRender( dt );
 		dx.sceneEnd();
 	}
+	if( gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE ) {
+		dx.sceneBegin();
+		gUIGameSetupDlg->getDialog().onRender( dt );
+		dx.sceneEnd();
+	}
 
 	G_AUDIOCTX->endScene();
 }
@@ -1445,5 +1457,6 @@ void CDemo::shutdown()
 	safeDelete( gUIDlg );
 	safeDelete( gUISettingsDlg );
 	safeDelete( gUIHelpDlg );
+	safeDelete( gUIGameSetupDlg );
 	CONS << "Done!" << endl;
 }
