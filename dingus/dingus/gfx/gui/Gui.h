@@ -233,6 +233,9 @@ public:
 	//void getLocation( POINT& pt ) const { pt.x = mX; pt.y = mY; }
 	void setLocation( float x, float y ) { mX = x; mY = y; }
 	void setSize( float width, float height ) { mWidth = width; mHeight = height;  }
+
+	float getX() const { return mX; }
+	float getY() const { return mY; }
 	float getWidth() const { return mWidth; }
 	float getHeight() const { return mHeight; }
 
