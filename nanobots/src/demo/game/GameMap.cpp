@@ -201,8 +201,12 @@ std::string CGameMap::initialize( const BYTE* mapData )
 	//
 	// read entities
 
-	char* ptsFile = (char*)mapData;
-	int ptsSize = strlen( ptsFile );;
+	// TBD: something weird about text format
+	int ptsSize = mapData[0];
+	char* ptsFile = new char[ptsSize+1];
+	ptsFile[ptsSize] = 0;
+	memcpy( ptsFile, mapData+2, ptsSize );
+	mapData += ptsSize + 2;
 
 	const char* tokens = "\n\r";
 	const char* pline = strtok( ptsFile, tokens );
@@ -210,14 +214,16 @@ std::string CGameMap::initialize( const BYTE* mapData )
 		if( !pline )
 			break;
 		int etype, eposx, eposy;
-		int fread = sscanf( pline, "%i:%i:%i", &etype, &eposx, &eposy );
+		int fread = sscanf( pline, "%i:%i:%i", &eposx, &eposy, &etype );
 		if( fread != 3 )
 			break;
 		mPoints.push_back( SPoint(ePointType(etype), eposx, eposy ) );
 	} while( pline = strtok( NULL, tokens ) );
+	delete[] ptsFile;
 
 
 	// TBD: streams, walls, missions
+	// weird: streams seem to be asciiz!
 
 	//
 	// all is loaded now
