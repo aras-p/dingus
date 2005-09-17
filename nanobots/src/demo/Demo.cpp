@@ -6,6 +6,7 @@
 #include "Demo.h"
 #include "DemoResources.h"
 #include "DemoUI.h"
+#include "GameSetupUI.h"
 
 #include <dingus/gfx/DebugRenderer.h>
 #include <dingus/resource/IndexBufferFillers.h>
@@ -248,6 +249,9 @@ CD3DSettings	gSettingsAtDlgStart;
 
 CDemoHelpDialog*	gUIHelpDlg;
 bool			gHelpDlgWasActive = false;
+
+CGameSetupUI	gGameSetupUI;
+
 
 CUIStatic*		gUILabelProgress;
 CUIImage*		gUIImgLogo;
@@ -1293,23 +1297,27 @@ void CDemo::perform()
 			}
 		}
 	}
-	
 
-	//SMatrix4x4 camold = gCamera.mWorldMat;
 	SMatrix4x4& mm = gCamera.mWorldMat;
 	mm = gViewer;
 	float camnear, camfar, camfov, fognear, fogfar;
-	if( !gAppSettings.followMode ) {
-		SMatrix4x4 mr;
-		D3DXMatrixRotationX( &mr, D3DXToRadian( gAppSettings.megaTilt ) );
-		mm = mr * mm;
-		mm.getOrigin() -= mm.getAxisZ() * gAppSettings.megaZoom;
+	if( !gAppSettings.followMode || !gGameSetupUI.isFinished() ) {
+		float tilt = gAppSettings.megaTilt;
+		float zoom = gAppSettings.megaZoom;
+		if( !gGameSetupUI.isFinished() ) {
+			gGameSetupUI.updateViewer( gViewer, tilt, zoom );
+		}
 
-		camnear = (gAppSettings.megaZoom - 10.0f) * 0.65f;
-		camfar = (gAppSettings.megaZoom + 10.0f) * 2.5f;
+		SMatrix4x4 mr;
+		D3DXMatrixRotationX( &mr, D3DXToRadian( tilt ) );
+		mm = mr * mm;
+		mm.getOrigin() -= mm.getAxisZ() * zoom;
+
+		camnear = (zoom - 10.0f) * 0.65f;
+		camfar = (zoom + 10.0f) * 2.5f;
 		camfov = D3DX_PI/3;
-		fognear = (gAppSettings.megaZoom + 10.0f) * 2.0f;
-		fogfar = (gAppSettings.megaZoom + 10.0f) * 2.3f;
+		fognear = (zoom + 10.0f) * 2.0f;
+		fogfar = (zoom + 10.0f) * 2.3f;
 		gFogColorParam.set( 0, 0, 0, 1 );
 	} else {
 		camnear = 0.3f;

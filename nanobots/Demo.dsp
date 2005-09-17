@@ -340,6 +340,14 @@ SOURCE=.\src\demo\GameInfo.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\demo\GameSetupUI.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\GameSetupUI.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\demo\MinimapRenderer.cpp
 # End Source File
 # Begin Source File
