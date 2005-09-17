@@ -18,11 +18,6 @@ public:
 		D3DCOLOR	colorTone;
 	};
 	
-	struct SMission {
-		std::string	desc;
-		std::vector< std::pair<int,int> > points;
-	};
-	
 	struct SCell {
 		float		height;	// half of floor-ceiling distance
 		eCellType	type;
@@ -34,7 +29,7 @@ public:
 	~CGameMap();
 	
 	/// @return Empty string if ok, error message on error.
-	std::string	initialize( const BYTE* mapData );
+	std::string	initialize( const BYTE*& mapData );
 
 	static bool isBlood( int type ) { return type < CELL_PERF; }
 
@@ -65,9 +60,6 @@ private:
 
 	// Special points
 	std::vector<SPoint>	mPoints;
-
-	std::string				mMissionSummary;
-	std::vector<SMission>	mMissions;
 
 	std::string		mName;	/// Map's name
 	unsigned int	mCRC;	/// CRC 32 of the cells

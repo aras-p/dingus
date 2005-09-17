@@ -13,6 +13,11 @@ public:
 		D3DCOLOR	flag[FLAG_SIZE*FLAG_SIZE];
 	};
 
+	struct SMission {
+		std::string	desc;
+		std::vector< std::pair<int,int> > points;
+	};
+
 public:
 	CGameDesc();
 	~CGameDesc();
@@ -44,6 +49,9 @@ private:
 	int			mTurnCount; // -1 if realtime play
 
 	int			mBlockerLength;
+	
+	std::string				mMissionSummary;
+	std::vector<SMission>	mMissions;
 };
 
 

@@ -33,7 +33,19 @@ std::string CGameDesc::initialize( const BYTE* gameDescData )
 		int32	Player2 Flag length
 		byte[]	Player2 Flag (64*64 bitmap)
 	// Map data follows...
+		...
+	// Missions
+	string	Briefing description
+	byte	Number of missions
+	//for each Mission
+		string	Mission description
+		byte	Number of objective points of the mission
+		//for each objective point
+			byte	X
+			byte	Y
 	*/
+
+	int i;
 
 	// TBD: seems that this isn't present
 	//BYTE gameState = bu::readByte( gameDescData );
@@ -51,7 +63,7 @@ std::string CGameDesc::initialize( const BYTE* gameDescData )
 		return "Invalid blocker length";
 
 	// read players, start at first player (1)
-	for( int i = 1; i < mPlayerCount; ++i ) {
+	for( i = 1; i < mPlayerCount; ++i ) {
 		mPlayers[i].name = bu::readStr( gameDescData );
 		// TBD: flag bitmap
 		int flagSize = bu::readInt( gameDescData );
@@ -59,7 +71,31 @@ std::string CGameDesc::initialize( const BYTE* gameDescData )
 	}
 
 	// initialize game map
-	return mMap.initialize( gameDescData );
+	std::string errmsg = mMap.initialize( gameDescData );
+	if( !errmsg.empty() )
+		return errmsg;
+
+	// read missions
+	mMissionSummary = bu::readStr( gameDescData );
+	int missionCount = bu::readByte( gameDescData );
+	mMissions.reserve( missionCount );
+	for( i = 0; i < missionCount; ++i ) {
+		mMissions.push_back( SMission() );
+		SMission& m = mMissions.back();
+		m.desc = bu::readStr( gameDescData );
+		
+		// TBD: that's weird!
+		if( i == 0 )
+			gameDescData++;
+
+		int ptCount = bu::readByte( gameDescData );
+		m.points.reserve( ptCount );
+		for( int j = 0; j < ptCount; ++j ) {
+			int ptx = bu::readByte( gameDescData );
+			int pty = bu::readByte( gameDescData );
+			m.points.push_back( std::make_pair(ptx,pty) );
+		}
+	}
 
 	return "";
 }

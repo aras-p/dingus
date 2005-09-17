@@ -101,7 +101,7 @@ CGameMap::~CGameMap()
 
 
 
-std::string CGameMap::initialize( const BYTE* mapData )
+std::string CGameMap::initialize( const BYTE*& mapData )
 {
 	assert( !mCells );
 
@@ -114,15 +114,6 @@ std::string CGameMap::initialize( const BYTE* mapData )
 	string	Entites text file
 	string	Streams text file
 	string	Walls text files
-	string	Briefing description
-	byte	Number of missions
-	//for each Mission
-		string	Mission description
-		byte	Number of objective points of the mission
-		//for each objective point
-			byte	X
-			byte	Y
-
 	*/
 
 	//
@@ -222,8 +213,11 @@ std::string CGameMap::initialize( const BYTE* mapData )
 	delete[] ptsFile;
 
 
-	// TBD: streams, walls, missions
+	// TBD: streams, walls
 	// weird: streams seem to be asciiz!
+
+	int strmsLen = strlen( (const char*)mapData );
+	mapData += strmsLen + 1;
 
 	//
 	// all is loaded now
