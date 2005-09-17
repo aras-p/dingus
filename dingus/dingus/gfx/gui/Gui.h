@@ -213,13 +213,13 @@ public:
 	//HRESULT drawPolyLine( const POINT* points, UINT pointCount, D3DCOLOR color );
 	HRESULT drawSprite( SUIElement* element, const SFRect* dest );
 	//HRESULT calcTextRect( const char* text, SUIElement* element, SFRect* dest, int count = -1 );
-	HRESULT drawText( const char* text, SUIElement* element, SFRect* dest, bool shadow = false, int count = -1 );
-	HRESULT drawText( const wchar_t* text, SUIElement* element, SFRect* dest, bool shadow = false, int count = -1 );
+	HRESULT drawText( const char* text, SUIElement* element, const SFRect* dest, bool shadow = false, int count = -1 );
+	HRESULT drawText( const wchar_t* text, SUIElement* element, const SFRect* dest, bool shadow = false, int count = -1 );
 
 	// immediate mode renderers
 	HRESULT imDrawSprite( const D3DXCOLOR& color, const RECT& texRect, CD3DTexture* tex, const SFRect& destScr );
-	HRESULT imDrawText( const char* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, SFRect& destScr, bool shadow = false, int count = -1 );
-	HRESULT imDrawText( const wchar_t* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, SFRect& destScr, bool shadow = false, int count = -1 );
+	HRESULT imDrawText( const char* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow = false, int count = -1 );
+	HRESULT imDrawText( const wchar_t* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow = false, int count = -1 );
 
 	// Attributes
 	bool isMinimized() const { return mMinimized; }

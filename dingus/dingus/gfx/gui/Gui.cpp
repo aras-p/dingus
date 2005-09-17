@@ -1105,7 +1105,7 @@ HRESULT CUIDialog::calcTextRect( const char* text, SUIElement* element, SFRect* 
 }
 */
 
-HRESULT CUIDialog::drawText( const char* text, SUIElement* element, SFRect* dest, bool shadow, int count )
+HRESULT CUIDialog::drawText( const char* text, SUIElement* element, const SFRect* dest, bool shadow, int count )
 {
 	SFRect destScr = *dest;
 	destScr.offset( mX, mY );
@@ -1117,7 +1117,7 @@ HRESULT CUIDialog::drawText( const char* text, SUIElement* element, SFRect* dest
 }
 
 
-HRESULT CUIDialog::drawText( const wchar_t* text, SUIElement* element, SFRect* dest, bool shadow, int count )
+HRESULT CUIDialog::drawText( const wchar_t* text, SUIElement* element, const SFRect* dest, bool shadow, int count )
 {
 	SFRect destScr = *dest;
 	destScr.offset( mX, mY );
@@ -1160,7 +1160,7 @@ HRESULT CUIDialog::imDrawSprite( const D3DXCOLOR& color, const RECT& texRect, CD
 }
 
 
-HRESULT CUIDialog::imDrawText( const char* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, SFRect& destScr, bool shadow, int count )
+HRESULT CUIDialog::imDrawText( const char* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow, int count )
 {
 	HRESULT hr = S_OK;
 
@@ -1202,7 +1202,7 @@ HRESULT CUIDialog::imDrawText( const char* text, UINT fontIdx, DWORD format, con
 }
 
 
-HRESULT CUIDialog::imDrawText( const wchar_t* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, SFRect& destScr, bool shadow, int count )
+HRESULT CUIDialog::imDrawText( const wchar_t* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow, int count )
 {
 	HRESULT hr = S_OK;
 
