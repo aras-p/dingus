@@ -15,9 +15,13 @@ Message types:
 
 enum eMessage {
 	NMSG_ERROR = 0,
+	NMSG_OK = 1,
 	NMSG_TEST_CONN = 2,
 	NMSG_REQ_GAME_DESC = 3,
 };
+
+const int NETWORK_PROTOCOL_VER = 1;
+
 
 
 static void gFetchResponse()
@@ -58,6 +62,8 @@ static void gTestStuff()
 
 bool net::testConn()
 {
+	//gTestStuff();
+	
 	NETCONS << "Connection protocol test" << endl;
 	// send
 	BYTE msg;
@@ -67,9 +73,9 @@ bool net::testConn()
 	BYTE* data;
 	int size;
 	net::receive( data, size );
-	if( size != 3 ||
+	if( size != 2 ||
 		data[0] != NMSG_TEST_CONN ||
-		data[1] != 1 || data[2] != 0 )
+		data[1] != NETWORK_PROTOCOL_VER )
 		return false;
 
 	return true;
@@ -78,8 +84,6 @@ bool net::testConn()
 
 std::string net::getGameDesc( CGameDesc& desc )
 {
-	gTestStuff();
-	
 	NETCONS << "Fetch game description" << endl;
 	// send
 	BYTE msg;
