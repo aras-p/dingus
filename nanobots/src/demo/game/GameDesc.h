@@ -36,9 +36,9 @@ public:
 
 	int		getBlockerLength() const { return mBlockerLength; }
 
-	//void	setInfo( const std::string mapName, int round, int turnCount );
-	//void	setPlayer( int index, const std::string& guid, const std::string& name, const std::string& country, int finalScore, bool winner );
-	//void	endPlayers();
+	const std::string& getMissionSummary() const { return mMissionSummary; }
+	int		getMissionCount() const { return mMissions.size(); }
+	const SMission& getMission( int idx ) const { return mMissions[idx]; }
 
 private:
 	CGameMap	mMap;

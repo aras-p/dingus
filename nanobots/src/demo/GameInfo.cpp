@@ -111,8 +111,6 @@ CGameInfo::CGameInfo( const std::string& server, int port )
 :	mServerName(server)
 ,	mServerPort(port)
 //:	mTime( 0.0f ),
-//	mReplay(NULL),
-//	mGameMap(NULL),
 ,	mGameDesc(NULL)
 ,	mState(NULL)
 ,	mLevelMesh(NULL),

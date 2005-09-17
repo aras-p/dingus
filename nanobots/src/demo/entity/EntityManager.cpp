@@ -83,7 +83,7 @@ void CEntityManager::onMouseClick()
 
 void CEntityManager::update( const SLine3& mouseRay )
 {
-	//int i, n;
+	int i, n;
 
 	/*
 	// check mouse intersection
@@ -127,6 +127,7 @@ void CEntityManager::update( const SLine3& mouseRay )
 			}
 		}
 	}
+	*/
 
 	// update point entities
 	n = mPointEntities.size();
@@ -135,6 +136,7 @@ void CEntityManager::update( const SLine3& mouseRay )
 		e.update();
 	}
 
+	/*
 	// set max. outline for selected entity
 	if( mSelectedEntity != -1 )
 		mActorEntities[mSelectedEntity]->setOutline( OUTLINE_TTL );
@@ -144,10 +146,13 @@ void CEntityManager::update( const SLine3& mouseRay )
 
 void CEntityManager::renderMinimap()
 {
-	/*
 	CGameInfo& gi = CGameInfo::getInstance();
+	const CGameMap& gmap = gi.getGameDesc().getMap();
+
+	/*
 	float t = gi.getTime();
 	int turn = (int)t;
+	*/
 
 	int i, n;
 
@@ -159,13 +164,13 @@ void CEntityManager::renderMinimap()
 	campos.y = 10.0f;
 	minir.addEntity( campos, 0x80ffff00, 4.0f );
 	// special points
-	const CGameMap& gmap = gi.getGameMap();
 	n = gmap.getPointCount();
 	for( i = 0; i < n; ++i ) {
 		const CGameMap::SPoint& pt = gmap.getPoint(i);
 		minir.addEntity( SVector3(pt.x,0.0f,-pt.y), pt.colorMain & 0x80ffffff, 4.0f );
 	}
 	// actors
+	/*
 	n = mActorEntities.size();
 	for( i = 0; i < n; ++i ) {
 		const CActorEntity& e = *mActorEntities[i];
@@ -179,19 +184,20 @@ void CEntityManager::renderMinimap()
 		if( ss.state == ENTSTATE_ATTACK )
 			minir.addEntity( SVector3(ss.targx,0.0f,-ss.targy), 0xFFff0000, 3.0f );
 	}
+	*/
 	minir.endEntities();
 	minir.render();
-	*/
 }
 
 
 void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson )
 {
-	/*
 	CGameInfo& gi = CGameInfo::getInstance();
+	/*
 	float t = gi.getTime();
 	int turn = (int)t;
 	float turnAlpha = t - turn;
+	*/
 
 	int i, n;
 
@@ -207,6 +213,8 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 
 	// actors
 	const int lodOffset = GFX_DETAIL_LEVELS-1 - gAppSettings.gfxDetail;
+
+	/*
 
 	n = mActorEntities.size();
 	for( i = 0; i < n; ++i ) {
@@ -277,6 +285,8 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 			mAttackManager->renderAttack( e.mWorldMat.getOrigin(), ss.targx, ss.targy, 0.5f+turnAlpha*0.5f, atkColor );
 		}
 	}
+	*/
+
 	mAttackManager->end();
 	blobr.endEntities();
 	eir.endInfos();
@@ -288,22 +298,23 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	for( i = 0; i < n; ++i ) {
 		mPointEntities[i]->renderPoint( rm );
 	}
-	*/
 }
 
 
 void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 {
-	/*
 	if( !gAppSettings.drawAznCollector && !gAppSettings.drawAznNeedle )
 		return;
 
 	CGameInfo& gi = CGameInfo::getInstance();
+
+	/*
 	float t = gi.getTime();
 	int turn = (int)t;
 	float turnAlpha = t - turn;
+	*/
 
-	int i, n;
+	//int i, n;
 
 	const SMatrix4x4& cameraMat = G_RENDERCTX->getCamera().getCameraMatrix();
 
@@ -313,6 +324,7 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 	textElem.textFormat = DT_LEFT;
 	textElem.colorFont.current = 0xFFffffff;
 	
+	/*
 	char buf[100];
 
 	n = mActorEntities.size();
