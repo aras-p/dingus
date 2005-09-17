@@ -1080,40 +1080,13 @@ HRESULT CUIDialog::drawPolyLine( const POINT* points, UINT pointCount, D3DCOLOR 
 
 HRESULT CUIDialog::drawSprite( SUIElement* element, const SFRect* dest )
 {
-	// No need to draw fully transparent layers
-	if( element->colorTexture.current.a == 0 )
-		return S_OK;
-
-	CD3DDevice& dx = CD3DDevice::getInstance();
-	CUIResourceManager& resmgr = CUIResourceManager::getInstance();
-	
-	RECT textureRect = element->textureRect;
-	
-	SFRect rcScreen = *dest;
-	rcScreen.offset( mX, mY );
-
+	SFRect destScr = *dest;
+	destScr.offset( mX, mY );
 	// If caption is enabled, offset the Y position by its height.
 	if( mHasCaption )
-		rcScreen.offset( 0, mCaptionHeight );
+		destScr.offset( 0, mCaptionHeight );
 
-	float x1 = resmgr.xToBB( rcScreen.left,   dx.getBackBufferWidth() );
-	float x2 = resmgr.xToBB( rcScreen.right,  dx.getBackBufferWidth() );
-	float y1 = resmgr.yToBB( rcScreen.top,    dx.getBackBufferHeight() );
-	float y2 = resmgr.yToBB( rcScreen.bottom, dx.getBackBufferHeight() );
-
-	CD3DTexture* tex = element->texture;
-	
-	float scaleX = (x2-x1) / rectWidth( textureRect );
-	float scaleY = (y2-y1) / rectHeight( textureRect );
-
-	D3DXMATRIXA16 matrix;
-	D3DXMatrixScaling( &matrix, scaleX, scaleY, 1.0f );
-
-	resmgr.mSprite->SetTransform( &matrix );
-	
-	D3DXVECTOR3 pos( x1/scaleX, y1/scaleY, 0.0f );
-
-	return resmgr.mSprite->Draw( tex->getObject(), &textureRect, NULL, &pos, element->colorTexture.current );
+	return imDrawSprite( element->colorTexture.current, element->textureRect, element->texture, destScr );
 }
 
 
@@ -1134,32 +1107,81 @@ HRESULT CUIDialog::calcTextRect( const char* text, SUIElement* element, SFRect* 
 
 HRESULT CUIDialog::drawText( const char* text, SUIElement* element, SFRect* dest, bool shadow, int count )
 {
+	SFRect destScr = *dest;
+	destScr.offset( mX, mY );
+	// If caption is enabled, offset the Y position by its height.
+	if( mHasCaption )
+		destScr.offset( 0, mCaptionHeight );
+
+	return imDrawText( text, element->fontIdx, element->textFormat, element->colorFont.current, destScr, shadow, count );
+}
+
+
+HRESULT CUIDialog::drawText( const wchar_t* text, SUIElement* element, SFRect* dest, bool shadow, int count )
+{
+	SFRect destScr = *dest;
+	destScr.offset( mX, mY );
+	// If caption is enabled, offset the Y position by its height.
+	if( mHasCaption )
+		destScr.offset( 0, mCaptionHeight );
+
+	return imDrawText( text, element->fontIdx, element->textFormat, element->colorFont.current, destScr, shadow, count );
+}
+
+
+// --------------------------------------------------------------------------
+
+
+HRESULT CUIDialog::imDrawSprite( const D3DXCOLOR& color, const RECT& texRect, CD3DTexture* tex, const SFRect& destScr )
+{
+	// No need to draw fully transparent layers
+	if( color.a == 0 )
+		return S_OK;
+
+	CD3DDevice& dx = CD3DDevice::getInstance();
+	CUIResourceManager& resmgr = CUIResourceManager::getInstance();
+	
+	float x1 = resmgr.xToBB( destScr.left,   dx.getBackBufferWidth() );
+	float x2 = resmgr.xToBB( destScr.right,  dx.getBackBufferWidth() );
+	float y1 = resmgr.yToBB( destScr.top,    dx.getBackBufferHeight() );
+	float y2 = resmgr.yToBB( destScr.bottom, dx.getBackBufferHeight() );
+
+	float scaleX = (x2-x1) / rectWidth( texRect );
+	float scaleY = (y2-y1) / rectHeight( texRect );
+
+	D3DXMATRIXA16 matrix;
+	D3DXMatrixScaling( &matrix, scaleX, scaleY, 1.0f );
+
+	resmgr.mSprite->SetTransform( &matrix );
+	
+	D3DXVECTOR3 pos( x1/scaleX, y1/scaleY, 0.0f );
+
+	return resmgr.mSprite->Draw( tex->getObject(), &texRect, NULL, &pos, color );
+}
+
+
+HRESULT CUIDialog::imDrawText( const char* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, SFRect& destScr, bool shadow, int count )
+{
 	HRESULT hr = S_OK;
 
 	// No need to draw fully transparent layers
-	if( element->colorFont.current.a == 0 )
+	if( color.a == 0 )
 		return S_OK;
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 	CUIResourceManager& resmgr = CUIResourceManager::getInstance();
 
-	SFRect rcScreen = *dest;
-	rcScreen.offset( mX, mY );
-
-	// If caption is enabled, offset the Y position by its height.
-	if( mHasCaption )
-		rcScreen.offset( 0, mCaptionHeight );
-
-	rcScreen.left   = resmgr.xToBB( rcScreen.left,   dx.getBackBufferWidth() );
-	rcScreen.right  = resmgr.xToBB( rcScreen.right,  dx.getBackBufferWidth() );
-	rcScreen.top    = resmgr.yToBB( rcScreen.top,    dx.getBackBufferHeight() );
-	rcScreen.bottom = resmgr.yToBB( rcScreen.bottom, dx.getBackBufferHeight() );
+	SFRect rcScreen;
+	rcScreen.left   = resmgr.xToBB( destScr.left,   dx.getBackBufferWidth() );
+	rcScreen.right  = resmgr.xToBB( destScr.right,  dx.getBackBufferWidth() );
+	rcScreen.top    = resmgr.yToBB( destScr.top,    dx.getBackBufferHeight() );
+	rcScreen.bottom = resmgr.yToBB( destScr.bottom, dx.getBackBufferHeight() );
 
 	D3DXMATRIXA16 matrix;
 	D3DXMatrixIdentity( &matrix );
 	resmgr.mSprite->SetTransform( &matrix );
 
-	SUIFontNode* fontNode = getFont( element->fontIdx );
+	SUIFontNode* fontNode = getFont( fontIdx );
 
 	RECT drawRC;
 	rcScreen.toRect( drawRC );
@@ -1167,12 +1189,12 @@ HRESULT CUIDialog::drawText( const char* text, SUIElement* element, SFRect* dest
 	if( shadow ) {
 		RECT rcShadow = drawRC;
 		OffsetRect( &rcShadow, 1, 1 );
-		hr = fontNode->font->DrawText( resmgr.mSprite, text, count, &rcShadow, element->textFormat, D3DCOLOR_ARGB(DWORD(element->colorFont.current.a * 255), 0, 0, 0) );
+		hr = fontNode->font->DrawText( resmgr.mSprite, text, count, &rcShadow, format, D3DCOLOR_ARGB(DWORD(color.a * 255), 0, 0, 0) );
 		if( FAILED(hr) )
 			return hr;
 	}
 
-	hr = fontNode->font->DrawText( resmgr.mSprite, text, count, &drawRC, element->textFormat, element->colorFont.current );
+	hr = fontNode->font->DrawText( resmgr.mSprite, text, count, &drawRC, format, color );
 	if( FAILED(hr) )
 		return hr;
 
@@ -1180,34 +1202,28 @@ HRESULT CUIDialog::drawText( const char* text, SUIElement* element, SFRect* dest
 }
 
 
-HRESULT CUIDialog::drawText( const wchar_t* text, SUIElement* element, SFRect* dest, bool shadow, int count )
+HRESULT CUIDialog::imDrawText( const wchar_t* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, SFRect& destScr, bool shadow, int count )
 {
 	HRESULT hr = S_OK;
 
 	// No need to draw fully transparent layers
-	if( element->colorFont.current.a == 0 )
+	if( color.a == 0 )
 		return S_OK;
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 	CUIResourceManager& resmgr = CUIResourceManager::getInstance();
 
-	SFRect rcScreen = *dest;
-	rcScreen.offset( mX, mY );
-
-	// If caption is enabled, offset the Y position by its height.
-	if( mHasCaption )
-		rcScreen.offset( 0, mCaptionHeight );
-
-	rcScreen.left   = resmgr.xToBB( rcScreen.left,   dx.getBackBufferWidth() );
-	rcScreen.right  = resmgr.xToBB( rcScreen.right,  dx.getBackBufferWidth() );
-	rcScreen.top    = resmgr.yToBB( rcScreen.top,    dx.getBackBufferHeight() );
-	rcScreen.bottom = resmgr.yToBB( rcScreen.bottom, dx.getBackBufferHeight() );
+	SFRect rcScreen;
+	rcScreen.left   = resmgr.xToBB( destScr.left,   dx.getBackBufferWidth() );
+	rcScreen.right  = resmgr.xToBB( destScr.right,  dx.getBackBufferWidth() );
+	rcScreen.top    = resmgr.yToBB( destScr.top,    dx.getBackBufferHeight() );
+	rcScreen.bottom = resmgr.yToBB( destScr.bottom, dx.getBackBufferHeight() );
 
 	D3DXMATRIXA16 matrix;
 	D3DXMatrixIdentity( &matrix );
 	resmgr.mSprite->SetTransform( &matrix );
 
-	SUIFontNode* fontNode = getFont( element->fontIdx );
+	SUIFontNode* fontNode = getFont( fontIdx );
 
 	RECT drawRC;
 	rcScreen.toRect( drawRC );
@@ -1215,12 +1231,12 @@ HRESULT CUIDialog::drawText( const wchar_t* text, SUIElement* element, SFRect* d
 	if( shadow ) {
 		RECT rcShadow = drawRC;
 		OffsetRect( &rcShadow, 1, 1 );
-		hr = fontNode->font->DrawTextW( resmgr.mSprite, text, count, &rcShadow, element->textFormat, D3DCOLOR_ARGB(DWORD(element->colorFont.current.a * 255), 0, 0, 0) );
+		hr = fontNode->font->DrawTextW( resmgr.mSprite, text, count, &rcShadow, format, D3DCOLOR_ARGB(DWORD(color.a * 255), 0, 0, 0) );
 		if( FAILED(hr) )
 			return hr;
 	}
 
-	hr = fontNode->font->DrawTextW( resmgr.mSprite, text, count, &drawRC, element->textFormat, element->colorFont.current );
+	hr = fontNode->font->DrawTextW( resmgr.mSprite, text, count, &drawRC, format, color );
 	if( FAILED(hr) )
 		return hr;
 

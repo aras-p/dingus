@@ -1,13 +1,16 @@
 
-no codename yet
+no codename
 ========
 
+050917: Factored out sprite/text functions from GUI for more convenient
+		immediate mode calling.
 050628: Texture bundle always takes miplevels from file for DDS textures
 		(previously it would build missing miplevels). Other formats
 		build full mip chain like before.
 050627: Poor unicode text support in GUI (drawText() only for now).
 050612: utils/Pool.h fixes to make it compile with VC7.1. Fixed by
 		Rich Thomson.
+
 
 Dingus codenamed "IC2005 demo"
 ========
