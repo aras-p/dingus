@@ -40,6 +40,7 @@ CGameSetupDialog::CGameSetupDialog()
 	mDlg->addStatic( 0, "Controls", xcol-10, yline, 200, 22, false, &lab );
 	lab->getElement(0)->setFont( 1, false, DT_LEFT | DT_VCENTER );
 
+	/*
 	mDlg->addStatic( 0,
 		"Arrows\n"
 		"Ctrl+Arrows\n"
@@ -86,6 +87,7 @@ CGameSetupDialog::CGameSetupDialog()
 		"        Thomas Lucchini, Richard Clark, Cyril du Bois de Maquillé, Vincent Lascaux"
 		, xcol, yline+=24, 400, HC*5, false, &lab );
 	lab->getElement(0)->setFont( 0, false, DT_LEFT | DT_TOP );
+	*/
 	
 
 	// buttons
@@ -117,6 +119,19 @@ void CALLBACK CGameSetupDialog::dialogCallback( UINT evt, int ctrlID, CUIControl
 	}
 }
 
+
+void CGameSetupDialog::render()
+{
+	const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
+	assert( &desc );
+
+	float xb = mDlg->getX() + 10;
+	float yb = mDlg->getY() + 20;
+	
+	SFRect rc;
+	rc.set( xb, yb, xb+300, yb+20 );
+	mDlg->imDrawText( "foo", 1, DT_RIGHT | DT_VCENTER, 0xFFffffff, rc, false );
+}
 
 
 void CGameSetupDialog::updateViewer( SMatrix4x4& viewer, float& tilt, float& zoom )

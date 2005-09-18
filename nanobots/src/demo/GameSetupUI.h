@@ -18,8 +18,9 @@ public:
 	eDlgState	getState() const { return mState; }
 
 
-	void		updateViewer( SMatrix4x4& viewer, float& tilt, float& zoom );
-	void		update();
+	void	render();
+	void	updateViewer( SMatrix4x4& viewer, float& tilt, float& zoom );
+	//void		update();
 
 
 	static void CALLBACK dialogCallback( UINT evt, int ctrlID, CUIControl* ctrl );

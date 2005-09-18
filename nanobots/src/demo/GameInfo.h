@@ -23,7 +23,7 @@ extern SAppSettings gAppSettings;
 class CGameInfo : public boost::noncopyable {
 public:
 	// Singleton
-	static void initialize( const std::string& server, int port );
+	static void initialize( const std::string& server, int port, HWND wnd );
 	static CGameInfo& getInstance() { assert(mSingleInstance); return *mSingleInstance; }
 	static void finalize();
 
@@ -66,7 +66,7 @@ public:
 
 private:
 	static CGameInfo*	mSingleInstance;
-	CGameInfo( const std::string& server, int port );
+	CGameInfo( const std::string& server, int port, HWND wnd );
 	~CGameInfo();
 
 private:
@@ -74,6 +74,7 @@ private:
 
 	std::string		mServerName;
 	int				mServerPort;
+	HWND			mWindow;
 
 	CGameDesc*		mGameDesc;
 	CGameState*		mState;

@@ -23,7 +23,7 @@ enum eMessage {
 const int NETWORK_PROTOCOL_VER = 1;
 
 
-
+/*
 static void gFetchResponse()
 {
 	NETCONS << "Receive response..." << endl;
@@ -58,37 +58,84 @@ static void gTestStuff()
 		gFetchResponse();
 	}
 }
+*/
 
-
-bool net::testConn()
+CGameDescReader::CGameDescReader()
+:	mState( NONE )
+,	mGameDesc(NULL)
 {
 	//gTestStuff();
-	
-	NETCONS << "Connection protocol test" << endl;
-	// send
-	BYTE msg;
-	msg = NMSG_TEST_CONN;
-	net::send( &msg, sizeof(msg) );
-	// receive
-	BYTE* data;
-	int size;
-	net::receive( data, size );
-	if( size != 2 ||
-		data[0] != NMSG_TEST_CONN ||
-		data[1] != NETWORK_PROTOCOL_VER )
-		return false;
+}
 
-	return true;
+void CGameDescReader::update()
+{
+	switch( mState ) {
+	case NONE:
+		{
+			NETCONS << "Connection protocol test" << endl;
+			BYTE msg;
+			msg = NMSG_TEST_CONN;
+			net::send( &msg, sizeof(msg) );
+			mState = SENT_CONNTEST;
+		}
+		break;
+	case SENT_CONNTEST:
+		{
+			const BYTE* data;
+			bool got = net::receiveChunk( data, 2 );
+			if( got ) {
+				if( data[0] != NMSG_TEST_CONN || data[1] != NETWORK_PROTOCOL_VER ) {
+					mErrorMsg = "Incorrect client/server protocol version";
+				} else {
+					mState = GOT_CONNTEST;
+				}
+			}
+		}
+		break;
+	case GOT_CONNTEST:
+		{
+			NETCONS << "Fetch game description" << endl;
+			BYTE msg;
+			msg = NMSG_REQ_GAME_DESC;
+			net::send( &msg, sizeof(msg) );
+			mState = SENT_GAMEDESC;
+		}
+		break;
+	case SENT_GAMEDESC:
+		{
+			const BYTE* data;
+			bool got = net::receiveChunk( data, 1 );
+			if( got ) {
+				if( data[0] != NMSG_TEST_CONN || data[1] != NETWORK_PROTOCOL_VER ) {
+					mErrorMsg = "Failed to get game description";
+				} else {
+					mState = READ_GAMEDESC;
+					assert( !mGameDesc );
+					mGameDesc = new CGameDesc();
+				}
+			}
+		}
+		break;
+	case READ_GAMEDESC:
+		{
+			assert( mGameDesc );
+			
+		}
+		break;
+	case GOT_GAMEDESC:
+		{
+			assert( mGameDesc );
+		}
+		break;
+	default:
+		assert( false );
+	}
 }
 
 
-std::string net::getGameDesc( CGameDesc& desc )
+
+CGameDesc* net::getGameDesc( std::string& errMsg )
 {
-	NETCONS << "Fetch game description" << endl;
-	// send
-	BYTE msg;
-	msg = NMSG_REQ_GAME_DESC;
-	net::send( &msg, sizeof(msg) );
 	// receive
 	BYTE* data;
 	int size;

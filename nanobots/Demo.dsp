@@ -358,6 +358,42 @@ SOURCE=.\src\demo\MinimapRenderer.h
 # Begin Group "system"
 
 # PROP Default_Filter ""
+# Begin Group "extern"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\extern\sockets\common.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\extern\sockets\common.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\extern\sockets\macro.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\extern\sockets\sockets.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\extern\sockets\sockets.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\extern\sockets\sockets2.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\extern\sockets\trace.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\extern\sockets\trace.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\src\system\Globals.cpp

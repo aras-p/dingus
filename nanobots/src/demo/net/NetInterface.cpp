@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "NetInterface.h"
-#include <winsock.h>
+#include <winsock2.h>
 
 
 CConsoleChannel& net::NETCONS = CConsole::getChannel("net");
@@ -14,16 +14,23 @@ namespace {
 
 	const int MAX_RECV_BUFFER = 256 * 1024;
 	unsigned char	recvBuffer[MAX_RECV_BUFFER];
+
+	bool	hasDataToRecv = false;
+
+	bool	chunkReceiving = false;
+	int		chunkTotalSize;
+	int		chunkReceivedSize;
+	int		chunkCounter;
 };
 
 
 
-void net::initialize( const char* serverName, int serverPort )
+void net::initialize( const char* serverName, int serverPort, HWND wnd )
 {
 	// init WinSock
 	NETCONS << "initialize winsock" << endl;
 	WSADATA wd;
-	if( WSAStartup( MAKEWORD(1,1), &wd ) != 0 ) {
+	if( WSAStartup( MAKEWORD(2,0), &wd ) != 0 ) {
 		throw ENetException( "Initialization failed" );
 	}
 
@@ -62,15 +69,26 @@ void net::initialize( const char* serverName, int serverPort )
 
 	// set to non-blocking mode
 	NETCONS << "set socket to nonblocking mode" << endl;
-	u_long trueAsUlong = 1;
-	res = ::ioctlsocket( commSocket, FIONBIO, &trueAsUlong );
-	assert( 0==res );
+	//u_long trueAsUlong = 1;
+	//res = ::ioctlsocket( commSocket, FIONBIO, &trueAsUlong );
+	//assert( 0==res );
+	res = WSAAsyncSelect( commSocket, wnd, NET_ASYNC_MESSAGE, FD_READ );
+	if( res == -1 ) {
+		throw ENetException( "Failed to set socket to nonblocking mode" );
+	}
+
+	hasDataToRecv = false;
+	chunkReceiving = false;
+	chunkReceivedSize = 0;
+	chunkTotalSize = 0;
+	chunkCounter = 0;
 }
 
 
 void net::shutdown()
 {
 	NETCONS << "shutdown" << endl;
+	::shutdown( commSocket, SD_SEND );
 	::closesocket( commSocket );
 	WSACleanup();
 }
@@ -82,36 +100,92 @@ bool net::isConnected()
 }
 
 
-bool net::receive( const unsigned char*& data, int& size )
+void net::onAsyncMsg( WPARAM wparam, LPARAM lparam )
+{
+	int event = WSAGETSELECTEVENT( lparam );
+	int err = WSAGETSELECTERROR( lparam );
+	switch( event ) {
+	case FD_READ:
+		assert( !hasDataToRecv );
+		hasDataToRecv = true;
+		break;
+	}
+}
+
+
+bool net::receiveChunk( const unsigned char*& data, int reqSize, bool wait )
 {
 	assert( commSocket != INVALID_SOCKET );
+	assert( reqSize < MAX_RECV_BUFFER );
+	data = NULL;
 
-	int totalBytes = 0;
-	while(true) {
+	// no data available yet
+	if( !hasDataToRecv && !wait )
+		return false;
 
-		::Sleep(100); // TBD
-		int bytes = ::recv( commSocket, (char*)recvBuffer+totalBytes, MAX_RECV_BUFFER-totalBytes, 0 );
-		if( bytes == 0 )
-			break;
-		if( bytes < 0 ) {
-			// error or no more data
-			size = 0;
-			data = 0;
-			int wsaErr = WSAGetLastError();
-			if( wsaErr == WSAEWOULDBLOCK ) {
-				// no more data
-				break;
-			}
-			// TBD: throw?
-			NETCONS << "receive() error " << wsaErr << endl;
+_spinwait:
+	
+	// receive as much bytes as we still need
+	int bytesWanted;
+	if( chunkReceiving ) {
+		assert( reqSize == chunkTotalSize );
+		bytesWanted = chunkTotalSize - chunkReceivedSize;
+	} else {
+		bytesWanted = reqSize;
+		chunkTotalSize = reqSize;
+		chunkReceivedSize = 0;
+	}
+	assert( bytesWanted + chunkReceivedSize < MAX_RECV_BUFFER );
+
+	int bytes = ::recv( commSocket, (char*)recvBuffer+chunkReceivedSize, bytesWanted, 0 );
+	hasDataToRecv = false;
+
+	// check for errors
+	if( bytes == 0 ) {
+		if( wait )
+			goto _spinwait;
+		return false;
+	}
+	if( bytes < 0 ) {
+		int wsaErr = WSAGetLastError();
+		if( wsaErr == WSAEWOULDBLOCK ) {
+			// no data available yet
+			if( wait )
+				goto _spinwait;
 			return false;
 		}
-		totalBytes += bytes;
+		// TBD: throw?
+		NETCONS << "receive() error " << wsaErr << endl;
+		return false;
 	}
 
-	size = totalBytes;
-	data = recvBuffer;
-	return true;
+	// we've received something!
+	chunkReceivedSize += bytes;
+
+	assert( chunkReceivedSize <= reqSize );
+	if( chunkReceivedSize == reqSize ) {
+		// finished whole chunk
+		chunkReceiving = false;
+		chunkTotalSize = 0;
+		chunkReceivedSize = 0;
+		chunkCounter = 0;
+		data = recvBuffer;
+		return true;
+
+	} else {
+		// chunk not fully read yet
+		chunkReceiving = true;
+		chunkTotalSize = reqSize;
+		++chunkCounter;
+		const int MAX_CHUNK_COUNTER = 300;
+		if( chunkCounter >= MAX_CHUNK_COUNTER )
+			throw ENetException( "Failed to receive expected network message" );
+
+		if( wait )
+			goto _spinwait;
+
+		return false;
+	}
 }
 
 

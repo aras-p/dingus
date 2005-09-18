@@ -24,6 +24,7 @@
 #include "map/LevelMesh.h"
 #include "map/PointsMesh.h"
 #include "entity/EntityManager.h"
+#include "net/NetInterface.h"
 
 
 // --------------------------------------------------------------------------
@@ -441,6 +442,8 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 {
 	CGameInfo::getInstance().getEntities().renderLabels( dlg, gAppSettings.followMode );
+	if( gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE )
+		gUIGameSetupDlg->render();
 }
 
 
@@ -743,7 +746,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// game
 
-	CGameInfo::initialize( gServerName, gServerPort );
+	CGameInfo::initialize( gServerName, gServerPort, mHwnd );
 
 	// GUI
 	gUIDlg = new CUIDialog();
@@ -776,6 +779,11 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
+	if( msg == net::NET_ASYNC_MESSAGE ) {
+		net::onAsyncMsg( wparam, lparam );
+		return true;
+	}
+
 	if( !gUIDlg )
 		return false;
 

@@ -1,7 +1,22 @@
 #ifndef __BYTE_UTILS_H
 #define __BYTE_UTILS_H
 
+#include "net/NetInterface.h"
+
+
 namespace bu {
+
+
+static inline std::string readStr()
+{
+	const BYTE* data;
+	net::receiveChunk( data, 1, true );
+	int len = data[0];
+
+	net::receiveChunk( data, len, true );
+	std::string res( (const char)data, len );
+	return res;
+}
 
 
 static inline std::string readStr( const BYTE*& data )

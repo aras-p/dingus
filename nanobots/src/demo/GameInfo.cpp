@@ -20,10 +20,10 @@ std::string gErrorMsg = "";
 
 CGameInfo* CGameInfo::mSingleInstance = 0;
 
-void CGameInfo::initialize( const std::string& server, int port )
+void CGameInfo::initialize( const std::string& server, int port, HWND wnd )
 {
 	assert( !mSingleInstance );
-	mSingleInstance = new CGameInfo( server, port );
+	mSingleInstance = new CGameInfo( server, port, wnd );
 }
 
 void CGameInfo::finalize()
@@ -48,7 +48,7 @@ const char* CGameInfo::initStep()
 	// connect to server?
 	if( !net::isConnected() ) {
 		try {
-			net::initialize( mServerName.c_str(), mServerPort );
+			net::initialize( mServerName.c_str(), mServerPort, mWindow );
 		} catch( const net::ENetException& e ) {
 			gErrorMsg = e.what();
 			return NULL;
@@ -107,9 +107,10 @@ const char* CGameInfo::initStep()
 }
 
 
-CGameInfo::CGameInfo( const std::string& server, int port )
+CGameInfo::CGameInfo( const std::string& server, int port, HWND wnd )
 :	mServerName(server)
 ,	mServerPort(port)
+,	mWindow( wnd )
 //:	mTime( 0.0f ),
 ,	mGameDesc(NULL)
 ,	mState(NULL)

@@ -5,8 +5,25 @@ class CGameDesc;
 
 namespace net {
 
-	bool	testConn();
-	std::string	getGameDesc( CGameDesc& desc );
+	class CGameDescReader {
+	public:
+		enum eState { NONE, SENT_CONNTEST, GOT_CONNTEST, SENT_GAMEDESC, READ_GAMEDESC, GOT_GAMEDESC };
+		
+	public:
+		CGameDescReader();
+
+		void	update();
+
+		bool	isFinished() const { return mState == GOT_GAMEDESC; }
+		const std::string& getErrorMsg() const { return mErrorMsg; }
+		CGameDesc* getGameDesc() { return mGameDesc; }
+
+	private:
+		eState		mState;
+		std::string	mErrorMsg;
+		CGameDesc*	mGameDesc;
+	};
+
 };
 
 
