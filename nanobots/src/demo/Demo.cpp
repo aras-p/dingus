@@ -479,7 +479,7 @@ static void	gSetupGUI()
 		gUIDlg->addRollout( GID_ROL_STATS, "Stats (S)", 0, sy, 130, UIHROL, 30 + nplayers*3*UIHLAB, true, 'S', false, &gUIRollStats );
 		// map name
 		gUIDlg->addStatic( 0,
-			("Map: "+desc.getMapName()).c_str(), 5, sy += UIHLAB, 120, UIHLAB, false, &label );
+			("Map: "+desc.getMap().getName()).c_str(), 5, sy += UIHLAB, 120, UIHLAB, false, &label );
 		UISTATS_LABEL;
 		// player stats
 		for( int p = 0; p < nplayers; ++p ) {

@@ -13,6 +13,7 @@ CGameSetupDialog* CGameSetupDialog::mSingleInstance = 0;
 
 CGameSetupDialog::CGameSetupDialog()
 :	mState( STATE_ACTIVE )
+,	mLastStateQueryTime( -1 )
 {
 	assert( !mSingleInstance );
 	mSingleInstance = this;
@@ -38,8 +39,6 @@ CGameSetupDialog::CGameSetupDialog()
 
 	const int xcol = 30;
 	yline = 10;
-	mDlg->addStatic( 0, "Controls", xcol-10, yline, 200, 22, false, &lab );
-	lab->getElement(0)->setFont( 1, false, DT_LEFT | DT_VCENTER );
 
 	/*
 	mDlg->addStatic( 0,
@@ -126,20 +125,72 @@ void CALLBACK CGameSetupDialog::renderCallback( CUIDialog& dlg )
 	const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
 	assert( &desc );
 
-	float xb = dlg.getX() + 10;
-	float yb = dlg.getY() + 20;
+	int i;
+
+	float yline;
+	const float HC = 18;
+	const float DYLINE = HC+2;
+
+	const float xcol = dlg.getX() + 30;
+	yline = dlg.getY() + 10;
 	
 	SFRect rc;
-	rc.set( xb, yb, xb+300, yb+20 );
-	dlg.imDrawText( "foo", 1, DT_RIGHT | DT_VCENTER, 0xFFffffff, rc, false );
+	rc.set( xcol-10, yline, xcol+400, yline+22 );
+	dlg.imDrawText( "Missions:", 1, DT_LEFT | DT_VCENTER, 0xFFffffff, rc, false );
+
+	yline += 24;
+	rc.set( xcol, yline, xcol+400, yline+DYLINE );
+	dlg.imDrawText( desc.getMissionSummary().c_str(), 0, DT_LEFT|DT_VCENTER, 0xFFffffff, rc, false );
+
+	for( i = 0; i < desc.getMissionCount(); ++i ) {
+		yline += 24;
+		rc.set( xcol, yline, xcol+400, yline+DYLINE );
+		dlg.imDrawText( desc.getMission(i).desc.c_str(), 0, DT_LEFT|DT_VCENTER, 0xFFffffff, rc, false );
+	}
+
+	// ---- players, join buttons etc.
+
+	yline += 24;
+	rc.set( xcol-10, yline, xcol+400, yline+22 );
+	dlg.imDrawText( "Players:", 1, DT_LEFT | DT_VCENTER, 0xFFffffff, rc, false );
+
+	int nplayers = desc.getPlayerCount();
+
+	yline += 24;
+	rc.set( xcol, yline, xcol+400, yline+DYLINE );
+	dlg.imDrawText( nplayers==1 ? "Single player game" : "Two player game", 0, DT_LEFT | DT_VCENTER, 0xFFffffff, rc, false );
+
+	static const char* PLAYER_TEX_NAMES[G_MAX_PLAYERS] = {
+		NULL,
+		RID_TEX_PLAYER1,
+		RID_TEX_PLAYER2,
+	};
+	for( i = 1; i < desc.getPlayerCount(); ++i ) {
+		yline += 24;
+		rc.set( xcol, yline, xcol+400, yline+DYLINE );
+		dlg.imDrawText( desc.getPlayer(i).name.c_str(), 0, DT_LEFT|DT_VCENTER, 0xFFffffff, rc, false );
+
+		rc.set( xcol+100, yline, xcol+100+DYLINE, yline+DYLINE );
+		RECT uvrc = { 0, 0, CGameDesc::FLAG_SIZE, CGameDesc::FLAG_SIZE };
+		dlg.imDrawSprite( 0xFFffffff, uvrc, RGET_S_TEX(PLAYER_TEX_NAMES[i]), rc );
+	}
 }
 
 
 void CGameSetupDialog::updateViewer( SMatrix4x4& viewer, float& tilt, float& zoom )
 {
-	float t = CSystemTimer::getInstance().getTimeS();
+	time_value currT = CSystemTimer::getInstance().getTime();
+	float t = currT.tosec();
 
-	const CGameMap& gmap = CGameInfo::getInstance().getGameDesc().getMap();
+	const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
+	const CGameMap& gmap = desc.getMap();
+
+	// periodically query receive server state
+	if( currT - mLastStateQueryTime > time_value::fromsec(0.5f) ) {
+		mLastStateQueryTime = currT;
+		net::receiveServerState( desc.getPlayerCount(), mServerState, mServerStateErrMsg );
+	}
+
 	int sizeX = gmap.getCellsX();
 	int sizeY = gmap.getCellsY();
 

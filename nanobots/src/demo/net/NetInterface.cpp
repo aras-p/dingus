@@ -118,6 +118,9 @@ bool net::receiveChunk( const unsigned char*& data, int reqSize, bool wait )
 	assert( reqSize < MAX_RECV_BUFFER );
 	data = NULL;
 
+	if( reqSize == 0 )
+		return true;
+
 	// no data available yet
 	if( !hasDataToRecv && !wait )
 		return false;

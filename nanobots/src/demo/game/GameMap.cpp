@@ -219,8 +219,7 @@ std::string CGameMap::initialize()
 	// TBD: streams, walls
 	// weird: streams seem to be asciiz!
 
-	//int strmsLen = strlen( (const char*)mapData );
-	//mapData += strmsLen + 1;
+	bu::receiveStrAsciiz();
 
 	//
 	// all is loaded now

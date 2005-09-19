@@ -13,6 +13,10 @@
 // Level minimap texture
 #define RID_TEX_LEVEL "levelMmap"
 
+// Player flags
+#define RID_TEX_PLAYER1 "player1"
+#define RID_TEX_PLAYER2 "player2"
+
 
 // Level mesh, full
 #define RID_MESH_LEVEL_FULL "levelFull"

@@ -2,6 +2,7 @@
 #include "GameDesc.h"
 #include "GameColors.h"
 #include "../ByteUtils.h"
+#include "../DemoResources.h"
 
 
 CGameDesc::CGameDesc()
@@ -35,6 +36,45 @@ CGameDesc::CGameDesc()
 CGameDesc::~CGameDesc()
 {
 }
+
+
+// --------------------------------------------------------------------------
+
+
+class CPlayerFlagTextureCreator : public CFixedTextureCreator {
+public:
+	CPlayerFlagTextureCreator( const CGameDesc::SPlayer& player )
+	:	CFixedTextureCreator( CGameDesc::FLAG_SIZE, CGameDesc::FLAG_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED )
+	,	mPlayer( &player )
+	{
+	}
+
+	virtual IDirect3DTexture9* createTexture() {
+		IDirect3DTexture9* tex = CFixedTextureCreator::createTexture();
+		HRESULT hr;
+
+		IDirect3DSurface9* dstSurf = 0;
+		hr = tex->GetSurfaceLevel( 0, &dstSurf );
+		assert( SUCCEEDED(hr) );
+		hr = D3DXLoadSurfaceFromFileInMemory( dstSurf, NULL, NULL, &mPlayer->flagBMP[0], mPlayer->flagBMP.size(), NULL, D3DX_DEFAULT, 0, NULL );
+		if( FAILED(hr) ) {
+			// silently fill surface with color
+			// TBD
+			CONS << "WARN: Player " << mPlayer->name << " has incorrect flag bitmap" << endl;
+		}
+
+		dstSurf->Release();
+
+		D3DXFilterTexture( tex, NULL, 0, D3DX_FILTER_BOX );
+		return tex;
+	}
+
+private:
+	const CGameDesc::SPlayer*	mPlayer;
+};
+
+
+// --------------------------------------------------------------------------
 
 
 /*
@@ -88,11 +128,26 @@ std::string CGameDesc::initialize()
 		return "Invalid blocker length";
 
 	// read players, start at first player (1)
+	const char* PLAYER_TEX_NAMES[G_MAX_PLAYERS] = {
+		NULL,
+		RID_TEX_PLAYER1,
+		RID_TEX_PLAYER2,
+	};
 	for( i = 1; i < mPlayerCount; ++i ) {
 		mPlayers[i].name = bu::receiveStr();
-		// TBD: flag bitmap
+		// TBD: workaround around Richard's funky stuff
+		int lastSlash = mPlayers[i].name.find_last_of( "\\//" );
+		if( lastSlash >= 0 )
+			mPlayers[i].name = mPlayers[i].name.substr( lastSlash+1, mPlayers[i].name.length()-lastSlash );
+
+		// flag bitmap
 		int flagSize = bu::receiveInt();
+		mPlayers[i].flagBMP.resize( flagSize );
 		net::receiveChunk( data, flagSize, true );
+		memcpy( &mPlayers[i].flagBMP[0], data, flagSize );
+
+		// register level texture
+		CSharedTextureBundle::getInstance().registerTexture( PLAYER_TEX_NAMES[i], *new CPlayerFlagTextureCreator( mPlayers[i] ) );
 	}
 
 	// initialize game map

@@ -2,6 +2,7 @@
 #define __GAME_SETUP_UI_H
 
 #include <dingus/gfx/gui/Gui.h>
+#include "net/NetMessages.h"
 
 
 class CGameSetupDialog : public boost::noncopyable {
@@ -30,6 +31,10 @@ private:
 
 	CUIDialog*	mDlg;
 	eDlgState	mState;
+
+	net::SServerState	mServerState;
+	std::string			mServerStateErrMsg;
+	time_value			mLastStateQueryTime;
 };
 
 

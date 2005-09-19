@@ -18,6 +18,20 @@ static inline std::string receiveStr()
 	return res;
 }
 
+static inline std::string receiveStrAsciiz()
+{
+	std::string res;
+	res.reserve( 64 );
+	while(true) {
+		const BYTE* data;
+		net::receiveChunk( data, 1, true );
+		if( !data[0] )
+			break;
+		res += (char)data[0];
+	}
+	return res;
+}
+
 static inline int receiveInt()
 {
 	const BYTE* data;

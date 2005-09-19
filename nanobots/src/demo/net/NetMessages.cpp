@@ -2,6 +2,7 @@
 #include "NetMessages.h"
 #include "NetInterface.h"
 #include "../game/GameDesc.h"
+#include "../ByteUtils.h"
 
 using namespace net;
 
@@ -18,6 +19,7 @@ enum eMessage {
 	NMSG_OK = 1,
 	NMSG_TEST_CONN = 2,
 	NMSG_GAME_DESC = 3,
+	NMSG_SERVER_STATE = 5,
 };
 
 const int NETWORK_PROTOCOL_VER = 1;
@@ -97,3 +99,47 @@ CGameDesc* net::receiveGameDesc( std::string& errMsg )
 	return gdesc;
 }
 
+
+net::SServerState::SServerState()
+{
+	memset( this, 0, sizeof(this) );
+}
+
+void net::receiveServerState( int playerCount, SServerState& state, std::string& errMsg )
+{
+	// query server state
+	NETCONS << "Query server state" << endl;
+	BYTE msg;
+	msg = NMSG_SERVER_STATE;
+	net::send( &msg, sizeof(msg) );
+
+	// receive server state
+	state = SServerState();
+	BYTE msgType = bu::receiveByte();
+	if( msgType != NMSG_SERVER_STATE ) {
+		errMsg = "Failed to query server state";
+		return;
+	}
+	BYTE stateByte = bu::receiveByte();
+	if( stateByte > GST_ENDED ) {
+		errMsg = "Invalid game server state";
+		return;
+	}
+	state.state = (eGameServerState)stateByte;
+	if( state.state == GST_STARTING || state.state == GST_STARTED ) {
+		// skip ticks
+		BYTE* data;
+		net::receiveChunk( data, 8, true );
+	}
+	// read player states, skip first (it's AI)
+	for( int i = 1; i < playerCount; ++i ) {
+		BYTE realtime = bu::receiveByte();
+		state.playerRealtime[i] = realtime ? true : false;
+		if( realtime ) {
+			BYTE ctrl = bu::receiveByte();
+			state.playerControlled[i] = ctrl ? true : false;
+		}
+	}
+	
+	errMsg = "";
+}

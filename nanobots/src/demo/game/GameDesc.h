@@ -9,8 +9,8 @@ class CGameDesc : public boost::noncopyable {
 public:
 	enum { FLAG_SIZE = 64 };
 	struct SPlayer {
-		std::string name;
-		D3DCOLOR	flag[FLAG_SIZE*FLAG_SIZE];
+		std::string			name;
+		std::vector<BYTE>	flagBMP;
 	};
 
 	struct SMission {
@@ -28,7 +28,6 @@ public:
 
 
 	const CGameMap& getMap() const { return mMap; }
-	const std::string& getMapName() const { return mMapName; }
 	int		getTurnCount() const { return mTurnCount; }
 
 	//bool	isSinglePlayer() const { return mPlayerCount==2; }
@@ -47,7 +46,6 @@ private:
 	int			mPlayerCount; // players count (incl AI)
 	SPlayer		mPlayers[G_MAX_PLAYERS];
 
-	std::string	mMapName;
 	int			mTurnCount; // -1 if realtime play
 
 	int			mBlockerLength;
