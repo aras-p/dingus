@@ -23,6 +23,7 @@ CGameSetupDialog::CGameSetupDialog()
 	mDlg = new CUIDialog();
 	mDlg->enableNonUserEvents( true );
 	mDlg->setCallback( dialogCallback );
+	mDlg->setRenderCallback( renderCallback );
 	mDlg->setBackgroundColors( 0xA0303030 );
 	mDlg->setLocation( 120, 70 );
 	mDlg->setSize( 420, 340 );
@@ -120,17 +121,17 @@ void CALLBACK CGameSetupDialog::dialogCallback( UINT evt, int ctrlID, CUIControl
 }
 
 
-void CGameSetupDialog::render()
+void CALLBACK CGameSetupDialog::renderCallback( CUIDialog& dlg )
 {
 	const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
 	assert( &desc );
 
-	float xb = mDlg->getX() + 10;
-	float yb = mDlg->getY() + 20;
+	float xb = dlg.getX() + 10;
+	float yb = dlg.getY() + 20;
 	
 	SFRect rc;
 	rc.set( xb, yb, xb+300, yb+20 );
-	mDlg->imDrawText( "foo", 1, DT_RIGHT | DT_VCENTER, 0xFFffffff, rc, false );
+	dlg.imDrawText( "foo", 1, DT_RIGHT | DT_VCENTER, 0xFFffffff, rc, false );
 }
 
 

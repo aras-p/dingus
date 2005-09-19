@@ -18,12 +18,12 @@ public:
 	eDlgState	getState() const { return mState; }
 
 
-	void	render();
 	void	updateViewer( SMatrix4x4& viewer, float& tilt, float& zoom );
 	//void		update();
 
 
 	static void CALLBACK dialogCallback( UINT evt, int ctrlID, CUIControl* ctrl );
+	static void CALLBACK renderCallback( CUIDialog& dlg );
 	
 private:
 	static CGameSetupDialog*	mSingleInstance;

@@ -7,18 +7,42 @@
 namespace bu {
 
 
-static inline std::string readStr()
+static inline std::string receiveStr()
 {
 	const BYTE* data;
 	net::receiveChunk( data, 1, true );
 	int len = data[0];
 
 	net::receiveChunk( data, len, true );
-	std::string res( (const char)data, len );
+	std::string res( (const char*)data, len );
 	return res;
 }
 
+static inline int receiveInt()
+{
+	const BYTE* data;
+	net::receiveChunk( data, 4, true );
+	int res = *(const int*)data;
+	return res;
+}
 
+static inline unsigned char receiveByte()
+{
+	const BYTE* data;
+	net::receiveChunk( data, 1, true );
+	unsigned char res = *(const unsigned char*)data;
+	return res;
+}
+
+static inline short receiveShort()
+{
+	const BYTE* data;
+	net::receiveChunk( data, 2, true );
+	unsigned res = *(const short*)data;
+	return res;
+}
+
+/*
 static inline std::string readStr( const BYTE*& data )
 {
 	// asciiz
@@ -32,6 +56,7 @@ static inline std::string readStr( const BYTE*& data )
 	data += len+1;
 	return res;
 }
+*/
 
 static inline int readInt( const BYTE*& data )
 {
@@ -40,9 +65,9 @@ static inline int readInt( const BYTE*& data )
 	return res;
 }
 
-static inline unsigned short readShort( const BYTE*& data )
+static inline short readShort( const BYTE*& data )
 {
-	unsigned short res = *(const unsigned short*)data;
+	short res = *(const short*)data;
 	data += 2;
 	return res;
 }

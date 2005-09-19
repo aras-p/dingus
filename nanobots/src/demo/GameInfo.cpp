@@ -58,15 +58,8 @@ const char* CGameInfo::initStep()
 
 	// request game desc?
 	if( !mGameDesc ) {
-		bool connOk = net::testConn();
-		if( !connOk	) {
-			gErrorMsg = "Wrong connection protocol";
-			return NULL;
-		}
-		mGameDesc = new CGameDesc();
-		std::string errmsg = net::getGameDesc( *mGameDesc );
-		if( !errmsg.empty()	) {
-			gErrorMsg = errmsg;
+		mGameDesc = net::receiveGameDesc( gErrorMsg );
+		if( !gErrorMsg.empty()	) {
 			return NULL;
 		}
 		return "Calculating level mesh...";

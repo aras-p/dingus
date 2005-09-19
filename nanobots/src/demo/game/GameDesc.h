@@ -7,8 +7,6 @@
 
 class CGameDesc : public boost::noncopyable {
 public:
-	enum eInitState { NONE, READPLAYERS, READMAP, READMISSIONS, FINISHED, };
-
 	enum { FLAG_SIZE = 64 };
 	struct SPlayer {
 		std::string name;
@@ -25,9 +23,8 @@ public:
 	~CGameDesc();
 
 
-	void	initUpdate();
-	bool	isInitFinished() const { return mInitState == FINISHED; }
-	const std::string& getInitErrorMsg() const { return mInitErrorMsg; }
+	/// @return Error message or empty string
+	std::string	initialize();
 
 
 	const CGameMap& getMap() const { return mMap; }
@@ -57,9 +54,6 @@ private:
 	
 	std::string				mMissionSummary;
 	std::vector<SMission>	mMissions;
-
-	eInitState	mInitState;
-	std::string	mInitErrorMsg;
 };
 
 

@@ -101,7 +101,7 @@ CGameMap::~CGameMap()
 
 
 
-std::string CGameMap::initialize( const BYTE*& mapData )
+std::string CGameMap::initialize()
 {
 	assert( !mCells );
 
@@ -116,10 +116,12 @@ std::string CGameMap::initialize( const BYTE*& mapData )
 	string	Walls text files
 	*/
 
+	const BYTE* data;
+
 	//
 	// parse name
 
-	mName = bu::readStr( mapData );
+	mName = bu::receiveStr();
 	// TBD: workaround around Richard's funky stuff
 	int lastSlash = mName.find_last_of( "\\//" );
 	if( lastSlash >= 0 )
@@ -129,9 +131,10 @@ std::string CGameMap::initialize( const BYTE*& mapData )
 	//
 	// read map bitmap
 
-	int bmpSize = bu::readInt( mapData );
-	const char* bmpFile = (const char*)mapData;
+	int bmpSize = bu::receiveInt();
+	net::receiveChunk( data, bmpSize, true );
 	// compute CRC of the bitmap
+	const char* bmpFile = (const char*)data;
 	mCRC = boost::crc<32,0xFFFFFFFF,0,0,false,false>( bmpFile, bmpSize );
 
 
@@ -187,17 +190,17 @@ std::string CGameMap::initialize( const BYTE*& mapData )
 	surface->UnlockRect();
 	surface->Release();
 
-	mapData += bmpSize;
-
 	//
 	// read entities
 
 	// TBD: something weird about text format
-	int ptsSize = mapData[0];
+	int ptsSize = bu::receiveByte();
+	bu::receiveByte(); // skip byte: weird
 	char* ptsFile = new char[ptsSize+1];
 	ptsFile[ptsSize] = 0;
-	memcpy( ptsFile, mapData+2, ptsSize );
-	mapData += ptsSize + 2;
+
+	net::receiveChunk( data, ptsSize, true );
+	memcpy( ptsFile, data, ptsSize );
 
 	const char* tokens = "\n\r";
 	const char* pline = strtok( ptsFile, tokens );
@@ -216,8 +219,8 @@ std::string CGameMap::initialize( const BYTE*& mapData )
 	// TBD: streams, walls
 	// weird: streams seem to be asciiz!
 
-	int strmsLen = strlen( (const char*)mapData );
-	mapData += strmsLen + 1;
+	//int strmsLen = strlen( (const char*)mapData );
+	//mapData += strmsLen + 1;
 
 	//
 	// all is loaded now

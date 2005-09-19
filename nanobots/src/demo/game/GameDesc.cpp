@@ -7,8 +7,7 @@
 CGameDesc::CGameDesc()
 :	mPlayerCount(0),
 	mTurnCount(-1),
-	mBlockerLength(1),
-	mInitState( NONE )
+	mBlockerLength(1)
 {
 	assert( G_MAX_PLAYERS == 3 );
 
@@ -66,113 +65,59 @@ byte	Number of missions
 		byte	Y
 */
 
-void CGameDesc::initUpdate()
-{
-	switch( mInitState ) {
-	case NONE:
-		{
-			// receive up to players desc
-			const BYTE* data;
-			bool got = net::receiveChunk( data, 4 ); // TBD: 5
-			if( got ) {
-				// TBD: seems that this isn't present
-				//BYTE gameState = bu::readByte( gameDescData );
-				//if( gameState >= GST_NONE || gameState < GST_ENDED )
-				//	return "Invalid game server state";
-
-				mPlayerCount = bu::readByte( data ) + 1;
-				if( mPlayerCount < 1 || mPlayerCount > G_MAX_PLAYERS ) {
-					mInitErrorMsg = "Invalid player count";
-					return;
-				}
-
-				mTurnCount = bu::readShort( data );
-
-				mBlockerLength = bu::readByte( data );
-				if( mBlockerLength < 1 || mBlockerLength > 20 ) {
-					mInitErrorMsg = "Invalid blocker length";
-					return;
-				}
-
-				mState = READPLAYERS;
-			}
-		}
-		break;
-	case GOT_CONNTEST:
-		{
-			NETCONS << "Fetch game description" << endl;
-			BYTE msg;
-			msg = NMSG_REQ_GAME_DESC;
-			net::send( &msg, sizeof(msg) );
-			mState = SENT_GAMEDESC;
-		}
-		break;
-	case SENT_GAMEDESC:
-		{
-			const BYTE* data;
-			bool got = net::receiveChunk( data, 1 );
-			if( got ) {
-				if( data[0] != NMSG_TEST_CONN || data[1] != NETWORK_PROTOCOL_VER ) {
-					mErrorMsg = "Failed to get game description";
-				} else {
-					mState = READ_GAMEDESC;
-					assert( !mGameDesc );
-					mGameDesc = new CGameDesc();
-				}
-			}
-		}
-		break;
-	case READ_GAMEDESC:
-		{
-			assert( mGameDesc );
-			
-		}
-		break;
-	case GOT_GAMEDESC:
-		{
-			assert( mGameDesc );
-		}
-		break;
-	default:
-		assert( false );
-	}
-}
-
-void foobaz()
+std::string CGameDesc::initialize()
 {
 	int i;
 
+	const BYTE* data;
+	net::receiveChunk( data, 4, true ); // TBD: 5
+
+	// TBD: seems that this isn't present
+	//BYTE gameState = bu::readByte( gameDescData );
+	//if( gameState >= GST_NONE || gameState < GST_ENDED )
+	//	return "Invalid game server state";
+
+	mPlayerCount = bu::readByte( data ) + 1;
+	if( mPlayerCount < 1 || mPlayerCount > G_MAX_PLAYERS )
+		return "Invalid player count";
+
+	mTurnCount = bu::readShort( data );
+
+	mBlockerLength = bu::readByte( data );
+	if( mBlockerLength < 1 || mBlockerLength > 20 )
+		return "Invalid blocker length";
+
 	// read players, start at first player (1)
 	for( i = 1; i < mPlayerCount; ++i ) {
-		mPlayers[i].name = bu::readStr( gameDescData );
+		mPlayers[i].name = bu::receiveStr();
 		// TBD: flag bitmap
-		int flagSize = bu::readInt( gameDescData );
-		gameDescData += flagSize;
+		int flagSize = bu::receiveInt();
+		net::receiveChunk( data, flagSize, true );
 	}
 
 	// initialize game map
-	std::string errmsg = mMap.initialize( gameDescData );
+	std::string errmsg = mMap.initialize();
 	if( !errmsg.empty() )
 		return errmsg;
 
 	// read missions
-	mMissionSummary = bu::readStr( gameDescData );
-	int missionCount = bu::readByte( gameDescData );
+	mMissionSummary = bu::receiveStr();
+	int missionCount = bu::receiveByte();
 	mMissions.reserve( missionCount );
 	for( i = 0; i < missionCount; ++i ) {
 		mMissions.push_back( SMission() );
 		SMission& m = mMissions.back();
-		m.desc = bu::readStr( gameDescData );
+		m.desc = bu::receiveStr();
 		
 		// TBD: that's weird!
 		if( i == 0 )
-			gameDescData++;
+			bu::receiveByte();
 
-		int ptCount = bu::readByte( gameDescData );
+		int ptCount = bu::receiveByte();
 		m.points.reserve( ptCount );
 		for( int j = 0; j < ptCount; ++j ) {
-			int ptx = bu::readByte( gameDescData );
-			int pty = bu::readByte( gameDescData );
+			int ptx = bu::receiveByte();
+			int pty = bu::receiveByte();
 			m.points.push_back( std::make_pair(ptx,pty) );
 		}
 	}

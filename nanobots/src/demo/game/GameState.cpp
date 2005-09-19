@@ -51,11 +51,12 @@ void CGameState::updateState( const BYTE* data )
 		byte	ToZ
 	*/
 
-	int i;
+	//int i;
 
 	// skip ticks
 	data += 8;
 
+	/*
 	int turn = bu::readShort( data );
 
 	// read players
@@ -95,6 +96,7 @@ void CGameState::updateState( const BYTE* data )
 		int goal = bu::readByte( data );
 		int reached = bu::readByte( data );
 	}
+	*/
 	
 	// TBD: set camera position
 }

@@ -442,8 +442,6 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 {
 	CGameInfo::getInstance().getEntities().renderLabels( dlg, gAppSettings.followMode );
-	if( gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE )
-		gUIGameSetupDlg->render();
 }
 
 

@@ -106,7 +106,6 @@ void net::onAsyncMsg( WPARAM wparam, LPARAM lparam )
 	int err = WSAGETSELECTERROR( lparam );
 	switch( event ) {
 	case FD_READ:
-		assert( !hasDataToRecv );
 		hasDataToRecv = true;
 		break;
 	}

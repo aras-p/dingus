@@ -29,7 +29,7 @@ public:
 	~CGameMap();
 	
 	/// @return Empty string if ok, error message on error.
-	std::string	initialize( const BYTE*& mapData );
+	std::string	initialize();
 
 	static bool isBlood( int type ) { return type < CELL_PERF; }
 
