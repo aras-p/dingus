@@ -114,7 +114,7 @@ std::string CGameDesc::initialize()
 
 	// TBD: seems that this isn't present
 	//BYTE gameState = bu::readByte( gameDescData );
-	//if( gameState >= GST_NONE || gameState < GST_ENDED )
+	//if( gameState >= GST_NONE || gameState < GST_READYTOSTART )
 	//	return "Invalid game server state";
 
 	mPlayerCount = bu::readByte( data ) + 1;

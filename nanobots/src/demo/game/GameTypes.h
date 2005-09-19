@@ -13,6 +13,8 @@ enum eGameServerState {
 	GST_STARTING,	///< Starting (countdown)
 	GST_STARTED,	///< Game itself
 	GST_ENDED,		///< Game ended
+	GST_READYTOSTART, ///< Ready to start
+	GSTCOUNT
 };
 
 /// Entity types.

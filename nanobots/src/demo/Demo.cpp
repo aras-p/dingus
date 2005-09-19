@@ -470,6 +470,8 @@ static void	gSetupGUI()
 	const CGameDesc& desc = gi.getGameDesc();
 	int nplayers = desc.getPlayerCount();
 
+	gUIGameSetupDlg = new CGameSetupDialog();
+
 	// stats
 	{
 		int sy = 0;
@@ -761,7 +763,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gSettingsDlgWasActive = false;
 	gUIHelpDlg = new CDemoHelpDialog();
 	gHelpDlgWasActive = false;
-	gUIGameSetupDlg = new CGameSetupDialog();
 
 	gSndHeart = new CSound( *RGET_SOUND(CSoundDesc("heart", true)) );
 	gSndHeart->setLooping( true );
@@ -793,7 +794,7 @@ bool CDemo::msgProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 	if( gUIHelpDlg->isActive() ) {
 		return gUIHelpDlg->getDialog().msgProc( hwnd, msg, wparam, lparam );
 	}
-	if( gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE ) {
+	if( gUIGameSetupDlg && gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE ) {
 		return gUIGameSetupDlg->getDialog().msgProc( hwnd, msg, wparam, lparam );
 	}
 

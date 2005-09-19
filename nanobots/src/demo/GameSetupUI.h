@@ -3,6 +3,7 @@
 
 #include <dingus/gfx/gui/Gui.h>
 #include "net/NetMessages.h"
+#include "game/GameTypes.h"
 
 
 class CGameSetupDialog : public boost::noncopyable {
@@ -31,6 +32,10 @@ private:
 
 	CUIDialog*	mDlg;
 	eDlgState	mState;
+
+	CUIButton*	mBtnJoin[G_MAX_PLAYERS];
+	CUIButton*	mBtnStart;
+	int			mJoinAcceptedForPlayer;
 
 	net::SServerState	mServerState;
 	std::string			mServerStateErrMsg;

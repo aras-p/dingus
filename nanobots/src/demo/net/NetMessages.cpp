@@ -6,20 +6,15 @@
 
 using namespace net;
 
-/*
-Message types:
-2 = TestConnection
-3 = SendGameDesc
-5 = ??? (len=2, 5 0)
-6 = Looks like GameData (len=33, 20 23 38 201 65 136 199 8 0 0 2 0 0 0 9 108 111 103 80 105 101 114 114 101 1 0 0 0 0 0 0 0)
-*/
 
 enum eMessage {
 	NMSG_ERROR = 0,
 	NMSG_OK = 1,
 	NMSG_TEST_CONN = 2,
 	NMSG_GAME_DESC = 3,
+	NMSG_JOIN = 4,
 	NMSG_SERVER_STATE = 5,
+	NMSG_START = 7,
 };
 
 const int NETWORK_PROTOCOL_VER = 1;
@@ -105,23 +100,28 @@ net::SServerState::SServerState()
 	memset( this, 0, sizeof(this) );
 }
 
-void net::receiveServerState( int playerCount, SServerState& state, std::string& errMsg )
+void net::receiveServerState( int playerCount, SServerState& state, std::string& errMsg, bool startFlag )
 {
 	// query server state
-	NETCONS << "Query server state" << endl;
 	BYTE msg;
-	msg = NMSG_SERVER_STATE;
+	if( startFlag ) {
+		NETCONS << "Start game" << endl;
+		msg = NMSG_START;
+	} else {
+		NETCONS << "Query server state" << endl;
+		msg = NMSG_SERVER_STATE;
+	}
 	net::send( &msg, sizeof(msg) );
 
 	// receive server state
 	state = SServerState();
 	BYTE msgType = bu::receiveByte();
 	if( msgType != NMSG_SERVER_STATE ) {
-		errMsg = "Failed to query server state";
+		errMsg = "Failed to receive server state";
 		return;
 	}
 	BYTE stateByte = bu::receiveByte();
-	if( stateByte > GST_ENDED ) {
+	if( stateByte > GST_READYTOSTART ) {
 		errMsg = "Invalid game server state";
 		return;
 	}
@@ -143,3 +143,27 @@ void net::receiveServerState( int playerCount, SServerState& state, std::string&
 	
 	errMsg = "";
 }
+
+
+bool net::requestJoin( int playerID )
+{
+	NETCONS << "Request join for player" << playerID << endl;
+	BYTE msg[2];
+	msg[0] = NMSG_JOIN;
+	msg[1] = playerID;
+	net::send( &msg, sizeof(msg) );
+
+	// receive join or error
+	BYTE msgType = bu::receiveByte();
+	if( msgType == NMSG_JOIN ) {
+		NETCONS << "Join accepted" << endl;
+		return true;
+	} else if( msgType == NMSG_ERROR ) {
+		NETCONS << "Join not accepted" << endl;
+		return false;
+	} else {
+		NETCONS << "ERROR: unrecognized join response" << endl;
+		return false;
+	}
+}
+

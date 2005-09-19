@@ -19,7 +19,9 @@ namespace net {
 
 	CGameDesc* receiveGameDesc( std::string& errMsg );
 
-	void receiveServerState( int playerCount, SServerState& state, std::string& errMsg );
+	void receiveServerState( int playerCount, SServerState& state, std::string& errMsg, bool startFlag );
+
+	bool requestJoin( int playerID );
 
 };
 
