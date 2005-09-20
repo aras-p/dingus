@@ -14,11 +14,12 @@ public:
 	};
 	struct SPlayer {
 		int		score;
-		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs;
-		int		aiID;
+		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs; // [0] is the most recent one
+		// TBD
+		//int		aiID;
 		// stats
-		int		aliveCount;				// alive entity count
-		int		counts[ENTITYCOUNT];	// alive entity counts by type
+		//int		aliveCount;				// alive entity count
+		//int		counts[ENTITYCOUNT];	// alive entity counts by type
 	};
 
 	typedef std::map<int,CGameEntity*>	TEntityMap;
@@ -33,14 +34,17 @@ public:
 	TEntityMap::const_iterator entitiesBegin() const { return mEntities.begin(); }
 	TEntityMap::const_iterator entitiesEnd() const { return mEntities.end(); }
 
+	int getTurn() const { return mTurn; }
+
 	//bool	isSinglePlayer() const { return mPlayerCount==2; }
 	//bool	isComputerPlayer( int index ) const { return index == mPlayerCount-1; }
 	//int		getPlayerCount() const { return mPlayerCount; }
 	//const SPlayer& getPlayer( int i ) const { return mPlayers[i]; }
 
 private:
-	SPlayer		mPlayers[G_MAX_PLAYERS];
+	SPlayer		mPlayers[G_MAX_PLAYERS]; // incl. AI
 	TEntityMap	mEntities;
+	int			mTurn; ///< Current turn
 };
 
 

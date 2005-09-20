@@ -21,6 +21,8 @@ public:
 	CGameEntity( unsigned short eid, eEntityType type, int owner, int bornTurn );
 	~CGameEntity();
 
+	int		getLastUpdateTurn() const { return mLastUpdateTurn; }
+
 	int		getID() const { return mID; }
 	eEntityType	getType() const { return mType; }
 	const char* getTypeName() const { return mTypeName; }
@@ -29,8 +31,12 @@ public:
 
 	bool	isAlive() const { return mState.state != ENTSTATE_DEAD; }
 	const SState& getState() const { return mState; }
+	void	updateState( int turn, const SState& state );
 
 private:
+	/// Last turn number that this entity was received
+	int		mLastUpdateTurn;
+
 	/// Unique entity's ID
 	int		mID;
 	/// Entity type.

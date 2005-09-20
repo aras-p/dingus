@@ -37,8 +37,8 @@ void CGameState::updateState()
 		UInt16	Stock
 		byte	State
 		byte	HitPoint
-	byte	Number of Goals reached in this turn
 	// for each human player (not incl. AI)
+		byte	Number of missions
 		// for each mission
 			byte	MissionState
 			byte	Value (0 to 100: 100==success)
@@ -67,6 +67,15 @@ void CGameState::updateState()
 		assert( pid >= 0 && pid < G_MAX_PLAYERS );
 		int score = bu::receiveShort();
 		std::string logtxt = bu::receiveStr();
+		if( mTurn != turn ) { // if it's really a new turn, update players
+			mPlayers[i].score = score;
+			SLogMsg logmsg;
+			logmsg.turn = turn;
+			logmsg.message = logtxt;
+			if( mPlayers[i].logs.size() == mPlayers[i].logs.capacity() )
+				mPlayers[i].logs.pop_back();
+			mPlayers[i].logs.push_front( logmsg );
+		}
 	}
 
 	// read bots
@@ -86,6 +95,25 @@ void CGameState::updateState()
 		state.state = bu::receiveByte();
 		assert( state.state >= ENTSTATE_IDLE && state.state < ENTSTATE_DEAD );
 		state.health = bu::receiveByte();
+
+		if( mTurn != turn ) { // if it's really a new turn, add/update entity
+			CGameEntity* entity = NULL;
+			bool newEntity = false;
+			TEntityMap::iterator it = mEntities.find( bid );
+			if( it == mEntities.end() ) {
+				entity = new CGameEntity( bid, (eEntityType)type, pid, turn );
+				mEntities.insert( std::make_pair( bid, entity ) );
+				newEntity = true;
+			} else {
+				entity = it->second;
+			}
+			entity->updateState( turn, state );
+
+			if( newEntity ) {
+				CGameInfo::getInstance().onNewEntity( *entity );
+				// TBD: detect born AIs, needles etc
+			}
+		}
 	}
 
 	// read mission states

@@ -62,6 +62,7 @@ const char* CGameInfo::initStep()
 		if( !gErrorMsg.empty()	) {
 			return NULL;
 		}
+		mState = new CGameState();
 		return "Calculating level mesh...";
 	}
 
@@ -104,7 +105,6 @@ CGameInfo::CGameInfo( const std::string& server, int port, HWND wnd )
 :	mServerName(server)
 ,	mServerPort(port)
 ,	mWindow( wnd )
-//:	mTime( 0.0f ),
 ,	mGameDesc(NULL)
 ,	mState(NULL)
 ,	mLevelMesh(NULL),
@@ -128,3 +128,13 @@ CGameInfo::~CGameInfo()
 	safeDelete( mState );
 	safeDelete( mGameDesc );
 }
+
+
+// --------------------------------------------------------------------------
+//  general notifications
+
+void CGameInfo::onNewEntity( const CGameEntity& e )
+{
+	mEntities->onNewGameEntity( e );
+}
+

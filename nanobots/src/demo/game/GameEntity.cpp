@@ -12,7 +12,8 @@ static const char* ENT_TYPE_NAMES[ENTITYCOUNT] = {
 };
 
 CGameEntity::CGameEntity( unsigned short eid, eEntityType type, int owner, int bornTurn )
-:	mID( eid )
+:	mLastUpdateTurn( bornTurn-1 )
+,	mID( eid )
 ,	mType( type )
 ,	mOwner( owner )
 ,	mMaxHealth( -1 )
@@ -22,8 +23,24 @@ CGameEntity::CGameEntity( unsigned short eid, eEntityType type, int owner, int b
 	assert( bornTurn >= 0 );
 
 	mTypeName = ENT_TYPE_NAMES[type];
+	memset( &mState, 0, sizeof(SState) );
 }
 
 CGameEntity::~CGameEntity()
 {
+}
+
+void CGameEntity::updateState( int turn, const SState& state )
+{
+	if( turn == mLastUpdateTurn )
+		return; // already updated this turn
+
+	// this is a very first update, remember max. health
+	if( mLastUpdateTurn == mBornTurn-1 ) {
+		mMaxHealth = state.health;
+	}
+
+	mState = state;
+
+	mLastUpdateTurn = turn;
 }

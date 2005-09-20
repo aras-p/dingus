@@ -35,6 +35,8 @@ public:
 		return (it==mActorEntities.end()) ? NULL : it->second;
 	}
 
+	void onNewGameEntity( const CGameEntity& e );
+
 private:
 	int		getCollidedEntityID( const SLine3& ray ) const;
 

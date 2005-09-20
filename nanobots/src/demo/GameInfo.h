@@ -10,6 +10,7 @@ class CPointsMesh;
 class CMinimapRenderer;
 class CEntityInfoRenderer;
 class CEntityManager;
+class CGameEntity;
 
 
 /// Job sets this to error message, or NULL if no error.
@@ -55,6 +56,8 @@ public:
 	CMinimapRenderer& getMinimapRenderer() { return *mMinimapRenderer; }
 	CMinimapRenderer& getEntityBlobsRenderer() { return *mEntityBlobsRenderer; }
 	CEntityInfoRenderer& getEntityInfoRenderer() { return *mEntityInfoRenderer; }
+
+	void	onNewEntity( const CGameEntity& e );
 
 	/*
 	const CTimer& getTimer() const { return mTimer; }

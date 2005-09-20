@@ -418,3 +418,11 @@ int CEntityManager::getCollidedEntityID( const SLine3& ray ) const
 	}
 	return index;
 }
+
+
+void CEntityManager::onNewGameEntity( const CGameEntity& e )
+{
+	assert( getActorEntityByID(e.getID()) == NULL );
+	CActorEntity* actor = new CActorEntity( e );
+	mActorEntities.insert( std::make_pair( e.getID(), actor ) );
+}
