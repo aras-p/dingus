@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "GameState.h"
 #include "../ByteUtils.h"
-//#include "GameColors.h"
+#include "../net/NetMessages.h"
+#include "../GameInfo.h"
+#include "GameDesc.h"
 
 
 CGameState::CGameState()
@@ -12,7 +14,7 @@ CGameState::~CGameState()
 {
 }
 
-void CGameState::updateState( const BYTE* data )
+void CGameState::updateState()
 {
 	/*
 	Format of game state data:
@@ -36,12 +38,11 @@ void CGameState::updateState( const BYTE* data )
 		byte	State
 		byte	HitPoint
 	byte	Number of Goals reached in this turn
-	//for each Goal
-		byte	PlayerID
-		byte	Mission index
-		byte	Goal index
-		bool	GoalReached (can be unreached)
-	bool	SetCameraPosition
+	// for each human player (not incl. AI)
+		// for each mission
+			byte	MissionState
+			byte	Value (0 to 100: 100==success)
+	byte	SetCameraPosition
 	//if set camera position
 		byte	X
 		byte	Y
@@ -51,52 +52,53 @@ void CGameState::updateState( const BYTE* data )
 		byte	ToZ
 	*/
 
-	//int i;
+	int i;
+	const BYTE* data;
 
 	// skip ticks
-	data += 8;
+	net::receiveChunk( data, 8, true );
 
-	/*
-	int turn = bu::readShort( data );
+	int turn = bu::receiveShort();
 
 	// read players
-	int playerCount = bu::readByte( data ); // incl. computer
+	int playerCount = bu::receiveByte(); // incl. AI
 	for( i = 0; i < playerCount; ++i ) {
-		int pid = bu::readByte( data );
+		int pid = bu::receiveByte();
 		assert( pid >= 0 && pid < G_MAX_PLAYERS );
-		int score = bu::readShort( data );
-		std::string logtxt = bu::readStr( data );
+		int score = bu::receiveShort();
+		std::string logtxt = bu::receiveStr();
 	}
 
 	// read bots
-	int botCount = bu::readShort( data );
+	int botCount = bu::receiveShort();
 	for( i = 0; i < botCount; ++i ) {
-		int bid = bu::readShort( data );
-		int pid = bu::readByte( data );
+		int bid = bu::receiveShort();
+		int pid = bu::receiveByte();
 		assert( pid >= 0 && pid < G_MAX_PLAYERS );
-		int type = bu::readByte( data );
+		int type = bu::receiveByte();
 		assert( type >= ENTITY_NEEDLE && type < ENTITYCOUNT );
 		CGameEntity::SState state;
-		state.posx = bu::readByte( data );
-		state.posy = bu::readByte( data );
-		state.targx = bu::readByte( data );
-		state.targy = bu::readByte( data );
-		state.stock = bu::readShort( data );
-		state.state = bu::readByte( data );
+		state.posx = bu::receiveByte();
+		state.posy = bu::receiveByte();
+		state.targx = bu::receiveByte();
+		state.targy = bu::receiveByte();
+		state.stock = bu::receiveShort();
+		state.state = bu::receiveByte();
 		assert( state.state >= ENTSTATE_IDLE && state.state < ENTSTATE_DEAD );
-		state.health = bu::readByte( data );
+		state.health = bu::receiveByte();
 	}
 
-	// read goals reached
-	int goalCount = bu::readByte( data );
-	for( i = 0; i < goalCount; ++i ) {
-		int pid = bu::readByte( data );
-		assert( pid >= 0 && pid < G_MAX_PLAYERS );
-		int mission = bu::readByte( data );
-		int goal = bu::readByte( data );
-		int reached = bu::readByte( data );
+	// read mission states
+	int goalCount = bu::receiveByte();
+	int missionCount = CGameInfo::getInstance().getGameDesc().getMissionCount();
+	for( i = 1; i < playerCount; ++i ) { // human players only
+		for( int j = 0; j < missionCount; ++i ) {
+			int missionState = bu::receiveByte();
+			assert( missionState >= MST_TOBEDONE && missionState < MSTCOUNT );
+			int completion = bu::receiveByte();
+			assert( completion >= 0 && completion <= 100 );
+		}
 	}
-	*/
 	
 	// TBD: set camera position
 }

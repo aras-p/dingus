@@ -2,6 +2,7 @@
 #include "NetMessages.h"
 #include "NetInterface.h"
 #include "../game/GameDesc.h"
+#include "../game/GameState.h"
 #include "../ByteUtils.h"
 
 using namespace net;
@@ -14,7 +15,9 @@ enum eMessage {
 	NMSG_GAME_DESC = 3,
 	NMSG_JOIN = 4,
 	NMSG_SERVER_STATE = 5,
+	NMSG_GAME_DATA = 6,
 	NMSG_START = 7,
+	NMSG_GAME_ENDED = 7,
 };
 
 const int NETWORK_PROTOCOL_VER = 1;
@@ -167,3 +170,21 @@ bool net::requestJoin( int playerID )
 	}
 }
 
+void net::updateGame( int keyCode, int locX, int locY, CGameState& state )
+{
+	//NETCONS << "Update game" << endl;
+	BYTE msg[4];
+	msg[0] = NMSG_GAME_DATA;
+	msg[1] = keyCode;
+	msg[2] = locX;
+	msg[3] = locY;
+	net::send( &msg, sizeof(msg) );
+
+	// receive
+	BYTE msgType = bu::receiveByte();
+	if( msgType == NMSG_GAME_DATA ) {
+		state.updateState();
+	} else if( msgType == NMSG_GAME_ENDED ) {
+		// TBD: game ended!
+	}
+}

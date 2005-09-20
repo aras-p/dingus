@@ -17,6 +17,14 @@ enum eGameServerState {
 	GSTCOUNT
 };
 
+/// Mission states
+enum eMissionState {
+	MST_TOBEDONE = 0,
+	MST_FAILED = 1,
+	MST_DONE = 2,
+	MSTCOUNT
+};
+
 /// Entity types.
 enum eEntityType {
 	ENTITY_NEEDLE = 0,

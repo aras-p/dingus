@@ -27,7 +27,7 @@ public:
 	CGameState();
 	~CGameState();
 
-	void updateState( const BYTE* data );
+	void updateState();
 
 	int getEntityCount() const { return mEntities.size(); }
 	TEntityMap::const_iterator entitiesBegin() const { return mEntities.begin(); }

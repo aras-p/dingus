@@ -4,7 +4,7 @@
 #include "../game/GameTypes.h"
 
 class CGameDesc;
-
+class CGameState;
 
 namespace net {
 
@@ -22,6 +22,8 @@ namespace net {
 	void receiveServerState( int playerCount, SServerState& state, std::string& errMsg, bool startFlag );
 
 	bool requestJoin( int playerID );
+
+	void updateGame( int keyCode, int locX, int locY, CGameState& state );
 
 };
 

@@ -3,6 +3,7 @@
 #include "GameInfo.h"
 #include "game/GameDesc.h"
 
+#include "game/GameState.h" // TBD: remove me
 
 // --------------------------------------------------------------------------
 
@@ -209,6 +210,11 @@ void CGameSetupDialog::updateViewer( SMatrix4x4& viewer, float& tilt, float& zoo
 	if( currT - mLastStateQueryTime > time_value::fromsec(0.5f) ) {
 		mLastStateQueryTime = currT;
 		net::receiveServerState( desc.getPlayerCount(), mServerState, mServerStateErrMsg, false );
+
+		// TBD: test only
+		if( mServerState.state == GST_STARTED ) {
+			net::updateGame( 0, 0, 0, CGameInfo::getInstance().getState() );
+		}
 	}
 
 	int sizeX = gmap.getCellsX();
