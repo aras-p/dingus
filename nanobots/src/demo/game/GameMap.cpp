@@ -193,14 +193,8 @@ std::string CGameMap::initialize()
 	//
 	// read entities
 
-	// TBD: something weird about text format
-	int ptsSize = bu::receiveByte();
-	bu::receiveByte(); // skip byte: weird
-	char* ptsFile = new char[ptsSize+1];
-	ptsFile[ptsSize] = 0;
-
-	net::receiveChunk( data, ptsSize, true );
-	memcpy( ptsFile, data, ptsSize );
+	std::string pts = bu::receiveStr();
+	char* ptsFile = (char*)pts.c_str(); // HACK
 
 	const char* tokens = "\n\r";
 	const char* pline = strtok( ptsFile, tokens );
@@ -213,13 +207,12 @@ std::string CGameMap::initialize()
 			break;
 		mPoints.push_back( SPoint(ePointType(etype), eposx, eposy ) );
 	} while( pline = strtok( NULL, tokens ) );
-	delete[] ptsFile;
 
 
 	// TBD: streams, walls
-	// weird: streams seem to be asciiz!
 
-	bu::receiveStrAsciiz();
+	bu::receiveStr(); // streams
+	bu::receiveStr(); // walls
 
 	//
 	// all is loaded now

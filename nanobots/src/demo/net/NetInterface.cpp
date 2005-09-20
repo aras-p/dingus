@@ -157,7 +157,17 @@ _spinwait:
 			return false;
 		}
 		// TBD: throw?
-		NETCONS << "receive() error " << wsaErr << endl;
+		char* errMsgString;
+		FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			wsaErr,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(char*)&errMsgString,
+			0,
+			NULL );
+		NETCONS << "receive() error [" << wsaErr << "]: " << errMsgString << endl;
+		LocalFree( errMsgString );
+			
 		return false;
 	}
 

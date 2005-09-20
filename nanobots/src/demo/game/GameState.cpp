@@ -89,16 +89,20 @@ void CGameState::updateState()
 	}
 
 	// read mission states
-	int goalCount = bu::receiveByte();
-	int missionCount = CGameInfo::getInstance().getGameDesc().getMissionCount();
 	for( i = 1; i < playerCount; ++i ) { // human players only
-		for( int j = 0; j < missionCount; ++i ) {
+		int missionCount = bu::receiveByte();
+		for( int j = 0; j < missionCount; ++j ) {
 			int missionState = bu::receiveByte();
-			assert( missionState >= MST_TOBEDONE && missionState < MSTCOUNT );
+			//assert( missionState >= MST_TOBEDONE && missionState < MSTCOUNT );
 			int completion = bu::receiveByte();
-			assert( completion >= 0 && completion <= 100 );
+			//assert( completion >= 0 && completion <= 100 );
 		}
 	}
 	
 	// TBD: set camera position
+	int camPos = bu::receiveByte();
+	if( camPos ) {
+		// TBD
+		net::receiveChunk( data, 6, true );
+	}
 }

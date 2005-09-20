@@ -10,25 +10,11 @@ namespace bu {
 static inline std::string receiveStr()
 {
 	const BYTE* data;
-	net::receiveChunk( data, 1, true );
-	int len = data[0];
+	net::receiveChunk( data, 2, true ); // length
+	int len = *(unsigned short*)data;
 
 	net::receiveChunk( data, len, true );
 	std::string res( (const char*)data, len );
-	return res;
-}
-
-static inline std::string receiveStrAsciiz()
-{
-	std::string res;
-	res.reserve( 64 );
-	while(true) {
-		const BYTE* data;
-		net::receiveChunk( data, 1, true );
-		if( !data[0] )
-			break;
-		res += (char)data[0];
-	}
 	return res;
 }
 

@@ -164,10 +164,6 @@ std::string CGameDesc::initialize()
 		SMission& m = mMissions.back();
 		m.desc = bu::receiveStr();
 		
-		// TBD: that's weird!
-		if( i == 0 )
-			bu::receiveByte();
-
 		int ptCount = bu::receiveByte();
 		m.points.reserve( ptCount );
 		for( int j = 0; j < ptCount; ++j ) {
