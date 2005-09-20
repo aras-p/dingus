@@ -32,6 +32,7 @@ public:
 	bool	isAlive() const { return mState.state != ENTSTATE_DEAD; }
 	const SState& getState() const { return mState; }
 	void	updateState( int turn, const SState& state );
+	void	markDead();
 
 private:
 	/// Last turn number that this entity was received

@@ -38,7 +38,15 @@ static inline short receiveShort()
 {
 	const BYTE* data;
 	net::receiveChunk( data, 2, true );
-	unsigned res = *(const short*)data;
+	short res = *(const short*)data;
+	return res;
+}
+
+static inline short receiveUShort()
+{
+	const BYTE* data;
+	net::receiveChunk( data, 2, true );
+	unsigned short res = *(const unsigned short*)data;
 	return res;
 }
 
@@ -68,6 +76,13 @@ static inline int readInt( const BYTE*& data )
 static inline short readShort( const BYTE*& data )
 {
 	short res = *(const short*)data;
+	data += 2;
+	return res;
+}
+
+static inline unsigned short readUShort( const BYTE*& data )
+{
+	unsigned short res = *(const unsigned short*)data;
 	data += 2;
 	return res;
 }

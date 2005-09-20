@@ -611,7 +611,7 @@ static void	gSetupGUI()
 		gUIBtnTimeFfwd = btn;
 		*/
 		
-		gUIDlg->addStatic( 0, "foo", 289, 440, 62, 22, false, &gUILabelTime );
+		gUIDlg->addStatic( 0, "", 289, 440, 62, 22, false, &gUILabelTime );
 		gUILabelTime->getElement(0)->setFont( 1, false, DT_RIGHT | DT_VCENTER );
 
 		// TBD
@@ -1402,11 +1402,16 @@ void CDemo::perform()
 
 	// entity stats UI
 	gUpdateSelEntityStats();
+	*/
 	
 	// time UI
-	sprintf( buf, "%i", (int)CGameInfo::getInstance().getTime() );
-	gUILabelTime->setText( buf );
-	*/
+	if( gameSetupActive) {
+		gUILabelTime->setVisible( false );
+	} else {
+		sprintf( buf, "%i", state.getTurn() );
+		gUILabelTime->setText( buf );
+		gUILabelTime->setVisible( true );
+	}
 	sprintf( buf, "fps: %.1f", dx.getStats().getFPS() );
 	gUILabelFPS->setText( buf );
 

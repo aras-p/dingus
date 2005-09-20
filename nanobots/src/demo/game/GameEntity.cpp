@@ -44,3 +44,12 @@ void CGameEntity::updateState( int turn, const SState& state )
 
 	mLastUpdateTurn = turn;
 }
+
+void CGameEntity::markDead()
+{
+	// do nothing if already dead
+	if( mState.state == ENTSTATE_DEAD )
+		return;
+
+	mState.state = ENTSTATE_DEAD;
+}

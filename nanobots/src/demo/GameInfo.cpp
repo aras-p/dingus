@@ -127,6 +127,8 @@ CGameInfo::~CGameInfo()
 	safeDelete( mLevelMesh );
 	safeDelete( mState );
 	safeDelete( mGameDesc );
+
+	net::shutdown();
 }
 
 

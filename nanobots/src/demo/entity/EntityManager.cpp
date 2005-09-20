@@ -168,7 +168,7 @@ void CEntityManager::renderMinimap()
 	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
 	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
 		CActorEntity& e = *it->second;
-		//if( e.isAlive() ) // TBD
+		if( e.getGameEntity().isAlive() )
 			minir.addEntity( e.mWorldMat.getOrigin(), e.getColorMinimap(), e.getGameEntity().getType()==ENTITY_AI ? 2.0f : 1.0f );
 		// render attack?
 		const CGameEntity::SState& s = e.getGameEntity().getState();
@@ -220,6 +220,8 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 		if( !e.isAlive() && (deathA<0.0f || deathA>0.3f) )
 			continue;
 		*/
+		if( !e.getGameEntity().isAlive() )
+			continue;
 
 		// calculate LOD
 		float camdist = cameraMat.getAxisZ().dot( e.mWorldMat.getOrigin() - cameraMat.getOrigin() );
@@ -318,19 +320,18 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 	textElem.textFormat = DT_LEFT;
 	textElem.colorFont.current = 0xFFffffff;
 	
-	/*
 	char buf[100];
 
-	n = mActorEntities.size();
-	for( i = 0; i < n; ++i ) {
-		const CActorEntity& e = *mActorEntities[i];
+	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
+	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
+		CActorEntity& e = *it->second;
 
 		// dead?
-		if( !e.isAlive() )
+		if( !e.getGameEntity().isAlive() )
 			continue;
 
 		// not needle/collector?
-		eEntityType etype = e.getReplayEntity().getType();
+		eEntityType etype = e.getGameEntity().getType();
 		if( etype != ENTITY_NEEDLE && etype != ENTITY_COLLECTOR )
 			continue;
 		
@@ -340,8 +341,8 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 			continue;
 
 		// don't draw text for empty collectors
-		const CReplayEntity::SState& s = e.getReplayEntity().getTurnState( turn );
-		if( etype == ENTITY_COLLECTOR && s.azn <= 0 )
+		const CGameEntity::SState& s = e.getGameEntity().getState();
+		if( etype == ENTITY_COLLECTOR && s.stock <= 0 )
 			continue;
 
 		// behind camera?
@@ -363,7 +364,7 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 		float fog = clamp( (fogfar - camdist) * fogfader, 0.0f, maxalpha );
 		if( fog <= 0.0f )
 			continue; // don't draw invisible texts
-		const SVector4& color = gColors.team[e.getReplayEntity().getOwner()].tone.v;
+		const SVector4& color = gColors.team[e.getGameEntity().getOwner()].tone.v;
 		textElem.colorFont.current.r = color.x;
 		textElem.colorFont.current.g = color.y;
 		textElem.colorFont.current.b = color.z;
@@ -382,10 +383,9 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 		textRC.top = screenPos.y * GUI_Y;
 		textRC.bottom = screenPos.y * GUI_Y + 20;
 
-		itoa( s.azn, buf, 10 );
+		itoa( s.stock, buf, 10 );
 		dlg.drawText( buf, &textElem, &textRC, false );
 	}
-	*/
 }
 
 

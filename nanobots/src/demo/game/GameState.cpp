@@ -134,5 +134,15 @@ void CGameState::updateState()
 		net::receiveChunk( data, 6, true );
 	}
 
+	// now that all entities are updated, go through existing ones and
+	// mark the ones that were not present now as dead
+	TEntityMap::iterator it, itEnd = mEntities.end();
+	for( it = mEntities.begin(); it != itEnd; ++it ) {
+		CGameEntity& e = *it->second;
+		if( e.getLastUpdateTurn() < turn ) {
+			e.markDead();
+		}
+	}
+
 	mTurn = turn;
 }
