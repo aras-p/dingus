@@ -165,10 +165,13 @@ _spinwait:
 			(char*)&errMsgString,
 			0,
 			NULL );
-		NETCONS << "receive() error [" << wsaErr << "]: " << errMsgString << endl;
+		char buf[300];
+		_snprintf( buf, 299, "receive() error [%i]: %s", wsaErr, errMsgString );
+		NETCONS << buf << endl;
 		LocalFree( errMsgString );
-			
-		return false;
+
+		throw ENetException( buf );
+		//return false;
 	}
 
 	// we've received something!

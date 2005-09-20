@@ -214,6 +214,9 @@ float		gMouseX; // from -1 to 1
 float		gMouseY; // from -1 to 1
 SVector3	gMouseRay;
 
+// game network updates
+time_value	gLastGameUpdateTime;
+
 // background sound
 CSound*	gSndHeart;
 
@@ -768,6 +771,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gSndHeart->setLooping( true );
 	gSndHeart->setVolume( gAppSettings.musicVolume * 0.01f );
 
+	gLastGameUpdateTime = time_value();
+
 	CONS << "Starting..." << endl;
 }
 
@@ -1111,7 +1116,8 @@ void CDemo::perform()
 {
 	char buf[100];
 
-	double t = CSystemTimer::getInstance().getTimeS();
+	time_value tmv = CSystemTimer::getInstance().getTime();
+	double t = tmv.tosec();
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 	gTimeParam = float(t);
 
@@ -1122,7 +1128,7 @@ void CDemo::perform()
 
 	CGameInfo& gi = CGameInfo::getInstance();
 	const CGameDesc& desc = gi.getGameDesc();
-	const CGameState& state = gi.getState();
+	CGameState& state = gi.getState();
 	const CGameMap& gmap = desc.getMap();
 
 	//
@@ -1212,11 +1218,24 @@ void CDemo::perform()
 
 	bool gameSetupActive = (gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE);
 
+	//
+	// perform input, audio etc.
 
 	G_INPUTCTX->perform();
 
 	G_AUDIOCTX->beginScene( CSystemTimer::getInstance().getTime() );
 	G_AUDIOCTX->updateListener();
+
+	//
+	// update game if it's started
+
+	if( !gameSetupActive ) {
+		if( tmv - gLastGameUpdateTime >= time_value::fromsec(0.1f) ) {
+			// TBD: commands to dll
+			net::updateGame( 0, 0, 0, state );
+			gLastGameUpdateTime = tmv;
+		}
+	}
 
 
 	//

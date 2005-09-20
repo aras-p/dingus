@@ -8,7 +8,7 @@
 
 class CGameSetupDialog : public boost::noncopyable {
 public:
-	enum eDlgState { STATE_ACTIVE, STATE_START, STATE_EXIT, STATE_HIDDEN };
+	enum eDlgState { STATE_ACTIVE, STATE_START, /*STATE_EXIT, STATE_HIDDEN*/ };
 
 public:
 	CGameSetupDialog();
@@ -36,6 +36,7 @@ private:
 	CUIButton*	mBtnJoin[G_MAX_PLAYERS];
 	CUIButton*	mBtnStart;
 	int			mJoinAcceptedForPlayer;
+	bool		mStartClicked;
 
 	net::SServerState	mServerState;
 	std::string			mServerStateErrMsg;

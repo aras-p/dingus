@@ -20,6 +20,7 @@ CGameSetupDialog::CGameSetupDialog()
 :	mState( STATE_ACTIVE )
 ,	mLastStateQueryTime( -1 )
 ,	mJoinAcceptedForPlayer(-1)
+,	mStartClicked(false)
 {
 	assert( !mSingleInstance );
 	mSingleInstance = this;
@@ -47,8 +48,7 @@ CGameSetupDialog::CGameSetupDialog()
 		mDlg->addButton( GID_BTN_JOIN+i, "Join", 0, 0, 40, 16, 0, false, &mBtnJoin[i] );
 	}
 
-	mDlg->addButton( GID_BTN_START, "Start game", 20, mDlg->getHeight()-35, 68, 20, 0, false, &mBtnStart );
-	mDlg->addButton( IDOK, "Close", 340, mDlg->getHeight()-35, 58, 20 );
+	mDlg->addButton( GID_BTN_START, "Start game", 330, mDlg->getHeight()-35, 68, 20, 0, false, &mBtnStart );
 }
 
 
@@ -73,9 +73,7 @@ void CALLBACK CGameSetupDialog::dialogCallback( UINT evt, int ctrlID, CUIControl
 		CGameSetupDialog* inst = mSingleInstance;
 		assert( inst->mState == STATE_ACTIVE );
 
-		if( ctrlID == IDOK ) {
-			inst->mState = STATE_START;
-		} else if( ctrlID > GID_BTN_JOIN && ctrlID < GID_BTN_JOIN+G_MAX_PLAYERS ) {
+		if( ctrlID > GID_BTN_JOIN && ctrlID < GID_BTN_JOIN+G_MAX_PLAYERS ) {
 
 			// issue join request
 			int playerID = ctrlID - GID_BTN_JOIN;
@@ -89,6 +87,7 @@ void CALLBACK CGameSetupDialog::dialogCallback( UINT evt, int ctrlID, CUIControl
 			const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
 			assert( &desc );
 			net::receiveServerState( desc.getPlayerCount(), inst->mServerState, inst->mServerStateErrMsg, true );
+			inst->mStartClicked = true;
 		}
 	}
 }
@@ -211,9 +210,10 @@ void CGameSetupDialog::updateViewer( SMatrix4x4& viewer, float& tilt, float& zoo
 		mLastStateQueryTime = currT;
 		net::receiveServerState( desc.getPlayerCount(), mServerState, mServerStateErrMsg, false );
 
-		// TBD: test only
-		if( mServerState.state == GST_STARTED ) {
-			net::updateGame( 0, 0, 0, CGameInfo::getInstance().getState() );
+		if( mServerState.state == GST_STARTING || mServerState.state == GST_STARTED ) {
+			mBtnStart->setText( "View game" );
+			if( mStartClicked )
+				mState = STATE_START;
 		}
 	}
 

@@ -23,42 +23,6 @@ enum eMessage {
 const int NETWORK_PROTOCOL_VER = 1;
 
 
-/*
-static void gFetchResponse()
-{
-	NETCONS << "Receive response..." << endl;
-	::Sleep( 100 );
-
-	BYTE* resp;
-	int respSize;
-	bool have = net::receive( resp, respSize );
-	if( have && respSize > 0 ) {
-		NETCONS << "len=" << respSize << " type=" << resp[0] << endl;
-		for( int i = 1; i < respSize; ++i ) {
-			NETCONS << resp[i] << '[' << ((resp[i]>=' ' && resp[i]<=127) ? (char)resp[i] : '?') << "] ";
-			if( i % 20 == 0 && i != respSize-1 ) {
-				NETCONS << endl;
-			}
-		}
-		NETCONS << endl;
-	}
-}
-
-static void gTestStuff()
-{
-	int MSGS[] = { 2, 3, 6 };
-	int COUNT = sizeof(MSGS) / sizeof(MSGS[0]);
-
-	BYTE msg[4];
-	memset( &msg, 0, sizeof(msg) );
-	for( int i = 0; i < COUNT; ++i ) {
-		msg[0] = MSGS[i];
-		NETCONS << "Send msg type " << msg[0] << endl;
-		net::send( &msg, 1 );
-		gFetchResponse();
-	}
-}
-*/
 
 CGameDesc* net::receiveGameDesc( std::string& errMsg )
 {
