@@ -91,24 +91,29 @@ void CEntityManager::update( const SLine3& mouseRay )
 	if( mLastMouseEntityID != -1 ) {
 		mActorEntities[mLastMouseEntityID]->setOutline( OUTLINE_TTL );
 	}
+	*/
 
-	const CGameReplay& replay = CGameInfo::getInstance().getReplay();
-	int turn = CGameInfo::getInstance().getTimeTurn();
+	//const CGameState& state = CGameInfo::getInstance().getState();
+	//int turn = state.getTurn();
 
 	// clear stats
-	memset( &mStats, 0, sizeof(mStats) );
+	//memset( &mStats, 0, sizeof(mStats) );
 
-	// update actor entities, calc stats
-	n = mActorEntities.size();
-	for( i = 0; i < n; ++i ) {
-		CActorEntity& e = *mActorEntities[i];
+	// update actor entities
+	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
+	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
+		CActorEntity& e = *it->second;
 		e.update();
+		/*
 		if( !e.isAlive() ) {
 			if( mSelectedEntity == i )
 				mSelectedEntity = -1;
 			continue;
 		}
+		*/
 
+		/*
+		// TBD
 		// stats
 		eEntityType etype = e.getReplayEntity().getType();
 		if( etype == ENTITY_CUREBOT ) // cure bots don't count into stats
@@ -116,18 +121,8 @@ void CEntityManager::update( const SLine3& mouseRay )
 		SPlayerStats& stats = mStats[e.getReplayEntity().getOwner()];
 		++stats.aliveCount;
 		++stats.counts[etype];
-		if( etype == ENTITY_NEEDLE ) {
-			const CReplayEntity::SState& s = e.getReplayEntity().getTurnState( turn );
-			// no score for non-on-hoshimi needles
-			if( mNeedleOnHoshimi[i] ) {
-				if( s.azn > 0 )
-					stats.score += replay.mPropScoreNonEmptyNeedle + s.azn * replay.mPropScoreAZN;
-				else
-					stats.score += replay.mPropScoreEmptyNeedle;
-			}
-		}
+		*/
 	}
-	*/
 
 	// update point entities
 	n = mPointEntities.size();
@@ -170,21 +165,19 @@ void CEntityManager::renderMinimap()
 		minir.addEntity( SVector3(pt.x,0.0f,-pt.y), pt.colorMain & 0x80ffffff, 4.0f );
 	}
 	// actors
-	/*
-	n = mActorEntities.size();
-	for( i = 0; i < n; ++i ) {
-		const CActorEntity& e = *mActorEntities[i];
-		if( e.isAlive() )
-			minir.addEntity( e.mWorldMat.getOrigin(), e.getColorMinimap(), e.getReplayEntity().getType()==ENTITY_AI ? 2.0f : 1.0f );
+	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
+	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
+		CActorEntity& e = *it->second;
+		//if( e.isAlive() ) // TBD
+			minir.addEntity( e.mWorldMat.getOrigin(), e.getColorMinimap(), e.getGameEntity().getType()==ENTITY_AI ? 2.0f : 1.0f );
 		// render attack?
-		const CReplayEntity::SState& s = e.getReplayEntity().getTurnState( turn );
+		const CGameEntity::SState& s = e.getGameEntity().getState();
 		if( s.state == ENTSTATE_ATTACK )
 			minir.addEntity( SVector3(s.targx,0.0f,-s.targy), 0xFFff0000, 3.0f );
-		const CReplayEntity::SState& ss = e.getReplayEntity().getTurnState( turn-1 );
-		if( ss.state == ENTSTATE_ATTACK )
-			minir.addEntity( SVector3(ss.targx,0.0f,-ss.targy), 0xFFff0000, 3.0f );
+		//const CReplayEntity::SState& ss = e.getReplayEntity().getTurnState( turn-1 );
+		//if( ss.state == ENTSTATE_ATTACK )
+		//	minir.addEntity( SVector3(ss.targx,0.0f,-ss.targy), 0xFFff0000, 3.0f );
 	}
-	*/
 	minir.endEntities();
 	minir.render();
 }
@@ -214,12 +207,11 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	// actors
 	const int lodOffset = GFX_DETAIL_LEVELS-1 - gAppSettings.gfxDetail;
 
-	/*
-
-	n = mActorEntities.size();
-	for( i = 0; i < n; ++i ) {
-		const CActorEntity& e = *mActorEntities[i];
+	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
+	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
+		CActorEntity& e = *it->second;
 		// eplosion?
+		/*
 		float deathA = e.getReplayEntity().getDeathAlpha( t );
 		if( deathA >= 0.0f ) {
 			mAttackManager->renderExplosion( e.mWorldMat.getOrigin(), deathA );
@@ -227,6 +219,7 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 
 		if( !e.isAlive() && (deathA<0.0f || deathA>0.3f) )
 			continue;
+		*/
 
 		// calculate LOD
 		float camdist = cameraMat.getAxisZ().dot( e.mWorldMat.getOrigin() - cameraMat.getOrigin() );
@@ -238,16 +231,16 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 		}
 		
 
-		mActorEntities[i]->render( rm, lod, false );
+		e.render( rm, lod, false );
 		if( entityBlobs ) {
 			blobr.addEntity( e.mWorldMat.getOrigin() + SVector3(0,e.getBlobDY(),0), e.getColorBlob(), 1.0f );
 		}
 
-		int owner = e.getReplayEntity().getOwner();
+		int owner = e.getGameEntity().getOwner();
 
 		// health bar / outline
-		const CReplayEntity::SState& s = e.getReplayEntity().getTurnState( turn );
-		float healthBar = float(s.health) / e.getReplayEntity().getMaxHealth();
+		const CGameEntity::SState& s = e.getGameEntity().getState();
+		float healthBar = float(s.health) / e.getGameEntity().getMaxHealth();
 		if( camdist >= 0.0f ) {
 			// fog the health bar
 			float fog = clamp( (gFogParam.y - camdist) * gFogParam.z, 0.0f, 1.0f );
@@ -268,24 +261,25 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 		}
 
 		// render AZN nimbus?
-		if( s.azn > 0 ) {
+		if( s.stock > 0 ) {
 			SVector3 nimbusPos = e.mWorldMat.getOrigin();
 			nimbusPos.y += e.getOutlineDY();
-			float nimbusScale = (e.getReplayEntity().getType() == ENTITY_NEEDLE) ? 1.0f : 0.6f;
+			float nimbusScale = (e.getGameEntity().getType() == ENTITY_NEEDLE) ? 1.0f : 0.6f;
 			mAttackManager->renderNimbus( nimbusPos, nimbusScale );
 		}
 
 		// render attack?
 		const SVector4& atkColor = gColors.team[owner].main.v;
 		if( s.state == ENTSTATE_ATTACK ) {
-			mAttackManager->renderAttack( e.mWorldMat.getOrigin(), s.targx, s.targy, turnAlpha*0.5f, atkColor );
+			mAttackManager->renderAttack( e.mWorldMat.getOrigin(), s.targx, s.targy, /*turnAlpha*0.5f TBD*/0.5f, atkColor );
 		}
+		/*
 		const CReplayEntity::SState& ss = e.getReplayEntity().getTurnState( turn-1 );
 		if( ss.state == ENTSTATE_ATTACK ) {
 			mAttackManager->renderAttack( e.mWorldMat.getOrigin(), ss.targx, ss.targy, 0.5f+turnAlpha*0.5f, atkColor );
 		}
+		*/
 	}
-	*/
 
 	mAttackManager->end();
 	blobr.endEntities();

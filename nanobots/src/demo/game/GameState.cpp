@@ -133,4 +133,6 @@ void CGameState::updateState()
 		// TBD
 		net::receiveChunk( data, 6, true );
 	}
+
+	mTurn = turn;
 }

@@ -187,7 +187,7 @@ void CActorEntity::update()
 		*/
 		// TBD
 		const CGameEntity::SState& st = mGameEntity->getState();
-		SVector3 pos = SVector3(st.posx,0,st.posy);
+		SVector3 pos = SVector3(st.posx,0,-st.posy);
 		SVector3 dir(0,0,1);
 
 		if( mGameEntity->getType() == ENTITY_BLOCKER ) {
