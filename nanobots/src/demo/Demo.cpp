@@ -454,6 +454,9 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 #define UISTATS_RLABEL \
 	label->getElement(0)->setFont( 0, true, DT_RIGHT | DT_VCENTER ); \
 	gUIStatsCtrls.push_back( label )
+#define UISTATS_RLABEL_B \
+	label->getElement(0)->setFont( 2, true, DT_RIGHT | DT_VCENTER ); \
+	gUIStatsCtrls.push_back( label )
 
 #define UIESTATS_LABEL \
 	label->getElement(0)->setFont( 0, true, DT_LEFT | DT_VCENTER ); \
@@ -491,17 +494,22 @@ static void	gSetupGUI()
 			const CGameDesc::SPlayer& pl = desc.getPlayer(p);
 			SUIPlayerStats& plui = gUIPlayerStats[p];
 			// name
-			std::string plstring = "P";
-			plstring += ('1' + p);
-			plstring += ": ";
-			plstring += pl.name;
+			std::string plstring;
+			if( p == 0 ) {
+				plstring = "Pierre";
+			} else {
+				plstring = "P";
+				plstring += ('0' + p);
+				plstring += ": ";
+				plstring += pl.name;
+			}
 			gUIDlg->addStatic( 0, plstring.c_str(), 5, sy += UIHLAB, 120, UIHLAB, false, &label );
 			UISTATS_LABEL;
 			// score
 			gUIDlg->addStatic( 0, "Scor:", 10, sy += UIHLAB, 25, UIHLAB, false, &label );
 			UISTATS_LABEL;
 			gUIDlg->addStatic( 0, "0000", 35, sy, 25, UIHLAB, false, &label );
-			UISTATS_RLABEL;
+			UISTATS_RLABEL_B;
 			plui.score = label;
 			// alive entities
 			gUIDlg->addStatic( 0, "Ent:", 70, sy, 20, UIHLAB, false, &label );
@@ -755,7 +763,9 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg = new CUIDialog();
 	//gUIDlg->enableKeyboardInput( true );
 	gUIDlg->setCallback( gUICallback );
-	gUIDlg->setFont( 1, "Arial", 22, 50 );
+	gUIDlg->setFont( 0, "Tahoma", 12, FW_NORMAL );
+	gUIDlg->setFont( 1, "Arial", 22, FW_NORMAL );
+	gUIDlg->setFont( 2, "Tahoma", 12, FW_BOLD );
 
 	gUIDlg->addStatic( 0, "", 5, 455, 600, 22, false, &gUILabelProgress );
 	gUILabelProgress->getElement(0)->setFont( 1, false, DT_LEFT | DT_VCENTER );
@@ -1024,9 +1034,9 @@ static const char* UIST_TYPENAMES[ENTITYCOUNT] = {
 	"Blocker",
 };
 
-/* TBD
 static void gUpdateSelEntityStats()
 {
+	/* TBD
 	char buf[200];
 	static int oldSelIdx = -1;
 	static int oldGameTurn = -1;
@@ -1091,8 +1101,8 @@ static void gUpdateSelEntityStats()
 		}
 	}
 	oldSelIdx = selIdx;
-}
 */
+}
 
 
 #include <time.h>
@@ -1378,31 +1388,26 @@ void CDemo::perform()
 	gi.getEntities().update( mouseRay );
 	
 	// stats UI
-	// TBD
-	/*
-	int nplayers = replay.getPlayerCount()-1;
+	int nplayers = desc.getPlayerCount();
 	for( int p = 0; p < nplayers; ++p ) {
-		const CEntityManager::SPlayerStats& plstats = gi.getEntities().getStats( p );
+		const CGameState::SPlayer& pl = state.getPlayer(p);
 		SUIPlayerStats& plui = gUIPlayerStats[p];
-		itoa( plstats.score, buf, 10 );
+		itoa( pl.score, buf, 10 );
 		plui.score->setText( buf );
-		itoa( plstats.aliveCount, buf, 10 );
+		itoa( pl.aliveCount, buf, 10 );
 		plui.aliveCount->setText( buf );
-		itoa( plstats.counts[ENTITY_NEEDLE], buf, 10 );
+		itoa( pl.counts[ENTITY_NEEDLE], buf, 10 );
 		plui.cntNeedle->setText( buf );
-		itoa( plstats.counts[ENTITY_COLLECTOR], buf, 10 );
+		itoa( pl.counts[ENTITY_COLLECTOR], buf, 10 );
 		plui.cntColl->setText( buf );
-		itoa( plstats.counts[ENTITY_EXPLORER], buf, 10 );
+		itoa( pl.counts[ENTITY_EXPLORER], buf, 10 );
 		plui.cntExp->setText( buf );
-		itoa( plstats.counts[ENTITY_BLOCKER], buf, 10 );
+		itoa( pl.counts[ENTITY_BLOCKER], buf, 10 );
 		plui.cntBlock->setText( buf );
 	}
-	itoa( gi.getEntities().getStats( nplayers ).aliveCount, buf, 10 );
-	gUIWCStats->setText( buf );
 
 	// entity stats UI
 	gUpdateSelEntityStats();
-	*/
 	
 	// time UI
 	if( gameSetupActive) {

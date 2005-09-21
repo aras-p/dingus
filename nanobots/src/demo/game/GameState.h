@@ -15,11 +15,10 @@ public:
 	struct SPlayer {
 		int		score;
 		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs; // [0] is the most recent one
-		// TBD
-		//int		aiID;
+		int		aiID;
 		// stats
-		//int		aliveCount;				// alive entity count
-		//int		counts[ENTITYCOUNT];	// alive entity counts by type
+		int		aliveCount;				// alive entity count
+		int		counts[ENTITYCOUNT];	// alive entity counts by type
 	};
 
 	typedef std::map<int,CGameEntity*>	TEntityMap;
@@ -38,8 +37,7 @@ public:
 
 	//bool	isSinglePlayer() const { return mPlayerCount==2; }
 	//bool	isComputerPlayer( int index ) const { return index == mPlayerCount-1; }
-	//int		getPlayerCount() const { return mPlayerCount; }
-	//const SPlayer& getPlayer( int i ) const { return mPlayers[i]; }
+	const SPlayer& getPlayer( int i ) const { return mPlayers[i]; }
 
 private:
 	SPlayer		mPlayers[G_MAX_PLAYERS]; // incl. AI

@@ -60,7 +60,7 @@ void CGameState::updateState()
 
 	int turn = bu::receiveShort();
 
-	// read players
+	// read players, clear stats
 	int playerCount = bu::receiveByte(); // incl. AI
 	for( i = 0; i < playerCount; ++i ) {
 		int pid = bu::receiveByte();
@@ -68,17 +68,22 @@ void CGameState::updateState()
 		int score = bu::receiveShort();
 		std::string logtxt = bu::receiveStr();
 		if( mTurn != turn ) { // if it's really a new turn, update players
-			mPlayers[i].score = score;
+			SPlayer& pl = mPlayers[i];
+			pl.score = score;
+
+			pl.aliveCount = 0;
+			memset( &pl.counts, 0, sizeof(pl.counts) );
+
 			SLogMsg logmsg;
 			logmsg.turn = turn;
 			logmsg.message = logtxt;
-			if( mPlayers[i].logs.size() == mPlayers[i].logs.capacity() )
-				mPlayers[i].logs.pop_back();
-			mPlayers[i].logs.push_front( logmsg );
+			if( pl.logs.size() == pl.logs.capacity() )
+				pl.logs.pop_back();
+			pl.logs.push_front( logmsg );
 		}
 	}
 
-	// read bots
+	// read bots, update player stats
 	int botCount = bu::receiveShort();
 	for( i = 0; i < botCount; ++i ) {
 		int bid = bu::receiveShort();
@@ -97,6 +102,11 @@ void CGameState::updateState()
 		state.health = bu::receiveByte();
 
 		if( mTurn != turn ) { // if it's really a new turn, add/update entity
+			// player stats
+			SPlayer& pl = mPlayers[pid];
+			++pl.aliveCount;
+			++pl.counts[type];
+
 			CGameEntity* entity = NULL;
 			bool newEntity = false;
 			TEntityMap::iterator it = mEntities.find( bid );

@@ -86,17 +86,6 @@ void CEntityManager::update( const SLine3& mouseRay )
 				mSelectedEntityID = -1;
 			continue;
 		}
-
-		/*
-		// TBD
-		// stats
-		eEntityType etype = e.getReplayEntity().getType();
-		if( etype == ENTITY_CUREBOT ) // cure bots don't count into stats
-			continue;
-		SPlayerStats& stats = mStats[e.getReplayEntity().getOwner()];
-		++stats.aliveCount;
-		++stats.counts[etype];
-		*/
 	}
 
 	// update point entities
