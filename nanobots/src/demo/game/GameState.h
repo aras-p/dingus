@@ -16,9 +16,7 @@ public:
 		int		score;
 		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs; // [0] is the most recent one
 		int		aiID;
-		// stats
-		int		aliveCount;				// alive entity count
-		int		counts[ENTITYCOUNT];	// alive entity counts by type
+		int		botCount;				// alive entity count
 	};
 
 	typedef std::map<int,CGameEntity*>	TEntityMap;

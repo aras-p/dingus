@@ -283,16 +283,11 @@ bool			gShowEntityStats;
 
 struct SUIPlayerStats {
 	CUIStatic*	score;
-	CUIStatic*	aliveCount;
-	CUIStatic*	cntNeedle;
-	CUIStatic*	cntColl;
-	CUIStatic*	cntExp;
-	CUIStatic*	cntBlock;
+	CUIStatic*	botCount;
 };
 SUIPlayerStats	gUIPlayerStats[G_MAX_PLAYERS];
 
 CUIStatic*		gUIEStType;
-CUIStatic*		gUIEStLifetime;
 CUIStatic*		gUIEStHealth;
 CUIStatic*		gUIEStOwner;
 CUIStatic*		gUIEStAZN;
@@ -484,64 +479,61 @@ static void	gSetupGUI()
 		CUIStatic* label;
 
 		// rollout
-		gUIDlg->addRollout( GID_ROL_STATS, "Stats (S)", 0, sy, 130, UIHROL, 30 + nplayers*3*UIHLAB, true, 'S', false, &gUIRollStats );
+		gUIDlg->addRollout( GID_ROL_STATS, "Stats (S)", 0, sy, 130, UIHROL, 20 + nplayers*2*UIHLAB, true, 'S', false, &gUIRollStats );
 		// map name
 		gUIDlg->addStatic( 0,
 			("Map: "+desc.getMap().getName()).c_str(), 5, sy += UIHLAB, 120, UIHLAB, false, &label );
 		UISTATS_LABEL;
+
 		// player stats
-		for( int p = 0; p < nplayers; ++p ) {
+		const char* PLAYER_TEX_NAMES[G_MAX_PLAYERS] = {
+			NULL,
+			RID_TEX_PLAYER1,
+			RID_TEX_PLAYER2,
+		};
+		for( int p = 1; p < nplayers; ++p ) {
+			sy += 5;
 			const CGameDesc::SPlayer& pl = desc.getPlayer(p);
 			SUIPlayerStats& plui = gUIPlayerStats[p];
+			sy += UIHLAB;
+
+			// flag
+			gUIDlg->addImage( 0, 4, sy+4, 18, 18, *RGET_S_TEX(PLAYER_TEX_NAMES[p]), 0, 0, CGameDesc::FLAG_SIZE, CGameDesc::FLAG_SIZE );
+
 			// name
 			std::string plstring;
-			if( p == 0 ) {
-				plstring = "Pierre";
-			} else {
-				plstring = "P";
-				plstring += ('0' + p);
-				plstring += ": ";
-				plstring += pl.name;
-			}
-			gUIDlg->addStatic( 0, plstring.c_str(), 5, sy += UIHLAB, 120, UIHLAB, false, &label );
+			plstring = "P";
+			plstring += ('0' + p);
+			plstring += ": ";
+			plstring += pl.name;
+			gUIDlg->addStatic( 0, plstring.c_str(), 25, sy, 100, UIHLAB, false, &label );
 			UISTATS_LABEL;
+
 			// score
-			gUIDlg->addStatic( 0, "Scor:", 10, sy += UIHLAB, 25, UIHLAB, false, &label );
+			gUIDlg->addStatic( 0, "Scor:", 30, sy += UIHLAB, 25, UIHLAB, false, &label );
 			UISTATS_LABEL;
-			gUIDlg->addStatic( 0, "0000", 35, sy, 25, UIHLAB, false, &label );
+			gUIDlg->addStatic( 0, "0000", 55, sy, 25, UIHLAB, false, &label );
 			UISTATS_RLABEL_B;
 			plui.score = label;
 			// alive entities
-			gUIDlg->addStatic( 0, "Ent:", 70, sy, 20, UIHLAB, false, &label );
-			UISTATS_LABEL;
-			gUIDlg->addStatic( 0, "00", 90, sy, 12, UIHLAB, false, &label );
-			UISTATS_RLABEL;
-			plui.aliveCount = label;
-			// alive counts by types:
-			// needles
-			gUIDlg->addStatic( 0, "N:", 10, sy += UIHLAB, 10, UIHLAB, false, &label );
-			UISTATS_LABEL;
-			gUIDlg->addStatic( 0, "00", 20, sy, 12, UIHLAB, false, &label );
-			UISTATS_RLABEL;
-			plui.cntNeedle = label;
-			// collectors
-			gUIDlg->addStatic( 0, "C:", 40, sy, 10, UIHLAB, false, &label );
-			UISTATS_LABEL;
-			gUIDlg->addStatic( 0, "00", 50, sy, 12, UIHLAB, false, &label );
-			UISTATS_RLABEL;
-			plui.cntColl = label;
-			// explorers
-			gUIDlg->addStatic( 0, "E:", 70, sy, 10, UIHLAB, false, &label );
-			UISTATS_LABEL;
-			gUIDlg->addStatic( 0, "00", 80, sy, 12, UIHLAB, false, &label );
-			UISTATS_RLABEL;
-			plui.cntExp = label;
-			// blockers
-			gUIDlg->addStatic( 0, "B:", 100, sy, 10, UIHLAB, false, &label );
+			gUIDlg->addStatic( 0, "Ent:", 90, sy, 20, UIHLAB, false, &label );
 			UISTATS_LABEL;
 			gUIDlg->addStatic( 0, "00", 110, sy, 12, UIHLAB, false, &label );
 			UISTATS_RLABEL;
-			plui.cntBlock = label;
+			plui.botCount = label;
+		}
+		// AI stats
+		{
+			sy += 5;
+			gUIDlg->addStatic( 0, "Computer", 25, sy += UIHLAB, 100, UIHLAB, false, &label );
+			UISTATS_LABEL;
+			gUIPlayerStats[0].score = NULL;
+			// alive entities
+			gUIDlg->addStatic( 0, "Ent:", 90, sy, 20, UIHLAB, false, &label );
+			UISTATS_LABEL;
+			gUIDlg->addStatic( 0, "00", 110, sy, 12, UIHLAB, false, &label );
+			UISTATS_RLABEL;
+			gUIPlayerStats[0].botCount = label;
 		}
 	}
 	// selected entity stats
@@ -551,7 +543,7 @@ static void	gSetupGUI()
 
 		gShowEntityStats = true;
 		// rollout
-		gUIDlg->addRollout( GID_ROL_ESTATS, "Entity stats (E)", 0, sy, 130, UIHROL, 4*UIHLAB+3, true, 'E', false, &gUIRollEStats );
+		gUIDlg->addRollout( GID_ROL_ESTATS, "Entity stats (E)", 0, sy, 130, UIHROL, 3*UIHLAB+3, true, 'E', false, &gUIRollEStats );
 		// type
 		gUIDlg->addStatic( 0, "Type:", 5, sy += UIHLAB, 30, UIHLAB, false, &label );
 		UIESTATS_LABEL;
@@ -570,12 +562,6 @@ static void	gSetupGUI()
 		gUIDlg->addStatic( 0, "000/999", 50, sy, 50, UIHLAB, false, &label );
 		UIESTATS_LABEL;
 		gUIEStHealth = label;
-		// lifetime
-		gUIDlg->addStatic( 0, "Lifetime:", 5, sy += UIHLAB, 45, UIHLAB, false, &label );
-		UIESTATS_LABEL;
-		gUIDlg->addStatic( 0, "0000-9999", 50, sy, 80, UIHLAB, false, &label );
-		UIESTATS_LABEL;
-		gUIEStLifetime = label;
 		// azn
 		gUIDlg->addStatic( 0, "AZN:", 5, sy += UIHLAB, 45, UIHLAB, false, &label );
 		UIESTATS_LABEL;
@@ -1033,75 +1019,64 @@ static const char* UIST_TYPENAMES[ENTITYCOUNT] = {
 	"NeuroCtrl",
 	"Blocker",
 };
+static const char* UIST_OWNERNAMES[G_MAX_PLAYERS] = {
+	"CO",
+	"P1",
+	"P2",
+};
 
 static void gUpdateSelEntityStats()
 {
-	/* TBD
 	char buf[200];
-	static int oldSelIdx = -1;
+	static int oldSelID = -1;
 	static int oldGameTurn = -1;
 
 	CGameInfo& gi = CGameInfo::getInstance();
-	const CGameReplay& replay = gi.getReplay();
+	const CGameState& state = gi.getState();
 	const CEntityManager& entities = gi.getEntities();
-	int gameTurn = gi.getTimeTurn();
 
 	bool wasSelected = gUIRollEStats->isExpanded();
-	int selIdx = entities.getSelectedEntity();
-	bool isSelected = (selIdx != -1);
+	int selID = entities.getSelectedEntityID();
+	const CActorEntity* selEnt = entities.getActorEntityByID( selID );
+	bool isSelected = (selEnt != NULL);
 
 	if( !isSelected ) {
 		gUIRollEStats->setEnabled( false );
 		gUIRollEStats->setExpanded( false );
 	} else {
-		if( oldSelIdx != selIdx )
+		if( oldSelID != selID )
 			gShowEntityStats = true;
 		gUIRollEStats->setEnabled( true );
 		gUIRollEStats->setExpanded( gShowEntityStats );
 
-		const CActorEntity& e = entities.getActorEntity( selIdx );
-		const CReplayEntity& re = e.getReplayEntity();
+		const CGameEntity& ge = selEnt->getGameEntity();
+
 		// if different - update persistent state
-		if( oldSelIdx != selIdx ) {
+		if( oldSelID != selID ) {
 			// type
-			gUIEStType->setText( UIST_TYPENAMES[re.getType()] );
+			gUIEStType->setText( UIST_TYPENAMES[ge.getType()] );
 			// owner
-			const char* eowner = "WC";
-			if( re.getType() == ENTITY_CUREBOT )
-				eowner = "--";
-			if( re.getOwner() == 0 )
-				eowner = "P1";
-			else if( re.getOwner() == 1 && replay.getPlayerCount() > 2 )
-				eowner = "P2";
-			gUIEStOwner->setText( eowner );
-			// lifetime
-			int ebturn = re.getBornTurn();
-			int edturn = re.getDeathTurn();
-			if( edturn == replay.getGameTurnCount() )
-				sprintf( buf, "%i - end", ebturn );
-			else 
-				sprintf( buf, "%i - %i", ebturn, edturn );
-			gUIEStLifetime->setText( buf );
+			gUIEStOwner->setText( UIST_OWNERNAMES[ge.getOwner()] );
 		}
 		// if different turn - update variable state
-		if( oldGameTurn != gameTurn ) {
-			const CReplayEntity::SState& st = re.getTurnState( gameTurn );
+		if( oldGameTurn != state.getTurn() ) {
+			const CGameEntity::SState& st = ge.getState();
 			// health
-			int maxHP = re.getTurnState( re.getBornTurn() ).health;
+			int maxHP = ge.getMaxHealth();
 			int hp = st.health;
 			sprintf( buf, "%i / %i", hp, maxHP );
 			gUIEStHealth->setText( buf );
 			// AZN
-			if( re.getType() == ENTITY_COLLECTOR || re.getType() == ENTITY_NEEDLE ) {
-				sprintf( buf, "%i", st.azn );
+			// TBD: include others as needed (container, neuroctrl)
+			if( ge.getType() == ENTITY_COLLECTOR || ge.getType() == ENTITY_NEEDLE ) {
+				sprintf( buf, "%i", st.stock );
 				gUIEStAZN->setText( buf );
 			} else {
 				gUIEStAZN->setText( "n/a" );
 			}
 		}
 	}
-	oldSelIdx = selIdx;
-*/
+	oldSelID = selID;
 }
 
 
@@ -1392,18 +1367,14 @@ void CDemo::perform()
 	for( int p = 0; p < nplayers; ++p ) {
 		const CGameState::SPlayer& pl = state.getPlayer(p);
 		SUIPlayerStats& plui = gUIPlayerStats[p];
-		itoa( pl.score, buf, 10 );
-		plui.score->setText( buf );
-		itoa( pl.aliveCount, buf, 10 );
-		plui.aliveCount->setText( buf );
-		itoa( pl.counts[ENTITY_NEEDLE], buf, 10 );
-		plui.cntNeedle->setText( buf );
-		itoa( pl.counts[ENTITY_COLLECTOR], buf, 10 );
-		plui.cntColl->setText( buf );
-		itoa( pl.counts[ENTITY_EXPLORER], buf, 10 );
-		plui.cntExp->setText( buf );
-		itoa( pl.counts[ENTITY_BLOCKER], buf, 10 );
-		plui.cntBlock->setText( buf );
+		if( plui.score ) {
+			itoa( pl.score, buf, 10 );
+			plui.score->setText( buf );
+		}
+		if( plui.botCount ) {
+			itoa( pl.botCount, buf, 10 );
+			plui.botCount->setText( buf );
+		}
 	}
 
 	// entity stats UI

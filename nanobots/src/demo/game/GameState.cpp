@@ -71,8 +71,7 @@ void CGameState::updateState()
 			SPlayer& pl = mPlayers[i];
 			pl.score = score;
 
-			pl.aliveCount = 0;
-			memset( &pl.counts, 0, sizeof(pl.counts) );
+			pl.botCount = 0;
 
 			SLogMsg logmsg;
 			logmsg.turn = turn;
@@ -102,10 +101,7 @@ void CGameState::updateState()
 		state.health = bu::receiveByte();
 
 		if( mTurn != turn ) { // if it's really a new turn, add/update entity
-			// player stats
-			SPlayer& pl = mPlayers[pid];
-			++pl.aliveCount;
-			++pl.counts[type];
+			++mPlayers[pid].botCount;
 
 			CGameEntity* entity = NULL;
 			bool newEntity = false;
