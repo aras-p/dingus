@@ -753,7 +753,7 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts[vidx+0].pos.set( x-0.5f, y0, -(z-0.5f) );
 				mverts[vidx+1].pos.set( x-0.5f, y1, -(z-0.5f) );
 				SVector3 o(0,0,0);
-				if( typeU == CELL_PERF || typeL == CELL_PERF || typeUL == CELL_PERF ) o.x = 1;
+				//if( typeU == CELL_PERF || typeL == CELL_PERF || typeUL == CELL_PERF ) o.x = 1;
 				mverts[vidx+0].data = o;
 				mverts[vidx+1].data = o;
 				vertsmine.ul = vidx;
@@ -765,7 +765,7 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts[vidx+0].pos.set( x+1-0.5f, y0, -(z-0.5f) );
 				mverts[vidx+1].pos.set( x+1-0.5f, y1, -(z-0.5f) );
 				SVector3 o(0,0,0);
-				if( typeU == CELL_PERF || typeR == CELL_PERF || typeUR == CELL_PERF ) o.x = 1;
+				//if( typeU == CELL_PERF || typeR == CELL_PERF || typeUR == CELL_PERF ) o.x = 1;
 				mverts[vidx+0].data = o;
 				mverts[vidx+1].data = o;
 				vertsmine.ur = vidx;
@@ -777,7 +777,7 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts[vidx+0].pos.set( x-0.5f, y0, -(z+1-0.5f) );
 				mverts[vidx+1].pos.set( x-0.5f, y1, -(z+1-0.5f) );
 				SVector3 o(0,0,0);
-				if( typeD == CELL_PERF || typeL == CELL_PERF || typeDL == CELL_PERF ) o.x = 1;
+				//if( typeD == CELL_PERF || typeL == CELL_PERF || typeDL == CELL_PERF ) o.x = 1;
 				mverts[vidx+0].data = o;
 				mverts[vidx+1].data = o;
 				vertsmine.dl = vidx;
@@ -789,7 +789,7 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts[vidx+0].pos.set( x+1-0.5f, y0, -(z+1-0.5f) );
 				mverts[vidx+1].pos.set( x+1-0.5f, y1, -(z+1-0.5f) );
 				SVector3 o(0,0,0);
-				if( typeD == CELL_PERF || typeR == CELL_PERF || typeDR == CELL_PERF ) o.x = 1;
+				//if( typeD == CELL_PERF || typeR == CELL_PERF || typeDR == CELL_PERF ) o.x = 1;
 				mverts[vidx+0].data = o;
 				mverts[vidx+1].data = o;
 				vertsmine.dr = vidx;

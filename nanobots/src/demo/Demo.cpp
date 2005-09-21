@@ -1217,6 +1217,7 @@ void CDemo::perform()
 
 
 	bool gameSetupActive = (gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE);
+	bool insideView = gAppSettings.followMode && !gameSetupActive;
 
 	//
 	// perform input, audio etc.
@@ -1334,7 +1335,7 @@ void CDemo::perform()
 	SMatrix4x4& mm = gCamera.mWorldMat;
 	mm = gViewer;
 	float camnear, camfar, camfov, fognear, fogfar;
-	if( !gAppSettings.followMode || gameSetupActive ) {
+	if( !insideView ) {
 		float tilt = gAppSettings.megaTilt;
 		float zoom = gAppSettings.megaZoom;
 		if( gameSetupActive ) {
@@ -1433,20 +1434,23 @@ void CDemo::perform()
 	gFogParam.set( fognear, fogfar, 1.0f/(fogfar-fognear), 0 );
 
 
-	dx.clearTargets( true, true, false, gAppSettings.followMode ? 0xFF400000 : 0xFF000000, 1.0f, 0L );
+	dx.clearTargets( true, true, false, insideView ? 0xFF400000 : 0xFF000000, 1.0f, 0L );
 	dx.sceneBegin();
 	G_RENDERCTX->applyGlobalEffect();
-	gi.getLevelMesh().render( RM_NORMAL, gAppSettings.followMode ? (CLevelMesh::FULL) : (CLevelMesh::NOTOP) );
+	gi.getLevelMesh().render( RM_NORMAL, insideView ? (CLevelMesh::FULL) : (CLevelMesh::NOTOP) );
 	gi.getPointsMesh().render( RM_NORMAL );
-	gi.getEntities().render( RM_NORMAL, !gAppSettings.followMode, gAppSettings.followMode );
+	gi.getEntities().render( RM_NORMAL, !insideView, insideView );
 	G_RENDERCTX->perform();
 
 	// render GUI
-	gUIDlg->onRender( dt );
+	if( !gameSetupActive ) {
+		gUIDlg->onRender( dt );
+	}
+
 	dx.sceneEnd();
 
 	// render minimap
-	if( gAppSettings.showMinimap )
+	if( gAppSettings.showMinimap && !gameSetupActive )
 		gRenderMinimap();
 
 	// render GUI #2

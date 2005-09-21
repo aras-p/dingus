@@ -54,7 +54,6 @@ enum eCellType {
 	CELL_BLOOD1 = 0,	///< Low density blood
 	CELL_BLOOD2,		///< Medium density blood
 	CELL_BLOOD3,		///< High density blood
-	CELL_PERF,			///< Perforable cell
 	CELL_BONE,			///< Bone
 	CELLCOUNT
 };

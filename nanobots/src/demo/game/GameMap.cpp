@@ -178,7 +178,7 @@ std::string CGameMap::initialize()
 			case 0xFFff0000:	cell.type = CELL_BLOOD1; break;
 			case 0xFF00ff00:	cell.type = CELL_BLOOD2; break;
 			case 0xFF0000ff:	cell.type = CELL_BLOOD3; break;
-			case 0xFFc0c0c0:	cell.type = CELL_PERF; break;
+			case 0xFFc0c0c0:	cell.type = CELL_BONE; break; // some time ago it was perforable, now it's just bone
 			default:			cell.type = CELL_BONE; break;
 			}
 			cell.height = MIN_CELL_HEIGHT;
@@ -189,6 +189,10 @@ std::string CGameMap::initialize()
 	}
 	surface->UnlockRect();
 	surface->Release();
+
+	// check map validity
+	if( !checkMapValidity() )
+		return "Tissue contains invalid topology (cells adjacent only diagonally)";
 
 	//
 	// read entities
@@ -226,6 +230,27 @@ std::string CGameMap::initialize()
 	return ""; // all ok!
 }
 
+
+bool CGameMap::checkMapValidity() const
+{
+	// invalid map topology is:
+	// XO or OX
+	// OX    XO
+	// i.e. when two blood cells meet only diagonally
+	for( int y = 0; y < mCellsY-1; ++y ) {
+		for( int x = 0; x < mCellsX-1; ++x ) {
+			eCellType t00 = getCell( x, y ).type;
+			eCellType t01 = getCell( x, y+1 ).type;
+			eCellType t10 = getCell( x+1, y ).type;
+			eCellType t11 = getCell( x+1, y+1 ).type;
+			if( isBlood(t00) && isBlood(t11) && !isBlood(t01) && !isBlood(t10) )
+				return false;
+			if( !isBlood(t00) && !isBlood(t11) && isBlood(t01) && isBlood(t10) )
+				return false;
+		}
+	}
+	return true;
+}
 
 
 void CGameMap::calcCellHeights()

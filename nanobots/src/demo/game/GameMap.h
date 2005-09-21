@@ -31,13 +31,16 @@ public:
 	/// @return Empty string if ok, error message on error.
 	std::string	initialize();
 
-	static bool isBlood( int type ) { return type < CELL_PERF; }
+	bool	checkMapValidity() const;
+
+	static bool isBlood( int type ) { return type < CELL_BONE; }
 
 	int		getCellsX() const { return mCellsX; }
 	int		getCellsY() const { return mCellsY; }
 	const SCell& getCell( int index ) const { return mCells[index]; }
 	const SCell& getCell( int x, int y ) const { assert(x>=0&&x<mCellsX&&y>=0&&y<mCellsY); return mCells[y*mCellsX+x]; }
 	const SCell* getCells() const { return mCells; }
+	int		pos2index( int x, int y ) const { assert(x>=0&&x<mCellsX&&y>=0&&y<mCellsY); return y*mCellsX+x; }
 
 	bool	isCellBlood( int index ) const { return isBlood(mCells[index].type); }
 
