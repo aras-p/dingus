@@ -31,7 +31,15 @@ public:
 	void	setSelectedEntityID( int i ) { mSelectedEntityID = i; }
 	
 	const CActorEntity* getActorEntityByID( int id ) const {
+		if( id == -1 )
+			return NULL;
 		TActorEntityMap::const_iterator it = mActorEntities.find( id );
+		return (it==mActorEntities.end()) ? NULL : it->second;
+	}
+	CActorEntity* getActorEntityByID( int id ) {
+		if( id == -1 )
+			return NULL;
+		TActorEntityMap::iterator it = mActorEntities.find( id );
 		return (it==mActorEntities.end()) ? NULL : it->second;
 	}
 

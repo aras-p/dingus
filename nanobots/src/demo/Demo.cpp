@@ -1269,19 +1269,19 @@ void CDemo::perform()
 	//
 	// camera
 
-	// TBD
-	/*
-	int selEntityIdx = gi.getEntities().getSelectedEntity();
-	bool hasSelected = (selEntityIdx != -1);
+	int selEntityID = gi.getEntities().getSelectedEntityID();
+	const CActorEntity* selEntity = gi.getEntities().getActorEntityByID( selEntityID );
+	bool hasSelected = (selEntity != NULL);
 	if( hasSelected ) {
-		const CActorEntity& selEntity = gi.getEntities().getActorEntity( selEntityIdx );
-		SVector3 selPos = selEntity.mWorldMat.getOrigin();
+		SVector3 selPos = selEntity->mWorldMat.getOrigin();
 		if( !gAppSettings.followMode ) {
 			selPos.y = VIEWER_Y;
 			SVector3 newPos = smoothCD( gViewer.getOrigin(), selPos, gViewerVel, 0.25f, dt );
 			gTryPositionViewer( newPos, selPos );
 		} else {
-			SVector3 selPrevPos = selEntity.samplePos( gi.getTime() - 10.0f );
+			//SVector3 selPrevPos = selEntity.samplePos( gi.getTime() - 10.0f );
+			// TBD
+			SVector3 selPrevPos = selPos;
 			selPrevPos.y = (selPrevPos.y + VIEWER_Y)*0.5f;
 			selPos.y = selPrevPos.y;
 			SVector3 dirZ = selPos - selPrevPos;
@@ -1314,7 +1314,6 @@ void CDemo::perform()
 		gViewerVel.set(0,0,0);
 		gViewerZVel.set(0,0,0);
 	}
-	*/
 
 	//
 	// check if current viewer's position is valid

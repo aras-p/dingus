@@ -27,31 +27,7 @@ CEntityManager::CEntityManager()
 
 	int i, n;
 
-	/*
-
-	// actor entities
-	n = replay.getEntityCount();
-	mActorEntities.resize( n );
-	mNeedleOnHoshimi.resize( n );
-	for( i = 0; i < n; ++i ) {
-		const CReplayEntity& re = replay.getEntity(i);
-		mActorEntities[i] = new CActorEntity( re );
-
-		// needle, and on hoshimi point?
-		if( re.getType() != ENTITY_NEEDLE )
-			continue;
-		int m = gmap.getPointCount();
-		mNeedleOnHoshimi[i] = false;
-		const CReplayEntity::SState& st = re.getTurnState( re.getBornTurn() );
-		for( int j = 0; j < m; ++j ) {
-			const CGameMap::SPoint& pt = gmap.getPoint(j);
-			if( pt.x == st.posx && pt.y == st.posy ) {
-				mNeedleOnHoshimi[i] = true;
-				break;
-			}
-		}
-	}
-	*/
+	// TBD: hollow needles on non-occupied hoshimi points
 
 	// add injection points
 	/*
@@ -85,13 +61,14 @@ void CEntityManager::update( const SLine3& mouseRay )
 {
 	int i, n;
 
-	/*
 	// check mouse intersection
 	mLastMouseEntityID = getCollidedEntityID( mouseRay );
-	if( mLastMouseEntityID != -1 ) {
-		mActorEntities[mLastMouseEntityID]->setOutline( OUTLINE_TTL );
+	CActorEntity* selEntity = getActorEntityByID( mLastMouseEntityID );
+	if( selEntity != NULL ) {
+		selEntity->setOutline( OUTLINE_TTL );
+	} else {
+		mLastMouseEntityID = -1;
 	}
-	*/
 
 	//const CGameState& state = CGameInfo::getInstance().getState();
 	//int turn = state.getTurn();
@@ -104,13 +81,11 @@ void CEntityManager::update( const SLine3& mouseRay )
 	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
 		CActorEntity& e = *it->second;
 		e.update();
-		/*
-		if( !e.isAlive() ) {
-			if( mSelectedEntity == i )
-				mSelectedEntity = -1;
+		if( !e.getGameEntity().isAlive() ) {
+			if( mSelectedEntityID == e.getGameEntity().getID() )
+				mSelectedEntityID = -1;
 			continue;
 		}
-		*/
 
 		/*
 		// TBD
@@ -131,11 +106,13 @@ void CEntityManager::update( const SLine3& mouseRay )
 		e.update();
 	}
 
-	/*
 	// set max. outline for selected entity
-	if( mSelectedEntity != -1 )
-		mActorEntities[mSelectedEntity]->setOutline( OUTLINE_TTL );
-	*/
+	selEntity = getActorEntityByID( mSelectedEntityID );
+	if( selEntity ) {
+		selEntity->setOutline( OUTLINE_TTL );
+	} else {
+		mSelectedEntityID = -1;
+	}
 }
 
 
@@ -397,8 +374,8 @@ int CEntityManager::getCollidedEntityID( const SLine3& ray ) const
 	TActorEntityMap::const_iterator it, itEnd = mActorEntities.end();
 	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
 		const CActorEntity& e = *it->second;
-		//if( !e.isAlive() ) // TBD
-		//	continue;
+		if( !e.getGameEntity().isAlive() )
+			continue;
 		const SVector3& pos = e.mWorldMat.getOrigin();
 		if( ray.project( pos ) < 0.0f )
 			continue;
