@@ -1360,7 +1360,10 @@ void CDemo::perform()
 	SLine3 mouseRay;
 	mouseRay.pos = eyePos;
 	mouseRay.vec = gMouseRay;
-	gi.getEntities().update( mouseRay );
+
+	const float UPDATE_DT = 0.2f;
+	float timeAlpha = (tmv - gi.getState().getTurnReceivedTime()).tosec() / UPDATE_DT;
+	gi.getEntities().update( mouseRay, timeAlpha );
 	
 	// stats UI
 	int nplayers = desc.getPlayerCount();

@@ -16,14 +16,13 @@ public:
 	CActorEntity( const CGameEntity& ge );
 	virtual ~CActorEntity();
 
-	void	update();
+	void	update( float timeAlpha );
 
 	const CGameEntity& getGameEntity() const { return *mGameEntity; }
 	D3DCOLOR	getColorMinimap() const { return mColorMinimap; }
 	D3DCOLOR	getColorBlob() const { return mColorBlob; }
 
-	//SVector3 samplePos( float t ) const;
-	//const SVector3& getPos( int i ) const { return mPositions[i]; }
+	SVector3 samplePos( float timeAlpha ) const;
 
 	void	setOutline( float ttl ) { mOutlineTTL = ttl; }
 	float	getOutline() const { return mOutlineTTL; }
@@ -53,11 +52,6 @@ private:
 	float	mOutlineDY;
 
 	float	mOutlineTTL;
-
-	bool	mOnGround;
-	bool	mOnAir;
-	bool	mOnSine;
-	float	mBaseAltitude;
 };
 
 

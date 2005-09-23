@@ -20,7 +20,7 @@ public:
 	CEntityManager();
 	~CEntityManager();
 
-	void	update( const SLine3& mouseRay );
+	void	update( const SLine3& mouseRay, float timeAlpha );
 	void	render( eRenderMode rm, bool entityBlobs, bool thirdPerson );
 	void	renderMinimap();
 	void	onMouseClick();

@@ -32,6 +32,7 @@ public:
 	TEntityMap::const_iterator entitiesEnd() const { return mEntities.end(); }
 
 	int getTurn() const { return mTurn; }
+	const time_value& getTurnReceivedTime() const { return mTurnReceivedTime; }
 
 	//bool	isSinglePlayer() const { return mPlayerCount==2; }
 	//bool	isComputerPlayer( int index ) const { return index == mPlayerCount-1; }
@@ -40,7 +41,8 @@ public:
 private:
 	SPlayer		mPlayers[G_MAX_PLAYERS]; // incl. AI
 	TEntityMap	mEntities;
-	int			mTurn; ///< Current turn
+	int			mTurn;				///< Current turn
+	time_value	mTurnReceivedTime;	///< When the current turn was received
 };
 
 

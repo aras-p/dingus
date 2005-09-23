@@ -59,6 +59,9 @@ void CGameState::updateState()
 	net::receiveChunk( data, 8, true );
 
 	int turn = bu::receiveShort();
+	if( turn != mTurn ) {
+		mTurnReceivedTime = CSystemTimer::getInstance().getTime();
+	}
 
 	// read players, clear stats
 	int playerCount = bu::receiveByte(); // incl. AI

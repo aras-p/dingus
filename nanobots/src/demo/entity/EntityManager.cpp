@@ -57,7 +57,7 @@ void CEntityManager::onMouseClick()
 	mSelectedEntityID = mLastMouseEntityID;
 }
 
-void CEntityManager::update( const SLine3& mouseRay )
+void CEntityManager::update( const SLine3& mouseRay, float timeAlpha )
 {
 	int i, n;
 
@@ -80,7 +80,7 @@ void CEntityManager::update( const SLine3& mouseRay )
 	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
 	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
 		CActorEntity& e = *it->second;
-		e.update();
+		e.update( timeAlpha );
 		if( !e.getGameEntity().isAlive() ) {
 			if( mSelectedEntityID == e.getGameEntity().getID() )
 				mSelectedEntityID = -1;

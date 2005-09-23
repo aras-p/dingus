@@ -33,9 +33,6 @@ CActorEntity::CActorEntity( const CGameEntity& ge )
 			(*rms)[z]->getParams().addVector4Ref( "vColor", gColors.team[ge.getOwner()].tone.v );
 	}
 
-	mOnGround = (etype==ENTITY_NEEDLE) || (etype==ENTITY_NEUROC);
-	mOnAir = (etype!=ENTITY_COLLECTOR) && (etype!=ENTITY_CONTAINER);
-	mOnSine = (etype==ENTITY_BLOCKER);
 
 	if( etype == ENTITY_NEEDLE ) {
 		mHealthBarDY =  1.3f;
@@ -50,13 +47,6 @@ CActorEntity::CActorEntity( const CGameEntity& ge )
 		mBlobDY = -0.4f;
 		mOutlineDY = 0.0f;
 	}
-
-	if( mOnSine )
-		mBaseAltitude = -0.6f;
-	else if( mOnAir )
-		mBaseAltitude = gRandom.getFloat( -0.2f, 0.2f );
-	else
-		mBaseAltitude = gRandom.getFloat( -0.6f, -0.4f );
 
 	/*
 	int i;
@@ -138,35 +128,19 @@ CActorEntity::~CActorEntity()
 }
 
 
-/*
-SVector3 CActorEntity::samplePos( float t ) const
+SVector3 CActorEntity::samplePos( float timeAlpha ) const
 {
-	int n = mReplayEntity->getAliveTurns();
-	t -= mReplayEntity->getBornTurn();
-
-	int turn = (int)t;
-	int turn0 = turn-1;
-	if( turn0 < 0 ) turn0 = 0; else if( turn0 >= n ) turn0 = n-1;
-	int turn1 = turn;
-	if( turn1 < 0 ) turn1 = 0; else if( turn1 >= n ) turn1 = n-1;
-	int turn2 = turn+1;
-	if( turn2 < 0 ) turn2 = 0; else if( turn2 >= n ) turn2 = n-1;
-	int turn3 = turn+2;
-	if( turn3 < 0 ) turn3 = 0; else if( turn3 >= n ) turn3 = n-1;
-	float alpha = t-turn;
+	const CGameEntity::SState& st0 = mGameEntity->getState();
+	const CGameEntity::SState& st1 = mGameEntity->getStateCurr();
 
 	SVector3 pos;
-	//D3DXVec3Lerp( &pos, &mPositions[turn1], &mPositions[turn2], alpha );
-	D3DXVec3CatmullRom( &pos, &mPositions[turn0], &mPositions[turn1], &mPositions[turn2], &mPositions[turn3], alpha );
+	D3DXVec3Lerp( &pos, &st0.pos, &st1.pos, timeAlpha );
 	return pos;
 }
-*/
 
 
-void CActorEntity::update()
+void CActorEntity::update( float timeAlpha )
 {
-	//float t = CGameInfo::getInstance().getTime();
-	
 	bool alive = mGameEntity->isAlive();
 	if( alive ) {
 		// fade out the outline
@@ -175,20 +149,13 @@ void CActorEntity::update()
 		if( mOutlineTTL < 0.0f )
 			mOutlineTTL = 0.0f;
 
-		//float t0 = t + 2.1f;
-
 		SMatrix4x4& m = mWorldMat;
-		/*SVector3 pos = samplePos( t );
-		SVector3 dir = samplePos( t0 ) - pos;
+		SVector3 pos = samplePos( timeAlpha );
+		SVector3 dir = samplePos( timeAlpha + 0.1f ) - pos;
 		if( dir.lengthSq() < 1.0e-6f )
 			dir = m.getAxisZ();
 		else
 			dir.normalize();
-		*/
-		// TBD
-		const CGameEntity::SState& st = mGameEntity->getState();
-		SVector3 pos = SVector3(st.posx,0,-st.posy);
-		SVector3 dir(0,0,1);
 
 		if( mGameEntity->getType() == ENTITY_BLOCKER ) {
 			double tt = CSystemTimer::getInstance().getTimeS();

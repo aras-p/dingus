@@ -6,7 +6,10 @@
 
 class CGameEntity {
 public:
-	//enum { HISTORY_SIZE = 6*3 };
+	enum {
+		HISTORY_SIZE = 4,
+		LAG_BEHIND = 1,
+	};
 
 	/// State info
 	struct SState {
@@ -15,6 +18,7 @@ public:
 		short	stock;			// quantity of azn
 		short	state;			// state
 		short	health;			// hit points
+		SVector3	pos;		// position in 3D
 	};
 
 public:
@@ -29,9 +33,12 @@ public:
 	int		getOwner() const { return mOwner; }
 	int		getMaxHealth() const { return mMaxHealth; }
 
-	bool	isAlive() const { return mState.state != ENTSTATE_DEAD; }
-	const SState& getState() const { return mState; }
-	void	updateState( int turn, const SState& state );
+	const SState& getState() const { assert(!mStates.empty()); return mStates[LAG_BEHIND]; }
+	const SState& getStateCurr() const { assert(!mStates.empty()); return mStates[0]; }
+
+	bool	isAlive() const { assert(!mStates.empty()); return mStates[LAG_BEHIND].state != ENTSTATE_DEAD; }
+
+	void	updateState( int turn, SState& state );
 	void	markDead();
 
 private:
@@ -53,9 +60,14 @@ private:
 	/// The turn entity is born.
 	int		mBornTurn;
 
-	SState	mState;
 	/// Previous states history. Current is [0], previous is [1] etc.
-	//ringdeque<SState,HISTORY_SIZE>	mStateHistory;
+	ringdeque<SState,HISTORY_SIZE>	mStates;
+
+	// Related to final 3D positions
+	bool	mOnGround;
+	bool	mOnAir;
+	bool	mOnSine;
+	float	mBaseAltitude;
 };
 
 
