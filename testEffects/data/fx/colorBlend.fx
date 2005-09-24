@@ -3,6 +3,7 @@
 
 float4x4	mWorld;
 float4x4	mWVP;
+float4		vColor;
 
 
 SPosCol vsMain( SPosN i ) {
@@ -10,7 +11,7 @@ SPosCol vsMain( SPosN i ) {
 	o.pos	= mul( i.pos, mWVP );
 	float3 n = mul( i.normal, (float3x3)mWorld );
 
-	float diff = abs( dot( n, vLightDir ) ) * 0.7 + 0.3;
+	float4 diff = abs( dot( n, vLightDir ) ) * vColor + 0.3;
 	o.color = diff;
 	o.color.a = 0.5;
 	return o;
@@ -28,6 +29,8 @@ technique tecFFP
 		SrcBlend = SrcAlpha;
 		DestBlend = InvSrcAlpha;
 
+		ZWriteEnable = False;
+
 		ColorOp[0]	 = SelectArg1;
 		ColorArg1[0] = Diffuse;
 		AlphaOp[0]	 = SelectArg1;
@@ -37,5 +40,6 @@ technique tecFFP
 	}
 	pass PLast {
 		AlphaBlendEnable = False;
+		ZWriteEnable = True;
 	}
 }

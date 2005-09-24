@@ -73,10 +73,19 @@ public:
 	CSceneEntity( const std::string& meshName, const std::string& fxName, int priority )
 		: CMeshEntity( meshName )
 	{
+		const int ARTIFICIAL_PRIORITY_BUCKETS = 100;
+		priority += gRandom.getInt(0,ARTIFICIAL_PRIORITY_BUCKETS)*100;
+
 		mRenderMesh = new CRenderableMesh( getMesh(), 0, &mWorldMat.getOrigin(), priority );
 		CEffectParams& ep = mRenderMesh->getParams();
 		ep.setEffect( *RGET_FX(fxName) );
 		addMatricesToParams( ep );
+		ep.addVector4Ref( "vColor", mColor );
+
+		mColor.x = gRandom.getFloat( 0, 1 );
+		mColor.y = gRandom.getFloat( 0, 1 );
+		mColor.z = gRandom.getFloat( 0, 1 );
+		mColor.w = 1;
 	}
 	virtual ~CSceneEntity()
 	{
@@ -91,6 +100,7 @@ public:
 
 private:
 	CRenderableMesh*	mRenderMesh;
+	SVector4			mColor;
 };
 
 std::vector<CSceneEntity*>	gEntities;
@@ -109,12 +119,14 @@ static const char* FX_NAMES[] = {
 	"colorBlend",
 	"colorAdd",
 	"colorMul",
+	"funky",
 };
 static int FX_PRIORITY[] = {
 	0,
 	1,
 	2,
 	3,
+	4,
 };
 static const int FX_COUNT = sizeof(FX_NAMES) / sizeof(FX_NAMES[0]);
 
@@ -131,7 +143,7 @@ void	gAddEntity()
 	e->mWorldMat.getOrigin().set(
 		gRandom.getFloat( -20.0f, 20.0f ),
 		gRandom.getFloat( -20.0f, 20.0f ),
-		gRandom.getFloat( -10.0f, 30.0f )
+		gRandom.getFloat( 10.0f, 30.0f )
 	);
 
 	gEntities.push_back( e );

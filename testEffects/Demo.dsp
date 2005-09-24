@@ -175,6 +175,10 @@ SOURCE=.\data\fx\colorBlend.fx
 
 SOURCE=.\data\fx\colorMul.fx
 # End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\funky.fx
+# End Source File
 # End Group
 # Begin Source File
 
