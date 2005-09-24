@@ -8,7 +8,7 @@ class CGameEntity {
 public:
 	enum {
 		HISTORY_SIZE = 4,
-		LAG_BEHIND = 1,
+		LAG_BEHIND = 3,
 	};
 
 	/// State info
@@ -34,12 +34,15 @@ public:
 	int		getMaxHealth() const { return mMaxHealth; }
 
 	const SState& getState() const { assert(!mStates.empty()); return mStates[LAG_BEHIND]; }
-	const SState& getStateCurr() const { assert(!mStates.empty()); return mStates[0]; }
+	const SState& getStateCurr() const { assert(!mStates.empty()); return mStates[LAG_BEHIND-1]; }
 
 	bool	isAlive() const { assert(!mStates.empty()); return mStates[LAG_BEHIND].state != ENTSTATE_DEAD; }
 
 	void	updateState( int turn, SState& state );
 	void	markDead();
+
+protected:
+	void	adjustPosition( int turn, SState& s );
 
 private:
 	/// Last turn number that this entity was received
