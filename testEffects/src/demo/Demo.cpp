@@ -73,7 +73,7 @@ public:
 	CSceneEntity( const std::string& meshName, const std::string& fxName, int priority )
 		: CMeshEntity( meshName )
 	{
-		const int ARTIFICIAL_PRIORITY_BUCKETS = 100;
+		const int ARTIFICIAL_PRIORITY_BUCKETS = 500;
 		priority += gRandom.getInt(0,ARTIFICIAL_PRIORITY_BUCKETS)*100;
 
 		mRenderMesh = new CRenderableMesh( getMesh(), 0, &mWorldMat.getOrigin(), priority );
@@ -98,6 +98,8 @@ public:
 		G_RENDERCTX->attach( *mRenderMesh );
 	}
 
+	CEffectParams& getFxParams() { return mRenderMesh->getParams(); }
+
 private:
 	CRenderableMesh*	mRenderMesh;
 	SVector4			mColor;
@@ -120,6 +122,9 @@ static const char* FX_NAMES[] = {
 	"colorAdd",
 	"colorMul",
 	"funky",
+	"texture",
+	"textureSpec",
+	"textureAlphaTest",
 };
 static int FX_PRIORITY[] = {
 	0,
@@ -127,6 +132,8 @@ static int FX_PRIORITY[] = {
 	2,
 	3,
 	4,
+	0,
+	0,
 };
 static const int FX_COUNT = sizeof(FX_NAMES) / sizeof(FX_NAMES[0]);
 
@@ -138,13 +145,19 @@ void	gAddEntity()
 	CSceneEntity* e = new CSceneEntity( ENTITY_NAMES[meshIndex], FX_NAMES[fxIndex], FX_PRIORITY[fxIndex] );
 	
 	D3DXMatrixRotationYawPitchRoll( &e->mWorldMat,
-		gRandom.getFloat(0,D3DX_PI*2), gRandom.getFloat(-D3DX_PI,D3DX_PI), gRandom.getFloat(0,D3DX_PI)
+		gRandom.getFloat(0,D3DX_PI*2),
+		gRandom.getFloat(-D3DX_PI,D3DX_PI),
+		gRandom.getFloat(0,D3DX_PI)
 	);
 	e->mWorldMat.getOrigin().set(
 		gRandom.getFloat( -20.0f, 20.0f ),
 		gRandom.getFloat( -20.0f, 20.0f ),
 		gRandom.getFloat( 10.0f, 30.0f )
 	);
+
+	if( !strncmp(FX_NAMES[fxIndex],"texture",7) ) {
+		e->getFxParams().addTexture( "tBase", *RGET_TEX("Checker") );
+	}
 
 	gEntities.push_back( e );
 }
@@ -178,14 +191,14 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// common params
 	
-	gGlobalCullMode = D3DCULL_CW;
+	gGlobalCullMode = D3DCULL_NONE;
 	G_RENDERCTX->getGlobalParams().addIntRef( "iCull", &gGlobalCullMode );
 	G_RENDERCTX->getGlobalParams().addFloatRef( "fTime", &gTimeParam );
 
 	// --------------------------------
 	// meshes
 
-	const int ENTITY_COUNT = 1000;
+	const int ENTITY_COUNT = 2000;
 	for( int i = 0; i < ENTITY_COUNT; ++i )
 		gAddEntity();
 
@@ -258,10 +271,10 @@ void CDemo::perform()
 	gUIFPS->setText( buf );
 
 	SMatrix4x4& mc = gCamera.mWorldMat;
-	mc.getOrigin().z = -10.0f;
+	mc.getOrigin().z = -30.0f;
 
-	const float camnear = 0.1f;
-	const float camfar = 50.0f;
+	const float camnear = 10.0f;
+	const float camfar = 100.0f;
 	const float camfov = D3DX_PI/4;
 	gCamera.setProjectionParams( camfov, dx.getBackBufferAspect(), camnear, camfar );
 

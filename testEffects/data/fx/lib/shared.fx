@@ -26,7 +26,7 @@ shared float3	vCameraY;
 shared int		iCull = 2;
 
 
-static const float3 vLightDir = -normalize( float3(0.4, -1.0, 0.2) );
+static const float3 vLightDir = -normalize( float3(0.4, -1.0, 0.8) );
 
 
 #endif

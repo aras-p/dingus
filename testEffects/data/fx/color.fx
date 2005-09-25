@@ -8,10 +8,10 @@ float4		vColor;
 
 SPosCol vsMain( SPosN i ) {
 	SPosCol o;
+	float3 n = mul( i.normal*2-1, (float3x3)mWorld );
 	o.pos	= mul( i.pos, mWVP );
-	float3 n = mul( i.normal, (float3x3)mWorld );
 
-	float4 diff = abs( dot( n, vLightDir ) ) * vColor + 0.3;
+	float4 diff = saturate( dot( n, vLightDir ) ) * vColor + 0.3;
 	o.color = diff;
 	return o;
 }

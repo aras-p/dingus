@@ -8,10 +8,7 @@ float4		vColor;
 
 SPosCol vsMain( SPosN i ) {
 	SPosCol o;
-	i.pos.xyz += i.normal;
-	i.pos.x += sin(i.pos.x*7)*0.2;
-	i.pos.y += cos(i.pos.y*8)*0.2;
-	i.pos.z += sin(i.pos.x*6)*0.2;
+	i.normal = i.normal*2-1;
 
 	o.pos = mul( i.pos, mWVP );
 	float3 n = mul( i.normal, (float3x3)mWorld );
@@ -37,7 +34,7 @@ technique tecFFP
 		SrcBlend = One;
 		DestBlend = One;
 
-		ColorWriteEnable = Red;
+		ColorWriteEnable = Red | Green;
 	}
 	pass PLast {
 		AlphaBlendEnable = False;
