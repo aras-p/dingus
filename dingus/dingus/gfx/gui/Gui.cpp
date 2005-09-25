@@ -38,9 +38,9 @@ using namespace dingus;
 
 
 // Minimum scrollbar thumb size
-const int SCROLLBAR_MINTHUMBSIZE = 8;
+const float SCROLLBAR_MINTHUMBSIZE = 8;
 // Maximum scrollbar thumb size
-const int SCROLLBAR_MAXTHUMBSIZE = 32;
+const float SCROLLBAR_MAXTHUMBSIZE = 32;
 
 // Delay and repeat period when clicking on the scroll bar arrows
 const float SCROLLBAR_ARROWCLICK_DELAY = 0.33f;
@@ -232,7 +232,7 @@ void CUIDialog::onRender( float dt )
 	assert( mDefaultTexture );
 	device->SetTexture( 0, mDefaultTexture->getObject() );
 
-	CUIResourceManager::getInstance().mSprite->Begin( D3DXSPRITE_DONOTSAVESTATE );
+	resmgr.mSprite->Begin( D3DXSPRITE_DONOTSAVESTATE );
 
 	// call render callback
 	if( mRenderCallback ) {
@@ -272,8 +272,8 @@ void CUIDialog::onRender( float dt )
 	//SetRect( &rc, 0, 0, mWidth, mHeight );
 	//drawRect( &rc, 0x80ffffff );
 	
-	CUIResourceManager::getInstance().mSprite->End();
-	CUIResourceManager::getInstance().mStateBlock->Apply();
+	resmgr.mSprite->End();
+	resmgr.mStateBlock->Apply();
 }
 
 
@@ -3088,7 +3088,7 @@ void CUIScrollBar::updateRects()
 void CUIScrollBar::updateThumbRect()
 {
 	if( mEnd - mStart > mPageSize ) {
-		int nThumbHeight = max( mRectTrack.getHeight() * mPageSize / ( mEnd - mStart ), SCROLLBAR_MINTHUMBSIZE );
+		float nThumbHeight = max( mRectTrack.getHeight() * mPageSize / ( mEnd - mStart ), SCROLLBAR_MINTHUMBSIZE );
 		nThumbHeight = min( nThumbHeight, SCROLLBAR_MAXTHUMBSIZE );
 		int nMaxPosition = mEnd - mStart - mPageSize;
 		mRectThumb.top = mRectTrack.top + ( mPosition - mStart ) * ( mRectTrack.getHeight() - nThumbHeight ) / nMaxPosition;

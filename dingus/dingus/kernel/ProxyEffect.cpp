@@ -131,11 +131,19 @@ bool CD3DXEffect::tryInit()
 	return true;
 }
 
+// --------------------------------------------------------------------------
+
+#define FX_BEGIN_PARAMS (D3DXFX_DONOTSAVESTATE | D3DXFX_DONOTSAVESHADERSTATE | D3DXFX_DONOTSAVESAMPLERSTATE)
+#define FX_USE_RESTORING_PASS
+
+// if using this, uncomment DISABLE_FILTERING in D3DDevice.cpp and EffectStateManager.cpp!
+//#define FX_BEGIN_PARAMS (0)
+
 
 int CD3DXEffect::beginFx()
 {
 	UINT p;
-	DWORD flags = mHasRestoringPass ? (D3DXFX_DONOTSAVESTATE | D3DXFX_DONOTSAVESHADERSTATE) : 0;
+	DWORD flags = mHasRestoringPass ? (FX_BEGIN_PARAMS) : 0;
 	HRESULT hr = getObject()->Begin( &p, flags );
 	assert( SUCCEEDED(hr) );
 	assert( mHasRestoringPass && p==mPassCount+1 || !mHasRestoringPass && p==mPassCount );
@@ -144,10 +152,12 @@ int CD3DXEffect::beginFx()
 
 void CD3DXEffect::endFx()
 {
+#ifdef FX_USE_RESTORING_PASS
 	if( mHasRestoringPass ) {
 		beginPass( mPassCount );
 		endPass();
 	}
+#endif
 	HRESULT hr = getObject()->End();
 	assert( SUCCEEDED(hr) );
 }

@@ -2,6 +2,7 @@
 no codename
 ========
 
+050925: gfx/gui/Gui.cpp fix to make it compile with VC7.1.
 050917: Factored out sprite/text functions from GUI for more convenient
 		immediate mode calling. getX()/getY() added to CUIDialog.
 050628: Texture bundle always takes miplevels from file for DDS textures
