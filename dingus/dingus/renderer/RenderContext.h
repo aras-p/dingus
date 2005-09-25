@@ -78,8 +78,6 @@ private:
 	bool			mInsideDirect;
 	CD3DXEffect*	mDirectCurrFX;
 	int				mDirectCurrPasses;
-
-	bool	mGlobalEffectBegun;
 };
 
 

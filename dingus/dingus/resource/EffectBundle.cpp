@@ -4,6 +4,7 @@
 #include "stdafx.h"
 
 #include "EffectBundle.h"
+#include "../kernel/EffectLoader.h"
 #include "../utils/Errors.h"
 #include "../kernel/D3DDevice.h"
 
@@ -63,53 +64,18 @@ int CEffectBundle::findMacro( const char* name ) const
 }
 
 
-ID3DXEffect* CEffectBundle::loadEffect( const CResourceId& id, const CResourceId& fullName ) const
-{
-	ID3DXEffect* fx = NULL;
-	ID3DXBuffer* errors = NULL;
-
-	mLastErrors = "";
-
-	assert( mSharedPool );
-	HRESULT hres = D3DXCreateEffectFromFile(
-		&CD3DDevice::getInstance().getDevice(),
-		fullName.getUniqueName().c_str(),
-		&mMacros[0],
-		NULL, // TBD ==> includes
-		mOptimizeShaders ? 0 : D3DXSHADER_SKIPOPTIMIZATION,
-		mSharedPool,
-		&fx,
-		&errors );
-	if( errors && errors->GetBufferSize() > 1 ) {
-		std::string msg = "messages compiling effect '" + fullName.getUniqueName() + "'";
-		mLastErrors = (const char*)errors->GetBufferPointer();
-		msg += mLastErrors;
-		CConsole::CON_ERROR.write( msg );
-	}
-
-	if( FAILED( hres ) ) {
-		return NULL;
-	}
-	assert( fx );
-
-	CONSOLE.write( "fx loaded '" + id.getUniqueName() + "'" );
-
-	if( errors )
-		errors->Release();
-
-	// set state manager
-	if( mUseStateManager )
-		fx->SetStateManager( &CD3DDevice::getInstance().getStateManager() );
-
-	return fx;
-}
-
 CD3DXEffect* CEffectBundle::loadResourceById( const CResourceId& id, const CResourceId& fullName )
 {
-	ID3DXEffect* fx = loadEffect( id, fullName );
-	if( !fx )
+	CD3DXEffect* fx = new CD3DXEffect( NULL );
+	bool ok = loadD3DXEffect( id.getUniqueName(), fullName.getUniqueName(),
+		*fx, mLastErrors, mSharedPool,
+		mUseStateManager ? (&CD3DDevice::getInstance().getStateManager()) : NULL,
+		&mMacros[0], mOptimizeShaders, CONSOLE );
+	if( !ok ) {
+		delete fx;
 		return NULL;
-	return new CD3DXEffect( fx );
+	}
+	return fx;
 }
 
 void CEffectBundle::createResource()

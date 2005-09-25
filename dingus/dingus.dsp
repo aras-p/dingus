@@ -651,6 +651,14 @@ SOURCE=.\dingus\kernel\D3DDeviceCaps.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\dingus\kernel\EffectLoader.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\dingus\kernel\EffectLoader.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\dingus\kernel\EffectStateManager.cpp
 # End Source File
 # Begin Source File

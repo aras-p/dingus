@@ -14,7 +14,8 @@ using namespace dingus;
 CD3DXEffect::CD3DXEffect( ID3DXEffect* object )
 :	CBaseProxyClass(object)
 {
-	init();
+	if( object )
+		init();
 }
 
 void CD3DXEffect::setObject( ID3DXEffect* object )

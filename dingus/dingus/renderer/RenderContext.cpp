@@ -14,8 +14,7 @@ using namespace dingus;
 CRenderContext::CRenderContext( CD3DXEffect& globalFx )
 :	mGlobalEffect( &globalFx ),
 	mInsideDirect( false ),
-	mDirectCurrFX( NULL ),
-	mGlobalEffectBegun( false )
+	mDirectCurrFX( NULL )
 {
 	assert( mGlobalEffect );
 	mGlobalParams.setEffect( *mGlobalEffect );
@@ -116,17 +115,12 @@ struct SRenderableSorter {
 
 void CRenderContext::applyGlobalEffect()
 {
-	if( mGlobalEffectBegun ) {
-		mGlobalEffect->endPass();
-		mGlobalEffect->endFx();
-		mGlobalEffectBegun = false;
-	}
-
 	// global params and effect
 	mGlobalParams.applyToEffect();
 	int passes = mGlobalEffect->beginFx();
 	mGlobalEffect->beginPass( 0 );
-	mGlobalEffectBegun = true;
+	mGlobalEffect->endPass();
+	mGlobalEffect->endFx();
 }
 
 // --------------------------------------------------------------------------

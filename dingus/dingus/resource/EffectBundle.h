@@ -61,8 +61,6 @@ private:
 	CEffectBundle();
 	virtual ~CEffectBundle() { clear(); };
 	
-	ID3DXEffect* loadEffect( const CResourceId& id, const CResourceId& fullName ) const;
-
 	/// @return index into macro array, or -1 if not found.
 	int		findMacro( const char* name ) const;
 	
