@@ -9,9 +9,16 @@
 #include "../console/Console.h"
 #include "../utils/Errors.h"
 
+#include "../lua/LuaSingleton.h"
+#include "../lua/LuaHelper.h"
+#include "../lua/LuaIterator.h"
+
+
 using namespace dingus;
 
 // --------------------------------------------------------------------------
+
+namespace {
 
 enum eFxStateType {
 	FXST_RENDERSTATE,
@@ -28,7 +35,9 @@ struct SFxState {
 	DWORD			code;
 };
 
-static SFxState FX_STATES[] = {
+
+
+SFxState FX_STATES[] = {
 	{ FXST_VERTEXSHADER, "VertexShader", 0 },
 	{ FXST_PIXELSHADER, "PixelShader", 0 },
 	{ FXST_NPATCH, "PatchSegments", 0 },
@@ -163,8 +172,21 @@ static SFxState FX_STATES[] = {
 	{ FXST_SAMPLER, "DMapOffset",    D3DSAMP_DMAPOFFSET   },
 };
 
-static int FX_STATES_SIZE = sizeof(FX_STATES) / sizeof(FX_STATES[0]);
+const int FX_STATES_SIZE = sizeof(FX_STATES) / sizeof(FX_STATES[0]);
 
+
+int	findState( eFxStateType type, int code )
+{
+	for( int i = 0; i < FX_STATES_SIZE; ++i ) {
+		if( FX_STATES[i].type == type && FX_STATES[i].code == code )
+			return i;
+	}
+	ASSERT_FAIL_MSG( "Supplied effect state not found" );
+	return -1;
+}
+
+
+}; // end anonymous namespace
 
 
 // --------------------------------------------------------------------------
@@ -365,22 +387,144 @@ public:
 	}
 
 private:
-	int		findState( eFxStateType type, int code ) const
-	{
-		for( int i = 0; i < FX_STATES_SIZE; ++i ) {
-			if( FX_STATES[i].type == type && FX_STATES[i].code == code )
-				return i;
-		}
-		ASSERT_FAIL_MSG( "Supplied effect state not found" );
-		return -1;
-	}
-
-private:
 	/// Inspected states
 	std::vector<SState> mStates;
 	/// Current pass
 	int	mCurrentPass;
 };
+
+
+// --------------------------------------------------------------------------
+
+
+class CEffectStatesConfig : public boost::noncopyable {
+public:
+	bool	load( const char* fileName );
+
+private:
+	struct SStateRestored {
+		SStateRestored( int idx, const std::string& val )
+			: index(idx), value(val)
+		{
+			assert( index >= 0 && index < FX_STATES_SIZE );
+			assert( !value.empty() );
+		}
+
+		int			index;	///< Index into FX_STATES
+		std::string value;	///< Restored to value (plain text, will be interpreted by Effect).
+	};
+	struct SStateRequired {
+		SStateRequired( int idx )
+			: index(idx)
+		{
+			assert( index >= 0 && index < FX_STATES_SIZE );
+		}
+
+		int			index;	///< Index into FX_STATES
+	};
+	struct SStateDependent {
+		SStateDependent( int idx, DWORD val )
+			: index(idx), value(val)
+		{
+			assert( index >= 0 && index < FX_STATES_SIZE );
+		}
+
+		int			index;			///< If this state (index into FX_STATES)
+		DWORD		value;			///< Is set to this value
+		std::vector<int> needed;	///< All these states are needed (indices into FX_STATES)
+	};
+
+private:
+	std::vector<SStateRestored>		mStatesRestored;
+	std::vector<SStateRequired>		mStatesRequired;
+	std::vector<SStateDependent>	mStatesDependent;
+};
+
+
+bool CEffectStatesConfig::load( const char* fileName )
+{
+	// clear
+	mStatesRestored.clear();
+	mStatesRestored.reserve( 64 );
+	mStatesRequired.clear();
+	mStatesRequired.reserve( 16 );
+	mStatesDependent.clear();
+	mStatesDependent.reserve( 16 );
+
+	// execute file
+	CLuaSingleton& lua = CLuaSingleton::getInstance();
+	int errorCode = lua.doFile( fileName, false );
+	if( errorCode )
+		return false; // error
+
+	// read restored states
+	CLuaValue luaRestored = lua.getGlobal("restored");
+	CLuaArrayIterator itRestored( luaRestored );
+	while( itRestored.hasNext() ) {
+		CLuaValue& luaSt = itRestored.next();
+
+		std::string name = luaSt.getElement(1).getString();
+		luaSt.discard();
+		std::string value = luaSt.getElement(2).getString();
+		luaSt.discard();
+
+		//int index = findState(
+		/*
+		int pri = (int)CLuaHelper::getNumber( luaState, "pri" );
+		desc.addGroup( pri, fx );
+
+		// group params
+		const int grp = desc.getGroupCount() - 1;
+		CLuaValue luaParams = luaState.getElement("params");
+		CLuaArrayIterator itParams( luaParams );
+		while( itParams.hasNext() ) {
+			CLuaValue& luaPar = itParams.next();
+			std::string ttype = luaPar.getElement(1).getString();
+			std::string tname = luaPar.getElement(2).getString();
+			if( ttype == "tex" ) {
+				std::string tid = luaPar.getElement(3).getString();
+				desc.addParamTexture( grp, tname, tid );
+				luaPar.discard();
+			} else if( ttype == "cube" ) {
+				std::string tid = luaPar.getElement(3).getString();
+				desc.addParamCubemap( grp, tname, tid );
+				luaPar.discard();
+			} else if( ttype == "stex" ) {
+				std::string tid = luaPar.getElement(3).getString();
+				desc.addParamSTexture( grp, tname, tid );
+				luaPar.discard();
+			} else if( ttype == "vec3" ) {
+				SVector3 v;
+				v.x = float( luaPar.getElement(3).getNumber() );
+				v.y = float( luaPar.getElement(4).getNumber() );
+				v.z = float( luaPar.getElement(5).getNumber() );
+				desc.addParamVec3( grp, tname, v );
+				luaPar.discard(); luaPar.discard(); luaPar.discard();
+			} else if( ttype == "vec4" ) {
+				SVector4 v;
+				v.x = float( luaPar.getElement(3).getNumber() );
+				v.y = float( luaPar.getElement(4).getNumber() );
+				v.z = float( luaPar.getElement(5).getNumber() );
+				v.w = float( luaPar.getElement(6).getNumber() );
+				desc.addParamVec4( grp, tname, v );
+				luaPar.discard(); luaPar.discard(); luaPar.discard(); luaPar.discard();
+			} else if( ttype == "flt" ) {
+				float v = float( luaPar.getElement(3).getNumber() );
+				desc.addParamFloat( grp, tname, v );
+				luaPar.discard();
+			} else {
+				ASSERT_FAIL_MSG( "Unsupported param type!" );
+			}
+			luaPar.discard();
+			luaPar.discard();
+		}
+		luaParams.discard();
+		*/
+	}
+	luaRestored.discard();
+
+	return true;
+}
 
 
 // --------------------------------------------------------------------------
