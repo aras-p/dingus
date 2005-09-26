@@ -11,11 +11,15 @@ namespace dingus {
 
 	class CConsoleChannel;
 
-	bool loadD3DXEffect(
-		const std::string& id, const std::string& fileName,
-		CD3DXEffect& dest, std::string& errorMsgs,
-		ID3DXEffectPool* pool, ID3DXEffectStateManager* stateManager,
-		const D3DXMACRO* macros, bool optimizeShaders, CConsoleChannel& console );
+	namespace fxloader {
+
+		bool load(
+			const std::string& id, const std::string& fileName,
+			CD3DXEffect& dest, std::string& errorMsgs,
+			ID3DXEffectPool* pool, ID3DXEffectStateManager* stateManager,
+			const D3DXMACRO* macros, bool optimizeShaders, CConsoleChannel& console );
+
+	};
 
 
 }; // namespace

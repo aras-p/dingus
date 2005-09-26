@@ -377,7 +377,7 @@ private:
 
 // --------------------------------------------------------------------------
 
-bool dingus::loadD3DXEffect(
+bool dingus::fxloader::load(
 	const std::string& id, const std::string& fileName,
 	CD3DXEffect& dest, std::string& errorMsgs,
 	ID3DXEffectPool* pool, ID3DXEffectStateManager* stateManager,

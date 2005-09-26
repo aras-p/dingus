@@ -67,7 +67,7 @@ int CEffectBundle::findMacro( const char* name ) const
 CD3DXEffect* CEffectBundle::loadResourceById( const CResourceId& id, const CResourceId& fullName )
 {
 	CD3DXEffect* fx = new CD3DXEffect( NULL );
-	bool ok = loadD3DXEffect( id.getUniqueName(), fullName.getUniqueName(),
+	bool ok = fxloader::load( id.getUniqueName(), fullName.getUniqueName(),
 		*fx, mLastErrors, mSharedPool,
 		mUseStateManager ? (&CD3DDevice::getInstance().getStateManager()) : NULL,
 		&mMacros[0], mOptimizeShaders, CONSOLE );
