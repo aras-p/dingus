@@ -185,6 +185,16 @@ int	findState( eFxStateType type, int code )
 	return -1;
 }
 
+int findState( const char* name )
+{
+	for( int i = 0; i < FX_STATES_SIZE; ++i ) {
+		if( 0 == stricmp( FX_STATES[i].name, name ) )
+			return i;
+	}
+	ASSERT_FAIL_MSG( "Supplied effect state not found" );
+	return -1;
+}
+
 
 }; // end anonymous namespace
 
@@ -468,60 +478,47 @@ bool CEffectStatesConfig::load( const char* fileName )
 		std::string value = luaSt.getElement(2).getString();
 		luaSt.discard();
 
-		//int index = findState(
-		/*
-		int pri = (int)CLuaHelper::getNumber( luaState, "pri" );
-		desc.addGroup( pri, fx );
-
-		// group params
-		const int grp = desc.getGroupCount() - 1;
-		CLuaValue luaParams = luaState.getElement("params");
-		CLuaArrayIterator itParams( luaParams );
-		while( itParams.hasNext() ) {
-			CLuaValue& luaPar = itParams.next();
-			std::string ttype = luaPar.getElement(1).getString();
-			std::string tname = luaPar.getElement(2).getString();
-			if( ttype == "tex" ) {
-				std::string tid = luaPar.getElement(3).getString();
-				desc.addParamTexture( grp, tname, tid );
-				luaPar.discard();
-			} else if( ttype == "cube" ) {
-				std::string tid = luaPar.getElement(3).getString();
-				desc.addParamCubemap( grp, tname, tid );
-				luaPar.discard();
-			} else if( ttype == "stex" ) {
-				std::string tid = luaPar.getElement(3).getString();
-				desc.addParamSTexture( grp, tname, tid );
-				luaPar.discard();
-			} else if( ttype == "vec3" ) {
-				SVector3 v;
-				v.x = float( luaPar.getElement(3).getNumber() );
-				v.y = float( luaPar.getElement(4).getNumber() );
-				v.z = float( luaPar.getElement(5).getNumber() );
-				desc.addParamVec3( grp, tname, v );
-				luaPar.discard(); luaPar.discard(); luaPar.discard();
-			} else if( ttype == "vec4" ) {
-				SVector4 v;
-				v.x = float( luaPar.getElement(3).getNumber() );
-				v.y = float( luaPar.getElement(4).getNumber() );
-				v.z = float( luaPar.getElement(5).getNumber() );
-				v.w = float( luaPar.getElement(6).getNumber() );
-				desc.addParamVec4( grp, tname, v );
-				luaPar.discard(); luaPar.discard(); luaPar.discard(); luaPar.discard();
-			} else if( ttype == "flt" ) {
-				float v = float( luaPar.getElement(3).getNumber() );
-				desc.addParamFloat( grp, tname, v );
-				luaPar.discard();
-			} else {
-				ASSERT_FAIL_MSG( "Unsupported param type!" );
-			}
-			luaPar.discard();
-			luaPar.discard();
-		}
-		luaParams.discard();
-		*/
+		int index = findState( name.c_str() );
+		mStatesRestored.push_back( SStateRestored( index, value ) );
 	}
 	luaRestored.discard();
+	
+	// read required states
+	CLuaValue luaRequired = lua.getGlobal("required");
+	CLuaArrayIterator itRequired( luaRequired );
+	while( itRequired.hasNext() ) {
+		CLuaValue& luaSt = itRequired.next();
+		std::string name = luaSt.getString();
+
+		int index = findState( name.c_str() );
+		mStatesRequired.push_back( SStateRequired( index ) );
+	}
+	luaRequired.discard();
+
+	// read dependent states
+	CLuaValue luaDependent = lua.getGlobal("dependent");
+	CLuaArrayIterator itDependent( luaDependent );
+	while( itDependent.hasNext() ) {
+		CLuaValue& luaSt = itDependent.next();
+		
+		std::string name = luaSt.getElement(1).getString();
+		luaSt.discard();
+		int value = luaSt.getElement(2).getNumber();
+		luaSt.discard();
+
+		int index = findState( name.c_str() );
+		mStatesDependent.push_back( SStateDependent( index, value ) );
+		SStateDependent& st = mStatesDependent.back();
+
+		CLuaValue luaNames = luaSt.getElement(3);
+		CLuaArrayIterator itNames( luaNames );
+		while( itNames.hasNext() ) {
+			CLuaValue& luaN = itNames.next();
+			st.needed.push_back( findState( luaN.getString().c_str() ) );
+		}
+		luaNames.discard();
+	}
+	luaDependent.discard();
 
 	return true;
 }
