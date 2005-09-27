@@ -49,3 +49,29 @@ technique tec11
 		AlphaTestEnable = False;
 	}
 }
+
+technique tecFFP
+{
+	pass P0 {
+		VertexShader = compile vs_1_1 vsMain();
+		PixelShader = NULL;
+
+		AlphaTestEnable = True;
+		AlphaFunc = Greater;
+		AlphaRef = 128;
+
+		Sampler[0]	 = (smpBase);
+
+		ColorOp[0]	 = Modulate;
+		ColorArg1[0] = Texture;
+		ColorArg2[0] = Diffuse;
+		AlphaOp[0]	 = Modulate;
+		AlphaArg1[0] = Texture;
+		AlphaArg2[0] = Diffuse;
+		ColorOp[1]	 = Disable;
+		AlphaOp[1]	 = Disable;
+	}
+	pass PLast {
+		AlphaTestEnable = False;
+	}
+}

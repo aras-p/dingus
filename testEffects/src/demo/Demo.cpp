@@ -32,10 +32,10 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 {
 	bool ok = true;
 
-	if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
-		errors.addError( "pixel shaders 2.0 required" );
-		ok = false;
-	}
+	//if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
+	//	errors.addError( "pixel shaders 2.0 required" );
+	//	ok = false;
+	//}
 
 	if( caps.getVShaderVersion() < CD3DDeviceCaps::VS_1_1 ) {
 		if( vproc != CD3DDeviceCaps::VP_SW )

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "System.h"
 
+#include <dingus/lua/LuaSingleton.h>
 #include <dingus/gfx/gui/Gui.h>
 
 #include <dingus/gfx/geometry/DynamicVBManager.h>
@@ -18,7 +19,7 @@ const bool DEV_MODE = true;
 SAppStartupParams CSystem::getStartupParams()
 {
 	SAppStartupParams sp;
-	sp.windowTitle = "Test Effect System";
+	sp.windowTitle = "Test Effects System";
 	sp.dataPath = "data/";
 	sp.windowWidth = 640;
 	sp.windowHeight = 480;
@@ -46,9 +47,11 @@ IConsoleRenderingContext* CSystem::createStdConsoleCtx( HWND hwnd )
 
 void CSystem::setupBundles( const std::string& dataPath, dingus::CReloadableBundleManager& reloadManager )
 {
+	CLuaSingleton::init( "" );
 	CTextureBundle::getInstance().addDirectory( dataPath + "tex/" );
 	CMeshBundle::getInstance().addDirectory( dataPath + "mesh/" );
 	CEffectBundle::getInstance().addDirectory( dataPath + "fx/" );
+	CEffectBundle::getInstance().setStatesConfig( (dataPath + "EffectStates.lua").c_str() );
 
 	CDynamicVBManager::initialize( 2 * 1024 * 1024 ); // 2 megabytes
 	CDynamicVBManager& vbManager = CDynamicVBManager::getInstance();
@@ -113,5 +116,6 @@ void CSystem::destroyBundles()
 	CTextureBundle::finalize();
 	CVertexDeclBundle::finalize();
 	
+	CLuaSingleton::finalize();
 	CUIResourceManager::finalize();
 }
