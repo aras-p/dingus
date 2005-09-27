@@ -45,9 +45,7 @@ technique tec11
 		AlphaFunc = Greater;
 		AlphaRef = 128;
 	}
-	pass PLast {
-		AlphaTestEnable = False;
-	}
+	RESTORE_PASS
 }
 
 technique tecFFP
@@ -71,7 +69,5 @@ technique tecFFP
 		ColorOp[1]	 = Disable;
 		AlphaOp[1]	 = Disable;
 	}
-	pass PLast {
-		AlphaTestEnable = False;
-	}
+	RESTORE_PASS
 }

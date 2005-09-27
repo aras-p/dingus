@@ -31,6 +31,5 @@ technique tecFFP
 		ColorOp[1]	 = Disable;
 		AlphaOp[1]	 = Disable;
 	}
-	pass PLast {
-	}
+	RESTORE_PASS
 }
