@@ -588,9 +588,7 @@ bool fxloader::initialize( const char* cfgFileName )
 
 void fxloader::shutdown()
 {
-	assert( gFxRestorePassGen );
-	delete gFxRestorePassGen;
-	gFxRestorePassGen = 0;
+	safeDelete( gFxRestorePassGen );
 }
 
 
@@ -652,13 +650,13 @@ bool dingus::fxloader::load(
 		// set state manager
 		if( stateManager )
 			fx->SetStateManager( stateManager );
-		console.write( "  loaded, already has restoring pass" );
+		console.write( "fx loaded, already has restoring pass" );
 		return true;
 	}
 
 	// examine effect state assignments
 	// TBD
-	console.write( "  loaded, generating state restore pass" );
+	console.write( "fx loaded, generating state restore pass" );
 	static CEffectStateInspector	inspector;
 	static std::vector<D3DXMACRO>	newMacros;
 
