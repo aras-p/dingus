@@ -570,7 +570,16 @@ std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectState
 			res += buf;
 			res += ']';
 		}
-		res += " = " + st->value + ";";
+		res += '=';
+		if( st->value == "@index@" ) {
+			assert( stage >= 0 );
+			char buf[10];
+			itoa( state.stage, buf, 10 );
+			res += buf;
+		} else {
+			res += st->value;
+		}
+		res += ';';
 	}
 
 	res += " }";
@@ -683,11 +692,11 @@ bool dingus::fxloader::load(
 	assert( gFxRestorePassGen );
 	std::string restorePass = gFxRestorePassGen->generateRestorePass( inspector );
 	// debug
-	{
+	/*{
 		FILE* f = fopen( (fileName+".res.fx").c_str(), "wt" );
 		fputs( restorePass.c_str(), f );
 		fclose( f );
-	}
+	}*/
 
 	// supply restore pass text as RESTORE_PASS value
 	newMacros[macroCount-1].Definition = restorePass.c_str();
