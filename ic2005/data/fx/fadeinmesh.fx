@@ -69,8 +69,5 @@ technique tec20
 		DestBlend = InvSrcAlpha;
 		ZWriteEnable = False;
 	}
-	pass PLast {
-		AlphaBlendEnable = False;
-		ZWriteEnable = True;
-	}
+	RESTORE_PASS
 }

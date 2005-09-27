@@ -37,12 +37,5 @@ technique tecFFP {
 		CullMode = CCW;
 	}
 
-	pass PLast {
-		DepthBias = 0;
-		SlopeScaleDepthBias = 0;
-
-		AlphaBlendEnable = False;
-		ZWriteEnable = True;
-		CullMode = <iCull>;
-	}
+	RESTORE_PASS
 }

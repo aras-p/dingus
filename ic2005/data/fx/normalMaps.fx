@@ -126,10 +126,6 @@ technique tec20
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_2_0 psMain();
-
-		//FillMode = Wireframe;
 	}
-	pass PLast {
-		//FillMode = Solid;
-	}
+	RESTORE_PASS
 }

@@ -79,6 +79,5 @@ technique tec20
 		VertexShader = compile vs_1_1 vsMain0();
 		PixelShader = compile ps_2_0 psMain();
 	}
-	pass PLast {
-	}
+	RESTORE_PASS
 }

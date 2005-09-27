@@ -62,9 +62,5 @@ technique tec20 {
 		ZEnable = False;
 		ZWriteEnable = False;
 	}
-	pass PLast {
-		//Texture[0] = NULL;
-		ZEnable = True;
-		ZWriteEnable = True;
-	}
+	RESTORE_PASS
 }

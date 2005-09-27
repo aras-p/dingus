@@ -18,6 +18,5 @@ technique tec11
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_1_1 psMain();
 	}
-	pass PLast {
-	}
+	RESTORE_PASS
 }

@@ -120,9 +120,5 @@ technique tec20
 		ZWriteEnable = False;
 		AlphaBlendEnable = False;
 	}
-	pass PLast {
-		ColorWriteEnable = Red | Green | Blue | Alpha;
-		ZWriteEnable = True;
-		AlphaBlendEnable = False;
-	}
+	RESTORE_PASS
 }

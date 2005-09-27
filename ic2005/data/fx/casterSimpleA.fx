@@ -24,7 +24,5 @@ technique tec11
 		SrcBlend = SrcAlpha;
 		DestBlend = InvSrcAlpha;
 	}
-	pass PLast {
-		AlphaBlendEnable = False;
-	}
+	RESTORE_PASS
 }

@@ -30,9 +30,6 @@ technique tec11
 	pass P0 {
 		VertexShader = compile vs_1_1 vsMain0();
 		PixelShader = compile ps_1_1 psMain();
-		//CullMode = CCW;
 	}
-	pass PLast {
-		//CullMode = <iCull>;
-	}
+	RESTORE_PASS
 }

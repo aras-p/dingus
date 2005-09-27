@@ -95,8 +95,9 @@ technique tec20
 
 		AlphaBlendEnable = False;
 	}
-	pass PLast {
-		ColorWriteEnable = Red | Green | Blue | Alpha;
-		ZWriteEnable = True;
-	}
+	RESTORE_PASS
+	// TBD: save AlphaBlendEnable
+	// TBD: remove duplicates
+	//	ColorWriteEnable = Red | Green | Blue | Alpha;
+	//	ZWriteEnable = True;
 }
