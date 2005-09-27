@@ -25,6 +25,8 @@ class CEffectBundle :	public CStorageResourceBundle<CD3DXEffect>,
 						public IDeviceReloadableBundle
 {
 public:
+	void	setStatesConfig( const char* fileName );
+
 	bool	isOptimizingShaders() const { return mOptimizeShaders; }
 	void	setOptimizeShaders( bool opt ) { mOptimizeShaders = opt; }
 	bool	isUsingStateManager() const { return mUseStateManager; }
@@ -59,7 +61,7 @@ protected:
 private:
 	IMPLEMENT_SIMPLE_SINGLETON(CEffectBundle);
 	CEffectBundle();
-	virtual ~CEffectBundle() { clear(); };
+	virtual ~CEffectBundle();
 	
 	/// @return index into macro array, or -1 if not found.
 	int		findMacro( const char* name ) const;

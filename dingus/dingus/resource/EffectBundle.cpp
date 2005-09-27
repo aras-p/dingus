@@ -20,7 +20,21 @@ CEffectBundle::CEffectBundle()
 	// last macro must be NULL
 	mMacros.push_back( D3DXMACRO() );
 	mMacros.back().Name = mMacros.back().Definition = NULL;
-};
+}
+
+CEffectBundle::~CEffectBundle()
+{
+	clear();
+	fxloader::shutdown();
+}
+
+void CEffectBundle::setStatesConfig( const char* fileName )
+{
+	bool ok = fxloader::initialize( fileName );
+	if( !ok ) {
+		CConsole::CON_ERROR << "EffectBundle: failed to load states configuration from " << fileName << endl;
+	}
+}
 
 void CEffectBundle::setMacro( const char* name, const char* value )
 {
@@ -70,7 +84,7 @@ CD3DXEffect* CEffectBundle::loadResourceById( const CResourceId& id, const CReso
 	bool ok = fxloader::load( id.getUniqueName(), fullName.getUniqueName(),
 		*fx, mLastErrors, mSharedPool,
 		mUseStateManager ? (&CD3DDevice::getInstance().getStateManager()) : NULL,
-		&mMacros[0], mOptimizeShaders, CONSOLE );
+		&mMacros[0], mMacros.size(), mOptimizeShaders, CONSOLE );
 	if( !ok ) {
 		delete fx;
 		return NULL;

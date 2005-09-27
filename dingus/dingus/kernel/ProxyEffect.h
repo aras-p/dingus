@@ -7,6 +7,8 @@
 
 #include "Proxies.h"
 
+#define DINGUS_FX_RESTORE_PASS "PLast"
+
 namespace dingus {
 
 

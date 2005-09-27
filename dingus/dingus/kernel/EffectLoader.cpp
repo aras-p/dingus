@@ -216,6 +216,8 @@ public:
 		int stage;		///< For TSS, sampler etc.
 		DWORD value;	///< Value
 	};
+	typedef std::vector<SState> TStateVector;
+
 public:
 	CEffectStateInspector()
 	{
@@ -234,6 +236,9 @@ public:
 		++mCurrentPass;
 	}
 
+	const TStateVector& getStates() const { return mStates; }
+
+
 	void	debugPrintFx( const char* fileName )
 	{
 		FILE* f = fopen( fileName, "wt" );
@@ -247,7 +252,7 @@ public:
 				fprintf( f, "pass P%i {\n", s.pass );
 			}
 			// dump states
-			if( FX_STATES[s.index].type != FXST_TSS && FX_STATES[s.index].type != FXST_SAMPLER ) {
+			if( s.stage < 0 ) {
 				fprintf( f, "\t%s = %i\n",
 					FX_STATES[s.index].name,
 					s.value
@@ -293,7 +298,7 @@ public:
     STDMETHOD(SetRenderState)( D3DRENDERSTATETYPE state, DWORD value )
 	{
 		int index = findState( FXST_RENDERSTATE, state );
-		mStates.push_back( SState( mCurrentPass, index, 0, value ) );
+		mStates.push_back( SState( mCurrentPass, index, -1, value ) );
 		return S_OK;
 	}
 
@@ -320,7 +325,7 @@ public:
     STDMETHOD(SetNPatchMode)( float numSegments )
 	{
 		int index = findState( FXST_NPATCH, 0 );
-		mStates.push_back( SState( mCurrentPass, index, 0, 0 ) );
+		mStates.push_back( SState( mCurrentPass, index, -1, numSegments ) );
 		return S_OK;
 	}
 
@@ -333,7 +338,7 @@ public:
     STDMETHOD(SetVertexShader)( IDirect3DVertexShader9* shader )
 	{
 		int index = findState( FXST_VERTEXSHADER, 0 );
-		mStates.push_back( SState( mCurrentPass, index, 0, shader ? 1 : 0 ) );
+		mStates.push_back( SState( mCurrentPass, index, -1, shader ? 1 : 0 ) );
 		return S_OK;
 	}
 
@@ -358,7 +363,7 @@ public:
     STDMETHOD(SetPixelShader)( IDirect3DPixelShader9* shader )
 	{
 		int index = findState( FXST_PIXELSHADER, 0 );
-		mStates.push_back( SState( mCurrentPass, index, 0, shader ? 1 : 0 ) );
+		mStates.push_back( SState( mCurrentPass, index, -1, shader ? 1 : 0 ) );
 		return S_OK;
 	}
 
@@ -398,7 +403,7 @@ public:
 
 private:
 	/// Inspected states
-	std::vector<SState> mStates;
+	TStateVector mStates;
 	/// Current pass
 	int	mCurrentPass;
 };
@@ -407,9 +412,10 @@ private:
 // --------------------------------------------------------------------------
 
 
-class CEffectStatesConfig : public boost::noncopyable {
+class CEffectRestorePassGenerator : public boost::noncopyable {
 public:
-	bool	load( const char* fileName );
+	bool loadConfig( const char* fileName );
+	std::string generateRestorePass( const CEffectStateInspector& fx ) const;
 
 private:
 	struct SStateRestored {
@@ -445,13 +451,23 @@ private:
 	};
 
 private:
+	const SStateRestored* findRestoredState( int index ) const {
+		int n = mStatesRestored.size();
+		for( int i = 0; i < n; ++i ) {
+			if( mStatesRestored[i].index == index )
+				return &mStatesRestored[i];
+		}
+		return NULL;
+	}
+
+private:
 	std::vector<SStateRestored>		mStatesRestored;
 	std::vector<SStateRequired>		mStatesRequired;
 	std::vector<SStateDependent>	mStatesDependent;
 };
 
 
-bool CEffectStatesConfig::load( const char* fileName )
+bool CEffectRestorePassGenerator::loadConfig( const char* fileName )
 {
 	// clear
 	mStatesRestored.clear();
@@ -523,6 +539,60 @@ bool CEffectStatesConfig::load( const char* fileName )
 	return true;
 }
 
+std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectStateInspector& fx ) const
+{
+	int i;
+	int nstates = fx.getStates().size();
+
+	// TBD: check required states
+	// TBD: check dependent states
+
+	std::string res;
+	res.reserve( 128 );
+	res  = std::string("pass ") + DINGUS_FX_RESTORE_PASS + " {\n";
+
+	// fill restored states
+	// TBD: remove duplicates
+	for( i = 0; i < nstates; ++i ) {
+		const CEffectStateInspector::SState& state = fx.getStates()[i];
+		const SStateRestored* st = findRestoredState( state.index );
+		if( !st )
+			continue;
+		res += "\t";
+		res += FX_STATES[state.index].name;
+		if( state.stage >= 0 ) {
+			char buf[10];
+			res += '[';
+			itoa( state.stage, buf, 10 );
+			res += buf;
+			res += ']';
+		}
+		res += " = " + st->value + ";\n";
+	}
+
+	res += "}";
+	return res;
+}
+
+
+namespace {
+	CEffectRestorePassGenerator*	gFxRestorePassGen = 0;
+}; // end of anonymous namespace
+
+bool fxloader::initialize( const char* cfgFileName )
+{
+	assert( !gFxRestorePassGen );
+	gFxRestorePassGen = new CEffectRestorePassGenerator();
+	return gFxRestorePassGen->loadConfig( cfgFileName );
+}
+
+void fxloader::shutdown()
+{
+	assert( gFxRestorePassGen );
+	delete gFxRestorePassGen;
+	gFxRestorePassGen = 0;
+}
+
 
 // --------------------------------------------------------------------------
 
@@ -530,9 +600,18 @@ bool dingus::fxloader::load(
 	const std::string& id, const std::string& fileName,
 	CD3DXEffect& dest, std::string& errorMsgs,
 	ID3DXEffectPool* pool, ID3DXEffectStateManager* stateManager,
-	const D3DXMACRO* macros, bool optimizeShaders, CConsoleChannel& console )
+	const D3DXMACRO* macros, int macroCount, bool optimizeShaders, CConsoleChannel& console )
 {
 	assert( dest.getObject() == NULL );
+
+	console.write( "loading fx '" + id + "'" );
+
+	// 1. load effect from file, find valid technique
+	// 2. if it has restoring pass, exit: all is done
+	// 3. inspect the valid technique
+	// 4. generate restoring pass
+	// 5. supply restoring pass as macro; load effect again
+	// 6. check that it has a restoring pass
 	
 	ID3DXEffect* fx = NULL;
 	ID3DXBuffer* errors = NULL;
@@ -561,29 +640,45 @@ bool dingus::fxloader::load(
 	}
 	assert( fx );
 
-	console.write( "fx loaded '" + id + "'" );
-
 	if( errors )
 		errors->Release();
 
 
+	// initialize effect object
 	dest.setObject( fx );
 
-	// TBD TEST
-	/*
-	static CEffectStateInspector hackInspector;
+	// if already has restoring pass, return
+	if( dest.hasRestoringPass() ) {
+		// set state manager
+		if( stateManager )
+			fx->SetStateManager( stateManager );
+		console.write( "  loaded, already has restoring pass" );
+		return true;
+	}
 
-	fx->SetStateManager( &hackInspector );
-	hackInspector.beginEffect();
+	// examine effect state assignments
+	// TBD
+	console.write( "  loaded, generating state restore pass" );
+	static CEffectStateInspector	inspector;
+	static std::vector<D3DXMACRO>	newMacros;
+
+	fx->SetStateManager( &inspector );
+	inspector.beginEffect();
 	int passes = dest.beginFx();
 	for( int i = 0; i < passes; ++i ) {
-		hackInspector.beginPass();
+		inspector.beginPass();
 		dest.beginPass( i );
 		dest.endPass();
-		hackInspector.debugPrintFx( (fileName+".dbg.fx").c_str() );
 	}
 	dest.endFx();
-	*/
+	inspector.debugPrintFx( (fileName+".ins.fx").c_str() );
+	{
+		assert( gFxRestorePassGen );
+		std::string genLastPass = gFxRestorePassGen->generateRestorePass( inspector );
+		FILE* f = fopen( (fileName+".res.fx").c_str(), "wt" );
+		fputs( genLastPass.c_str(), f );
+		fclose( f );
+	}
 
 	// set state manager
 	if( stateManager )

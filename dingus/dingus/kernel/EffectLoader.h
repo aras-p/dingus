@@ -13,11 +13,14 @@ namespace dingus {
 
 	namespace fxloader {
 
+		bool initialize( const char* cfgFileName );
+		void shutdown();
+		
 		bool load(
 			const std::string& id, const std::string& fileName,
 			CD3DXEffect& dest, std::string& errorMsgs,
 			ID3DXEffectPool* pool, ID3DXEffectStateManager* stateManager,
-			const D3DXMACRO* macros, bool optimizeShaders, CConsoleChannel& console );
+			const D3DXMACRO* macros, int macroCount, bool optimizeShaders, CConsoleChannel& console );
 
 	};
 
