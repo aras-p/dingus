@@ -2,7 +2,7 @@ restored = {
 	{ 'AlphaBlendEnable', 'False' },
 	{ 'SeparateAlphaBlendEnable', 'False' },
 	{ 'AlphaTestEnable', 'False' },
-	--{ 'ClipPlaneEnable[n]', 'False' }, TBD
+	{ 'ClipPlaneEnable', '0' },
 	{ 'ColorWriteEnable', 'Red | Green | Blue | Alpha' },
 	{ 'FogEnable', 'False' },
 	{ 'PointSpriteEnable', 'False' },
@@ -23,9 +23,24 @@ restored = {
 	{ 'ShadeMode', 'Gouraud' },
 	{ 'SlopeScaleDepthBias', '0' },
 	{ 'ZFunc', 'Less' },
-	--{ 'TexCoordIndex[n]', '' }, TBD
-	--{ 'TextureTransformFlags[n]', 'Disable' }, TBD
-	--{ 'Wrap[n]', '0' }, TBD
+	{ 'TexCoordIndex', '@stage@' }, -- value is the stage index
+	{ 'TextureTransformFlags', 'Disable' },
+	{ 'Wrap0', '0' },
+	{ 'Wrap1', '0' },
+	{ 'Wrap2', '0' },
+	{ 'Wrap3', '0' },
+	{ 'Wrap4', '0' },
+	{ 'Wrap5', '0' },
+	{ 'Wrap6', '0' },
+	{ 'Wrap7', '0' },
+	{ 'Wrap8', '0' },
+	{ 'Wrap9', '0' },
+	{ 'Wrap10', '0' },
+	{ 'Wrap11', '0' },
+	{ 'Wrap12', '0' },
+	{ 'Wrap13', '0' },
+	{ 'Wrap14', '0' },
+	{ 'Wrap15', '0' },
 }
 
 required = {
