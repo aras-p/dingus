@@ -15,6 +15,8 @@ public:
 	struct SPlayer {
 		int		score;
 		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs; // [0] is the most recent one
+		int		injectionPtX;
+		int		injectionPtY;
 		int		aiID;
 		int		botCount;				// alive entity count
 	};

@@ -1216,7 +1216,7 @@ void CDemo::perform()
 	// update game if it's started
 
 	if( !gameSetupActive ) {
-		if( tmv - gLastGameUpdateTime >= time_value::fromsec(0.1f) ) {
+		if( tmv - gLastGameUpdateTime >= time_value::fromsec(desc.getTurnDT()*0.5f) ) {
 			// TBD: commands to dll
 			net::updateGame( 0, 0, 0, state );
 			gLastGameUpdateTime = tmv;
@@ -1361,8 +1361,7 @@ void CDemo::perform()
 	mouseRay.pos = eyePos;
 	mouseRay.vec = gMouseRay;
 
-	const float UPDATE_DT = 0.2f;
-	float timeAlpha = (tmv - gi.getState().getTurnReceivedTime()).tosec() / UPDATE_DT;
+	float timeAlpha = (tmv - gi.getState().getTurnReceivedTime()).tosec() / desc.getTurnDT();
 	gi.getEntities().update( mouseRay, timeAlpha );
 	
 	// stats UI

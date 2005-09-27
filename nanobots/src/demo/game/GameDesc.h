@@ -29,6 +29,8 @@ public:
 
 	const CGameMap& getMap() const { return mMap; }
 	int		getTurnCount() const { return mTurnCount; }
+	int		getTurnsPerSecond() const { return mTurnsPerSecond; }
+	float	getTurnDT() const { return mTurnDT; }
 
 	//bool	isSinglePlayer() const { return mPlayerCount==2; }
 	//bool	isComputerPlayer( int index ) const { return index == mPlayerCount-1; }
@@ -47,6 +49,8 @@ private:
 	SPlayer		mPlayers[G_MAX_PLAYERS];
 
 	int			mTurnCount; // -1 if realtime play
+	int			mTurnsPerSecond;
+	float		mTurnDT; // second / mTurnsPerSecond
 
 	int			mBlockerLength;
 	

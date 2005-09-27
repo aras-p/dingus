@@ -25,6 +25,8 @@ void CGameState::updateState()
 		byte	PlayerID
 		Int16	Score  
 		string	Log text
+		byte	Injection Point X
+		byte	Injection Point Y
 	UInt16	Number of bots
 	//for each bot
 		UInt16	ID (unique ID for each bot)
@@ -70,6 +72,8 @@ void CGameState::updateState()
 		assert( pid >= 0 && pid < G_MAX_PLAYERS );
 		int score = bu::receiveShort();
 		std::string logtxt = bu::receiveStr();
+		int injX = bu::receiveByte();
+		int injY = bu::receiveByte();
 		if( mTurn != turn ) { // if it's really a new turn, update players
 			SPlayer& pl = mPlayers[i];
 			pl.score = score;
@@ -82,6 +86,9 @@ void CGameState::updateState()
 			if( pl.logs.size() == pl.logs.capacity() )
 				pl.logs.pop_back();
 			pl.logs.push_front( logmsg );
+
+			pl.injectionPtX = injX;
+			pl.injectionPtY = injY;
 		}
 	}
 

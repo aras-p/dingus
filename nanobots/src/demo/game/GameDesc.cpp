@@ -8,6 +8,8 @@
 CGameDesc::CGameDesc()
 :	mPlayerCount(0),
 	mTurnCount(-1),
+	mTurnsPerSecond(5),
+	mTurnDT(2),
 	mBlockerLength(1)
 {
 	assert( G_MAX_PLAYERS == 3 );
@@ -84,6 +86,8 @@ byte	GameServerState
 byte	NumberOfPlayers (0, 1 or 2)
 Int16	NumberOfTurn (-1 if replay)
 byte	BlockerLength
+byte	TurnsPerSecond
+byte	[reserved]
 //Player1
 	string	Player1 name
 	int32	Player1 Flag length
@@ -110,7 +114,7 @@ std::string CGameDesc::initialize()
 	int i;
 
 	const BYTE* data;
-	net::receiveChunk( data, 4, true ); // TBD: 5
+	net::receiveChunk( data, 6, true ); // TBD: 7
 
 	// TBD: seems that this isn't present
 	//BYTE gameState = bu::readByte( gameDescData );
@@ -118,7 +122,7 @@ std::string CGameDesc::initialize()
 	//	return "Invalid game server state";
 
 	mPlayerCount = bu::readByte( data ) + 1;
-	if( mPlayerCount < 1 || mPlayerCount > G_MAX_PLAYERS )
+	if( mPlayerCount < 2 || mPlayerCount > G_MAX_PLAYERS )
 		return "Invalid player count";
 
 	mTurnCount = bu::readShort( data );
@@ -126,6 +130,11 @@ std::string CGameDesc::initialize()
 	mBlockerLength = bu::readByte( data );
 	if( mBlockerLength < 1 || mBlockerLength > 20 )
 		return "Invalid blocker length";
+
+	mTurnsPerSecond = bu::readByte( data );
+	if( mTurnsPerSecond < 1 || mTurnsPerSecond > 50 )
+		return "Invalid turns/second value";
+	mTurnDT = 1.0f / mTurnsPerSecond;
 
 	// read players, start at first player (1)
 	const char* PLAYER_TEX_NAMES[G_MAX_PLAYERS] = {
