@@ -547,9 +547,12 @@ std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectState
 	// TBD: check required states
 	// TBD: check dependent states
 
+	// generate restoring pass
+	// NOTE: it seems that (Oct 2004 SDK) fx macros don't support newlines.
+	// Oh well, generate one long line...
 	std::string res;
 	res.reserve( 128 );
-	res  = std::string("pass ") + DINGUS_FX_RESTORE_PASS + " {\n";
+	res  = std::string("pass ") + DINGUS_FX_RESTORE_PASS + " {";
 
 	// fill restored states
 	// TBD: remove duplicates
@@ -558,7 +561,7 @@ std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectState
 		const SStateRestored* st = findRestoredState( state.index );
 		if( !st )
 			continue;
-		res += "\t";
+		res += " ";
 		res += FX_STATES[state.index].name;
 		if( state.stage >= 0 ) {
 			char buf[10];
@@ -567,10 +570,10 @@ std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectState
 			res += buf;
 			res += ']';
 		}
-		res += " = " + st->value + ";\n";
+		res += " = " + st->value + ";";
 	}
 
-	res += "}";
+	res += " }";
 	return res;
 }
 
@@ -600,17 +603,26 @@ bool dingus::fxloader::load(
 	ID3DXEffectPool* pool, ID3DXEffectStateManager* stateManager,
 	const D3DXMACRO* macros, int macroCount, bool optimizeShaders, CConsoleChannel& console )
 {
-	assert( dest.getObject() == NULL );
-
-	console.write( "loading fx '" + id + "'" );
-
 	// 1. load effect from file, find valid technique
 	// 2. if it has restoring pass, exit: all is done
 	// 3. inspect the valid technique
 	// 4. generate restoring pass
 	// 5. supply restoring pass as macro; load effect again
 	// 6. check that it has a restoring pass
-	
+
+	assert( dest.getObject() == NULL );
+
+	console.write( "loading fx '" + id + "'" );
+
+	// add macro RESTORE_PASS to supplied ones, initially empty
+	assert( macroCount > 0 );
+	D3DXMACRO* newMacros = new D3DXMACRO[macroCount+1];
+	memcpy( newMacros, macros, macroCount * sizeof(macros[0]) );
+	newMacros[macroCount] = newMacros[macroCount-1];
+	newMacros[macroCount-1].Name = "RESTORE_PASS";
+	newMacros[macroCount-1].Definition = "";
+
+	// load the effect initially
 	ID3DXEffect* fx = NULL;
 	ID3DXBuffer* errors = NULL;
 
@@ -619,25 +631,21 @@ bool dingus::fxloader::load(
 	assert( pool );
 	HRESULT hres = D3DXCreateEffectFromFile(
 		&CD3DDevice::getInstance().getDevice(),
-		fileName.c_str(),
-		macros,
-		NULL, // TBD ==> includes
+		fileName.c_str(), newMacros, NULL, // TBD ==> includes
 		optimizeShaders ? 0 : D3DXSHADER_SKIPOPTIMIZATION,
-		pool,
-		&fx,
-		&errors );
+		pool, &fx, &errors );
 	if( errors && errors->GetBufferSize() > 1 ) {
 		std::string msg = "messages compiling effect '" + fileName + "': ";
 		errorMsgs = (const char*)errors->GetBufferPointer();
 		msg += errorMsgs;
 		CConsole::CON_ERROR.write( msg );
 	}
-
 	if( FAILED( hres ) ) {
+		delete[] newMacros;
 		return false;
 	}
 	assert( fx );
-
+	
 	if( errors )
 		errors->Release();
 
@@ -651,14 +659,13 @@ bool dingus::fxloader::load(
 		if( stateManager )
 			fx->SetStateManager( stateManager );
 		console.write( "fx loaded, already has restoring pass" );
+		delete[] newMacros;
 		return true;
 	}
 
 	// examine effect state assignments
-	// TBD
 	console.write( "fx loaded, generating state restore pass" );
 	static CEffectStateInspector	inspector;
-	static std::vector<D3DXMACRO>	newMacros;
 
 	fx->SetStateManager( &inspector );
 	inspector.beginEffect();
@@ -669,18 +676,66 @@ bool dingus::fxloader::load(
 		dest.endPass();
 	}
 	dest.endFx();
-	inspector.debugPrintFx( (fileName+".ins.fx").c_str() );
+
+	//inspector.debugPrintFx( (fileName+".ins.fx").c_str() );
+
+	// generate restore pass
+	assert( gFxRestorePassGen );
+	std::string restorePass = gFxRestorePassGen->generateRestorePass( inspector );
+	// debug
 	{
-		assert( gFxRestorePassGen );
-		std::string genLastPass = gFxRestorePassGen->generateRestorePass( inspector );
 		FILE* f = fopen( (fileName+".res.fx").c_str(), "wt" );
-		fputs( genLastPass.c_str(), f );
+		fputs( restorePass.c_str(), f );
 		fclose( f );
+	}
+
+	// supply restore pass text as RESTORE_PASS value
+	newMacros[macroCount-1].Definition = restorePass.c_str();
+
+	// compile the effect again
+	dest.getObject()->Release();
+	dest.setObject( NULL );
+	fx = NULL;
+	errors = NULL;
+	errorMsgs = "";
+	assert( pool );
+	hres = D3DXCreateEffectFromFile(
+		&CD3DDevice::getInstance().getDevice(),
+		fileName.c_str(), newMacros, NULL, // TBD ==> includes
+		optimizeShaders ? 0 : D3DXSHADER_SKIPOPTIMIZATION,
+		pool, &fx, &errors );
+	if( errors && errors->GetBufferSize() > 1 ) {
+		std::string msg = "messages compiling effect #2 '" + fileName + "': ";
+		errorMsgs = (const char*)errors->GetBufferPointer();
+		msg += errorMsgs;
+		CConsole::CON_ERROR.write( msg );
+	}
+	if( FAILED( hres ) ) {
+		delete[] newMacros;
+		return false;
+	}
+	assert( fx );
+	if( errors )
+		errors->Release();
+
+	// finally initialize effect object
+	dest.setObject( fx );
+
+	// it must have the restore pass now
+	if( !dest.hasRestoringPass() ) {
+		errorMsgs = "Effect does not have restore pass after generation. Perhaps RESTORE_PASS macro missing?";
+		CConsole::CON_ERROR.write( errorMsgs );
+
+		dest.getObject()->Release();
+		dest.setObject( NULL );
+		delete[] newMacros;
+		return false;
 	}
 
 	// set state manager
 	if( stateManager )
 		fx->SetStateManager( stateManager );
 
+	delete[] newMacros;
 	return true;
 }

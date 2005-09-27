@@ -126,7 +126,6 @@ bool CD3DXEffect::tryInit()
 	D3DXPASS_DESC passdsc;
 	fx->GetPassDesc( fx->GetPass(tech,techdsc.Passes-1), &passdsc );
 	mHasRestoringPass = !stricmp( passdsc.Name, DINGUS_FX_RESTORE_PASS );
-	assert( mHasRestoringPass );
 	mPassCount = mHasRestoringPass ? techdsc.Passes-1 : techdsc.Passes;
 
 	return true;
