@@ -752,10 +752,9 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x-0.5f, y0, -(z-0.5f) );
 				mverts[vidx+1].pos.set( x-0.5f, y1, -(z-0.5f) );
-				SVector3 o(0,0,0);
-				//if( typeU == CELL_PERF || typeL == CELL_PERF || typeUL == CELL_PERF ) o.x = 1;
-				mverts[vidx+0].data = o;
-				mverts[vidx+1].data = o;
+				SVector3 dt( c.otherType ? 1.0f : 0.0f, 0, 0 );
+				mverts[vidx+0].data = dt;
+				mverts[vidx+1].data = dt;
 				vertsmine.ul = vidx;
 			}
 			if( vertsmine.ur < 0 ) {
@@ -764,10 +763,9 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x+1-0.5f, y0, -(z-0.5f) );
 				mverts[vidx+1].pos.set( x+1-0.5f, y1, -(z-0.5f) );
-				SVector3 o(0,0,0);
-				//if( typeU == CELL_PERF || typeR == CELL_PERF || typeUR == CELL_PERF ) o.x = 1;
-				mverts[vidx+0].data = o;
-				mverts[vidx+1].data = o;
+				SVector3 dt( c.otherType ? 1.0f : 0.0f, 0, 0 );
+				mverts[vidx+0].data = dt;
+				mverts[vidx+1].data = dt;
 				vertsmine.ur = vidx;
 			}
 			if( vertsmine.dl < 0 ) {
@@ -776,10 +774,9 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x-0.5f, y0, -(z+1-0.5f) );
 				mverts[vidx+1].pos.set( x-0.5f, y1, -(z+1-0.5f) );
-				SVector3 o(0,0,0);
-				//if( typeD == CELL_PERF || typeL == CELL_PERF || typeDL == CELL_PERF ) o.x = 1;
-				mverts[vidx+0].data = o;
-				mverts[vidx+1].data = o;
+				SVector3 dt( c.otherType ? 1.0f : 0.0f, 0, 0 );
+				mverts[vidx+0].data = dt;
+				mverts[vidx+1].data = dt;
 				vertsmine.dl = vidx;
 			}
 			{
@@ -788,10 +785,9 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x+1-0.5f, y0, -(z+1-0.5f) );
 				mverts[vidx+1].pos.set( x+1-0.5f, y1, -(z+1-0.5f) );
-				SVector3 o(0,0,0);
-				//if( typeD == CELL_PERF || typeR == CELL_PERF || typeDR == CELL_PERF ) o.x = 1;
-				mverts[vidx+0].data = o;
-				mverts[vidx+1].data = o;
+				SVector3 dt( c.otherType ? 1.0f : 0.0f, 0, 0 );
+				mverts[vidx+0].data = dt;
+				mverts[vidx+1].data = dt;
 				vertsmine.dr = vidx;
 			}
 

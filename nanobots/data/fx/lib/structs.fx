@@ -114,6 +114,12 @@ struct SPosCol2Tex3 {
 	half4  color[2]	: COLOR0;
 	float2 uv[3]	: TEXCOORD0;
 };
+struct SPosColTex3F {
+	float4 pos		: POSITION;
+	half4  color	: COLOR0;
+	float2 uv[3]	: TEXCOORD0;
+	float  fog		: FOG;
+};
 struct SPosCol2Tex3F {
 	float4 pos		: POSITION;
 	half4  color[2]	: COLOR0;

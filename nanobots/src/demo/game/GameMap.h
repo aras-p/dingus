@@ -21,6 +21,7 @@ public:
 	struct SCell {
 		float		height;	// half of floor-ceiling distance
 		eCellType	type;
+		bool		otherType; // true/false - one or another texture
 		bool		nearBone; // some of 8-neighbour cells is bone
 	};
 
