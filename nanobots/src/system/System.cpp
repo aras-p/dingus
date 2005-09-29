@@ -55,6 +55,8 @@ void CSystem::setupBundles( const std::string& dataPath, dingus::CReloadableBund
 	CCubeTextureBundle::getInstance().addDirectory( dataPath + "tex/" );
 	CMeshBundle::getInstance().addDirectory( dataPath + "mesh/" );
 	CEffectBundle::getInstance().addDirectory( dataPath + "fx/" );
+	CEffectBundle::getInstance().setStatesConfig( (dataPath + "EffectStates.lua").c_str() );
+
 	CAnimationBundle::getInstance().addDirectory( dataPath + "anim/" );
 	CModelDescBundle::getInstance().addDirectory( dataPath + "model/" );
 	//CFontBundle::getInstance().addDirectory( dataPath );

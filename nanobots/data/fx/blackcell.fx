@@ -55,9 +55,5 @@ technique tecFFP
 		ColorOp[1] = Disable;
 		AlphaOp[1] = Disable;
 	}
-	pass PLast {
-		AlphaBlendEnable = False;
-		ZWriteEnable = True;
-		CullMode = <iCull>;
-	}
+	RESTORE_PASS
 }

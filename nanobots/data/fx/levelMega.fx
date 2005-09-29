@@ -51,10 +51,7 @@ technique tec20
 
 		CullMode = None;
 	}
-	pass PLast {
-		FogEnable = False;
-		CullMode = <iCull>;
-	}
+	RESTORE_PASS
 }
 
 // --------------------------------------------------------------------------
@@ -97,8 +94,5 @@ technique tecFFP
 		ColorOp[1] = Disable;
 		AlphaOp[1] = Disable;
 	}
-	pass PLast {
-		FogEnable = False;
-		CullMode = <iCull>;
-	}
+	RESTORE_PASS
 }

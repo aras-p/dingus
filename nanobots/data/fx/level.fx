@@ -102,9 +102,7 @@ technique tec20
 
 		FogEnable = True;
 	}
-	pass PLast {
-		FogEnable = False;
-	}
+	RESTORE_PASS
 }
 
 
@@ -152,9 +150,7 @@ technique tec11
 
 		FogEnable = True;
 	}
-	pass PLast {
-		FogEnable = False;
-	}
+	RESTORE_PASS
 }
 
 // --------------------------------------------------------------------------
@@ -196,7 +192,5 @@ technique tecFFP
 		ColorOp[1] = Disable;
 		AlphaOp[1] = Disable;
 	}
-	pass PLast {
-		FogEnable = False;
-	}
+	RESTORE_PASS
 }

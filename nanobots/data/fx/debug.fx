@@ -37,9 +37,6 @@ technique tecFFP {
 		AlphaTestEnable = False;
 		ZWriteEnable = False;
 	}
-	
-	pass PLast {
-		AlphaBlendEnable = False;
-		ZWriteEnable = True;
-	}
+
+	RESTORE_PASS
 }
