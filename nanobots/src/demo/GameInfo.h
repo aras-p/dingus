@@ -58,6 +58,7 @@ public:
 	CEntityInfoRenderer& getEntityInfoRenderer() { return *mEntityInfoRenderer; }
 
 	void	onNewEntity( const CGameEntity& e );
+	void	onNewInjectionPoint( int player, int x, int y );
 
 	/*
 	const CTimer& getTimer() const { return mTimer; }

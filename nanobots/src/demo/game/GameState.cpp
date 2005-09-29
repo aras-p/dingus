@@ -87,6 +87,12 @@ void CGameState::updateState()
 				pl.logs.pop_back();
 			pl.logs.push_front( logmsg );
 
+			// if the injection point just appeared - create it
+			if( pl.injectionPtX == 0 && pl.injectionPtY == 0 &&
+				injX != 0 && injY != 0 )
+			{
+				CGameInfo::getInstance().onNewInjectionPoint( i, injX, injY );
+			}
 			pl.injectionPtX = injX;
 			pl.injectionPtY = injY;
 		}

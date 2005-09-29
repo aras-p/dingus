@@ -140,3 +140,9 @@ void CGameInfo::onNewEntity( const CGameEntity& e )
 	mEntities->onNewGameEntity( e );
 }
 
+void CGameInfo::onNewInjectionPoint( int player, int x, int y )
+{
+	const CGameMap::SPoint& pt = mGameDesc->getMap().addInjectionPoint( player, x, y );
+	mEntities->onNewInjectionPoint( pt );
+}
+

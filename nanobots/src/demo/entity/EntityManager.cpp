@@ -29,17 +29,10 @@ CEntityManager::CEntityManager()
 
 	// TBD: hollow needles on non-occupied hoshimi points
 
-	// add injection points
-	/*
-	int nplayers = desc.getPlayerCount();
-	for( i = 0; i < nplayers; ++i ) {
-		const CGameEntity::SState& s = replay.getEntity( replay.getPlayer(i).entityAI ).getTurnState(0);
-		gmap.addInjectionPoint( i, s.posx, s.posy );
-	}
-	*/
 	// point entities
 	n = gmap.getPointCount();
-	mPointEntities.resize( n );
+	mPointEntities.reserve( n + G_MAX_PLAYERS ); // reserve space for injection points
+	mPointEntities.resize( n ); 
 	for( i = 0; i < n; ++i ) {
 		mPointEntities[i] = new CPointEntity( gmap.getPoint(i) );
 	}
@@ -385,4 +378,9 @@ void CEntityManager::onNewGameEntity( const CGameEntity& e )
 	assert( getActorEntityByID(e.getID()) == NULL );
 	CActorEntity* actor = new CActorEntity( e );
 	mActorEntities.insert( std::make_pair( e.getID(), actor ) );
+}
+
+void CEntityManager::onNewInjectionPoint( const CGameMap::SPoint& pt )
+{
+	mPointEntities.push_back( new CPointEntity(pt) );
 }

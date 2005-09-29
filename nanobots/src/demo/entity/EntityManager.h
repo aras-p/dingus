@@ -44,6 +44,7 @@ public:
 	}
 
 	void onNewGameEntity( const CGameEntity& e );
+	void onNewInjectionPoint( const CGameMap::SPoint& pt );
 
 private:
 	int		getCollidedEntityID( const SLine3& ray ) const;

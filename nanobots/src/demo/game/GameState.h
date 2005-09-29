@@ -13,6 +13,7 @@ public:
 		std::string	message;
 	};
 	struct SPlayer {
+		SPlayer() : score(0), injectionPtX(0), injectionPtY(0), aiID(-1), botCount(0) { }
 		int		score;
 		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs; // [0] is the most recent one
 		int		injectionPtX;

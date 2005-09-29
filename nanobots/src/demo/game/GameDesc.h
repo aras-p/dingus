@@ -28,6 +28,7 @@ public:
 
 
 	const CGameMap& getMap() const { return mMap; }
+	CGameMap& getMap() { return mMap; }
 	int		getTurnCount() const { return mTurnCount; }
 	int		getTurnsPerSecond() const { return mTurnsPerSecond; }
 	float	getTurnDT() const { return mTurnDT; }
