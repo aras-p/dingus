@@ -572,7 +572,7 @@ std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectState
 		}
 		res += '=';
 		if( st->value == "@index@" ) {
-			assert( stage >= 0 );
+			assert( state.stage >= 0 );
 			char buf[10];
 			itoa( state.stage, buf, 10 );
 			res += buf;
