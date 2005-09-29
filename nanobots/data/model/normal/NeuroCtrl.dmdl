@@ -1,9 +1,9 @@
-name = 'CureBot'
+name = 'NeuroCtrl'
 groups = {
 {
   fx = 'entity', pri = 0,
   params = {
-	  { 'tex', 'tBase', 'CureBot' },
+	  { 'tex', 'tBase', 'NanoNeuroCtrl' },
   },
 },
 }

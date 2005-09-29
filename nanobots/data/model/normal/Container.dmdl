@@ -1,0 +1,9 @@
+name = 'Container'
+groups = {
+{
+  fx = 'entity', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'NanoContainer' },
+  },
+},
+}

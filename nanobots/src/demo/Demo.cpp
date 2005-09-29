@@ -1362,6 +1362,8 @@ void CDemo::perform()
 	mouseRay.vec = gMouseRay;
 
 	float timeAlpha = (tmv - gi.getState().getTurnReceivedTime()).tosec() / desc.getTurnDT();
+	if( timeAlpha >= 1.0f )
+		timeAlpha = 1.0f;
 	gi.getEntities().update( mouseRay, timeAlpha );
 	
 	// stats UI

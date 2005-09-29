@@ -11,8 +11,8 @@ static const char* ENT_TYPE_NAMES[ENTITYCOUNT] = {
 	"Explorer",
 	"Collector",
 	"AI",
-	"WhiteCell", // TBD: Container
-	"BlackCell", // TBD: NeuroCtrl
+	"Container",
+	"NeuroCtrl",
 	"Blocker",
 };
 
