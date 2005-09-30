@@ -17,6 +17,8 @@ public:
 private:
 	SVector4	mColor;
 	const CGameMap::SStream*	mStream;
+	float	mVelocityX;
+	float	mVelocityY;
 };
 
 

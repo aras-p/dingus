@@ -7,8 +7,10 @@
 
 
 CStreamEntity::CStreamEntity( const CGameMap::SStream& stream, float x, float y )
-:	CMeshEntity( "StreamEntity", 1 ),
-	mStream( &stream )
+:	CMeshEntity( "StreamEntity", 1 )
+,	mStream( &stream )
+,	mVelocityX(stream.deltaX + gRandom.getFloat(-0.25f,0.25f))
+,	mVelocityY(stream.deltaY + gRandom.getFloat(-0.25f,0.25f))
 {
 	const CGameMap& gmap = CGameInfo::getInstance().getGameDesc().getMap();
 
@@ -32,28 +34,25 @@ CStreamEntity::~CStreamEntity()
 void CStreamEntity::update()
 {
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
-	if( mStream->deltaX ) {
-		float x = mWorldMat.getOrigin().x + mStream->deltaX * dt;
-		while( x < mStream->x )
-			x += mStream->width;
-		while( x > mStream->x+mStream->width )
-			x -= mStream->width;
-		mWorldMat.getOrigin().x = x;
-	}
-	if( mStream->deltaY ) {
-		float y = -mWorldMat.getOrigin().z + mStream->deltaY * dt;
-		while( y < mStream->y )
-			y += mStream->height;
-		while( y > mStream->y+mStream->height )
-			y -= mStream->height;
-		mWorldMat.getOrigin().z = -y;
-	}
+	float x = mWorldMat.getOrigin().x + mVelocityX * dt;
+	while( x < mStream->x )
+		x += mStream->width;
+	while( x > mStream->x+mStream->width )
+		x -= mStream->width;
+	mWorldMat.getOrigin().x = x;
 
-	int cellX = round( mWorldMat.getOrigin().x - 0.5f );
-	int cellY = round( -mWorldMat.getOrigin().z - 0.5f );
+	float y = -mWorldMat.getOrigin().z + mVelocityY * dt;
+	while( y < mStream->y )
+		y += mStream->height;
+	while( y > mStream->y+mStream->height )
+		y -= mStream->height;
+	mWorldMat.getOrigin().z = -y;
+
+	int cellX = round( mWorldMat.getOrigin().x );
+	int cellY = round( -mWorldMat.getOrigin().z );
 	const CGameMap::SCell& cell = CGameInfo::getInstance().getGameDesc().getMap().getCell( cellX, cellY );
 	if( CGameMap::isBlood( cell.type ) ) {
-		mColor.w = 0.2f;
+		mColor.w = cell.nearBone ? 0.1f : 0.2f;
 	} else {
 		mColor.w = 0.0f;
 	}
