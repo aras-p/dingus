@@ -3,6 +3,7 @@
 #include "GameColors.h"
 #include "../ByteUtils.h"
 #include "../DemoResources.h"
+#include <dingus/utils/StringHelper.h>
 
 
 CGameDesc::CGameDesc()
@@ -167,6 +168,9 @@ std::string CGameDesc::initialize()
 
 	// read missions
 	mMissionSummary = bu::receiveStr();
+	CStringHelper::trimString( mMissionSummary );
+	mMissionSummaryLines = CStringHelper::countLines( mMissionSummary );
+
 	int missionCount = bu::receiveByte();
 	mMissions.reserve( missionCount );
 	for( i = 0; i < missionCount; ++i ) {
@@ -174,6 +178,8 @@ std::string CGameDesc::initialize()
 		SMission& m = mMissions.back();
 		bu::receiveByte(); // TBD: assign mission type
 		m.desc = bu::receiveStr();
+		CStringHelper::trimString( m.desc );
+		m.descLines = CStringHelper::countLines( m.desc );
 		
 		int ptCount = bu::receiveByte();
 		m.points.reserve( ptCount );

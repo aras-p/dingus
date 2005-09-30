@@ -15,6 +15,7 @@ public:
 
 	struct SMission {
 		std::string	desc;
+		int			descLines;
 		std::vector< std::pair<int,int> > points;
 	};
 
@@ -41,6 +42,7 @@ public:
 	int		getBlockerLength() const { return mBlockerLength; }
 
 	const std::string& getMissionSummary() const { return mMissionSummary; }
+	int		getMissionSummaryLines() const { return mMissionSummaryLines; }
 	int		getMissionCount() const { return mMissions.size(); }
 	const SMission& getMission( int idx ) const { return mMissions[idx]; }
 
@@ -55,7 +57,8 @@ private:
 
 	int			mBlockerLength;
 	
-	std::string				mMissionSummary;
+	std::string		mMissionSummary;
+	int				mMissionSummaryLines;
 	std::vector<SMission>	mMissions;
 };
 

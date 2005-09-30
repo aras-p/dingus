@@ -185,14 +185,16 @@ void CALLBACK CGameSetupDialog::renderCallback( CUIDialog& dlg )
 
 	if( !desc.getMissionSummary().empty() ) {
 		yline += 24;
-		rc.set( xcol, yline, xcol+400, yline+DYLINE );
-		dlg.imDrawText( desc.getMissionSummary().c_str(), 0, DT_LEFT|DT_VCENTER, 0xFFffffff, rc, false );
+		rc.set( xcol, yline, xcol+400, yline+14*desc.getMissionSummaryLines() );
+		dlg.imDrawText( desc.getMissionSummary().c_str(), 0, DT_LEFT|DT_TOP, 0xFFffffff, rc, false );
+		yline += 14*desc.getMissionSummaryLines();
 	}
 
 	for( i = 0; i < desc.getMissionCount(); ++i ) {
-		yline += 24;
-		rc.set( xcol, yline, xcol+400, yline+DYLINE );
-		dlg.imDrawText( desc.getMission(i).desc.c_str(), 0, DT_LEFT|DT_VCENTER, 0xFFffffff, rc, false );
+		yline += 4;
+		rc.set( xcol, yline, xcol+400, yline+14*desc.getMission(i).descLines );
+		dlg.imDrawText( desc.getMission(i).desc.c_str(), 0, DT_LEFT|DT_TOP, 0xFFffffff, rc, false );
+		yline += 14*desc.getMission(i).descLines;
 	}
 }
 
