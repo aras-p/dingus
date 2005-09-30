@@ -201,7 +201,6 @@ std::string CGameMap::initialize()
 
 	std::string pts = bu::receiveStr();
 	char* ptsFile = (char*)pts.c_str(); // HACK
-
 	const char* tokens = "\n\r";
 	const char* pline = strtok( ptsFile, tokens );
 	do {
@@ -214,10 +213,40 @@ std::string CGameMap::initialize()
 		mPoints.push_back( SPoint(ePointType(etype), eposx, eposy ) );
 	} while( pline = strtok( NULL, tokens ) );
 
+	//
+	// read streams
 
-	// TBD: streams, walls
+	std::string strms = bu::receiveStr(); // streams
+	char* strmsFile = (char*)strms.c_str(); // HACK
+	pline = strtok( strmsFile, tokens );
+	do {
+		if( !pline )
+			break;
+		int sx, sy, sw, sh, sdir;
+		int fread = sscanf( pline, "%i:%i:%i:%i:%i", &sx, &sy, &sw, &sh, &sdir );
+		assert( sx >= 0 && sx < mCellsX );
+		assert( sy >= 0 && sy < mCellsY );
+		assert( sx+sw <= mCellsX );
+		assert( sy+sh <= mCellsY );
+		assert( sdir >= 0 && sdir <= 3 );
+		assert( fread == 5 );
+		if( fread != 5 )
+			break;
+		SStream strm;
+		strm.x = sx;
+		strm.y = sy;
+		strm.width = sw;
+		strm.height = sh;
+		switch( sdir ) {
+		case 0:	strm.deltaX =  0; strm.deltaY =  1; break;
+		case 1:	strm.deltaX =  0; strm.deltaY = -1; break;
+		case 2:	strm.deltaX =  1; strm.deltaY =  0; break;
+		case 3:	strm.deltaX = -1; strm.deltaY =  0; break;
+		}
+		mStreams.push_back( strm );
+	} while( pline = strtok( NULL, tokens ) );
 
-	bu::receiveStr(); // streams
+	// TBD:  walls
 	bu::receiveStr(); // walls
 
 	//

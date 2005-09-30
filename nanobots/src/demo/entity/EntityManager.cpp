@@ -36,12 +36,28 @@ CEntityManager::CEntityManager()
 	for( i = 0; i < n; ++i ) {
 		mPointEntities[i] = new CPointEntity( gmap.getPoint(i) );
 	}
+
+	// stream entities
+	const float STREAM_ENT_CELL_STRIDE = 2.0f;
+
+	n = gmap.getStreamCount();
+	mStreamEntities.reserve( 128 );
+	for( i = 0; i < n; ++i ) {
+		const CGameMap::SStream& strm = gmap.getStream(i);
+		for( float sy = strm.y; sy < strm.y+strm.height; sy += STREAM_ENT_CELL_STRIDE ) {
+			for( float sx = strm.x; sx < strm.x+strm.width; sx += STREAM_ENT_CELL_STRIDE ) {
+				CStreamEntity* e = new CStreamEntity( strm, sx, sy );
+				mStreamEntities.push_back( e );
+			}
+		}
+	}
 }
 
 CEntityManager::~CEntityManager()
 {
 	stl_utils::wipe_map( mActorEntities );
 	stl_utils::wipe( mPointEntities );
+	stl_utils::wipe( mStreamEntities );
 	delete mAttackManager;
 }
 
@@ -85,6 +101,13 @@ void CEntityManager::update( const SLine3& mouseRay, float timeAlpha )
 	n = mPointEntities.size();
 	for( i = 0; i < n; ++i ) {
 		CPointEntity& e = *mPointEntities[i];
+		e.update();
+	}
+
+	// update stream entities
+	n = mStreamEntities.size();
+	for( i = 0; i < n; ++i ) {
+		CStreamEntity& e = *mStreamEntities[i];
 		e.update();
 	}
 
@@ -252,6 +275,12 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	n = mPointEntities.size();
 	for( i = 0; i < n; ++i ) {
 		mPointEntities[i]->renderPoint( rm );
+	}
+
+	// streams
+	n = mStreamEntities.size();
+	for( i = 0; i < n; ++i ) {
+		mStreamEntities[i]->render( rm );
 	}
 }
 

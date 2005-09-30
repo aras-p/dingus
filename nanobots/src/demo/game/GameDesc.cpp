@@ -102,6 +102,7 @@ byte	[reserved]
 string	Briefing description
 byte	Number of missions
 //for each Mission
+	byte	Mission type
 	string	Mission description
 	byte	Number of objective points of the mission
 	//for each objective point
@@ -171,6 +172,7 @@ std::string CGameDesc::initialize()
 	for( i = 0; i < missionCount; ++i ) {
 		mMissions.push_back( SMission() );
 		SMission& m = mMissions.back();
+		bu::receiveByte(); // TBD: assign mission type
 		m.desc = bu::receiveStr();
 		
 		int ptCount = bu::receiveByte();

@@ -20,14 +20,14 @@ const bool DEV_MODE = true;
 SAppStartupParams CSystem::getStartupParams()
 {
 	SAppStartupParams sp;
-	sp.windowTitle = "Code AND Play 3D";
+	sp.windowTitle = "Project Hoshimi 3D Viewer";
 	sp.dataPath = "data/";
 	sp.windowWidth = 640;
 	sp.windowHeight = 480;
 	sp.minColorBits = 4;
 	sp.minAlphaBits = 0;
 	sp.minZBits = 16;
-	sp.minStencilBits = 0;
+	sp.minStencilBits = 4;
 	sp.usesZBuffer = true;
 	sp.startFullscreen = !DEV_MODE;
 	sp.showCursorFullscreen = true;
@@ -40,7 +40,7 @@ SAppStartupParams CSystem::getStartupParams()
 
 IConsoleRenderingContext* CSystem::createStdConsoleCtx( HWND hwnd )
 {
-	CFileConsoleRenderingContext* ctx = new CFileConsoleRenderingContext( "CodeANDPlay3D_log.txt" );
+	CFileConsoleRenderingContext* ctx = new CFileConsoleRenderingContext( "PHViewer3D_log.txt" );
 	return ctx;
 }
 

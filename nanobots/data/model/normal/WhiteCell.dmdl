@@ -1,9 +1,0 @@
-name = 'WhiteCell'
-groups = {
-{
-  fx = 'WhiteCell', pri = 1,
-  params = {
-	  { 'tex', 'tBase', 'WhiteCell' },
-  },
-},
-}

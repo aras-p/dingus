@@ -3,14 +3,17 @@
 
 #include "ActorEntity.h"
 #include "PointEntity.h"
+#include "StreamEntity.h"
 #include "../game/GameState.h"
 #include <dingus/math/Line3.h>
+
 
 
 class CAttackEntityManager;
 namespace dingus {
 	class CUIDialog;
 };
+
 
 class CEntityManager {
 public:
@@ -52,6 +55,7 @@ private:
 private:
 	TActorEntityMap				mActorEntities;
 	std::vector<CPointEntity*>	mPointEntities;
+	std::vector<CStreamEntity*>	mStreamEntities;
 	CAttackEntityManager*		mAttackManager;
 
 	int		mLastMouseEntityID;

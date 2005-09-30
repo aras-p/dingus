@@ -24,6 +24,15 @@ public:
 		bool		nearBone; // some of 8-neighbour cells is bone
 	};
 
+	struct SStream {
+		int	x;
+		int y;
+		int width;
+		int height;
+		int	deltaX; // stream direction
+		int deltaY; // stream direction
+	};
+
 public:
 	CGameMap();
 	~CGameMap();
@@ -49,6 +58,9 @@ public:
 	const SPoint& addInjectionPoint( int player, int x, int y ) { mPoints.push_back( SPoint(PT_INJECTION,x,y,player) ); return mPoints.back(); }
 	void	addObjectivePoint( int mission, int x, int y ) { mPoints.push_back( SPoint(PT_OBJECTIVE,x,y,mission) ); }
 
+	int		getStreamCount() const { return mStreams.size(); }
+	const SStream& getStream( int i ) const { return mStreams[i]; }
+
 	const std::string& getName() const { return mName; }
 	unsigned int getCRC() const { return mCRC; }
 
@@ -63,6 +75,9 @@ private:
 
 	// Special points
 	std::vector<SPoint>	mPoints;
+
+	// Streams
+	std::vector<SStream> mStreams;
 
 	std::string		mName;	/// Map's name
 	unsigned int	mCRC;	/// CRC 32 of the cells

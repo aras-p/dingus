@@ -4,15 +4,21 @@
 
 float4x4	mWorldView;
 float4x4	mWVP;
+float4		vColor;
+
 
 
 // --------------------------------------------------------------------------
 
-SPosColFog vsMainFF( SPos i ) {
-	SPosColFog o;
+SPosCol vsMainFF( SPosN i ) {
+	SPosCol o;
 	o.pos = mul( i.pos, mWVP );
-	o.color = 0;
-	o.fog = gFogWV( i.pos, mWorldView );
+	float3 vn = mul( i.normal, (float3x3)mWorldView );
+	float rim = 1 - abs(vn.z);
+	o.color.xyz = vColor.xyz;
+	o.color.a = rim*0.75*vColor.a;
+
+	o.color.a *= saturate( gFogWV( i.pos, mWorldView ) );
 	return o;
 }
 
@@ -23,7 +29,11 @@ technique tecFFP
 		VertexShader = compile vs_1_1 vsMainFF();
 		PixelShader = NULL;
 
-		FogEnable = True;
+		AlphaBlendEnable = True;
+		SrcBlend = SrcAlpha;
+		DestBlend = One;
+		ZWriteEnable = False;
+		CullMode = None;
 
 		ColorOp[0] = SelectArg1;
 		ColorArg1[0] = Diffuse;
