@@ -5,17 +5,10 @@
 
 class CGameDesc;
 class CGameState;
+struct SServerState;
 
 namespace net {
 
-
-	struct SServerState {
-		SServerState();
-		
-		eGameServerState	state;
-		bool	playerRealtime[G_MAX_PLAYERS]; // first is dummy (AI)
-		bool	playerControlled[G_MAX_PLAYERS]; // first is dummy (AI)
-	};
 
 	CGameDesc* receiveGameDesc( std::string& errMsg );
 

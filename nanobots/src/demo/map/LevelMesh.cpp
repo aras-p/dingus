@@ -605,7 +605,7 @@ void CLevelMesh::computeData()
 	saveDataToCache();
 }
 
-const unsigned int CACHED_DATA_VERSION = 20050114;
+const unsigned int CACHED_DATA_VERSION = 20050930;
 
 
 bool CLevelMesh::loadCachedData()

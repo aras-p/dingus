@@ -262,6 +262,7 @@ CUIImage*		gUIImgLogo;
 
 CUIRollout*		gUIRollMinimap;
 CUIStatic*		gUILabelTime;
+CUIStatic*		gUILabelStarting;
 CUIStatic*		gUILabelFPS;
 
 //CUIButton*		gUIBtnTimeRew; // TBD
@@ -610,6 +611,9 @@ static void	gSetupGUI()
 
 		// TBD
 		//gUIDlg->addSlider( GID_SLD_TIME, 285-22, 462, 355-285+22*3, UIHCTL, 0, gi.getReplay().getGameTurnCount()-1, 0, false, &gUISliderTime );
+		
+		gUIDlg->addStatic( 0, "Game starting...", 0, 260, 640, 22, false, &gUILabelStarting );
+		gUILabelStarting->getElement(0)->setFont( 1, false, DT_CENTER | DT_VCENTER );
 		
 		gUIDlg->addStatic( 0, "", 3, 480-UIHLAB-1, 100, UIHLAB, false, &gUILabelFPS );
 	}
@@ -1215,11 +1219,23 @@ void CDemo::perform()
 	//
 	// update game if it's started
 
-	if( !gameSetupActive ) {
-		if( tmv - gLastGameUpdateTime >= time_value::fromsec(desc.getTurnDT()*0.5f) ) {
-			// TBD: commands to dll
-			net::updateGame( 0, 0, 0, state );
-			gLastGameUpdateTime = tmv;
+	if( gameSetupActive ) {
+		gUILabelTime->setVisible( false );
+	} else {
+		// if server state is starting, update it
+		if( state.getServerState().state == GST_STARTING ) {
+			gUILabelStarting->setVisible( true );
+			gUILabelTime->setVisible( false );
+			state.updateServerState( false, false );
+		} else {
+			gUILabelStarting->setVisible( false );
+			gUILabelTime->setVisible( true );
+			// update game state
+			if( tmv - gLastGameUpdateTime >= time_value::fromsec(desc.getTurnDT()*0.5f) ) {
+				// TBD: commands to dll
+				net::updateGame( 0, 0, 0, state );
+				gLastGameUpdateTime = tmv;
+			}
 		}
 	}
 
@@ -1385,13 +1401,8 @@ void CDemo::perform()
 	gUpdateSelEntityStats();
 	
 	// time UI
-	if( gameSetupActive) {
-		gUILabelTime->setVisible( false );
-	} else {
-		sprintf( buf, "%i", state.getTurn() );
-		gUILabelTime->setText( buf );
-		gUILabelTime->setVisible( true );
-	}
+	sprintf( buf, "%i", state.getTurn() );
+	gUILabelTime->setText( buf );
 	sprintf( buf, "fps: %.1f", dx.getStats().getFPS() );
 	gUILabelFPS->setText( buf );
 

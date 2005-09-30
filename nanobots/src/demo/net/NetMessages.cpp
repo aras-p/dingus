@@ -62,11 +62,6 @@ CGameDesc* net::receiveGameDesc( std::string& errMsg )
 }
 
 
-net::SServerState::SServerState()
-{
-	memset( this, 0, sizeof(this) );
-}
-
 void net::receiveServerState( int playerCount, SServerState& state, std::string& errMsg, bool startFlag )
 {
 	// query server state

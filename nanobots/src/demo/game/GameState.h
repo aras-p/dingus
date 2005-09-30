@@ -5,6 +5,15 @@
 #include <dingus/utils/ringdeque.h>
 
 
+struct SServerState {
+	SServerState() { memset(this,0,sizeof(SServerState)); }
+	
+	eGameServerState state;
+	bool	playerRealtime[G_MAX_PLAYERS]; // first is dummy (AI)
+	bool	playerControlled[G_MAX_PLAYERS]; // first is dummy (AI)
+};
+
+
 class CGameState : public boost::noncopyable {
 public:
 	enum { MAX_LOG_MSGS = 16 };
@@ -41,11 +50,18 @@ public:
 	//bool	isComputerPlayer( int index ) const { return index == mPlayerCount-1; }
 	const SPlayer& getPlayer( int i ) const { return mPlayers[i]; }
 
+	const SServerState& getServerState() const { return mServerState; }
+	void	updateServerState( bool forceNow, bool sendStart );
+
 private:
 	SPlayer		mPlayers[G_MAX_PLAYERS]; // incl. AI
 	TEntityMap	mEntities;
 	int			mTurn;				///< Current turn
 	time_value	mTurnReceivedTime;	///< When the current turn was received
+
+	SServerState	mServerState;
+	std::string		mServerStateErrMsg;
+	time_value		mLastStateQueryTime;
 };
 
 

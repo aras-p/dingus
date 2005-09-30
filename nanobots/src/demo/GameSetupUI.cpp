@@ -18,7 +18,6 @@ const int GID_BTN_JOIN = 7010;
 
 CGameSetupDialog::CGameSetupDialog()
 :	mState( STATE_ACTIVE )
-,	mLastStateQueryTime( -1 )
 ,	mJoinAcceptedForPlayer(-1)
 ,	mStartClicked(false)
 {
@@ -86,7 +85,7 @@ void CALLBACK CGameSetupDialog::dialogCallback( UINT evt, int ctrlID, CUIControl
 		} else if( ctrlID == GID_BTN_START ) {
 			const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
 			assert( &desc );
-			net::receiveServerState( desc.getPlayerCount(), inst->mServerState, inst->mServerStateErrMsg, true );
+			CGameInfo::getInstance().getState().updateServerState( true, true );
 			inst->mStartClicked = true;
 		}
 	}
@@ -97,6 +96,8 @@ void CALLBACK CGameSetupDialog::renderCallback( CUIDialog& dlg )
 {
 	const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
 	assert( &desc );
+	const CGameState& state = CGameInfo::getInstance().getState();
+	assert( &state );
 
 	int i;
 
@@ -117,7 +118,7 @@ void CALLBACK CGameSetupDialog::renderCallback( CUIDialog& dlg )
 	dlg.imDrawText( "Game:", 1, DT_LEFT | DT_VCENTER, 0xFFffffff, rc, false );
 
 	CGameSetupDialog& me = *mSingleInstance;
-	const net::SServerState& serverState = me.mServerState;
+	const SServerState& serverState = state.getServerState();
 	int nplayers = desc.getPlayerCount();
 
 	static const char* GAMESTATES[GSTCOUNT] = {
@@ -161,7 +162,7 @@ void CALLBACK CGameSetupDialog::renderCallback( CUIDialog& dlg )
 		dlg.imDrawText( desc.getPlayer(i).name.c_str(), 0, DT_LEFT|DT_VCENTER, 0xFFffffff, rc, false );
 
 		// state
-		const char* state = "From replay";
+		const char* state = "Replay or no control allowed";
 		me.mBtnJoin[i]->setEnabled( false );
 		me.mBtnJoin[i]->setLocation( xcol + 150 - dlg.getX(), yline + 2 - dlg.getY() );
 		if( serverState.playerRealtime[i] ) {
@@ -205,18 +206,15 @@ void CGameSetupDialog::updateViewer( SMatrix4x4& viewer, float& tilt, float& zoo
 	float t = currT.tosec();
 
 	const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
+	CGameState& state = CGameInfo::getInstance().getState();
 	const CGameMap& gmap = desc.getMap();
 
-	// periodically query receive server state
-	if( currT - mLastStateQueryTime > time_value::fromsec(0.5f) ) {
-		mLastStateQueryTime = currT;
-		net::receiveServerState( desc.getPlayerCount(), mServerState, mServerStateErrMsg, false );
-
-		if( mServerState.state == GST_STARTING || mServerState.state == GST_STARTED ) {
-			mBtnStart->setText( "View game" );
-			if( mStartClicked )
-				mState = STATE_START;
-		}
+	// query server state
+	state.updateServerState( false, false );
+	if( state.getServerState().state == GST_STARTING || state.getServerState().state == GST_STARTED ) {
+		mBtnStart->setText( "View game" );
+		if( mStartClicked )
+			mState = STATE_START;
 	}
 
 	int sizeX = gmap.getCellsX();

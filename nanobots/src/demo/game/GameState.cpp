@@ -7,6 +7,8 @@
 
 
 CGameState::CGameState()
+:	mLastStateQueryTime(-1)
+,	mTurn(0)
 {
 }
 
@@ -167,4 +169,15 @@ void CGameState::updateState()
 	}
 
 	mTurn = turn;
+}
+
+
+void CGameState::updateServerState( bool forceNow, bool sendStart )
+{
+	time_value currT = CSystemTimer::getInstance().getTime();
+	if( forceNow || currT - mLastStateQueryTime > time_value::fromsec(0.5f) ) {
+		const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
+		mLastStateQueryTime = currT;
+		net::receiveServerState( desc.getPlayerCount(), mServerState, mServerStateErrMsg, sendStart );
+	}
 }

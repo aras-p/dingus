@@ -37,10 +37,6 @@ private:
 	CUIButton*	mBtnStart;
 	int			mJoinAcceptedForPlayer;
 	bool		mStartClicked;
-
-	net::SServerState	mServerState;
-	std::string			mServerStateErrMsg;
-	time_value			mLastStateQueryTime;
 };
 
 

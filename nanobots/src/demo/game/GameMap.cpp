@@ -174,13 +174,13 @@ std::string CGameMap::initialize()
 		const D3DCOLOR* p = (const D3DCOLOR*)linePtr;
 		for( int x = 0; x < mCellsX; ++x ) {
 			SCell& cell = mCells[y*mCellsX+x];
-			// TBD: support dark colors and set otherType based on that
-			// for now, just set otherType in Blood2 cells
 			switch( *p ) {
 			case 0xFFff0000:	cell.type = CELL_BLOOD1; cell.otherType = false; break;
-			case 0xFF00ff00:	cell.type = CELL_BLOOD2; cell.otherType = true;  break;
+			case 0xFF00ff00:	cell.type = CELL_BLOOD2; cell.otherType = false;  break;
 			case 0xFF0000ff:	cell.type = CELL_BLOOD3; cell.otherType = false;  break;
-			case 0xFFc0c0c0:	cell.type = CELL_BONE; cell.otherType = false;  break; // some time ago it was perforable, now it's just bone
+			case 0xFF800000:	cell.type = CELL_BLOOD1; cell.otherType = true; break;
+			case 0xFF008000:	cell.type = CELL_BLOOD2; cell.otherType = true;  break;
+			case 0xFF000080:	cell.type = CELL_BLOOD3; cell.otherType = true;  break;
 			default:			cell.type = CELL_BONE; cell.otherType = false;  break;
 			}
 			cell.height = MIN_CELL_HEIGHT;
