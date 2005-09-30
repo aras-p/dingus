@@ -432,10 +432,6 @@ SOURCE=.\data\fx\entity.fx
 # End Source File
 # Begin Source File
 
-SOURCE=.\data\fx\entityTank.fx
-# End Source File
-# Begin Source File
-
 SOURCE=.\data\fx\explosion.fx
 # End Source File
 # Begin Source File

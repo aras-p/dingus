@@ -28,7 +28,7 @@ static inline float4 lighting( float3 n ) {
 SPosColTexFog vsMainFF( SPosNTex i ) {
 	SPosColTexFog o;
 	o.pos = mul( i.pos, mWVP );
-	o.color = lighting( mul( i.normal, (float3x3)mWorld ) ) * vColor;
+	o.color = lighting( mul( i.normal*2-1, (float3x3)mWorld ) ) * vColor;
 	o.uv = i.uv;
 
 	o.fog = gFogWV( i.pos, mWorldView );

@@ -27,7 +27,10 @@ CGameEntity::CGameEntity( unsigned short eid, eEntityType type, int owner, int b
 	assert( type >= 0 && type < ENTITYCOUNT );
 	assert( bornTurn >= 0 );
 
-	mTypeName = ENT_TYPE_NAMES[type];
+	if( owner == 0 )
+		mTypeName = 'P' + std::string(ENT_TYPE_NAMES[type]);
+	else
+		mTypeName = ENT_TYPE_NAMES[type];
 
 	mOnGround = (type==ENTITY_NEEDLE) || (type==ENTITY_NEUROC);
 	mOnAir = (type!=ENTITY_COLLECTOR) && (type!=ENTITY_CONTAINER);

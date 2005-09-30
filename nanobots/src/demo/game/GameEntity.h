@@ -29,7 +29,7 @@ public:
 
 	int		getID() const { return mID; }
 	eEntityType	getType() const { return mType; }
-	const char* getTypeName() const { return mTypeName; }
+	const std::string& getTypeName() const { return mTypeName; }
 	int		getOwner() const { return mOwner; }
 	int		getMaxHealth() const { return mMaxHealth; }
 
@@ -53,7 +53,7 @@ private:
 	/// Entity type.
 	eEntityType	mType;
 	/// Entity's type name
-	const char*	mTypeName;
+	std::string	mTypeName;
 	/// Entity's owner: player index (0..count-2 are players; count-1 is AI).
 	int		mOwner;
 
