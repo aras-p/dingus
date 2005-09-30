@@ -20,6 +20,9 @@ public:
 
 	/** Trims whitespace from ends. */
 	static void trimString( std::string& s );
+
+	/** Counts number of lines. */
+	static int countLines( const std::string& s );
 	
 	static bool isLetter( char c ) { return isalpha(c)?true:false; }
 	static bool isDigit( char c ) { return isdigit(c)?true:false; }

@@ -42,6 +42,17 @@ void CStringHelper::trimString( std::string& s )
 	s = s.substr( first, (last-first+1) );
 }
 
+int CStringHelper::countLines( const std::string& s )
+{
+	int c = 1;
+	int n = s.size();
+	for( int i = 0; i < n; ++i ) {
+		if( s[i]=='\n' ) ++c;
+	}
+	return c;
+}
+
+
 /*
 bool CStringHelper::isFloat( const std::string& s )
 {
