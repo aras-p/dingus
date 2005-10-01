@@ -226,17 +226,36 @@ public:
 	
 	void	beginEffect()
 	{
-		mCurrentPass = 0;
+		mCurrentPass = -1;
 		mStates.clear();
 		mStates.reserve( 32 );
+		mPassStart.clear();
+		mPassCounts.clear();
 	}
 
 	void	beginPass()
 	{
+		assert( mPassStart.size() == mPassCounts.size() );
+		if( !mPassCounts.empty() ) {
+			mPassCounts.back() = mStates.size() - mPassStart.back();
+		}
+		++mCurrentPass;
+		mPassStart.push_back( mStates.size() );
+		mPassCounts.push_back( 0 );
+	}
+
+	void	endEffect()
+	{
+		assert( mPassStart.size() == mPassCounts.size() );
+		if( !mPassCounts.empty() ) {
+			mPassCounts.back() = mStates.size() - mPassStart.back();
+		}
 		++mCurrentPass;
 	}
 
 	const TStateVector& getStates() const { return mStates; }
+	int getPassStateStart( int pass ) const { assert(pass>=0&&pass<mPassStart.size()); return mPassStart[pass]; }
+	int getPassStateCount( int pass ) const { assert(pass>=0&&pass<mPassCounts.size()); return mPassCounts[pass]; }
 
 
 	void	debugPrintFx( const char* fileName )
@@ -404,6 +423,12 @@ public:
 private:
 	/// Inspected states
 	TStateVector mStates;
+
+	/// Starting state index for each pass
+	std::vector<int>	mPassStart;
+	/// State count for each pass
+	std::vector<int>	mPassCounts;
+
 	/// Current pass
 	int	mCurrentPass;
 };
@@ -415,6 +440,7 @@ private:
 class CEffectRestorePassGenerator : public boost::noncopyable {
 public:
 	bool loadConfig( const char* fileName );
+	std::string checkEffect( const CEffectStateInspector& fx ) const;
 	std::string generateRestorePass( const CEffectStateInspector& fx ) const;
 
 private:
@@ -539,13 +565,96 @@ bool CEffectRestorePassGenerator::loadConfig( const char* fileName )
 	return true;
 }
 
-std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectStateInspector& fx ) const
+
+std::string CEffectRestorePassGenerator::checkEffect( const CEffectStateInspector& fx ) const
 {
 	int i;
 	int nstates = fx.getStates().size();
 
-	// TBD: check required states
-	// TBD: check dependent states
+	std::string errs = "";
+
+	// Check required states: the first pass must contain all
+	// required states.
+	for( i = 0; i < mStatesRequired.size(); ++i ) {
+		int reqState = mStatesRequired[i].index;
+		bool found = false;
+		for( int j = 0; j < nstates; ++j ) {
+			const CEffectStateInspector::SState& st = fx.getStates()[j];
+			if( st.pass != 0 ) // only check first pass
+				break;
+			if( st.index == reqState ) {
+				found = true;
+				break;
+			}
+		}
+		if( !found ) {
+			errs += "First fx pass must assign ";
+			errs += FX_STATES[reqState].name;
+			errs += ". ";
+		}
+	}
+
+	// Check dependent states: in the first occurrance of state set
+	// to some value; each dependent state must also be set in the same
+	// pass. In subsequent passes, don't care about these states anymore - 
+	// the effect author should know what he's doing.
+	for( i = 0; i < mStatesDependent.size(); ++i ) {
+		const SStateDependent& depState = mStatesDependent[i];
+		bool found = false;
+		int foundAt;
+		for( foundAt = 0; foundAt < nstates; ++foundAt ) {
+			const CEffectStateInspector::SState& st = fx.getStates()[foundAt];
+			if( st.index == depState.index && st.value == depState.value ) {
+				found = true;
+				break;
+			}
+		}
+		if( found ) {
+			// Found a state that implies some dependent states. Check if
+			// all of them are present in the current pass.
+			bool hasErrStart = false;
+			int pass = fx.getStates()[foundAt].pass;
+			int passStart = fx.getPassStateStart(pass);
+			int passEnd = passStart + fx.getPassStateCount(pass);
+			for( int j = 0; j < depState.needed.size(); ++j ) {
+				int neededState = depState.needed[j];
+				bool foundNeeded = false;
+				for( int k = passStart; k < passEnd; ++k ) {
+					if( fx.getStates()[k].index == neededState ) {
+						foundNeeded = true;
+						break;
+					}
+				}
+				if( !foundNeeded ) {
+					// error
+					if( !hasErrStart ) {
+						errs += "Using ";
+						errs += FX_STATES[depState.index].name;
+						errs += '=';
+						char buf[100];
+						itoa( depState.value, buf, 10 );
+						errs += buf;
+						errs += " requires setting ";
+						hasErrStart = true;
+					}
+					errs += FX_STATES[neededState].name;
+					errs += ',';
+				}
+			}
+			if( hasErrStart ) {
+				errs[errs.size()-1] = '.';
+			}
+		}
+	}
+
+	return errs;
+}
+
+
+std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectStateInspector& fx ) const
+{
+	int i;
+	int nstates = fx.getStates().size();
 
 	// generate restoring pass
 	// NOTE: it seems that (Oct 2004 SDK) fx macros don't support newlines.
@@ -662,6 +771,32 @@ bool dingus::fxloader::load(
 	// initialize effect object
 	dest.setObject( fx );
 
+	// examine effect state assignments
+	static CEffectStateInspector	inspector;
+	fx->SetStateManager( &inspector );
+	inspector.beginEffect();
+	int passes = dest.beginFx();
+	for( int i = 0; i < passes; ++i ) {
+		inspector.beginPass();
+		dest.beginPass( i );
+		dest.endPass();
+	}
+	dest.endFx();
+	inspector.endEffect();
+	//inspector.debugPrintFx( (fileName+".ins.fx").c_str() );
+
+	// check the effect
+	std::string chkErrors = gFxRestorePassGen->checkEffect( inspector );
+	if( !chkErrors.empty() ) {
+		errorMsgs = chkErrors;
+		CConsole::CON_ERROR.write( errorMsgs );
+		dest.getObject()->Release();
+		dest.setObject( NULL );
+		delete[] newMacros;
+		return false;
+	}
+
+
 	// if already has restoring pass, return
 	if( dest.hasRestoringPass() ) {
 		// set state manager
@@ -672,23 +807,8 @@ bool dingus::fxloader::load(
 		return true;
 	}
 
-	// examine effect state assignments
-	console.write( "fx loaded, generating state restore pass" );
-	static CEffectStateInspector	inspector;
-
-	fx->SetStateManager( &inspector );
-	inspector.beginEffect();
-	int passes = dest.beginFx();
-	for( int i = 0; i < passes; ++i ) {
-		inspector.beginPass();
-		dest.beginPass( i );
-		dest.endPass();
-	}
-	dest.endFx();
-
-	//inspector.debugPrintFx( (fileName+".ins.fx").c_str() );
-
 	// generate restore pass
+	console.write( "fx loaded, generating state restore pass" );
 	assert( gFxRestorePassGen );
 	std::string restorePass = gFxRestorePassGen->generateRestorePass( inspector );
 	// debug
