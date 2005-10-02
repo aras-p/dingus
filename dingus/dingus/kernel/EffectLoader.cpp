@@ -17,6 +17,7 @@
 using namespace dingus;
 
 // --------------------------------------------------------------------------
+//  render state definitions
 
 namespace {
 
@@ -31,12 +32,15 @@ enum eFxStateType {
 
 struct SFxState {
 	eFxStateType	type;
-	const char*		name;
-	DWORD			code;
+	const char*		name; // state name
+	DWORD			code; // D3D code
 };
 
 
-
+// State definitions. Required so that we can convert from D3D state codes
+// to text and vice versa.
+// NOTE: almost no fixed function T&L states are defined here. Just don't use
+// T&L and effects at the same time, it's really messy.
 SFxState FX_STATES[] = {
 	{ FXST_VERTEXSHADER, "VertexShader", 0 },
 	{ FXST_PIXELSHADER, "PixelShader", 0 },
@@ -174,7 +178,7 @@ SFxState FX_STATES[] = {
 
 const int FX_STATES_SIZE = sizeof(FX_STATES) / sizeof(FX_STATES[0]);
 
-
+/// @return State index into FX_STATES, given its type and code.
 int	findState( eFxStateType type, int code )
 {
 	for( int i = 0; i < FX_STATES_SIZE; ++i ) {
@@ -185,6 +189,7 @@ int	findState( eFxStateType type, int code )
 	return -1;
 }
 
+/// @return State index into FX_STATES, given its name.
 int findState( const char* name )
 {
 	for( int i = 0; i < FX_STATES_SIZE; ++i ) {
@@ -199,7 +204,9 @@ int findState( const char* name )
 }; // end anonymous namespace
 
 
+
 // --------------------------------------------------------------------------
+//  effect state inspector
 
 
 class CEffectStateInspector : public ID3DXEffectStateManager {
@@ -258,6 +265,9 @@ public:
 	int getPassStateCount( int pass ) const { assert(pass>=0&&pass<mPassCounts.size()); return mPassCounts[pass]; }
 
 
+	/**
+	 *	Debug: print inspected effect to the given file.
+	 */
 	void	debugPrintFx( const char* fileName )
 	{
 		FILE* f = fopen( fileName, "wt" );
@@ -288,116 +298,99 @@ public:
 	}
 
 	// ------------------------------------------
-	
 	// ID3DXEffectStateManager
+
     STDMETHOD(SetTransform)( D3DTRANSFORMSTATETYPE state, const D3DMATRIX* matrix )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetMaterial)( const D3DMATERIAL9* material )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetLight)( DWORD index, const D3DLIGHT9* light )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(LightEnable)( DWORD index, BOOL enable )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetRenderState)( D3DRENDERSTATETYPE state, DWORD value )
 	{
 		int index = findState( FXST_RENDERSTATE, state );
 		mStates.push_back( SState( mCurrentPass, index, -1, value ) );
 		return S_OK;
 	}
-
     STDMETHOD(SetTexture)( DWORD stage, IDirect3DBaseTexture9* texture )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetTextureStageState)( DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value )
 	{
 		int index = findState( FXST_TSS, type );
 		mStates.push_back( SState( mCurrentPass, index, stage, value ) );
 		return S_OK;
 	}
-
     STDMETHOD(SetSamplerState)( DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value )
 	{
 		int index = findState( FXST_SAMPLER, type );
 		mStates.push_back( SState( mCurrentPass, index, sampler, value ) );
 		return S_OK;
 	}
-
     STDMETHOD(SetNPatchMode)( float numSegments )
 	{
 		int index = findState( FXST_NPATCH, 0 );
 		mStates.push_back( SState( mCurrentPass, index, -1, numSegments ) );
 		return S_OK;
 	}
-
     STDMETHOD(SetFVF)( DWORD fvf )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetVertexShader)( IDirect3DVertexShader9* shader )
 	{
 		int index = findState( FXST_VERTEXSHADER, 0 );
 		mStates.push_back( SState( mCurrentPass, index, -1, shader ? 1 : 0 ) );
 		return S_OK;
 	}
-
     STDMETHOD(SetVertexShaderConstantF)( UINT registerIdx, const float* data, UINT registerCount )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetVertexShaderConstantI)(THIS_ UINT registerIdx, const int *data, UINT registerCount )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetVertexShaderConstantB)(THIS_ UINT registerIdx, const BOOL *data, UINT registerCount )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetPixelShader)( IDirect3DPixelShader9* shader )
 	{
 		int index = findState( FXST_PIXELSHADER, 0 );
 		mStates.push_back( SState( mCurrentPass, index, -1, shader ? 1 : 0 ) );
 		return S_OK;
 	}
-
     STDMETHOD(SetPixelShaderConstantF)( UINT registerIdx, const float *data, UINT registerCount )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetPixelShaderConstantI)( UINT registerIdx, const int *data, UINT registerCount )
 	{
 		// don't inspect
 		return S_OK;
 	}
-
     STDMETHOD(SetPixelShaderConstantB)( UINT registerIdx, const BOOL *data, UINT registerCount )
 	{
 		// don't inspect
@@ -434,13 +427,28 @@ private:
 };
 
 
+
 // --------------------------------------------------------------------------
+//  restore pass generator and state checker
 
 
 class CEffectRestorePassGenerator : public boost::noncopyable {
 public:
+	/**
+	 *  Load states configuration file.
+	 */
 	bool loadConfig( const char* fileName );
+
+	/**
+	 *	Check effect for missing required/dependent state assignments.
+	 *  @return Errors string. Empty if all ok.
+	 */
 	std::string checkEffect( const CEffectStateInspector& fx ) const;
+
+	/**
+	 *	Generate state restore pass for given inspected effect.
+	 *  @return Generated pass text.
+	 */
 	std::string generateRestorePass( const CEffectStateInspector& fx ) const;
 
 private:
@@ -700,6 +708,7 @@ namespace {
 	CEffectRestorePassGenerator*	gFxRestorePassGen = 0;
 }; // end of anonymous namespace
 
+
 bool fxloader::initialize( const char* cfgFileName )
 {
 	assert( !gFxRestorePassGen );
@@ -714,6 +723,8 @@ void fxloader::shutdown()
 
 
 // --------------------------------------------------------------------------
+//  main effect loading code
+
 
 bool dingus::fxloader::load(
 	const std::string& id, const std::string& fileName,
