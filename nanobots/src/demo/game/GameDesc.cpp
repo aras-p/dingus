@@ -34,6 +34,9 @@ CGameDesc::CGameDesc()
 	// hoshimi - red
 	gColors.ptHoshimi.main.set( 0xFFa03030 );
 	gColors.ptHoshimi.tone.set( 0xFFa03030 );
+	// objective - yellow
+	gColors.ptObjective.main.set( 0xFFf0f030 );
+	gColors.ptObjective.tone.set( 0xFFa0a030 );
 }
 
 CGameDesc::~CGameDesc()
@@ -187,6 +190,7 @@ std::string CGameDesc::initialize()
 			int ptx = bu::receiveByte();
 			int pty = bu::receiveByte();
 			m.points.push_back( std::make_pair(ptx,pty) );
+			mMap.addObjectivePoint( i, ptx, pty );
 		}
 	}
 

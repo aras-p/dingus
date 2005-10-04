@@ -26,6 +26,10 @@ CGameMap::SPoint::SPoint( ePointType atype, int ax, int ay, int d )
 		colorMain = gColors.team[data].main.c;
 		colorTone = gColors.team[data].tone.c;
 		break;
+	case PT_OBJECTIVE:
+		colorMain = gColors.ptObjective.main.c;
+		colorTone = gColors.ptObjective.tone.c;
+		break;
 	default:
 		assert( false );
 	}

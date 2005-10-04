@@ -34,6 +34,7 @@ struct SColors {
 	SColorSet	team[G_MAX_PLAYERS];
 	SColorSet	ptAZN;
 	SColorSet	ptHoshimi;
+	SColorSet	ptObjective;
 };
 
 extern SColors	gColors;

@@ -10,6 +10,7 @@ static const char* POINT_TYPENAMES[PTCOUNT] = {
 	"PointAZN",
 	"PointHoshimi",
 	"PointInjection",
+	"PointMission",
 };
 
 
@@ -36,6 +37,11 @@ CPointEntity::CPointEntity( const CGameMap::SPoint& point )
 		mWorldMat.getAxisY().y = gmap.getCell(point.x,point.y).height;
 		mWorldMat.getOrigin().y = 0.0f;
 		mColor = &(D3DXCOLOR(point.colorMain).r);
+		break;
+	case PT_OBJECTIVE:
+		mAlphaBase = 0.40f;	mAlphaAmpl = 0.10f;
+		mWorldMat.getOrigin().y = 0.0f;
+		mColor = &(D3DXCOLOR(point.colorTone).r);
 		break;
 	}
 	
@@ -74,6 +80,11 @@ void CPointEntity::update()
 	*/
 	double t = CSystemTimer::getInstance().getTimeS() - mTimeOffset;
 	mColor.w = mAlphaBase + cosf( t + sinf( t * 2.1f ) ) * mAlphaAmpl;
+	if( mPoint->type == PT_OBJECTIVE ) {
+		SVector3 o = mWorldMat.getOrigin();
+		D3DXMatrixRotationY( &mWorldMat, t * 0.5f );
+		mWorldMat.getOrigin() = o;
+	}
 }
 
 void CPointEntity::renderPoint( eRenderMode renderMode )
