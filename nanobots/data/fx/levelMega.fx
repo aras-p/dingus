@@ -49,10 +49,27 @@ technique tec20
 
 		FogEnable = True;
 
-		CullMode = None;
+		CullMode = CW;
+
+		// set bit 1 where we render
+		StencilEnable = True;
+		StencilFunc = Always;
+		StencilRef = 1;
+		StencilMask = 1;
+		StencilWriteMask = 1;
+		StencilFail = Keep;
+		StencilPass = Replace;
+		StencilZFail = Keep;
+	}
+	pass P1 {
+		CullMode = CCW;
+
+		// clear bit 1 where we render
+		StencilRef = 0;
 	}
 	RESTORE_PASS
 }
+
 
 // --------------------------------------------------------------------------
 
@@ -80,7 +97,7 @@ technique tecFFP
 
 		FogEnable = True;
 
-		CullMode = None;
+		CullMode = CW;
 
 		Sampler[0] = (smpBase1);
 
@@ -93,6 +110,21 @@ technique tecFFP
 
 		ColorOp[1] = Disable;
 		AlphaOp[1] = Disable;
+
+		// set bit 1 where we render
+		StencilEnable = True;
+		StencilFunc = Always;
+		StencilRef = 1;
+		StencilMask = 1;
+		StencilWriteMask = 1;
+		StencilFail = Keep;
+		StencilPass = Replace;
+		StencilZFail = Keep;
+	}
+	pass P1 {
+		CullMode = CCW;
+		// clear bit 1 where we render
+		StencilRef = 0;
 	}
 	RESTORE_PASS
 }

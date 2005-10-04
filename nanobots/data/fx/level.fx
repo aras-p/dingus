@@ -101,6 +101,16 @@ technique tec20
 		PixelShader = compile ps_2_0 psMain20();
 
 		FogEnable = True;
+
+		// set bit 1 where we render
+		StencilEnable = True;
+		StencilFunc = Always;
+		StencilRef = 1;
+		StencilMask = 1;
+		StencilWriteMask = 1;
+		StencilFail = Keep;
+		StencilPass = Replace;
+		StencilZFail = Keep;
 	}
 	RESTORE_PASS
 }
@@ -191,6 +201,16 @@ technique tecFFP
 
 		ColorOp[1] = Disable;
 		AlphaOp[1] = Disable;
+
+		// set bit 1 where we render
+		StencilEnable = True;
+		StencilFunc = Always;
+		StencilRef = 1;
+		StencilMask = 1;
+		StencilWriteMask = 1;
+		StencilFail = Keep;
+		StencilPass = Replace;
+		StencilZFail = Keep;
 	}
 	RESTORE_PASS
 }

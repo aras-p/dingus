@@ -1,4 +1,4 @@
-name = 'StreamEntity'
+name = 'StreamRed'
 groups = {
 {
   fx = 'StreamEntity', pri = 1,

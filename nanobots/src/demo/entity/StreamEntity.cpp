@@ -7,10 +7,10 @@
 
 
 CStreamEntity::CStreamEntity( const CGameMap::SStream& stream, float x, float y )
-:	CMeshEntity( "StreamEntity", 1 )
+:	CMeshEntity( "StreamRed", 1 )
 ,	mStream( &stream )
-,	mVelocityX(stream.deltaX + gRandom.getFloat(-0.25f,0.25f))
-,	mVelocityY(stream.deltaY + gRandom.getFloat(-0.25f,0.25f))
+,	mVelocityX(stream.deltaX*1.5f + gRandom.getFloat(-0.5f,0.5f))
+,	mVelocityY(stream.deltaY*1.5f + gRandom.getFloat(-0.5f,0.5f))
 {
 	const CGameMap& gmap = CGameInfo::getInstance().getGameDesc().getMap();
 
@@ -52,7 +52,7 @@ void CStreamEntity::update()
 	int cellY = round( -mWorldMat.getOrigin().z );
 	const CGameMap::SCell& cell = CGameInfo::getInstance().getGameDesc().getMap().getCell( cellX, cellY );
 	if( CGameMap::isBlood( cell.type ) ) {
-		mColor.w = cell.nearBone ? 0.1f : 0.2f;
+		mColor.w = 0.2f;
 	} else {
 		mColor.w = 0.0f;
 	}

@@ -13,10 +13,10 @@ float4		vColor;
 SPosCol vsMainFF( SPosN i ) {
 	SPosCol o;
 	o.pos = mul( i.pos, mWVP );
-	float3 vn = mul( i.normal, (float3x3)mWorldView );
+	float3 vn = mul( i.normal*2-1, (float3x3)mWorldView );
 	float rim = 1 - abs(vn.z);
 	o.color.xyz = vColor.xyz;
-	o.color.a = rim*0.75*vColor.a;
+	o.color.a = rim*vColor.a;
 
 	o.color.a *= saturate( gFogWV( i.pos, mWorldView ) );
 	return o;
@@ -42,6 +42,16 @@ technique tecFFP
 
 		ColorOp[1] = Disable;
 		AlphaOp[1] = Disable;
+
+		// only render where bit 1 is set (inside level)
+		StencilEnable = True;
+		StencilFunc = Equal;
+		StencilRef = 1;
+		StencilMask = 1;
+		StencilWriteMask = 0;
+		StencilFail = Keep;
+		StencilPass = Keep;
+		StencilZFail = Keep;
 	}
 	RESTORE_PASS
 }

@@ -1159,7 +1159,7 @@ void CDemo::perform()
 		// render progress
 		assert( initStepName );
 		gUILabelProgress->setText( initStepName );
-		dx.clearTargets( true, true, false, 0xFF000000, 1.0f, 0L );
+		dx.clearTargets( true, true, true, 0xFF000000, 1.0f, 0L );
 		dx.sceneBegin();
 		G_RENDERCTX->applyGlobalEffect();
 		gUIDlg->onRender( dt );
@@ -1424,7 +1424,7 @@ void CDemo::perform()
 	gFogParam.set( fognear, fogfar, 1.0f/(fogfar-fognear), 0 );
 
 
-	dx.clearTargets( true, true, false, insideView ? 0xFF400000 : 0xFF000000, 1.0f, 0L );
+	dx.clearTargets( true, true, true, insideView ? 0xFF400000 : 0xFF000000, 1.0f, 0L );
 	dx.sceneBegin();
 	G_RENDERCTX->applyGlobalEffect();
 	gi.getLevelMesh().render( RM_NORMAL, insideView ? (CLevelMesh::FULL) : (CLevelMesh::NOTOP) );

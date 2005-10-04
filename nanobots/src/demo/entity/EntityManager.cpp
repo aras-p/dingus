@@ -38,7 +38,7 @@ CEntityManager::CEntityManager()
 	}
 
 	// stream entities
-	const float STREAM_ENT_CELL_STRIDE = 2.0f;
+	const float STREAM_ENT_CELL_STRIDE = 3.0f;
 
 	n = gmap.getStreamCount();
 	mStreamEntities.reserve( 128 );
