@@ -37,7 +37,7 @@ public:
 	CGameState();
 	~CGameState();
 
-	void updateState();
+	void updateState( int winnerPlayer );
 
 	int getEntityCount() const { return mEntities.size(); }
 	TEntityMap::const_iterator entitiesBegin() const { return mEntities.begin(); }
@@ -46,18 +46,22 @@ public:
 	int getTurn() const { return mTurn; }
 	const time_value& getTurnReceivedTime() const { return mTurnReceivedTime; }
 
-	//bool	isSinglePlayer() const { return mPlayerCount==2; }
-	//bool	isComputerPlayer( int index ) const { return index == mPlayerCount-1; }
 	const SPlayer& getPlayer( int i ) const { return mPlayers[i]; }
 
 	const SServerState& getServerState() const { return mServerState; }
 	void	updateServerState( bool forceNow, bool sendStart );
+
+	bool	isGameEnded() const { return mGameEnded; }
+	int		getWinnerPlayer() const { return mWinner; }
 
 private:
 	SPlayer		mPlayers[G_MAX_PLAYERS]; // incl. AI
 	TEntityMap	mEntities;
 	int			mTurn;				///< Current turn
 	time_value	mTurnReceivedTime;	///< When the current turn was received
+
+	bool		mGameEnded;
+	int			mWinner;
 
 	SServerState	mServerState;
 	std::string		mServerStateErrMsg;

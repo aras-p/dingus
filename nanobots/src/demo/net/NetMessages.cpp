@@ -142,8 +142,10 @@ void net::updateGame( int keyCode, int locX, int locY, CGameState& state )
 	// receive
 	BYTE msgType = bu::receiveByte();
 	if( msgType == NMSG_GAME_DATA ) {
-		state.updateState();
+		state.updateState( -1 );
 	} else if( msgType == NMSG_GAME_ENDED ) {
-		// TBD: game ended!
+		// byte: winner player
+		int winner = bu::receiveByte();
+		state.updateState( winner );
 	}
 }

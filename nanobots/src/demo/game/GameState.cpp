@@ -9,6 +9,8 @@
 CGameState::CGameState()
 :	mLastStateQueryTime(-1)
 ,	mTurn(0)
+,	mGameEnded(false)
+,	mWinner(-1)
 {
 }
 
@@ -16,10 +18,11 @@ CGameState::~CGameState()
 {
 }
 
-void CGameState::updateState()
+void CGameState::updateState( int winnerPlayer )
 {
 	/*
 	Format of game state data:
+
 	Int64	TimeTicks
 	Int16	Turn
 	byte	NumPlayers (Pierre Team inside so 1,2 or 3)
@@ -55,6 +58,11 @@ void CGameState::updateState()
 		byte	ToY
 		byte	ToZ
 	*/
+
+	if( winnerPlayer != -1 ) {
+		mGameEnded = true;
+		mWinner = winnerPlayer;
+	}
 
 	int i;
 	const BYTE* data;
