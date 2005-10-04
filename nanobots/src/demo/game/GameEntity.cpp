@@ -61,22 +61,25 @@ void CGameEntity::updateState( int turn, SState& state )
 	if( mLastUpdateTurn == mBornTurn-1 ) {
 		mMaxHealth = state.health;
 
+		adjustPosition( turn, state );
+
 		assert( mStates.empty() );
 		for( int i = 0; i < HISTORY_SIZE; ++i )
 			mStates.push_front( state );
+	} else {
+
+		if( mStates.full() )
+			mStates.pop_back();
+		mStates.push_front( state );
+
+		// smooth out the positions and compute final 3D position
+		// now that we have the most recent position, adjust previous ones
+		adjustPosition( turn, mStates[0] );
+		mStates[1].pos = (mStates[0].pos + mStates[1].pos + mStates[2].pos) / 3.0f;
+		adjustPosition( turn-1, mStates[1] );
+		mStates[2].pos = (mStates[1].pos + mStates[2].pos + mStates[3].pos) / 3.0f;
+		adjustPosition( turn-2, mStates[2] );
 	}
-
-	if( mStates.full() )
-		mStates.pop_back();
-	mStates.push_front( state );
-
-	// smooth out the positions and compute final 3D position
-	// now that we have the most recent position, adjust previous ones
-	adjustPosition( turn, mStates[0] );
-	mStates[1].pos = (mStates[0].pos + mStates[1].pos + mStates[2].pos) / 3.0f;
-	adjustPosition( turn-1, mStates[1] );
-	mStates[2].pos = (mStates[1].pos + mStates[2].pos + mStates[3].pos) / 3.0f;
-	adjustPosition( turn-2, mStates[2] );
 
 	mLastUpdateTurn = turn;
 }

@@ -1,9 +1,0 @@
-name = 'PNeedle'
-groups = {
-{
-  fx = 'entity', pri = 0,
-  params = {
-	  { 'tex', 'tBase', 'NanoNeedle' },
-  },
-},
-}

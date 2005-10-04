@@ -152,7 +152,7 @@ void CActorEntity::update( float timeAlpha )
 		SMatrix4x4& m = mWorldMat;
 		SVector3 pos = samplePos( timeAlpha );
 		SVector3 dir = samplePos( timeAlpha + 0.1f ) - pos;
-		if( dir.lengthSq() < 1.0e-6f )
+		if( dir.lengthSq() < 1.0e-3f )
 			dir = m.getAxisZ();
 		else
 			dir.normalize();

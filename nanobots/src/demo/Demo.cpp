@@ -1072,7 +1072,7 @@ static void gUpdateSelEntityStats()
 			gUIEStHealth->setText( buf );
 			// AZN
 			// TBD: include others as needed (container, neuroctrl)
-			if( ge.getType() == ENTITY_COLLECTOR || ge.getType() == ENTITY_NEEDLE ) {
+			if( ge.getType() == ENTITY_COLLECTOR || ge.getType() == ENTITY_NEEDLE || ge.getType() == ENTITY_CONTAINER ) {
 				sprintf( buf, "%i", st.stock );
 				gUIEStAZN->setText( buf );
 			} else {
