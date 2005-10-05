@@ -1,0 +1,4 @@
+3dsMax tools changelog
+
+051005: mesh exporter
+	Ability to turn debug output on/off via dialog

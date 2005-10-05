@@ -24,6 +24,7 @@
 #define IDC_RAD_COL_ILLUM_COL           1029
 #define IDC_CHK_BINORMALS               1029
 #define IDC_CHK_NORMALSCOLOR            1030
+#define IDC_CHK_DEBUG                   1031
 #define IDC_CHK_SKIN                    1033
 #define IDC_EDIT_UNITMULT               1034
 #define IDC_CHK_STRIP_BIP               1035

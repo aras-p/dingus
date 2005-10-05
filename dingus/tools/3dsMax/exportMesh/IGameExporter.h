@@ -21,13 +21,12 @@
 
 struct SExportOptions {
 public:
-	enum { OPTIONS_VERSION = 20050127 };
-public:
 	SExportOptions()
 	:	mUnitMultiplier(0.001f), //mUseLocalSpace(0),
 		mDoPositions(1), mDoNormals(1), mDoTangents(0), mDoBinormals(0),
 		mTangentsUseUV(0), mColorEncodeNTB(0),
 		mDoSkin(1), mCreate1BoneSkin(1), mStripBipFromBones(1), mSkinBones(4)
+	,	mDebugOutput(0)
 	{
 		mDoUVs[0] = 1;
 		for( int i = 1; i < mproc::UV_COUNT; ++i )
@@ -50,6 +49,8 @@ public:
 	int		mCreate1BoneSkin; // Create 1-bone skin if there's no skinning info?
 	int		mStripBipFromBones; // strip "Bip??" from bone names?
 	int		mSkinBones; // how many bones/vert
+
+	int		mDebugOutput; // output debug file
 };
 
 
@@ -149,6 +150,8 @@ private:
 	BOOL readConfig();
 	void writeConfig();
 	TSTR getCfgFilename();
+
+	void	debugMsg( const char* msg, ... ) const;
 
 public:
 	static HWND hParams;

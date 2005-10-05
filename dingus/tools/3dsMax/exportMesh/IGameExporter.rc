@@ -32,8 +32,8 @@ CAPTION "IM mesh exporter"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "General Options",IDC_STATIC,5,0,165,25
-    LTEXT           "Coord unit multiplier",IDC_STATIC,10,10,62,8
-    EDITTEXT        IDC_EDIT_UNITMULT,80,10,50,12,ES_AUTOHSCROLL
+    LTEXT           "Coord multiplier",IDC_STATIC,10,10,48,8
+    EDITTEXT        IDC_EDIT_UNITMULT,60,10,50,12,ES_AUTOHSCROLL
     GROUPBOX        "Mesh components",IDC_STATIC,5,30,165,155
     CONTROL         "Positions",IDC_CHK_POSITIONS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,40,44,10
@@ -70,6 +70,8 @@ BEGIN
     COMBOBOX        IDC_CMB_SKINBONES,110,145,30,55,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Bones/vert",IDC_STATIC,70,145,36,8
+    CONTROL         "Debug",IDC_CHK_DEBUG,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,130,10,37,10
 END
 
 

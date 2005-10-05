@@ -7,17 +7,20 @@ static IGameExporterClassDesc IGameExporterDesc;
 ClassDesc2* GetIGameExporterDesc() { return &IGameExporterDesc; }
 
 
+const int CFG_OPTIONS_VERSION = 20051005;
+
 
 // --------------------------------------------------------------------------
 //  Debugging
 // --------------------------------------------------------------------------
 
 
-#define DEBUG_EXPORTER
-
-#ifdef DEBUG_EXPORTER
 FILE* gDebugFile = 0;
-static void DEBUG_MSG( const char* msg, ... ) {
+void IGameExporter::debugMsg( const char* msg, ... ) const
+{
+	if( !mOptions.mDebugOutput )
+		return;
+
 	if( gDebugFile ) {
 		va_list args;
 		va_start( args, msg );
@@ -27,10 +30,6 @@ static void DEBUG_MSG( const char* msg, ... ) {
 		fflush( gDebugFile );
 	}
 }
-#else
-static void DEBUG_MSG( const char* msg, ... ) {
-}
-#endif
 
 
 
@@ -62,6 +61,7 @@ static void gOptionsToDialog( HWND wnd, const SExportOptions& o )
 	CHECK_FROM( IDC_CHK_SKIN, o.mDoSkin );
 	CHECK_FROM( IDC_CHK_1BONESKIN, o.mCreate1BoneSkin );
 	CHECK_FROM( IDC_CHK_STRIP_BIP, o.mStripBipFromBones );
+	CHECK_FROM( IDC_CHK_DEBUG, o.mDebugOutput );
 
 	HWND comboUV = GetDlgItem( wnd, IDC_CMB_TANGENTUV );
 	ComboBox_ResetContent( comboUV );
@@ -95,6 +95,7 @@ static void gOptionsFromDialog( HWND wnd, SExportOptions& o )
 	CHECK_TO( IDC_CHK_SKIN, o.mDoSkin );
 	CHECK_TO( IDC_CHK_1BONESKIN, o.mCreate1BoneSkin );
 	CHECK_TO( IDC_CHK_STRIP_BIP, o.mStripBipFromBones );
+	CHECK_TO( IDC_CHK_DEBUG, o.mDebugOutput );
 
 	HWND comboUV = GetDlgItem( wnd, IDC_CMB_TANGENTUV );
 	o.mTangentsUseUV = ComboBox_GetCurSel( comboUV );
@@ -211,7 +212,7 @@ const char* IGameExporter::gatherNode( IGameNode* node )
 
 const char* IGameExporter::gatherMesh( SNodeInfo& info )
 {
-	DEBUG_MSG( "gather mesh %s...", info.node->GetName() );
+	debugMsg( "gather mesh %s...", info.node->GetName() );
 
 	info.mesh->SetUseWeightedNormals();
 	bool okInited = info.mesh->InitializeData();
@@ -293,7 +294,7 @@ void IGameExporter::gatherSkin( SNodeInfo& info )
 	if( !info.mesh->IsObjectSkinned() )
 		return;
 
-	DEBUG_MSG( "node %s is skinned...", info.node->GetName() );
+	debugMsg( "node %s is skinned...", info.node->GetName() );
 	
 	IGameSkin* skin = info.mesh->GetIGameSkin();
 	
@@ -372,7 +373,7 @@ void IGameExporter::gatherSkin( SNodeInfo& info )
 		info.weights[i] = D3DXVECTOR3(whts.x,whts.y,whts.z);
 		info.indices[i] = idx;
 	}
-	DEBUG_MSG( "  skin: bone count %i, max bones per vert %i", info.bones->Count(), info.maxBonesPerVert );
+	debugMsg( "  skin: bone count %i, max bones per vert %i", info.bones->Count(), info.maxBonesPerVert );
 }
 
 
@@ -384,7 +385,7 @@ void IGameExporter::gatherSkin( SNodeInfo& info )
 
 const char* IGameExporter::meshCreate()
 {
-	DEBUG_MSG( "mesh create..." );
+	debugMsg( "mesh create..." );
 
 	mMeshBones.ZeroCount();
 	mMeshMats.ZeroCount();
@@ -410,7 +411,7 @@ const char* IGameExporter::meshCreate()
 
 const char* IGameExporter::meshAddNode( SNodeInfo& info, int& vertOffset, int& triOffset )
 {
-	DEBUG_MSG( "mesh add node %s...", info.node->GetName() );
+	debugMsg( "mesh add node %s...", info.node->GetName() );
 	assert( mMesh.isValid() );
 
 	//
@@ -419,7 +420,7 @@ const char* IGameExporter::meshAddNode( SNodeInfo& info, int& vertOffset, int& t
 	IGameMesh& mesh = *info.mesh;
 	int nverts = mesh.GetNumberOfVerts();
 	int nfaces = mesh.GetNumberOfFaces();
-	DEBUG_MSG( "    verts=%i faces=%i", nverts, nfaces );
+	debugMsg( "    verts=%i faces=%i", nverts, nfaces );
 
 	int f;
 
@@ -432,19 +433,19 @@ const char* IGameExporter::meshAddNode( SNodeInfo& info, int& vertOffset, int& t
 		if( hasuvs[f] )
 			mMeshHasUVs[f] = true;
 	}
-	DEBUG_MSG( "    hasuvs: 0=%i 1=%i 2=%i 3=%i", hasuvs[0], hasuvs[1], hasuvs[2], hasuvs[3] );
+	debugMsg( "    hasuvs: 0=%i 1=%i 2=%i 3=%i", hasuvs[0], hasuvs[1], hasuvs[2], hasuvs[3] );
 	for( f = 0; f < uvnumbers.Count(); ++f )
-		DEBUG_MSG( "    uvch%i = %i", f, uvnumbers[f] );
+		debugMsg( "    uvch%i = %i", f, uvnumbers[f] );
 
 	bool skinned = info.isSkinned();
-	DEBUG_MSG( "    skinned: %i", skinned );
+	debugMsg( "    skinned: %i", skinned );
 
 	//
 	// just create 3 vertices for each face. will optimize later
 
 	HRESULT hr;
 
-	DEBUG_MSG( "  fill mesh portion..." );
+	debugMsg( "  fill mesh portion..." );
 
 	mproc::SVertex* v = 0;
 	hr = mMesh.getMesh().LockVertexBuffer( D3DLOCK_NOOVERWRITE, (void**)&v );
@@ -543,7 +544,7 @@ const char* IGameExporter::meshAddNode( SNodeInfo& info, int& vertOffset, int& t
 
 const char* IGameExporter::meshProcess()
 {
-	DEBUG_MSG( "mesh process..." );
+	debugMsg( "mesh process..." );
 	assert( mMesh.isValid() );
 
 	HRESULT hr;
@@ -552,7 +553,7 @@ const char* IGameExporter::meshProcess()
 	// tangent space
 
 	if( mOptions.mDoTangents || mOptions.mDoBinormals ) {
-		DEBUG_MSG( "  tangent space..." );
+		debugMsg( "  tangent space..." );
 
 		int i, n;
 		MeshMender mender;
@@ -592,7 +593,7 @@ const char* IGameExporter::meshProcess()
 			MeshMender::DONT_CALCULATE_NORMALS,
 			MeshMender::DONT_RESPECT_SPLITS,
 			MeshMender::DONT_FIX_CYLINDRICAL );
-		DEBUG_MSG( "    mended verts %i", mendVerts.size() );
+		debugMsg( "    mended verts %i", mendVerts.size() );
 
 		//
 		// replace mesh
@@ -636,39 +637,39 @@ const char* IGameExporter::meshProcess()
 
 	// generate mesh adjacency
 	{
-		DEBUG_MSG( "  generate adjacency..." );
+		debugMsg( "  generate adjacency..." );
 		mMesh.calcAdjacency();
 	}
 
 	// clean mesh
 	{
-		DEBUG_MSG( "  clean mesh..." );
+		debugMsg( "  clean mesh..." );
 		mproc::CMesh cleanedMesh;
 		hr = mproc::cleanMesh( mMesh, cleanedMesh );
 		if( FAILED(hr) )
 			return "Failed to clean mesh";
 		mMesh = cleanedMesh;
-		DEBUG_MSG( "    cleaned: verts=%i faces=%i", mMesh.getMesh().GetNumVertices(), mMesh.getMesh().GetNumFaces() );
+		debugMsg( "    cleaned: verts=%i faces=%i", mMesh.getMesh().GetNumVertices(), mMesh.getMesh().GetNumFaces() );
 	}
 
 	// weld vertices
 	{
-		DEBUG_MSG( "  weld vertices..." );
+		debugMsg( "  weld vertices..." );
 		hr = mMesh.weldVertices();
 		if( FAILED(hr) )
 			return "Failed to weld mesh";
-		DEBUG_MSG( "    welded: verts=%i faces=%i", mMesh.getMesh().GetNumVertices(), mMesh.getMesh().GetNumFaces() );
+		debugMsg( "    welded: verts=%i faces=%i", mMesh.getMesh().GetNumVertices(), mMesh.getMesh().GetNumFaces() );
 	}
 
 	// optimize the mesh
 	{
-		DEBUG_MSG( "  optimize mesh..." );
+		debugMsg( "  optimize mesh..." );
 		mproc::CMesh optiMesh;
 		hr = mproc::optimizeMesh( mMesh, optiMesh );
 		if( FAILED(hr) )
 			return "Failed to optimize mesh";
 		mMesh = optiMesh;
-		DEBUG_MSG( "    optimized: verts=%i faces=%i", mMesh.getMesh().GetNumVertices(), mMesh.getMesh().GetNumFaces() );
+		debugMsg( "    optimized: verts=%i faces=%i", mMesh.getMesh().GetNumVertices(), mMesh.getMesh().GetNumFaces() );
 	}
 
 	return 0;
@@ -677,7 +678,7 @@ const char* IGameExporter::meshProcess()
 
 const char* IGameExporter::meshWrite()
 {
-	DEBUG_MSG( "mesh write..." );
+	debugMsg( "mesh write..." );
 	assert( mMesh.isValid() );
 
 	//
@@ -686,11 +687,11 @@ const char* IGameExporter::meshWrite()
 	//
 	// setup vertex format
 
-	DEBUG_MSG( "  figure vertex format..." );
+	debugMsg( "  figure vertex format..." );
 
 	bool skinned = (mTotalMaxBonesPerVert > 0);
-	DEBUG_MSG( "    max bones per vert: %i", mTotalMaxBonesPerVert );
-	DEBUG_MSG( "    exporting bones per vert: %i", mOptions.mSkinBones );
+	debugMsg( "    max bones per vert: %i", mTotalMaxBonesPerVert );
+	debugMsg( "    exporting bones per vert: %i", (mOptions.mDoSkin && skinned) ? mOptions.mSkinBones : 0 );
 
 	DWORD formatBits = 0;
 	if( mOptions.mDoPositions )
@@ -725,7 +726,7 @@ const char* IGameExporter::meshWrite()
 	//
 	// write data
 	
-	DEBUG_MSG( "  write mesh data..." );
+	debugMsg( "  write mesh data..." );
 
 	const char* writeErr = writeMeshData( mMesh.getMesh(), formatBits );
 	const char* writeSkinErr = 0;
@@ -996,13 +997,14 @@ int IGameExporter::DoExport( const TCHAR *name, ExpInterface *ei, Interface *i, 
 	if( !mFile )
 		return IMPEXP_FAIL;
 
-#ifdef DEBUG_EXPORTER
-	if( gDebugFile )
-		fclose( gDebugFile );
-	char buf2[400];
-	sprintf( buf2, "%s.txt", buf );
-	gDebugFile = fopen( buf2, "wt" );
-#endif
+	// debug output
+	if( mOptions.mDebugOutput ) {
+		if( gDebugFile )
+			fclose( gDebugFile );
+		char buf2[400];
+		sprintf( buf2, "%s.txt", buf );
+		gDebugFile = fopen( buf2, "wt" );
+	}
 	
 	// Set a global prompt display switch
 	mShowPrompts = suppressPrompts ? false : true;
@@ -1076,7 +1078,7 @@ int IGameExporter::DoExport( const TCHAR *name, ExpInterface *ei, Interface *i, 
 	}
 	// if all not skinned: optionally convert into 1-bone skinned.
 	if( ok && mTotalMaxBonesPerVert <= 0 && mOptions.mCreate1BoneSkin ) {
-		DEBUG_MSG( "creating 1-bone skin..." );
+		debugMsg( "creating 1-bone skin..." );
 		for( int j = 0; j < mNodes.Count(); ++j ) {
 			mNodes[j]->createSelfSkin( j );
 		}
@@ -1105,11 +1107,11 @@ int IGameExporter::DoExport( const TCHAR *name, ExpInterface *ei, Interface *i, 
 	fclose( mFile );
 	mFile = NULL;
 
-#ifdef DEBUG_EXPORTER
-	fflush( gDebugFile );
-	fclose( gDebugFile );
+	if( gDebugFile ) {
+		fflush( gDebugFile );
+		fclose( gDebugFile );
+	}
 	gDebugFile = NULL;
-#endif
 
 	mGameScene = NULL;
 
@@ -1148,7 +1150,7 @@ BOOL IGameExporter::readConfig()
 
 	int cfgVer;
 	fread( &cfgVer, 1, 4, fcfg );
-	if( cfgVer != SExportOptions::OPTIONS_VERSION )
+	if( cfgVer != CFG_OPTIONS_VERSION )
 		return FALSE;
 
 	fread( &mOptions, 1, sizeof(mOptions), fcfg );
@@ -1164,7 +1166,7 @@ void IGameExporter::writeConfig()
 	if( !fcfg )
 		return;
 
-	const int cfgVer = SExportOptions::OPTIONS_VERSION;
+	const int cfgVer = CFG_OPTIONS_VERSION;
 	fwrite( &cfgVer, 1, 4, fcfg );
 
 	fwrite( &mOptions, 1, sizeof(mOptions), fcfg );

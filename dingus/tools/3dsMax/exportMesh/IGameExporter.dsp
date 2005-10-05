@@ -194,6 +194,10 @@ SOURCE=.\VertexFormat.h
 # End Group
 # Begin Source File
 
+SOURCE=..\changes.txt
+# End Source File
+# Begin Source File
+
 SOURCE=.\IGameExporter.def
 # End Source File
 # Begin Source File
