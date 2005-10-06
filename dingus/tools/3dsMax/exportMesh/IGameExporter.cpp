@@ -21,6 +21,10 @@ void IGameExporter::debugMsg( const char* msg, ... ) const
 	if( !mOptions.mDebugOutput )
 		return;
 
+	if( !gDebugFile ) {
+		gDebugFile = fopen( mDebugFileName.c_str(), "wt" );
+	}
+
 	if( gDebugFile ) {
 		va_list args;
 		va_start( args, msg );
@@ -1001,9 +1005,8 @@ int IGameExporter::DoExport( const TCHAR *name, ExpInterface *ei, Interface *i, 
 	if( mOptions.mDebugOutput ) {
 		if( gDebugFile )
 			fclose( gDebugFile );
-		char buf2[400];
-		sprintf( buf2, "%s.txt", buf );
-		gDebugFile = fopen( buf2, "wt" );
+		gDebugFile = NULL;
+		mDebugFileName = std::string(buf) + ".txt";
 	}
 	
 	// Set a global prompt display switch

@@ -11,6 +11,7 @@
 #include <IGameModifier.h>
 #include <IConversionManager.h>
 #include <IGameError.h>
+#include <string>
 
 #include <d3d9.h>
 #include <d3d9types.h>
@@ -182,6 +183,8 @@ public:
 	
 	bool mShowPrompts;
 	bool mExportSelected;
+
+	std::string mDebugFileName;
 };
 
 
