@@ -277,6 +277,14 @@ SOURCE=.\src\demo\map\TriangleMesh.cpp
 
 SOURCE=.\src\demo\map\TriangleMesh.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\map\Turbulence.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\map\Turbulence.h
+# End Source File
 # End Group
 # Begin Group "net"
 

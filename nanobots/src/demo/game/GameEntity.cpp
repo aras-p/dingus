@@ -102,7 +102,7 @@ void CGameEntity::adjustPosition( int turn, SState& state, bool height )
 	const CGameMap::SCell& cell = gmap.getCell( round(state.pos.x-0.5f), round(-state.pos.z-0.5f) );
 	if( height ) {
 		float hgt = cell.height;
-		if( turn != mBornTurn || turn == gstate.getFirstTurn() )
+		if( turn != mBornTurn || turn == gstate.getFirstTurn() || mOnSine )
 			hgt *= mBaseAltitude;
 		
 		state.pos.y = hgt;
