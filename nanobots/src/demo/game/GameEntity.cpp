@@ -61,7 +61,7 @@ void CGameEntity::updateState( int turn, SState& state )
 	if( mLastUpdateTurn == mBornTurn-1 ) {
 		mMaxHealth = state.health;
 
-		adjustPosition( turn, state );
+		adjustPosition( turn, state, true );
 
 		assert( mStates.empty() );
 		for( int i = 0; i < HISTORY_SIZE; ++i )
@@ -74,11 +74,11 @@ void CGameEntity::updateState( int turn, SState& state )
 
 		// smooth out the positions and compute final 3D position
 		// now that we have the most recent position, adjust previous ones
-		adjustPosition( turn, mStates[0] );
+		adjustPosition( turn, mStates[0], true );
 		mStates[1].pos = (mStates[0].pos + mStates[1].pos + mStates[2].pos) / 3.0f;
-		adjustPosition( turn-1, mStates[1] );
+		adjustPosition( turn, mStates[1], true );
 		mStates[2].pos = (mStates[1].pos + mStates[2].pos + mStates[3].pos) / 3.0f;
-		adjustPosition( turn-2, mStates[2] );
+		adjustPosition( turn, mStates[2], false );
 	}
 
 	mLastUpdateTurn = turn;
@@ -91,18 +91,20 @@ void CGameEntity::markDead()
 		mStates[i].state = ENTSTATE_DEAD;
 }
 
-void CGameEntity::adjustPosition( int turn, SState& state )
+void CGameEntity::adjustPosition( int turn, SState& state, bool height )
 {
 	const float RADIUS = 0.7f;
 	const CGameMap& gmap = CGameInfo::getInstance().getGameDesc().getMap();
 	const CLevelMesh& levelMesh = CGameInfo::getInstance().getLevelMesh();
 
 	const CGameMap::SCell& cell = gmap.getCell( round(state.pos.x-0.5f), round(-state.pos.z-0.5f) );
-	float hgt = cell.height;
-	if( (turn != mBornTurn) || mOnGround || mOnSine )
-		hgt *= mBaseAltitude;
-	
-	state.pos.y = hgt;
+	if( height ) {
+		float hgt = cell.height;
+		if( turn != mBornTurn )
+			hgt *= mBaseAltitude;
+		
+		state.pos.y = hgt;
+	}
 	if( !mOnGround ) {
 		float phi = turn * 0.05f;
 		state.pos.x += cosf(phi) * 0.03f;

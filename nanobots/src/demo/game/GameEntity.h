@@ -42,7 +42,7 @@ public:
 	void	markDead();
 
 protected:
-	void	adjustPosition( int turn, SState& s );
+	void	adjustPosition( int turn, SState& s, bool height );
 
 private:
 	/// Last turn number that this entity was received
