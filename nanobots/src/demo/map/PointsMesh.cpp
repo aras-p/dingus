@@ -19,11 +19,15 @@ public:
 	{
 		const int PARTS_PER_POINT = 200;
 		int n = gameMap.getPointCount();
-		mParticleCount = n * PARTS_PER_POINT;
-		mParticles = new SVector3[mParticleCount];
-		mParticleColor = new D3DCOLOR[mParticleCount];
+		int maxPartCount = n * PARTS_PER_POINT;
+		mParticles = new SVector3[maxPartCount];
+		mParticleColor = new D3DCOLOR[maxPartCount];
+		mParticleCount = 0;
 		for( int i = 0; i < n; ++i ) {
 			const CGameMap::SPoint& p = gameMap.getPoint(i);
+			if( p.type != PT_AZN && p.type != PT_HOSHIMI )
+				continue;
+			mParticleCount += PARTS_PER_POINT;
 			float y = -gameMap.getCell(p.x,p.y).height;
 			D3DCOLOR color = (p.type == PT_AZN) ? gColors.ptAZN.tone.c : gColors.ptHoshimi.tone.c;
 			for( int j = 0; j < PARTS_PER_POINT; ++j ) {
