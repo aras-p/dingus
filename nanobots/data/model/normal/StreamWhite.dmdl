@@ -1,0 +1,8 @@
+name = 'StreamRed'
+groups = {
+{
+  fx = 'StreamEntity', pri = 1,
+  params = {
+  },
+},
+}

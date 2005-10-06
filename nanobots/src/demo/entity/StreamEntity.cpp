@@ -7,7 +7,7 @@
 
 
 CStreamEntity::CStreamEntity( const CGameMap::SStream& stream, float x, float y )
-:	CMeshEntity( "StreamRed", 1 )
+:	CMeshEntity( gRandom.getBool() ? "StreamRed" : "StreamWhite", 1 )
 ,	mStream( &stream )
 ,	mVelocityX(stream.deltaX*1.5f + gRandom.getFloat(-0.5f,0.5f))
 ,	mVelocityY(stream.deltaY*1.5f + gRandom.getFloat(-0.5f,0.5f))
