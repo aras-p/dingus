@@ -45,6 +45,7 @@ public:
 
 	int getTurn() const { return mTurn; }
 	const time_value& getTurnReceivedTime() const { return mTurnReceivedTime; }
+	int getFirstTurn() const { return mFirstTurn; }
 
 	const SPlayer& getPlayer( int i ) const { return mPlayers[i]; }
 
@@ -59,6 +60,7 @@ private:
 	TEntityMap	mEntities;
 	int			mTurn;				///< Current turn
 	time_value	mTurnReceivedTime;	///< When the current turn was received
+	int			mFirstTurn;			///< Turn that was ever first received by the viewer
 
 	bool		mGameEnded;
 	int			mWinner;

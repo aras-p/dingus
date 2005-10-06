@@ -34,8 +34,7 @@ CPointEntity::CPointEntity( const CGameMap::SPoint& point )
 		break;
 	case PT_INJECTION:
 		mAlphaBase = 0.20f;	mAlphaAmpl = 0.20f;
-		mWorldMat.getAxisY().y = gmap.getCell(point.x,point.y).height;
-		mWorldMat.getOrigin().y = 0.0f;
+		mWorldMat.getOrigin().y = gmap.getCell(point.x,point.y).height-2.0f;
 		mColor = &(D3DXCOLOR(point.colorMain).r);
 		break;
 	case PT_OBJECTIVE:

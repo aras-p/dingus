@@ -131,7 +131,8 @@ void CALLBACK CGameSetupDialog::renderCallback( CUIDialog& dlg )
 	};
 
 	yline += 24;
-	sprintf( buf, "%s, game state: %s",
+	sprintf( buf, "Map: %s. %s, game state: %s",
+		desc.getMap().getName().c_str(),
 		nplayers==1 ? "Single player game" : "Two player game",
 		GAMESTATES[serverState.state]
 	);

@@ -480,11 +480,7 @@ static void	gSetupGUI()
 		CUIStatic* label;
 
 		// rollout
-		gUIDlg->addRollout( GID_ROL_STATS, "Stats (S)", 0, sy, 130, UIHROL, 20 + nplayers*2*UIHLAB, true, 'S', false, &gUIRollStats );
-		// map name
-		gUIDlg->addStatic( 0,
-			("Map: "+desc.getMap().getName()).c_str(), 5, sy += UIHLAB, 120, UIHLAB, false, &label );
-		UISTATS_LABEL;
+		gUIDlg->addRollout( GID_ROL_STATS, "Stats (S)", 0, sy, 130, UIHROL, 6 + nplayers*2*UIHLAB, true, 'S', false, &gUIRollStats );
 
 		// player stats
 		const char* PLAYER_TEX_NAMES[G_MAX_PLAYERS] = {
@@ -1347,7 +1343,7 @@ void CDemo::perform()
 		mm = mr * mm;
 		mm.getOrigin() -= mm.getAxisZ() * zoom;
 
-		camnear = (zoom - 10.0f) * 0.65f;
+		camnear = (zoom - 15.0f) * 0.25f;
 		camfar = (zoom + 10.0f) * 2.5f;
 		camfov = D3DX_PI/3;
 		fognear = (zoom + 10.0f) * 2.0f;

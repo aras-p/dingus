@@ -9,6 +9,7 @@
 CGameState::CGameState()
 :	mLastStateQueryTime(-1)
 ,	mTurn(0)
+,	mFirstTurn(-1)
 ,	mGameEnded(false)
 ,	mWinner(-1)
 {
@@ -73,6 +74,8 @@ void CGameState::updateState( int winnerPlayer )
 	int turn = bu::receiveShort();
 	if( turn != mTurn ) {
 		mTurnReceivedTime = CSystemTimer::getInstance().getTime();
+		if( mFirstTurn < 0 )
+			mFirstTurn = turn;
 	}
 
 	// read players, clear stats

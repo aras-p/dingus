@@ -2,6 +2,7 @@
 #include "GameEntity.h"
 #include "../GameInfo.h"
 #include "GameDesc.h"
+#include "GameState.h"
 #include "../map/LevelMesh.h"
 
 
@@ -94,13 +95,14 @@ void CGameEntity::markDead()
 void CGameEntity::adjustPosition( int turn, SState& state, bool height )
 {
 	const float RADIUS = 0.7f;
+	const CGameState& gstate = CGameInfo::getInstance().getState();
 	const CGameMap& gmap = CGameInfo::getInstance().getGameDesc().getMap();
 	const CLevelMesh& levelMesh = CGameInfo::getInstance().getLevelMesh();
 
 	const CGameMap::SCell& cell = gmap.getCell( round(state.pos.x-0.5f), round(-state.pos.z-0.5f) );
 	if( height ) {
 		float hgt = cell.height;
-		if( turn != mBornTurn )
+		if( turn != mBornTurn || turn == gstate.getFirstTurn() )
 			hgt *= mBaseAltitude;
 		
 		state.pos.y = hgt;

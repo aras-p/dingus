@@ -22,12 +22,12 @@ SPosColTex vsMainFF( SPosNTex i ) {
 	SPosColTex o;
 	o.pos = mul( i.pos, mWVP );
 	float3 wpos = mul( i.pos, mWorld );
-	float3 vn = mul( i.normal, (float3x3)mWorldView );
+	float3 vn = mul( i.normal*2-1, (float3x3)mWorldView );
 	float rim = saturate( abs(vn.z) * 1.2 - 0.2 );
-	float a = lerp( vColor.a, 0.35, i.pos.y );
+	float a = lerp( vColor.a, 0.35, i.pos.y*0.15 );
 	o.color.rgb = vColor.rgb;
 	o.color.a = a * rim;
-	o.color.a *= saturate( wpos.y );
+	o.color.a *= saturate( i.pos.y );
 	o.color.a *= saturate( gFogWV( i.pos, mWorldView ) );
 
 	o.uv.x = i.uv.x + fTime * 0.08;
