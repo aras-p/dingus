@@ -5,7 +5,6 @@ groups = {
   params = {
 	  { 'tex', 'tBase1', 'WallsA' },
 	  { 'tex', 'tBase2', 'WallsB' },
-	  { 'tex', 'tNormal', 'NormalWave' },
   },
 },
 }
