@@ -38,6 +38,7 @@ void CGameState::updateState( int winnerPlayer )
 		UInt16	ID (unique ID for each bot)
 		byte	PlayerID
 		byte	TypeID*
+		string	FriendlyName (8 chars max)
 		byte	X
 		byte	Y
 		byte	XInfo
@@ -119,6 +120,10 @@ void CGameState::updateState( int winnerPlayer )
 		assert( pid >= 0 && pid < G_MAX_PLAYERS );
 		int type = bu::receiveByte();
 		assert( type >= ENTITY_NEEDLE && type < ENTITYCOUNT );
+		std::string fname = bu::receiveStr();
+		if( fname.length() > CGameEntity::MAX_NAME_LEN )
+			fname.resize( CGameEntity::MAX_NAME_LEN );
+
 		CGameEntity::SState state;
 		state.posx = bu::receiveByte();
 		state.posy = bu::receiveByte();
@@ -128,6 +133,9 @@ void CGameState::updateState( int winnerPlayer )
 		state.state = bu::receiveByte();
 		assert( state.state >= ENTSTATE_IDLE && state.state < ENTSTATE_DEAD );
 		state.health = bu::receiveByte();
+
+		memcpy( state.name, fname.c_str(), fname.length() );
+		state.name[fname.length()] = 0;
 
 		if( mTurn != turn ) { // if it's really a new turn, add/update entity
 			++mPlayers[pid].botCount;

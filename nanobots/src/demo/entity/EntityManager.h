@@ -28,7 +28,7 @@ public:
 	void	renderMinimap();
 	void	onMouseClick();
 
-	void	renderLabels( CUIDialog& dlg, bool thirdPerson );
+	void	renderLabels( CUIDialog& dlg );
 
 	int		getSelectedEntityID() const { return mSelectedEntityID; }
 	void	setSelectedEntityID( int i ) { mSelectedEntityID = i; }

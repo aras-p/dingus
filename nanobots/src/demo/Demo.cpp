@@ -95,8 +95,10 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 }
 
 
+
 static const char* CFG_SETTINGS = "data/config.dat";
-static const DWORD CFG_VERSION = 20050117;
+static const DWORD CFG_VERSION = 20051007;
+
 
 void CDemo::initD3DSettingsPref( SD3DSettingsPref& pref )
 {
@@ -241,6 +243,7 @@ const int	GID_CHK_HELP = 1051;
 
 const int	GID_CHK_AZN_NEED = 1110;
 const int	GID_CHK_AZN_COLL = 1111;
+const int	GID_CHK_NAMES = 1112;
 
 //const int	GID_BTN_PLAY = 1200; // TBD
 
@@ -288,6 +291,7 @@ struct SUIPlayerStats {
 };
 SUIPlayerStats	gUIPlayerStats[G_MAX_PLAYERS];
 
+CUIStatic*		gUIEStName;
 CUIStatic*		gUIEStType;
 CUIStatic*		gUIEStHealth;
 CUIStatic*		gUIEStOwner;
@@ -345,6 +349,10 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 
 			case GID_CHK_AZN_COLL:
 				gAppSettings.drawAznCollector = cbox->isChecked();
+				break;
+
+			case GID_CHK_NAMES:
+				gAppSettings.drawEntityNames = cbox->isChecked();
 				break;
 
 			case GID_ROL_MINIMAP:
@@ -440,7 +448,7 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 
 void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 {
-	CGameInfo::getInstance().getEntities().renderLabels( dlg, gAppSettings.followMode );
+	CGameInfo::getInstance().getEntities().renderLabels( dlg );
 }
 
 
@@ -540,7 +548,13 @@ static void	gSetupGUI()
 
 		gShowEntityStats = true;
 		// rollout
-		gUIDlg->addRollout( GID_ROL_ESTATS, "Entity stats (E)", 0, sy, 130, UIHROL, 3*UIHLAB+3, true, 'E', false, &gUIRollEStats );
+		gUIDlg->addRollout( GID_ROL_ESTATS, "Entity stats (E)", 0, sy, 130, UIHROL, 4*UIHLAB+3, true, 'E', false, &gUIRollEStats );
+		// name
+		gUIDlg->addStatic( 0, "Name:", 5, sy += UIHLAB, 30, UIHLAB, false, &label );
+		UIESTATS_LABEL;
+		gUIDlg->addStatic( 0, "", 37, sy, 85, UIHLAB, false, &label );
+		UIESTATS_LABEL;
+		gUIEStName = label;
 		// type
 		gUIDlg->addStatic( 0, "Type:", 5, sy += UIHLAB, 30, UIHLAB, false, &label );
 		UIESTATS_LABEL;
@@ -624,6 +638,7 @@ static void	gSetupGUI()
 		
 		gUIDlg->addCheckBox( GID_CHK_AZN_NEED, "AZN Needles", 2, 332, 90, UIHCTL, gAppSettings.drawAznNeedle, 0, false, NULL );
 		gUIDlg->addCheckBox( GID_CHK_AZN_COLL, "AZN Collectors", 2, 348, 90, UIHCTL, gAppSettings.drawAznCollector, 0, false, NULL );
+		gUIDlg->addCheckBox( GID_CHK_NAMES, "Entity names", 2, 364, 90, UIHCTL, gAppSettings.drawEntityNames, 0, false, NULL );
 
 		gUIDlg->addCheckBox( GID_CHK_OPTIONS, "Options", 560, 480-UIHCTL*2, 80, UIHCTL, gSettingsDlgWasActive );
 		gUIDlg->addCheckBox( GID_CHK_HELP, "Help", 560, 480-UIHCTL, 80, UIHCTL, gHelpDlgWasActive );
@@ -1061,6 +1076,8 @@ static void gUpdateSelEntityStats()
 		// if different turn - update variable state
 		if( oldGameTurn != state.getTurn() ) {
 			const CGameEntity::SState& st = ge.getState();
+			// name
+			gUIEStName->setText( st.name );
 			// health
 			int maxHP = ge.getMaxHealth();
 			int hp = st.health;
@@ -1420,7 +1437,7 @@ void CDemo::perform()
 	gFogParam.set( fognear, fogfar, 1.0f/(fogfar-fognear), 0 );
 
 
-	dx.clearTargets( true, true, true, insideView ? 0xFF400000 : 0xFF000000, 1.0f, 0L );
+	dx.clearTargets( true, true, true, insideView ? 0xFF400000 : 0xFF000000, 1.0f, insideView ? 1L : 0L );
 	dx.sceneBegin();
 	G_RENDERCTX->applyGlobalEffect();
 	gi.getLevelMesh().render( RM_NORMAL, insideView ? (CLevelMesh::FULL) : (CLevelMesh::NOTOP) );

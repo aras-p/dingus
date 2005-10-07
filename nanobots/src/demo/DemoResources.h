@@ -63,7 +63,8 @@ struct SAppSettings {
 		musicVolume(65), soundVolume(80),
 		megaZoom(30.0f), megaTilt(50.0f),
 		followMode(false), showMinimap(true),
-		drawAznNeedle(true), drawAznCollector(true),
+		drawAznNeedle(true), drawAznCollector(false),
+		drawEntityNames(false),
 		cacheLevels(true)
 	{ }
 
@@ -76,6 +77,7 @@ struct SAppSettings {
 	bool	showMinimap;
 	bool	drawAznNeedle;
 	bool	drawAznCollector;
+	bool	drawEntityNames;
 	bool	cacheLevels;
 };
 

@@ -9,6 +9,7 @@ public:
 	enum {
 		HISTORY_SIZE = 4,
 		LAG_BEHIND = 3,
+		MAX_NAME_LEN = 8,
 	};
 
 	/// State info
@@ -19,6 +20,7 @@ public:
 		short	state;			// state
 		short	health;			// hit points
 		SVector3	pos;		// position in 3D
+		char	name[MAX_NAME_LEN+1]; // friendly name
 	};
 
 public:

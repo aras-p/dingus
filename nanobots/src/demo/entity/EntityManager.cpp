@@ -79,12 +79,6 @@ void CEntityManager::update( const SLine3& mouseRay, float timeAlpha )
 		mLastMouseEntityID = -1;
 	}
 
-	//const CGameState& state = CGameInfo::getInstance().getState();
-	//int turn = state.getTurn();
-
-	// clear stats
-	//memset( &mStats, 0, sizeof(mStats) );
-
 	// update actor entities
 	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
 	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
@@ -126,11 +120,6 @@ void CEntityManager::renderMinimap()
 	CGameInfo& gi = CGameInfo::getInstance();
 	const CGameMap& gmap = gi.getGameDesc().getMap();
 
-	/*
-	float t = gi.getTime();
-	int turn = (int)t;
-	*/
-
 	int i, n;
 
 	CMinimapRenderer& minir = gi.getMinimapRenderer();
@@ -168,11 +157,6 @@ void CEntityManager::renderMinimap()
 void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson )
 {
 	CGameInfo& gi = CGameInfo::getInstance();
-	/*
-	float t = gi.getTime();
-	int turn = (int)t;
-	float turnAlpha = t - turn;
-	*/
 
 	int i, n;
 
@@ -192,7 +176,8 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
 	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
 		CActorEntity& e = *it->second;
-		// eplosion?
+		// explosion?
+		// TBD
 		/*
 		float deathA = e.getReplayEntity().getDeathAlpha( t );
 		if( deathA >= 0.0f ) {
@@ -285,29 +270,16 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 }
 
 
-void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
+
+void CEntityManager::renderLabels( CUIDialog& dlg )
 {
 	if( !gAppSettings.drawAznCollector && !gAppSettings.drawAznNeedle )
 		return;
 
 	CGameInfo& gi = CGameInfo::getInstance();
 
-	/*
-	float t = gi.getTime();
-	int turn = (int)t;
-	float turnAlpha = t - turn;
-	*/
-
-	//int i, n;
-
 	const SMatrix4x4& cameraMat = G_RENDERCTX->getCamera().getCameraMatrix();
 
-	SUIElement textElem;
-	memset( &textElem, 0, sizeof(textElem) );
-	textElem.fontIdx = 0;
-	textElem.textFormat = DT_LEFT;
-	textElem.colorFont.current = 0xFFffffff;
-	
 	char buf[100];
 
 	TActorEntityMap::iterator it, itEnd = mActorEntities.end();
@@ -318,19 +290,30 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 		if( !e.getGameEntity().isAlive() )
 			continue;
 
-		// not needle/collector?
+		// figure out what should we draw
 		eEntityType etype = e.getGameEntity().getType();
-		if( etype != ENTITY_NEEDLE && etype != ENTITY_COLLECTOR )
-			continue;
-		
-		if( etype == ENTITY_NEEDLE && !gAppSettings.drawAznNeedle )
-			continue;
-		if( etype == ENTITY_COLLECTOR && !gAppSettings.drawAznCollector )
-			continue;
-
-		// don't draw text for empty collectors
 		const CGameEntity::SState& s = e.getGameEntity().getState();
-		if( etype == ENTITY_COLLECTOR && s.stock <= 0 )
+		
+		bool drawAzn = false;
+		bool drawName = gAppSettings.drawEntityNames;
+		float maxNameAlpha = drawName ? 0.7f : 0.0f;
+
+		if( etype == ENTITY_NEEDLE && gAppSettings.drawAznNeedle )
+			drawAzn = true;
+		if( etype == ENTITY_COLLECTOR && gAppSettings.drawAznCollector && s.stock > 0 )
+			drawAzn = true;
+
+		if( mSelectedEntityID == e.getGameEntity().getID() ) {
+			drawName = true;
+			maxNameAlpha = 1.0f;
+		} else if( e.getOutline() >= 0 ) {
+			drawName = true;
+			float outline = e.getOutline()/OUTLINE_TTL;
+			if( maxNameAlpha < outline )
+				maxNameAlpha = outline;
+		}
+
+		if( !drawAzn && (!drawName || s.name[0]==0) )
 			continue;
 
 		// behind camera?
@@ -339,24 +322,28 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 			continue;
 
 		// calculate fade-out for text
-		float fogfar, fogfader, maxalpha;
+		float fogfar, fogfader, maxAznAlpha;
+		float fogfarName = gFogParam.y, fogfaderName = gFogParam.z;
 		if( etype == ENTITY_NEEDLE ) {
 			fogfar = gFogParam.y;
 			fogfader = gFogParam.z;
-			maxalpha = 1.0f;
+			maxAznAlpha = 1.0f;
 		} else {
 			fogfar = (gFogParam.x + gFogParam.y) * 0.5f;
 			fogfader = gFogParam.z * 0.75f;
-			maxalpha = 0.5f;
+			maxAznAlpha = 0.5f;
 		}
-		float fog = clamp( (fogfar - camdist) * fogfader, 0.0f, maxalpha );
-		if( fog <= 0.0f )
+		float fog = clamp( (fogfar - camdist) * fogfader, 0.0f, maxAznAlpha );
+		float fogName = clamp( (fogfarName - camdist) * fogfaderName, 0.0f, maxNameAlpha );
+		if( fog <= 0.0f && fogName <= 0.0f )
 			continue; // don't draw invisible texts
+
 		const SVector4& color = gColors.team[e.getGameEntity().getOwner()].tone.v;
-		textElem.colorFont.current.r = color.x;
-		textElem.colorFont.current.g = color.y;
-		textElem.colorFont.current.b = color.z;
-		textElem.colorFont.current.a = fog;
+		D3DXCOLOR colorDx;
+		colorDx.r = color.x;
+		colorDx.g = color.y;
+		colorDx.b = color.z;
+		colorDx.a = fog;
 
 		// project the text
 		SVector3 entityPos = e.mWorldMat.getOrigin() + cameraMat.getAxisX()*0.5f + cameraMat.getAxisY()*0.5f;
@@ -371,8 +358,18 @@ void CEntityManager::renderLabels( CUIDialog& dlg, bool thirdPerson )
 		textRC.top = screenPos.y * GUI_Y;
 		textRC.bottom = screenPos.y * GUI_Y + 20;
 
-		itoa( s.stock, buf, 10 );
-		dlg.drawText( buf, &textElem, &textRC, false );
+		// draw azn label
+		if( drawAzn ) {
+			itoa( s.stock, buf, 10 );
+			dlg.imDrawText( buf, 0, DT_LEFT, colorDx, textRC, false );
+		}
+		// draw name
+		if( drawName ) {
+			colorDx.a = fogName;
+			textRC.top -= 12;
+			textRC.bottom -= 12;
+			dlg.imDrawText( s.name, 0, DT_LEFT, colorDx, textRC, false );
+		}
 	}
 }
 
