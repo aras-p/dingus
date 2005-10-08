@@ -122,17 +122,19 @@ technique tec11
 	RESTORE_PASS
 }
 
+
 // --------------------------------------------------------------------------
 
-SPosColTexFog vsMainFF( SPosCol i ) {
-	SPosColTexFog o;
+SPosColTex2F vsMainFF( SPosCol i ) {
+	SPosColTex2F o;
 	o.pos = mul( i.pos, mViewProj );
 
 	float3 n = i.color.xyz*2-1;
 	float3 vn = mul( n, (float3x3)mView );
 	o.color = lighting( n, vn );
+	o.color.w = i.color.w;
 
-	o.uv = float2(i.pos.x,i.pos.z) * 0.02;
+	o.uv[0] = o.uv[1] = float2(i.pos.x,i.pos.z) * 0.02;
 
 	float d = length(i.pos - vEye);
 	o.fog = (vFog.y - d) * vFog.z;
@@ -150,16 +152,26 @@ technique tecFFP
 		FogEnable = True;
 
 		Sampler[0] = (smpBase1);
-
-		ColorOp[0] = Modulate;
+		ColorOp[0] = SelectArg1;
 		ColorArg1[0] = Texture;
-		ColorArg2[0] = Diffuse;
-		AlphaOp[0] = Modulate;
-		AlphaArg1[0] = Texture;
-		AlphaArg2[0] = Diffuse;
+		AlphaOp[0] = SelectArg1;
+		AlphaArg1[0] = Diffuse;
 
-		ColorOp[1] = Disable;
-		AlphaOp[1] = Disable;
+		Sampler[1] = (smpBase2);
+		ColorOp[1] = BlendCurrentAlpha;
+		ColorArg1[1] = Texture;
+		ColorArg2[1] = Current;
+		AlphaOp[1] = SelectArg1;
+		AlphaArg1[1] = Diffuse;
+
+		ColorOp[2] = Modulate;
+		ColorArg1[2] = Current;
+		ColorArg2[2] = Diffuse;
+		AlphaOp[2] = SelectArg1;
+		AlphaArg1[2] = Current;
+
+		ColorOp[3] = Disable;
+		AlphaOp[3] = Disable;
 	}
 	RESTORE_PASS
 }

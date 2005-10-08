@@ -18,34 +18,34 @@ sampler2D	smpBase2 = sampler_state {
 
 // --------------------------------------------------------------------------
 
-SPosColTexFog vsMain20( SPosCol i ) {
-	SPosColTexFog o;
+SPosColTex2F vsMain11( SPosCol i ) {
+	SPosColTex2F o;
 	o.pos = mul( i.pos, mViewProj );
 
 	float3 n = i.color.xyz*2-1;
 	o.color.xyz = 1-abs(n.y)*0.6;
 	o.color.w = i.color.w;
 
-	o.uv = float2(i.pos.x,i.pos.z) * 0.02;
+	o.uv[0] = o.uv[1] = float2(i.pos.x,i.pos.z) * 0.02;
 
 	o.fog = gFog( i.pos );
 
 	return o;
 }
 
-half4 psMain20( SPosColTexFog i ) : COLOR {
-	half4 col1 = tex2D( smpBase1, i.uv );
-	half4 col2 = tex2D( smpBase2, i.uv );
+half4 psMain11( SPosColTex2F i ) : COLOR {
+	half4 col1 = tex2D( smpBase1, i.uv[0] );
+	half4 col2 = tex2D( smpBase2, i.uv[1] );
 	half4 col = lerp( col1, col2, i.color.a );
 	col.rgb *= i.color.rgb;
 	return col;
 }
 
-technique tec20
+technique tec11
 {
 	pass P0 {
-		VertexShader = compile vs_1_1 vsMain20();
-		PixelShader = compile ps_2_0 psMain20();
+		VertexShader = compile vs_1_1 vsMain11();
+		PixelShader = compile ps_1_1 psMain11();
 
 		FogEnable = True;
 
@@ -70,18 +70,17 @@ technique tec20
 	RESTORE_PASS
 }
 
-
 // --------------------------------------------------------------------------
 
-SPosColTexFog vsMainFF( SPosCol i ) {
-	SPosColTexFog o;
+SPosColTex2F vsMainFF( SPosCol i ) {
+	SPosColTex2F o;
 	o.pos = mul( i.pos, mViewProj );
 
 	float3 n = i.color.xyz*2-1;
 	o.color.xyz = 1-abs(n.y)*0.6;
 	o.color.w = i.color.w;
 
-	o.uv = float2(i.pos.x,i.pos.z) * 0.02;
+	o.uv[0] = o.uv[1] = float2(i.pos.x,i.pos.z) * 0.02;
 
 	o.fog = gFog( i.pos );
 
@@ -100,16 +99,26 @@ technique tecFFP
 		CullMode = CW;
 
 		Sampler[0] = (smpBase1);
-
-		ColorOp[0] = Modulate;
+		ColorOp[0] = SelectArg1;
 		ColorArg1[0] = Texture;
-		ColorArg2[0] = Diffuse;
-		AlphaOp[0] = Modulate;
-		AlphaArg1[0] = Texture;
-		AlphaArg2[0] = Diffuse;
+		AlphaOp[0] = SelectArg1;
+		AlphaArg1[0] = Diffuse;
 
-		ColorOp[1] = Disable;
-		AlphaOp[1] = Disable;
+		Sampler[1] = (smpBase2);
+		ColorOp[1] = BlendCurrentAlpha;
+		ColorArg1[1] = Texture;
+		ColorArg2[1] = Current;
+		AlphaOp[1] = SelectArg1;
+		AlphaArg1[1] = Diffuse;
+
+		ColorOp[2] = Modulate;
+		ColorArg1[2] = Current;
+		ColorArg2[2] = Diffuse;
+		AlphaOp[2] = SelectArg1;
+		AlphaArg1[2] = Current;
+
+		ColorOp[3] = Disable;
+		AlphaOp[3] = Disable;
 
 		// set bit 1 where we render
 		StencilEnable = True;

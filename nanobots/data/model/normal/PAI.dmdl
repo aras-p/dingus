@@ -3,7 +3,7 @@ groups = {
 {
   fx = 'entity', pri = 0,
   params = {
-	  { 'tex', 'tBase', 'NanoAI' },
+	  { 'tex', 'tBase', 'PAI' },
   },
 },
 }
