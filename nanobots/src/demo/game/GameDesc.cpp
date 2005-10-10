@@ -17,7 +17,7 @@ CGameDesc::CGameDesc()
 
 	const float CM = 0.50f;
 	const float CT = 0.75f;
-	
+
 	// computer team - white
 	gColors.team[0].main.set( D3DXCOLOR(1,1,1,1) );
 	gColors.team[0].tone.set( D3DXCOLOR(1,1,1,1) );
@@ -71,7 +71,7 @@ public:
 
 		dstSurf->Release();
 
-		D3DXFilterTexture( tex, NULL, 0, D3DX_FILTER_BOX );
+		D3DXFilterTexture( tex, NULL, 0, D3DX_FILTER_BOX | D3DX_FILTER_SRGB );
 		return tex;
 	}
 

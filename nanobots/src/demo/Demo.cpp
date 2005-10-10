@@ -503,15 +503,19 @@ static void	gSetupGUI()
 			sy += UIHLAB;
 
 			// flag
-			gUIDlg->addImage( 0, 4, sy+4, 18, 18, *RGET_S_TEX(PLAYER_TEX_NAMES[p]), 0, 0, CGameDesc::FLAG_SIZE, CGameDesc::FLAG_SIZE );
+			CUIImage* img;
+			gUIDlg->addImage( 0, 4, sy+4, 18, 18, *RGET_S_TEX(PLAYER_TEX_NAMES[p]), 0, 0, CGameDesc::FLAG_SIZE, CGameDesc::FLAG_SIZE, &img );
+			gUIStatsCtrls.push_back( img );
 
 			// name
-			std::string plstring;
-			plstring = "P";
-			plstring += ('0' + p);
-			plstring += ": ";
-			plstring += pl.name;
-			gUIDlg->addStatic( 0, plstring.c_str(), 25, sy, 100, UIHLAB, false, &label );
+			gUIDlg->addImage( 0, 28, sy+2, 97, 26, *RGET_TEX("guiskin"), 32*(p-1)+8, 488, 32*p-8, 504, &img );
+			img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = 0x40FFFFFF;
+			gUIStatsCtrls.push_back( img );
+			
+			gUIDlg->addImage( 0, 27, sy+1, 14, 14, *RGET_TEX("guiskin"), 32*(p-1)+2, 482, 32*p-2, 510, &img );
+			gUIStatsCtrls.push_back( img );
+			
+			gUIDlg->addStatic( 0, pl.name.c_str(), 45, sy, 80, UIHLAB, false, &label );
 			UISTATS_LABEL;
 
 			// score
