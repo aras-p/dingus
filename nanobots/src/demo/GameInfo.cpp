@@ -8,6 +8,7 @@
 #include "entity/EntityManager.h"
 #include "MinimapRenderer.h"
 #include "EntityInfoRenderer.h"
+#include "StreamImpostorsRenderer.h"
 #include "net/NetInterface.h"
 #include "net/NetMessages.h"
 
@@ -87,6 +88,7 @@ const char* CGameInfo::initStep()
 		mMinimapRenderer = new CMinimapRenderer( *RGET_IB(RID_IB_QUADS) );
 		mEntityBlobsRenderer = new CMinimapRenderer( *RGET_IB(RID_IB_QUADS) );
 		mEntityInfoRenderer = new CEntityInfoRenderer( *RGET_IB(RID_IB_QUADS) );
+		mStreamImpostorsRenderer = new CStreamImpostorsRenderer( *RGET_IB(RID_IB_QUADS) );
 		return "Creating entities...";
 	}
 
@@ -110,6 +112,7 @@ CGameInfo::CGameInfo( const std::string& server, int port, HWND wnd )
 ,	mLevelMesh(NULL),
 	mPointsMesh(NULL),
 	mMinimapRenderer(NULL), mEntityBlobsRenderer(NULL), mEntityInfoRenderer(NULL),
+	mStreamImpostorsRenderer(NULL),
 	mEntities(NULL)
 {
 }
@@ -122,6 +125,7 @@ CGameInfo::~CGameInfo()
 	safeDelete( mMinimapRenderer );
 	safeDelete( mEntityBlobsRenderer );
 	safeDelete( mEntityInfoRenderer );
+	safeDelete( mStreamImpostorsRenderer );
 	
 	safeDelete( mPointsMesh );
 	safeDelete( mLevelMesh );

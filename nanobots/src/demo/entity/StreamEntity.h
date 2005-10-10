@@ -3,15 +3,16 @@
 
 #include "MeshEntity.h"
 #include "../game/GameMap.h"
+class CStreamImpostorsRenderer;
 
 
 class CStreamEntity : public CMeshEntity {
 public:
-	CStreamEntity( const CGameMap::SStream& stream, float x, float y );
+	CStreamEntity( const CGameMap::SStream& stream, float x, float y, int type );
 	virtual ~CStreamEntity();
 
 	// early outs if not visible
-	void	render( eRenderMode renderMode );
+	void	render( eRenderMode renderMode, CStreamImpostorsRenderer& impostorer );
 	void	update();
 	
 private:
@@ -19,6 +20,7 @@ private:
 	const CGameMap::SStream*	mStream;
 	float	mVelocityX;
 	float	mVelocityY;
+	int		mType;
 };
 
 

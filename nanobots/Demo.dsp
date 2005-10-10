@@ -362,6 +362,14 @@ SOURCE=.\src\demo\MinimapRenderer.cpp
 
 SOURCE=.\src\demo\MinimapRenderer.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\StreamImpostorsRenderer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\demo\StreamImpostorsRenderer.h
+# End Source File
 # End Group
 # Begin Group "system"
 
@@ -477,6 +485,10 @@ SOURCE=.\data\fx\points.fx
 # Begin Source File
 
 SOURCE=.\data\fx\StreamEntity.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\StreamImpostor.fx
 # End Source File
 # End Group
 # Begin Source File

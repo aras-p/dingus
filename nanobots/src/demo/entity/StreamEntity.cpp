@@ -2,15 +2,17 @@
 #include "StreamEntity.h"
 #include "../GameInfo.h"
 #include "../game/GameDesc.h"
+#include "../StreamImpostorsRenderer.h"
 #include <dingus/utils/Random.h>
 
 
 
-CStreamEntity::CStreamEntity( const CGameMap::SStream& stream, float x, float y )
-:	CMeshEntity( gRandom.getBool() ? "StreamRed" : "StreamWhite", 1 )
+CStreamEntity::CStreamEntity( const CGameMap::SStream& stream, float x, float y, int type )
+:	CMeshEntity( type==0 ? "StreamWhite" : "StreamRed", 1 )
 ,	mStream( &stream )
 ,	mVelocityX(stream.deltaX*1.5f + gRandom.getFloat(-0.5f,0.5f))
 ,	mVelocityY(stream.deltaY*1.5f + gRandom.getFloat(-0.5f,0.5f))
+,	mType(type)
 {
 	const CGameMap& gmap = CGameInfo::getInstance().getGameDesc().getMap();
 
@@ -58,9 +60,10 @@ void CStreamEntity::update()
 	}
 }
 
-void CStreamEntity::render( eRenderMode renderMode )
+void CStreamEntity::render( eRenderMode renderMode, CStreamImpostorsRenderer& impostorer )
 {
 	if( mColor.w == 0.0f )
 		return;
-	CMeshEntity::render( renderMode, 0, false );
+	//CMeshEntity::render( renderMode, 0, false );
+	impostorer.addEntity( mWorldMat, clamp(mColor.w*2,0,1), mType );
 }

@@ -7,6 +7,7 @@
 #include "../MinimapRenderer.h"
 #include "../EntityInfoRenderer.h"
 #include "../game/GameColors.h"
+#include "../StreamImpostorsRenderer.h"
 
 #include <dingus/gfx/DebugRenderer.h>
 #include <dingus/gfx/gui/Gui.h>
@@ -46,7 +47,7 @@ CEntityManager::CEntityManager()
 		const CGameMap::SStream& strm = gmap.getStream(i);
 		for( float sy = strm.y; sy < strm.y+strm.height; sy += STREAM_ENT_CELL_STRIDE ) {
 			for( float sx = strm.x; sx < strm.x+strm.width; sx += STREAM_ENT_CELL_STRIDE ) {
-				CStreamEntity* e = new CStreamEntity( strm, sx, sy );
+				CStreamEntity* e = new CStreamEntity( strm, sx, sy, gRandom.getBool() ? 1 : 0 );
 				mStreamEntities.push_back( e );
 			}
 		}
@@ -263,10 +264,14 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	}
 
 	// streams
+	CStreamImpostorsRenderer& streamr = gi.getStreamImpostorsRenderer();
+	streamr.beginEntities();
 	n = mStreamEntities.size();
 	for( i = 0; i < n; ++i ) {
-		mStreamEntities[i]->render( rm );
+		mStreamEntities[i]->render( rm, streamr );
 	}
+	streamr.endEntities();
+	streamr.render();
 }
 
 

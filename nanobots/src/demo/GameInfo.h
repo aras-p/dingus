@@ -9,6 +9,7 @@ class CLevelMesh;
 class CPointsMesh;
 class CMinimapRenderer;
 class CEntityInfoRenderer;
+class CStreamImpostorsRenderer;
 class CEntityManager;
 class CGameEntity;
 
@@ -56,6 +57,7 @@ public:
 	CMinimapRenderer& getMinimapRenderer() { return *mMinimapRenderer; }
 	CMinimapRenderer& getEntityBlobsRenderer() { return *mEntityBlobsRenderer; }
 	CEntityInfoRenderer& getEntityInfoRenderer() { return *mEntityInfoRenderer; }
+	CStreamImpostorsRenderer& getStreamImpostorsRenderer() { return *mStreamImpostorsRenderer; }
 
 	void	onNewEntity( const CGameEntity& e );
 	void	onNewInjectionPoint( int player, int x, int y );
@@ -87,6 +89,7 @@ private:
 	CMinimapRenderer*	mMinimapRenderer;
 	CMinimapRenderer*	mEntityBlobsRenderer;
 	CEntityInfoRenderer*		mEntityInfoRenderer;
+	CStreamImpostorsRenderer*	mStreamImpostorsRenderer;
 	CEntityManager*		mEntities;
 
 	//float			mTime;
