@@ -12,7 +12,7 @@ public:
 	virtual ~CStreamEntity();
 
 	// early outs if not visible
-	void	render( eRenderMode renderMode, CStreamImpostorsRenderer& impostorer );
+	void	render( eRenderMode renderMode, CStreamImpostorsRenderer& impostorer, bool insideView );
 	void	update();
 	
 private:

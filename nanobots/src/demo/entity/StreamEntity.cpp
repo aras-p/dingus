@@ -60,10 +60,33 @@ void CStreamEntity::update()
 	}
 }
 
-void CStreamEntity::render( eRenderMode renderMode, CStreamImpostorsRenderer& impostorer )
+void CStreamEntity::render( eRenderMode renderMode, CStreamImpostorsRenderer& impostorer, bool insideView )
 {
+	// if we aren't visible anyway - exit
 	if( mColor.w == 0.0f )
 		return;
-	//CMeshEntity::render( renderMode, 0, false );
-	impostorer.addEntity( mWorldMat, clamp(mColor.w*2,0,1), mType );
+
+	// determine distance to camera to blend between real model and impostor
+	// in "inside view", just fade out
+	float distSq = SVector3( G_RENDERCTX->getCamera().getEye3() - mWorldMat.getOrigin() ).lengthSq();
+	if( insideView ) {
+		const float FADE_START = 15.0f;
+		const float FADE_LEN2 = 400.0f;
+		float alpha = clamp( 1.0f - (distSq - FADE_START*FADE_START)/FADE_LEN2, 0.0f, 1.0f );
+		if( alpha > 1.0f/255.0f ) {
+			mColor.w *= alpha;
+			CMeshEntity::render( renderMode, 0, false );
+		}
+	} else {
+		const float FADE_START = 25.0f;
+		const float FADE_LEN2 = 600.0f;
+		float alpha = clamp( 1.0f - (distSq - FADE_START*FADE_START)/FADE_LEN2, 0.0f, 1.0f );
+		if( alpha < 254.0f/255.0f ) {
+			impostorer.addEntity( mWorldMat, clamp(mColor.w*2*(1-alpha),0,1), mType );
+		}
+		if( alpha > 1.0f/255.0f ) {
+			mColor.w *= alpha;
+			CMeshEntity::render( renderMode, 0, false );
+		}
+	}
 }

@@ -268,7 +268,7 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	streamr.beginEntities();
 	n = mStreamEntities.size();
 	for( i = 0; i < n; ++i ) {
-		mStreamEntities[i]->render( rm, streamr );
+		mStreamEntities[i]->render( rm, streamr, thirdPerson );
 	}
 	streamr.endEntities();
 	streamr.render();
