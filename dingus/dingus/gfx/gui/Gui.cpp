@@ -170,14 +170,19 @@ void CUIDialog::refresh()
 }
 
 
-void CUIDialog::onRender( float dt )
-{	
-	// See if the dialog needs to be refreshed
-	if( mTimeLastRefresh < sTimeRefresh ) {
-		mTimeLastRefresh = CSystemTimer::getInstance().getTimeS();
-		refresh();
-	}
 
+namespace {
+	// single flag for error checking - because we really want just one
+	// dialog to be rendering at a time
+	static bool gUIDlgInsideRenderBegin = false;
+};
+
+
+void CUIDialog::renderBegin( bool renderDlgBackground )
+{
+	assert( !gUIDlgInsideRenderBegin );
+	gUIDlgInsideRenderBegin = true;
+	
 	CD3DDevice& dx = CD3DDevice::getInstance();
 	CUIResourceManager& resmgr = CUIResourceManager::getInstance();
 
@@ -199,7 +204,7 @@ void CUIDialog::onRender( float dt )
 
 	device->SetRenderState( D3DRS_ZENABLE, FALSE );
 
-	if( !mMinimized ) {
+	if( renderDlgBackground && !mMinimized ) {
 		device->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG2 );
 		device->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 		device->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
@@ -233,6 +238,30 @@ void CUIDialog::onRender( float dt )
 	device->SetTexture( 0, mDefaultTexture->getObject() );
 
 	resmgr.mSprite->Begin( D3DXSPRITE_DONOTSAVESTATE );
+}
+
+void CUIDialog::renderEnd()
+{
+	assert( gUIDlgInsideRenderBegin );
+	gUIDlgInsideRenderBegin = false;
+
+	CUIResourceManager& resmgr = CUIResourceManager::getInstance();
+	resmgr.mSprite->End();
+	resmgr.mStateBlock->Apply();
+}
+
+
+void CUIDialog::onRender( float dt )
+{	
+	// See if the dialog needs to be refreshed
+	if( mTimeLastRefresh < sTimeRefresh ) {
+		mTimeLastRefresh = CSystemTimer::getInstance().getTimeS();
+		refresh();
+	}
+
+	renderBegin( true );
+
+	IDirect3DDevice9* device = &CD3DDevice::getInstance().getDevice();
 
 	// call render callback
 	if( mRenderCallback ) {
@@ -243,7 +272,7 @@ void CUIDialog::onRender( float dt )
 	if( mHasCaption ) {
 		// drawSprite will offset the rect down by mCaptionHeight, so
 		// adjust the rect higher here to negate the effect.
-		SFRect rc = { 0, -mCaptionHeight, mWidth, 0 };
+		SFRect rc( 0, -mCaptionHeight, mWidth, 0 );
 		drawSprite( &mCaptionElement, &rc );
 		rc.left += 5; // Make a left margin
 		char output[256];
@@ -268,12 +297,7 @@ void CUIDialog::onRender( float dt )
 			sCtrlFocus->render( device, dt );
 	}
 
-	//RECT rc;
-	//SetRect( &rc, 0, 0, mWidth, mHeight );
-	//drawRect( &rc, 0x80ffffff );
-	
-	resmgr.mSprite->End();
-	resmgr.mStateBlock->Apply();
+	renderEnd();
 }
 
 

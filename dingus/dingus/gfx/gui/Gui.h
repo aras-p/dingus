@@ -82,6 +82,12 @@ enum eUIControlState {
 
 // --------------------------------------------------------------------------
 
+static inline RECT makeRECT( int l, int t, int r, int b )
+{
+	RECT rc = { l, t, r, b };
+	return rc;
+}
+
 struct SFPoint {
 	float	x;
 	float	y;
@@ -89,6 +95,10 @@ struct SFPoint {
 
 struct SFRect {
 public:
+	SFRect() { } // empty constructor
+	SFRect( float l, float t, float r, float b )
+		: left(l), top(t), right(r), bottom(b) { }
+	
 	float	left;
     float	top;
     float	right;
@@ -257,7 +267,26 @@ public:
 
 
 	void	refresh();
+
+	/**
+	 *  Render whole dialog and controls. This calls renderBegin() and
+	 *  renderEnd() internally; also calls render callback if any.
+	 */
 	void	onRender( float dt );
+
+	/**
+	 *  Manually prepare for dialog rendering. This sets all required
+	 *  rendering state; after this call drawYYY and imDrawYYY methods can
+	 *  be used. Use in cases where you want to render something UI-related,
+	 *  but probably don't want to draw controls, etc.
+	 */
+	void	renderBegin( bool renderDlgBackground = false );
+
+	/**
+	 *	End manual dialog rendering.
+	 */
+	void	renderEnd();
+
 
 	void	setRenderCallback( TUICallbackRender renderCb ) { mRenderCallback = renderCb; }
 
