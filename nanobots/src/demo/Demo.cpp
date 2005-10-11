@@ -260,9 +260,6 @@ bool			gHelpDlgWasActive = false;
 CGameSetupDialog*	gUIGameSetupDlg;
 
 
-CUIStatic*		gUILabelProgress;
-CUIImage*		gUIImgLogo;
-
 CUIRollout*		gUIRollMinimap;
 CUIStatic*		gUILabelTime;
 CUIStatic*		gUILabelStarting;
@@ -648,8 +645,6 @@ static void	gSetupGUI()
 		gUIDlg->addCheckBox( GID_CHK_HELP, "Help", 560, 480-UIHCTL, 80, UIHCTL, gHelpDlgWasActive );
 	}
 
-	gUILabelProgress->setVisible( false );
-	gUIImgLogo->setVisible( false );
 	gUIDlg->enableNonUserEvents( true );
 
 	gUIDlg->setRenderCallback( gUIRenderCallback );
@@ -727,6 +722,18 @@ static void gInitiallyPlaceViewer()
 }
 
 
+static void gUIDrawLogo()
+{
+	gUIDlg->imDrawSprite( 0xFFc0c0c0, makeRECT(0,0,512,256), RGET_TEX("Logo512"), SFRect(150, 170, 150+340, 170+170) );
+}
+
+static void gUIDrawProgress( const char* msg )
+{
+	gUIDlg->imDrawText( msg, 1, DT_LEFT|DT_VCENTER, 0xFFc0c0c0, SFRect(5,455,5+600,455+22) );
+}
+
+
+
 void CDemo::initialize( IDingusAppContext& appContext )
 {
 	CONS << "Initializing..." << endl;
@@ -771,11 +778,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlg->setFont( 0, "Tahoma", 12, FW_NORMAL );
 	gUIDlg->setFont( 1, "Arial", 22, FW_NORMAL );
 	gUIDlg->setFont( 2, "Tahoma", 12, FW_BOLD );
-
-	gUIDlg->addStatic( 0, "", 5, 455, 600, 22, false, &gUILabelProgress );
-	gUILabelProgress->getElement(0)->setFont( 1, false, DT_LEFT | DT_VCENTER );
-
-	gUIDlg->addImage( 0, 150, 170, 340, 170, *RGET_TEX("Logo512"), 0, 0, 512, 256, &gUIImgLogo );
 
 	gUISettingsDlg = new CDemoSettingsDialog( appContext.getD3DEnumeration(), appContext.getD3DSettings() );
 	gSettingsDlgWasActive = false;
@@ -1114,6 +1116,31 @@ static inline void END_T( const char* op ) {
 }
 
 
+/// @return True if fatal error occured
+static bool gCheckFatalError()
+{
+	const std::string& err = net::getFatalError();
+	if( err.empty() )
+		return false;
+
+	// display empty screen and the error
+	
+	CD3DDevice& dx = CD3DDevice::getInstance();
+	dx.clearTargets( true, true, true, 0xFF000000, 1.0f, 0L );
+	dx.sceneBegin();
+	G_RENDERCTX->applyGlobalEffect();
+
+	gUIDlg->renderBegin();
+	gUIDrawLogo();
+	gUIDrawProgress( err.c_str() );
+	gUIDlg->renderEnd();
+
+	dx.sceneEnd();
+
+	return true;
+}
+
+
 
 /**
  *  Main loop code.
@@ -1175,14 +1202,22 @@ void CDemo::perform()
 		}
 		// render progress
 		assert( initStepName );
-		gUILabelProgress->setText( initStepName );
 		dx.clearTargets( true, true, true, 0xFF000000, 1.0f, 0L );
 		dx.sceneBegin();
 		G_RENDERCTX->applyGlobalEffect();
-		gUIDlg->onRender( dt );
+		gUIDlg->renderBegin();
+		gUIDrawLogo();
+		gUIDrawProgress( initStepName );
+		gUIDlg->renderEnd();
 		dx.sceneEnd();
 		return;
 	}
+
+	//
+	// fatal error
+
+	if( gCheckFatalError() )
+		return;
 
 	//
 	// check if settings dialog just was closed

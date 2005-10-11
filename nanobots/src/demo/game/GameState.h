@@ -65,6 +65,7 @@ private:
 	bool		mGameEnded;
 	int			mWinner;
 
+	std::string		mFatalNetworkError; // empty if all ok
 	SServerState	mServerState;
 	std::string		mServerStateErrMsg;
 	time_value		mLastStateQueryTime;

@@ -18,20 +18,12 @@ sampler2D	smpBase = sampler_state {
 
 // --------------------------------------------------------------------------
 
-SPosColTex vsMainFF( SPosNTex i ) {
+SPosColTex vsMainFF( SPosTex i ) {
 	SPosColTex o;
 	o.pos = mul( i.pos, mWVP );
-	float3 wpos = mul( i.pos, mWorld );
-	float3 vn = mul( i.normal*2-1, (float3x3)mWorldView );
-	float rim = saturate( abs(vn.z) * 1.2 - 0.2 );
-	float a = lerp( vColor.a, 0.35, i.pos.y*0.15 );
-	o.color.rgb = vColor.rgb;
-	o.color.a = a * rim;
-	o.color.a *= saturate( i.pos.y );
+	o.uv = i.uv;
+	o.color = vColor;
 	o.color.a *= saturate( gFogWV( i.pos, mWorldView ) );
-
-	o.uv.x = i.uv.x + fTime * 0.08;
-	o.uv.y = i.uv.y - fTime * 0.05;
 	return o;
 }
 
@@ -45,6 +37,7 @@ technique tecFFP
 		SrcBlend = SrcAlpha;
 		DestBlend = One;
 		ZWriteEnable = False;
+		CullMode = None;
 
 		Sampler[0] = <smpBase>;
 		ColorOp[0] = Modulate;

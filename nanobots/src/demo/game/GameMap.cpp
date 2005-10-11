@@ -259,6 +259,20 @@ std::string CGameMap::initialize()
 	// calculate cell heights
 	calcCellHeights();
 
+	// TBD: add some decorative elements for testing
+	const int DECOR_TRY_COUNT = 200;
+	for( int i = 0; i < DECOR_TRY_COUNT; ++i ) {
+		int x = gRandom.getUInt() % mCellsX;
+		int y = gRandom.getUInt() % mCellsY;
+		const SCell& cell = mCells[pos2index(x,y)];
+		if( !isBlood(cell.type) || cell.nearBone )
+			continue;
+		if( cell.height < 2.0f )
+			continue;
+
+		mPoints.push_back( SPoint(PT_DECORATIVE,x,y, gRandom.getUInt() % DECOR_POINT_COUNT) );
+	}
+
 	// register level texture
 	CSharedTextureBundle::getInstance().registerTexture( RID_TEX_LEVEL, *new CGameMapTextureCreator( *this ) );
 

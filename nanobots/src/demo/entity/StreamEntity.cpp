@@ -54,7 +54,7 @@ void CStreamEntity::update()
 	int cellY = round( -mWorldMat.getOrigin().z );
 	const CGameMap::SCell& cell = CGameInfo::getInstance().getGameDesc().getMap().getCell( cellX, cellY );
 	if( CGameMap::isBlood( cell.type ) ) {
-		mColor.w = 0.2f;
+		mColor.w = 0.15f;
 	} else {
 		mColor.w = 0.0f;
 	}

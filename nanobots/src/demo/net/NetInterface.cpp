@@ -11,6 +11,7 @@ namespace {
 	sockaddr_in	sockAddr;
 	in_addr		serverAddr;
 	std::string serverAddrString;
+	std::string fatalError;
 
 	const int MAX_RECV_BUFFER = 256 * 1024;
 	unsigned char	recvBuffer[MAX_RECV_BUFFER];
@@ -72,7 +73,7 @@ void net::initialize( const char* serverName, int serverPort, HWND wnd )
 	//u_long trueAsUlong = 1;
 	//res = ::ioctlsocket( commSocket, FIONBIO, &trueAsUlong );
 	//assert( 0==res );
-	res = WSAAsyncSelect( commSocket, wnd, NET_ASYNC_MESSAGE, FD_READ );
+	res = WSAAsyncSelect( commSocket, wnd, NET_ASYNC_MESSAGE, FD_READ | FD_CLOSE );
 	if( res == -1 ) {
 		throw ENetException( "Failed to set socket to nonblocking mode" );
 	}
@@ -82,6 +83,7 @@ void net::initialize( const char* serverName, int serverPort, HWND wnd )
 	chunkReceivedSize = 0;
 	chunkTotalSize = 0;
 	chunkCounter = 0;
+	fatalError = "";
 }
 
 
@@ -108,7 +110,15 @@ void net::onAsyncMsg( WPARAM wparam, LPARAM lparam )
 	case FD_READ:
 		hasDataToRecv = true;
 		break;
+	case FD_CLOSE:
+		fatalError = "Connection to the server closed";
+		break;
 	}
+}
+
+const std::string& net::getFatalError()
+{
+	return fatalError;
 }
 
 

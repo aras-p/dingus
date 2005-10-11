@@ -64,6 +64,7 @@ enum ePointType {
 	PT_HOSHIMI,
 	PT_INJECTION,	// Is not in the maps
 	PT_OBJECTIVE,	// Part of mission
+	PT_DECORATIVE,	// Decorative element
 	PTCOUNT
 };
 

@@ -14,6 +14,8 @@ namespace net {
 	void	shutdown();
 	bool	isConnected();
 
+	const std::string& getFatalError();
+
 	void	onAsyncMsg( WPARAM wparam, LPARAM lparam );
 
 	/**

@@ -13,9 +13,15 @@ static const char* POINT_TYPENAMES[PTCOUNT] = {
 	"PointMission",
 };
 
+static const char* POINT_DECOR_NAMES[DECOR_POINT_COUNT] = {
+	"Decor1",
+	"Decor2",
+};
+
+
 
 CPointEntity::CPointEntity( const CGameMap::SPoint& point )
-:	CMeshEntity( POINT_TYPENAMES[ point.type ], 1 ),
+:	CMeshEntity( point.type==PT_DECORATIVE ? POINT_DECOR_NAMES[ point.data ] : POINT_TYPENAMES[ point.type ], 1 ),
 	mTimeOffset( gRandom.getFloat(0,10) ),
 	mPoint( &point )
 {
@@ -42,6 +48,11 @@ CPointEntity::CPointEntity( const CGameMap::SPoint& point )
 		mWorldMat.getOrigin().y = 0.0f;
 		mColor = &(D3DXCOLOR(point.colorTone).r);
 		break;
+	case PT_DECORATIVE:
+		mWorldMat.getOrigin().y = -gmap.getCell(point.x,point.y).height+0.25f;
+		mAlphaBase = 0.80f;
+		mAlphaAmpl = 0.20f;
+		mColor.set(1,1,1,1);
 	}
 	
 	if( getRenderMeshes( RM_NORMAL, 0 ) ) {

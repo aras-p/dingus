@@ -4,6 +4,8 @@
 /// Wall-bounding cells have this height. The further from the walls, the higher height.
 const float MIN_CELL_HEIGHT = 1.5f;
 
+const int DECOR_POINT_COUNT = 2;
+
 
 class CGameMap : public boost::noncopyable {
 public:

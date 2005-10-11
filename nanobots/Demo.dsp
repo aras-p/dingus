@@ -476,6 +476,10 @@ SOURCE=.\data\fx\point.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\PointDecor.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\pointinjection.fx
 # End Source File
 # Begin Source File
