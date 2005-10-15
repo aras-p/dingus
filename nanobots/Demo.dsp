@@ -480,6 +480,10 @@ SOURCE=.\data\fx\PointDecor.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\PointDecorCell.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\pointinjection.fx
 # End Source File
 # Begin Source File

@@ -276,12 +276,11 @@ std::string CGameMap::initialize()
 
 	// add some decorative elements
 	static int DECOR_TYPES_IN_TISSUE[DECOR_POINT_TYPE_COUNT] = {
-		(1<<CCOLOR_BLOOD),
-		(1<<CCOLOR_BONE),
-		(1<<CCOLOR_NEURON),
-		(1<<CCOLOR_NEURON),
+		(1<<CCOLOR_BLOOD), (1<<CCOLOR_BLOOD), (1<<CCOLOR_BLOOD),
+		(1<<CCOLOR_BONE), (1<<CCOLOR_BONE), (1<<CCOLOR_BONE) | (1<<CCOLOR_BLOOD),
+		(1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON),
 	};
-	const int DECOR_PTS_COUNT = 75;
+	const int DECOR_PTS_COUNT = 125;
 	const int MAX_TRY_COUNT = DECOR_PTS_COUNT * 10;
 	int decPtsCounter = 0;
 	int tryCounter = 0;

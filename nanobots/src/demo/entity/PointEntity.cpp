@@ -14,10 +14,9 @@ static const char* POINT_TYPENAMES[PTCOUNT] = {
 };
 
 static const char* POINT_DECOR_NAMES[DECOR_POINT_TYPE_COUNT] = {
-	"Decor1",
-	"Decor2",
-	"Decor3a",
-	"Decor3b",
+	"Decor1", "Decor1", "Decor1",
+	"Decor2", "Decor2", "Decor2",
+	"Decor3a", "Decor3b", "Decor4",
 };
 
 
