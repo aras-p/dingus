@@ -603,7 +603,7 @@ protected:
 
 // --------------------------------------------------------------------------
 
-/// Rollout control
+/// Roll-out control
 class CUIRollout : public CUICheckBox {
 public:
 	CUIRollout( CUIDialog *dialog = NULL );
@@ -621,11 +621,20 @@ public:
 
 	float	getRolloutHeight() const { return mRolloutHeight; }
 	void	setRolloutHeight( float rh ) { mRolloutHeight = rh; }
+
+	void	addChildControl( CUIControl& ctrl ) { mChildControls.push_back( &ctrl ); }
+
+	/**
+	 *	Offset location of the rollout and all child controls.
+	 */
+	void	offsetPos( float dx, float dy );
 	
 protected:
 	virtual void setCheckedInternal( bool chk, bool fromInput );
 
 	float	mRolloutHeight;
+
+	std::vector<CUIControl*>	mChildControls;
 };
 
 

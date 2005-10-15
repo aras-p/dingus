@@ -2140,6 +2140,7 @@ CUIRollout::CUIRollout( CUIDialog *dialog )
 	mType = UICTRL_ROLLOUT;
 	mDialog = dialog;
 	mChecked = false;
+	mChildControls.reserve( 8 );
 }
 	
 void CUIRollout::setCheckedInternal( bool chk, bool fromInput )
@@ -2147,8 +2148,25 @@ void CUIRollout::setCheckedInternal( bool chk, bool fromInput )
 	bool changed = (chk != mChecked);
 	mChecked = chk; 
 	updateRects();
-	if( changed )
+	if( changed ) {
 		mDialog->sendEvent( UIEVENT_CHECKBOX_CHANGED, fromInput, this ); 
+
+		// set visibility for child controls
+		int n = mChildControls.size();
+		for( int i = 0; i < n; ++i ) {
+			mChildControls[i]->setVisible( mChecked );
+		}
+	}
+}
+
+void CUIRollout::offsetPos( float dx, float dy )
+{
+	setLocation( mX + dx, mY + dy );
+	int n = mChildControls.size();
+	for( int i = 0; i < n; ++i ) {
+		CUIControl& ctrl = *mChildControls[i];
+		ctrl.setLocation( ctrl.mX + dx, ctrl.mY + dy );
+	}
 }
 
 bool CUIRollout::containsPoint( const POINT& pt ) const
