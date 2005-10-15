@@ -31,21 +31,21 @@ void gInitColors()
 	gColors.ptObjective.tone.set( 0xFFa0a030 );
 
 	// texture colors
-	gColors.texture[CCOLOR_BLOOD].set( 202.0f/255.0f, 58.0f/255.0f, 45.0f/255.0f );
-	gColors.texture[CCOLOR_BONE].set( 184.0f/255.0f, 184.0f/255.0f, 184.0f/255.0f );
-	gColors.texture[CCOLOR_NEURON].set( 45.0f/255.0f, 144.0f/255.0f, 202.0f/255.0f );
+	gColors.texture[CCOLOR_BLOOD].set( 202.0f/255.0f, 70.0f/255.0f, 55.0f/255.0f );
+	gColors.texture[CCOLOR_BONE].set( 202.0f/255.0f, 202.0f/255.0f, 202.0f/255.0f );
+	gColors.texture[CCOLOR_NEURON].set( 65.0f/255.0f, 144.0f/255.0f, 202.0f/255.0f );
 	
 	// minimap colors
-	gColors.minimap[CCOLOR_BLOOD][CELL_BLOOD1] = 0xFF401010;
-	gColors.minimap[CCOLOR_BLOOD][CELL_BLOOD2] = 0xFF300C0C;
-	gColors.minimap[CCOLOR_BLOOD][CELL_BLOOD3] = 0xFF200808;
+	gColors.minimap[CCOLOR_BLOOD][CELL_BLOOD1] = 0xFF501000;
+	gColors.minimap[CCOLOR_BLOOD][CELL_BLOOD2] = 0xFF501000;
+	gColors.minimap[CCOLOR_BLOOD][CELL_BLOOD3] = 0xFF501000;
 	gColors.minimap[CCOLOR_BLOOD][CELL_BONE] = 0L;
-	gColors.minimap[CCOLOR_BONE][CELL_BLOOD1] = 0xFF404040;
-	gColors.minimap[CCOLOR_BONE][CELL_BLOOD2] = 0xFF303030;
-	gColors.minimap[CCOLOR_BONE][CELL_BLOOD3] = 0xFF202020;
+	gColors.minimap[CCOLOR_BONE][CELL_BLOOD1] = 0xFF505050;
+	gColors.minimap[CCOLOR_BONE][CELL_BLOOD2] = 0xFF505050;
+	gColors.minimap[CCOLOR_BONE][CELL_BLOOD3] = 0xFF505050;
 	gColors.minimap[CCOLOR_BONE][CELL_BONE] = 0L;
-	gColors.minimap[CCOLOR_NEURON][CELL_BLOOD1] = 0xFF101040;
-	gColors.minimap[CCOLOR_NEURON][CELL_BLOOD2] = 0xFF0C0C30;
-	gColors.minimap[CCOLOR_NEURON][CELL_BLOOD3] = 0xFF080820;
+	gColors.minimap[CCOLOR_NEURON][CELL_BLOOD1] = 0xFF103050;
+	gColors.minimap[CCOLOR_NEURON][CELL_BLOOD2] = 0xFF103050;
+	gColors.minimap[CCOLOR_NEURON][CELL_BLOOD3] = 0xFF103050;
 	gColors.minimap[CCOLOR_NEURON][CELL_BONE] = 0L;
 }

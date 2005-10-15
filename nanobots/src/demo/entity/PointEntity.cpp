@@ -13,7 +13,7 @@ static const char* POINT_TYPENAMES[PTCOUNT] = {
 	"PointMission",
 };
 
-static const char* POINT_DECOR_NAMES[DECOR_POINT_COUNT] = {
+static const char* POINT_DECOR_NAMES[DECOR_POINT_TYPE_COUNT] = {
 	"Decor1",
 	"Decor2",
 	"Decor3a",
@@ -51,7 +51,7 @@ CPointEntity::CPointEntity( const CGameMap::SPoint& point )
 		mColor = &(D3DXCOLOR(point.colorTone).r);
 		break;
 	case PT_DECORATIVE:
-		mWorldMat.getOrigin().y = -gmap.getCell(point.x,point.y).height+0.25f;
+		mWorldMat.getOrigin().y = -gmap.getCell(point.x,point.y).height;
 		mAlphaBase = 0.50f;
 		mAlphaAmpl = 0.10f;
 		mColor.set(1,1,1,1);

@@ -10,10 +10,13 @@ sampler2D	smpBase = sampler_state {
 };
 
 static inline half lighting( half3 n, half3 vn ) {
+	const float3 lightDir = normalize(float3(0.6,-1.0f,0.2));
+	half diff = saturate( dot(n,lightDir)*0.3+0.5 );
+
 	half a = 1-abs(n.y)*0.6;
 	half rim = 1-vn.z;
 	rim *= a;
-	return rim + 0.2;
+	return diff + rim;
 }
 
 

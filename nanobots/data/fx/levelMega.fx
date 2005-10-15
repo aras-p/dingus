@@ -19,7 +19,7 @@ SPosColTexFog vsMain11( SPosNCol i ) {
 	float3 n = i.normal*2-1;
 
 	o.color = i.color;
-	o.color.xyz *= 1-abs(n.y)*0.6;
+	o.color.xyz *= 1.2-abs(n.y)*0.8;
 
 	o.uv = float2(i.pos.x,i.pos.z) * 0.02;
 

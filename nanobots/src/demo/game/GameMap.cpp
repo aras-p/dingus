@@ -274,9 +274,20 @@ std::string CGameMap::initialize()
 	// calculate cell heights
 	calcCellHeights();
 
-	// TBD: add some decorative elements for testing
-	const int DECOR_TRY_COUNT = 200;
-	for( int i = 0; i < DECOR_TRY_COUNT; ++i ) {
+	// add some decorative elements
+	static int DECOR_TYPES_IN_TISSUE[DECOR_POINT_TYPE_COUNT] = {
+		(1<<CCOLOR_BLOOD),
+		(1<<CCOLOR_BONE),
+		(1<<CCOLOR_NEURON),
+		(1<<CCOLOR_NEURON),
+	};
+	const int DECOR_PTS_COUNT = 75;
+	const int MAX_TRY_COUNT = DECOR_PTS_COUNT * 10;
+	int decPtsCounter = 0;
+	int tryCounter = 0;
+	while( decPtsCounter < DECOR_PTS_COUNT && tryCounter < MAX_TRY_COUNT ) {
+		++tryCounter;
+
 		int x = gRandom.getUInt() % mCellsX;
 		int y = gRandom.getUInt() % mCellsY;
 		const SCell& cell = mCells[pos2index(x,y)];
@@ -285,7 +296,12 @@ std::string CGameMap::initialize()
 		if( cell.height < 2.0f )
 			continue;
 
-		mPoints.push_back( SPoint(PT_DECORATIVE,x,y, gRandom.getUInt() % DECOR_POINT_COUNT) );
+		int ptType = gRandom.getUInt() % DECOR_POINT_TYPE_COUNT;
+		if( !(DECOR_TYPES_IN_TISSUE[ptType] & (1<<cell.color)) )
+			continue;
+
+		mPoints.push_back( SPoint(PT_DECORATIVE,x,y, ptType) );
+		decPtsCounter++;
 	}
 
 	// register level texture
