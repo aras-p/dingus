@@ -4,8 +4,7 @@
 /// Wall-bounding cells have this height. The further from the walls, the higher height.
 const float MIN_CELL_HEIGHT = 1.5f;
 
-const int DECOR_POINT_COUNT = 2;
-
+const int DECOR_POINT_COUNT = 4;
 
 class CGameMap : public boost::noncopyable {
 public:
@@ -22,7 +21,7 @@ public:
 	struct SCell {
 		float		height;	// half of floor-ceiling distance
 		eCellType	type;
-		bool		otherType; // true/false - one or another texture
+		eCellColor	color;
 		bool		nearBone; // some of 8-neighbour cells is bone
 	};
 

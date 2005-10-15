@@ -62,12 +62,7 @@ public:
 			D3DCOLOR* p = (D3DCOLOR*)linePtr;
 			for( int x = 0; x < mGameMap->getCellsX(); ++x ) {
 				const CGameMap::SCell& cell = mGameMap->getCell(x,y);
-				switch( cell.type ) {
-				case CELL_BLOOD1:	*p = 0xFF400000; break;
-				case CELL_BLOOD2:	*p = 0xFF300000; break;
-				case CELL_BLOOD3:	*p = 0xFF200000; break;
-				default:			*p = 0x00000000; break;
-				}
+				*p = gColors.minimap[cell.color][cell.type];
 				++p;
 			}
 			linePtr += lr.Pitch;
@@ -179,13 +174,33 @@ std::string CGameMap::initialize()
 		for( int x = 0; x < mCellsX; ++x ) {
 			SCell& cell = mCells[y*mCellsX+x];
 			switch( *p ) {
-			case 0xFFff0000:	cell.type = CELL_BLOOD1; cell.otherType = false; break;
-			case 0xFF00ff00:	cell.type = CELL_BLOOD2; cell.otherType = false;  break;
-			case 0xFF0000ff:	cell.type = CELL_BLOOD3; cell.otherType = false;  break;
-			case 0xFF800000:	cell.type = CELL_BLOOD1; cell.otherType = true; break;
-			case 0xFF008000:	cell.type = CELL_BLOOD2; cell.otherType = true;  break;
-			case 0xFF000080:	cell.type = CELL_BLOOD3; cell.otherType = true;  break;
-			default:			cell.type = CELL_BONE; cell.otherType = false;  break;
+			case 0xFFff0000:
+				cell.type = CELL_BLOOD1;
+				cell.color = CCOLOR_BLOOD; // TBD
+				break;
+			case 0xFF00ff00:
+				cell.type = CELL_BLOOD2;
+				cell.color = CCOLOR_BONE; // TBD
+				break;
+			case 0xFF0000ff:
+				cell.type = CELL_BLOOD3;
+				cell.color = CCOLOR_NEURON; // TBD
+				break;
+			case 0xFF800000:
+				cell.type = CELL_BLOOD1;
+				cell.color = CCOLOR_BLOOD; // TBD
+				break;
+			case 0xFF008000:
+				cell.type = CELL_BLOOD2;
+				cell.color = CCOLOR_BONE; // TBD
+				break;
+			case 0xFF000080:
+				cell.type = CELL_BLOOD3;
+				cell.color = CCOLOR_NEURON; // TBD
+				break;
+			default:
+				cell.type = CELL_BONE;
+				cell.color = CCOLOR_BLOOD;
 			}
 			cell.height = MIN_CELL_HEIGHT;
 			cell.nearBone = true;

@@ -58,6 +58,14 @@ enum eCellType {
 	CELLCOUNT
 };
 
+// Cell color types
+enum eCellColor {
+	CCOLOR_BLOOD = 0,
+	CCOLOR_BONE,
+	CCOLOR_NEURON,
+	CCOLORCOUNT
+};
+
 /// Special point types
 enum ePointType {
 	PT_AZN = 0,

@@ -15,7 +15,8 @@ void CTriangleMesh::initFromSubdivMesh( const CSubdivMesh& sm )
 	for( i = 0; i < n; ++i ) {
 		mVerts[i].pos = sm.getVerts()[i].pos;
 		mVerts[i].normal = sm.getVerts()[i].normal;
-		mVerts[i].data = sm.getVerts()[i].data;
+		const SVector3& d = sm.getVerts()[i].data;
+		mVerts[i].data.set( d.x, d.y, d.z, 0.0f );
 	}
 
 	// create faces - each quad into two tris
@@ -46,7 +47,7 @@ void CTriangleMesh::optimize( float tolerance )
 
 	int nverts = mVerts.size();
 	for( i = 0; i < nverts; ++i )
-		mVerts[i].data.z = 0.0f;
+		mVerts[i].data.w = 0.0f;
 
 	// go thru hedges
 	CONS << "optimize start: verts=" << (int)mVerts.size() << " tris=" << (int)mFaces.size() << endl;
@@ -64,7 +65,7 @@ void CTriangleMesh::optimize( float tolerance )
 
 			// go through "from" vertex adjacent faces, project "to" vertex
 			// onto them, calc error
-			float hedgeError = vfrom.data.z + vto.data.z;
+			float hedgeError = vfrom.data.w + vto.data.w;
 			// cheesy fix: if "from" vert is on 0.0 height, and "to" is not, OR
 			// vert heights are of different signs
 			// then try to prevent this edge collapse
@@ -143,7 +144,7 @@ void CTriangleMesh::optimize( float tolerance )
 			}
 
 			assert( hedgeError >= 0.0f );
-			vto.data.z = hedgeError;
+			vto.data.w = hedgeError;
 			bool ok = collapseHEdge( i );
 			if( ok ) {
 				++collsDone;

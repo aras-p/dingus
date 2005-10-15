@@ -3,8 +3,7 @@ groups = {
 {
   fx = 'level', pri = 0,
   params = {
-	  { 'tex', 'tBase1', 'WallsA' },
-	  { 'tex', 'tBase2', 'WallsB' },
+	  { 'tex', 'tBase', 'WallsGray' },
   },
 },
 }

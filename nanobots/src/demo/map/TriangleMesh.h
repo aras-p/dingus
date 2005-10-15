@@ -9,7 +9,7 @@
 /**
  *  A triangle-based mesh.
  */
-class CTriangleMesh : public CGenericMesh<3,SVector3> {
+class CTriangleMesh : public CGenericMesh<3,SVector4> {
 public:
 	void	initFromSubdivMesh( const CSubdivMesh& sm );
 	void	optimize( float tolerance );

@@ -35,8 +35,11 @@ technique tecFFP
 
 		AlphaBlendEnable = True;
 		SrcBlend = SrcAlpha;
-		DestBlend = One;
+		DestBlend = InvSrcAlpha;
 		ZWriteEnable = False;
+		//AlphaTestEnable = True;
+		//AlphaFunc = Greater;
+		//AlphaRef = 128;
 		CullMode = None;
 
 		Sampler[0] = <smpBase>;
@@ -49,6 +52,16 @@ technique tecFFP
 
 		ColorOp[1] = Disable;
 		AlphaOp[1] = Disable;
+		
+		// only render where bit 1 is set (inside level)
+		StencilEnable = True;
+		StencilFunc = Equal;
+		StencilRef = 1;
+		StencilMask = 1;
+		StencilWriteMask = 0;
+		StencilFail = Keep;
+		StencilPass = Keep;
+		StencilZFail = Keep;
 	}
 	RESTORE_PASS
 }

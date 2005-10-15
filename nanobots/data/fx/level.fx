@@ -3,17 +3,11 @@
 #include "lib/fog.fx"
 
 
-texture		tBase1;
-sampler2D	smpBase1 = sampler_state {
-	Texture = (tBase1);
+texture		tBase;
+sampler2D	smpBase = sampler_state {
+	Texture = (tBase);
 	MagFilter = Linear; MinFilter = Linear; MipFilter = Linear;
 };
-texture		tBase2;
-sampler2D	smpBase2 = sampler_state {
-	Texture = (tBase2);
-	MagFilter = Linear; MinFilter = Linear; MipFilter = Linear;
-};
-
 
 static inline half lighting( half3 n, half3 vn ) {
 	half a = 1-abs(n.y)*0.6;
@@ -25,13 +19,12 @@ static inline half lighting( half3 n, half3 vn ) {
 
 // --------------------------------------------------------------------------
 
-SPosCol2Tex3F vsMain20( SPosCol i ) {
+SPosCol2Tex3F vsMain20( SPosNCol i ) {
 	SPosCol2Tex3F o;
 
-	float3 n = i.color.xyz*2-1;
+	float3 n = i.normal*2-1;
 	float3 vn = mul( n, (float3x3)mView );
-	o.color[0] = lighting( n, vn );
-	o.color[0].w = i.color.w;
+	o.color[0] = lighting( n, vn ) * i.color;
 
 	float3 an = abs(n);
 	an /= (an.x+an.y+an.z);
@@ -50,25 +43,17 @@ SPosCol2Tex3F vsMain20( SPosCol i ) {
 }
 
 half4 psMain20( SPosCol2Tex3F i ) : COLOR {
-	half3 color = i.color[0].xyz;
+	half3 color = i.color[0].rgb;
 	half3 an = i.color[1].xyz;
-	half alpha = i.color[0].w;
 
-	half4 cbase1x = tex2D( smpBase1, i.uv[0] ) * an.x;
-	half4 cbase1y = tex2D( smpBase1, i.uv[1] ) * an.y;
-	half4 cbase1z = tex2D( smpBase1, i.uv[2] ) * an.z;
-	half4 cbase1 = cbase1x + cbase1y + cbase1z;
+	half3 cbasex = tex2D( smpBase, i.uv[0] ).rgb * an.x;
+	half3 cbasey = tex2D( smpBase, i.uv[1] ).rgb * an.y;
+	half3 cbasez = tex2D( smpBase, i.uv[2] ).rgb * an.z;
+	half3 cbase = cbasex + cbasey + cbasez;
 
-	half4 cbase2x = tex2D( smpBase2, i.uv[0] ) * an.x;
-	half4 cbase2y = tex2D( smpBase2, i.uv[1] ) * an.y;
-	half4 cbase2z = tex2D( smpBase2, i.uv[2] ) * an.z;
-	half4 cbase2 = cbase2x + cbase2y + cbase2z;
+	cbase *= color;
 
-	half4 cbase = lerp( cbase1, cbase2, alpha );
-
-	cbase.rgb *= color;
-
-	return cbase;
+	return half4( cbase, 1 );
 }
 
 technique tec20
@@ -85,6 +70,7 @@ technique tec20
 
 // --------------------------------------------------------------------------
 
+/*
 SPosColTex2F vsMain11( SPosCol i ) {
 	SPosColTex2F o;
 
@@ -175,3 +161,4 @@ technique tecFFP
 	}
 	RESTORE_PASS
 }
+*/

@@ -3,11 +3,23 @@
 #include "TriangleMesh.h"
 #include "../game/GameMap.h"
 #include "Collider.h"
+#include "../game/GameColors.h"
 
 #include <dingus/renderer/Renderable.h>
 #include <dingus/resource/MeshCreator.h>
 
 extern SAppSettings gAppSettings;
+
+
+
+const unsigned int CACHED_DATA_VERSION = 20051015;
+
+
+struct SLevelVertex {
+	SVector3	p;
+	D3DCOLOR	n; // normal encoded in first three bytes
+	D3DCOLOR	col; // color
+};
 
 
 // --------------------------------------------------------------------------
@@ -82,7 +94,7 @@ public:
 	CGameMapMeshData( FILE* f )
 	:	mTriMesh(0), mMeshCount(0),
 		mVertexCounts(0), mTriCounts(0), mVBs(0), mIBs(0),
-		mVFormat( CVertexFormat::V_POSITION | CVertexFormat::COLOR_MASK ),
+		mVFormat( CVertexFormat::V_POSITION | CVertexFormat::V_NORMALCOL | CVertexFormat::COLOR_MASK ),
 		mCeilY(0.0f),
 		mColMesh( 0 )
 	{
@@ -95,15 +107,15 @@ public:
 		fread( &mMeshCount, 1, 4, f );
 		mVertexCounts = new int[ mMeshCount ];
 		mTriCounts = new int[ mMeshCount ];
-		mVBs = new CLevelMesh::TVertex*[ mMeshCount ];
+		mVBs = new SLevelVertex*[ mMeshCount ];
 		mIBs = new unsigned short*[ mMeshCount ];
 		// [meshcount] - VB+IB
 		for( i = 0; i < mMeshCount; ++i ) {
 			fread( &mVertexCounts[i], 1, 4, f );	// 4b - vertex count
 			fread( &mTriCounts[i], 1, 4, f );		// 4b - tri count
 			// [vertex count] vertices
-			mVBs[i] = new CLevelMesh::TVertex[ mVertexCounts[i] ];
-			fread( mVBs[i], sizeof(CLevelMesh::TVertex), mVertexCounts[i], f );
+			mVBs[i] = new SLevelVertex[ mVertexCounts[i] ];
+			fread( mVBs[i], sizeof(SLevelVertex), mVertexCounts[i], f );
 			// [tricount*3] indices
 			mIBs[i] = new unsigned short[ mTriCounts[i] * 3 ];
 			fread( mIBs[i], 2*3, mTriCounts[i], f );
@@ -131,7 +143,7 @@ public:
 	CGameMapMeshData( const CTriangleMesh& triMesh, bool createColMesh, float ceilY )
 	:	mTriMesh( &triMesh ), mMeshCount(0),
 		mVertexCounts(0), mTriCounts(0), mVBs(0), mIBs(0),
-		mVFormat( CVertexFormat::V_POSITION | CVertexFormat::COLOR_MASK ),
+		mVFormat( CVertexFormat::V_POSITION | CVertexFormat::V_NORMALCOL | CVertexFormat::COLOR_MASK ),
 		mCeilY(ceilY),
 		mColMesh( 0 )
 	{
@@ -165,7 +177,7 @@ public:
 			fwrite( &mVertexCounts[i], 1, 4, f );	// 4b - vertex count
 			fwrite( &mTriCounts[i], 1, 4, f );		// 4b - tri count
 			// [vertex count] vertices
-			fwrite( mVBs[i], sizeof(CLevelMesh::TVertex), mVertexCounts[i], f );
+			fwrite( mVBs[i], sizeof(SLevelVertex), mVertexCounts[i], f );
 			// [tricount*3] indices
 			fwrite( mIBs[i], 2*3, mTriCounts[i], f );
 		}
@@ -245,7 +257,7 @@ private:
 		}
 		m->UnlockIndexBuffer();
 		// VB
-		CLevelMesh::TVertex* vb = 0;
+		SLevelVertex* vb = 0;
 		m->LockVertexBuffer( 0, (void**)&vb );
 		for( i = 0; i < nsrcverts; ++i ) {
 			if( isCeilVert(i) )
@@ -260,8 +272,13 @@ private:
 			int nx = int(n.x) & 255;
 			int ny = int(n.y) & 255;
 			int nz = int(n.z) & 255;
-			int nw = int(v.data.x * 255.0f) & 255;
-			vb->diffuse = (nw<<24) | (nx<<16) | (ny<<8) | (nz<<0);
+			vb->n = (nx<<16) | (ny<<8) | (nz);
+			SVector3 col = v.data;
+			col *= 255.0f;
+			int cx = int(col.x) & 255;
+			int cy = int(col.y) & 255;
+			int cz = int(col.z) & 255;
+			vb->col = (cx<<16) | (cy<<8) | (cz);
 			++vb;
 		}
 		m->UnlockVertexBuffer();
@@ -304,7 +321,7 @@ private:
 		mMeshCount = meshesCount;
 		mVertexCounts = new int[meshesCount];
 		mTriCounts = new int[meshesCount];
-		mVBs = new CLevelMesh::TVertex*[meshesCount];
+		mVBs = new SLevelVertex*[meshesCount];
 		mIBs = new unsigned short*[meshesCount];
 		for( i = 0; i < meshesCount; ++i ) {
 			ID3DXMesh* mm = meshes[i];
@@ -319,10 +336,10 @@ private:
 			memcpy( mIBs[i], mib, mTriCounts[i]*3*2 );
 			mm->UnlockIndexBuffer();
 
-			const CLevelMesh::TVertex* mvb = 0;
+			const SLevelVertex* mvb = 0;
 			mm->LockVertexBuffer( D3DLOCK_READONLY, (void**)&mvb );
-			mVBs[i] = new CLevelMesh::TVertex[mVertexCounts[i]];
-			memcpy( mVBs[i], mvb, mVertexCounts[i]*sizeof(CLevelMesh::TVertex) );
+			mVBs[i] = new SLevelVertex[mVertexCounts[i]];
+			memcpy( mVBs[i], mvb, mVertexCounts[i]*sizeof(SLevelVertex) );
 			mm->UnlockVertexBuffer();
 			
 			mm->Release();
@@ -341,7 +358,7 @@ public:
 	int		mMeshCount;
 	int*	mVertexCounts;
 	int*	mTriCounts;
-	CLevelMesh::TVertex**	mVBs;
+	SLevelVertex**	mVBs;
 	unsigned short**		mIBs;
 	CVertexFormat			mVFormat;
 
@@ -381,7 +398,7 @@ public:
 		// groups
 		unsigned short* pib = (unsigned short*)mesh.lockIBWrite();
 		assert( pib );
-		CLevelMesh::TVertex* pvb = (CLevelMesh::TVertex*)mesh.lockVBWrite();
+		SLevelVertex* pvb = (SLevelVertex*)mesh.lockVBWrite();
 		assert( pvb );
 
 		int groupTri = 0;
@@ -389,7 +406,7 @@ public:
 		for( i = 0; i < ngroups; ++i ) {
 			memcpy( pib, mData->mIBs[i], mData->mTriCounts[i]*3*2 );
 			pib += mData->mTriCounts[i]*3;
-			memcpy( pvb, mData->mVBs[i], mData->mVertexCounts[i]*sizeof(CLevelMesh::TVertex) );
+			memcpy( pvb, mData->mVBs[i], mData->mVertexCounts[i]*sizeof(SLevelVertex) );
 			pvb += mData->mVertexCounts[i];
 
 			CMesh::CGroup group(groupVert,mData->mVertexCounts[i],groupTri,mData->mTriCounts[i]);
@@ -605,7 +622,6 @@ void CLevelMesh::computeData()
 	saveDataToCache();
 }
 
-const unsigned int CACHED_DATA_VERSION = 20050930;
 
 
 bool CLevelMesh::loadCachedData()
@@ -752,9 +768,9 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x-0.5f, y0, -(z-0.5f) );
 				mverts[vidx+1].pos.set( x-0.5f, y1, -(z-0.5f) );
-				SVector3 dt( c.otherType ? 1.0f : 0.0f, 0, 0 );
-				mverts[vidx+0].data = dt;
-				mverts[vidx+1].data = dt;
+				SVector3 col = gColors.texture[c.color];
+				mverts[vidx+0].data = col;
+				mverts[vidx+1].data = col;
 				vertsmine.ul = vidx;
 			}
 			if( vertsmine.ur < 0 ) {
@@ -763,9 +779,9 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x+1-0.5f, y0, -(z-0.5f) );
 				mverts[vidx+1].pos.set( x+1-0.5f, y1, -(z-0.5f) );
-				SVector3 dt( c.otherType ? 1.0f : 0.0f, 0, 0 );
-				mverts[vidx+0].data = dt;
-				mverts[vidx+1].data = dt;
+				SVector3 col = gColors.texture[c.color];
+				mverts[vidx+0].data = col;
+				mverts[vidx+1].data = col;
 				vertsmine.ur = vidx;
 			}
 			if( vertsmine.dl < 0 ) {
@@ -774,9 +790,9 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x-0.5f, y0, -(z+1-0.5f) );
 				mverts[vidx+1].pos.set( x-0.5f, y1, -(z+1-0.5f) );
-				SVector3 dt( c.otherType ? 1.0f : 0.0f, 0, 0 );
-				mverts[vidx+0].data = dt;
-				mverts[vidx+1].data = dt;
+				SVector3 col = gColors.texture[c.color];
+				mverts[vidx+0].data = col;
+				mverts[vidx+1].data = col;
 				vertsmine.dl = vidx;
 			}
 			{
@@ -785,9 +801,9 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x+1-0.5f, y0, -(z+1-0.5f) );
 				mverts[vidx+1].pos.set( x+1-0.5f, y1, -(z+1-0.5f) );
-				SVector3 dt( c.otherType ? 1.0f : 0.0f, 0, 0 );
-				mverts[vidx+0].data = dt;
-				mverts[vidx+1].data = dt;
+				SVector3 col = gColors.texture[c.color];
+				mverts[vidx+0].data = col;
+				mverts[vidx+1].data = col;
 				vertsmine.dr = vidx;
 			}
 

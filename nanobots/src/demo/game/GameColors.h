@@ -1,6 +1,7 @@
 #ifndef __GAME_COLORS_H
 #define __GAME_COLORS_H
 
+#include "GameTypes.h"
 #include <dingus/math/Vector4.h>
 
 
@@ -35,9 +36,15 @@ struct SColors {
 	SColorSet	ptAZN;
 	SColorSet	ptHoshimi;
 	SColorSet	ptObjective;
+
+	SVector3	texture[CCOLORCOUNT];
+	D3DCOLOR	minimap[CCOLORCOUNT][CELLCOUNT];
 };
 
 extern SColors	gColors;
+
+void gInitColors();
+
 
 
 #endif

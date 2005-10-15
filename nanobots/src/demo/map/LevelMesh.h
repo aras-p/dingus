@@ -1,7 +1,6 @@
 #ifndef __LEVEL_MESH_H
 #define __LEVEL_MESH_H
 
-#include <dingus/gfx/Vertices.h>
 #include <dingus/renderer/RenderableMesh.h>
 #include "../DemoResources.h"
 #include "Collider.h"
@@ -18,7 +17,6 @@ class CGameMapMeshCreator;
 
 class CLevelMesh : public boost::noncopyable {
 public:
-	typedef SVertexXyzDiffuse	TVertex;
 	enum eMeshMode { FULL=0, NOTOP, MESHMODECOUNT };
 public:
 	CLevelMesh( const CGameMap& gameMap );
