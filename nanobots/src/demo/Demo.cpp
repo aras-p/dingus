@@ -1017,12 +1017,10 @@ static void gRenderMinimap()
 	gCameraMiniMap.setOntoRenderContext();
 
 	dx.clearTargets( false, true, false, 0xFF201010, 1.0f, 0L );
-	dx.sceneBegin();
 	G_RENDERCTX->applyGlobalEffect();
 	CGameInfo::getInstance().getLevelMesh().renderMinimap();
 	CGameInfo::getInstance().getEntities().renderMinimap();
 	G_RENDERCTX->perform();
-	dx.sceneEnd();
 
 	viewp.X = 0;
 	viewp.Y = 0;
@@ -1491,29 +1489,22 @@ void CDemo::perform()
 		gUIDlg->onRender( dt );
 	}
 
-	dx.sceneEnd();
-
 	// render minimap
 	if( gAppSettings.showMinimap && !gameSetupActive )
 		gRenderMinimap();
 
 	// render GUI #2
 	if( gUISettingsDlg->getState() == CDemoSettingsDialog::STATE_ACTIVE ) {
-		dx.sceneBegin();
 		gUISettingsDlg->getDialog().onRender( dt );
-		dx.sceneEnd();
 	}
 	if( gUIHelpDlg->isActive() ) {
-		dx.sceneBegin();
 		gUIHelpDlg->getDialog().onRender( dt );
-		dx.sceneEnd();
 	}
 	if( gUIGameSetupDlg->getState() == CGameSetupDialog::STATE_ACTIVE ) {
-		dx.sceneBegin();
 		gUIGameSetupDlg->getDialog().onRender( dt );
-		dx.sceneEnd();
 	}
 
+	dx.sceneEnd();
 	G_AUDIOCTX->endScene();
 }
 

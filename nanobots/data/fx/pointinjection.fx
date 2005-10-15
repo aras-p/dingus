@@ -27,7 +27,7 @@ SPosColTex vsMainFF( SPosNTex i ) {
 	float a = lerp( vColor.a, 0.35, i.pos.y*0.15 );
 	o.color.rgb = vColor.rgb;
 	o.color.a = a * rim;
-	o.color.a *= saturate( i.pos.y );
+	o.color.a *= saturate( min( i.pos.y, 15-i.pos.y ) );
 	o.color.a *= saturate( gFogWV( i.pos, mWorldView ) );
 
 	o.uv.x = i.uv.x + fTime * 0.08;
