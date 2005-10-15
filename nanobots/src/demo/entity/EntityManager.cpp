@@ -32,7 +32,7 @@ CEntityManager::CEntityManager()
 
 	// point entities
 	n = gmap.getPointCount();
-	mPointEntities.reserve( n + G_MAX_PLAYERS ); // reserve space for injection points
+	mPointEntities.reserve( n + 128 ); // reserve space for injection points
 	mPointEntities.resize( n ); 
 	for( i = 0; i < n; ++i ) {
 		mPointEntities[i] = new CPointEntity( gmap.getPoint(i) );
@@ -134,6 +134,8 @@ void CEntityManager::renderMinimap()
 	n = gmap.getPointCount();
 	for( i = 0; i < n; ++i ) {
 		const CGameMap::SPoint& pt = gmap.getPoint(i);
+		if( pt.type == PT_DECORATIVE )
+			continue;
 		minir.addEntity( SVector3(pt.x,0.0f,-pt.y), pt.colorMain & 0x80ffffff, 4.0f );
 	}
 	// actors

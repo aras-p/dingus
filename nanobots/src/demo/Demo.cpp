@@ -97,7 +97,6 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 
 
 static const char* CFG_SETTINGS = "data/config.dat";
-static const DWORD CFG_VERSION = 20051007;
 
 
 void CDemo::initD3DSettingsPref( SD3DSettingsPref& pref )
@@ -244,6 +243,7 @@ const int	GID_CHK_HELP = 1051;
 const int	GID_CHK_AZN_NEED = 1110;
 const int	GID_CHK_AZN_COLL = 1111;
 const int	GID_CHK_NAMES = 1112;
+const int	GID_CHK_DECOR = 1113;
 
 //const int	GID_BTN_PLAY = 1200; // TBD
 
@@ -343,13 +343,14 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 			case GID_CHK_AZN_NEED:
 				gAppSettings.drawAznNeedle = cbox->isChecked();
 				break;
-
 			case GID_CHK_AZN_COLL:
 				gAppSettings.drawAznCollector = cbox->isChecked();
 				break;
-
 			case GID_CHK_NAMES:
 				gAppSettings.drawEntityNames = cbox->isChecked();
+				break;
+			case GID_CHK_DECOR:
+				gAppSettings.drawDecoratives = cbox->isChecked();
 				break;
 
 			case GID_ROL_MINIMAP:
@@ -638,8 +639,9 @@ static void	gSetupGUI()
 		*/
 		
 		gUIDlg->addCheckBox( GID_CHK_AZN_NEED, "AZN Needles", 2, 332, 90, UIHCTL, gAppSettings.drawAznNeedle, 0, false, NULL );
-		gUIDlg->addCheckBox( GID_CHK_AZN_COLL, "AZN Collectors", 2, 348, 90, UIHCTL, gAppSettings.drawAznCollector, 0, false, NULL );
-		gUIDlg->addCheckBox( GID_CHK_NAMES, "Entity names", 2, 364, 90, UIHCTL, gAppSettings.drawEntityNames, 0, false, NULL );
+		gUIDlg->addCheckBox( GID_CHK_AZN_COLL, "AZN Collectors", 2, 332+16, 90, UIHCTL, gAppSettings.drawAznCollector, 0, false, NULL );
+		gUIDlg->addCheckBox( GID_CHK_NAMES, "Entity names", 2, 332+16*2, 90, UIHCTL, gAppSettings.drawEntityNames, 0, false, NULL );
+		gUIDlg->addCheckBox( GID_CHK_DECOR, "Decorative el.", 2, 332+16*3, 90, UIHCTL, gAppSettings.drawDecoratives, 0, false, NULL );
 
 		gUIDlg->addCheckBox( GID_CHK_OPTIONS, "Options", 560, 480-UIHCTL*2, 80, UIHCTL, gSettingsDlgWasActive );
 		gUIDlg->addCheckBox( GID_CHK_HELP, "Help", 560, 480-UIHCTL, 80, UIHCTL, gHelpDlgWasActive );

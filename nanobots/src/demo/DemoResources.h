@@ -57,6 +57,9 @@ const int GFX_DETAIL_LEVELS = 4;
 const int SFX_MAX_VOLUME = 100;
 
 
+static const DWORD CFG_VERSION = 20051015;
+
+
 struct SAppSettings {
 	SAppSettings()
 		: gfxDetail(GFX_DETAIL_LEVELS-1),
@@ -64,7 +67,7 @@ struct SAppSettings {
 		megaZoom(30.0f), megaTilt(50.0f),
 		followMode(false), showMinimap(true),
 		drawAznNeedle(true), drawAznCollector(false),
-		drawEntityNames(false),
+		drawEntityNames(false), drawDecoratives(true),
 		cacheLevels(true)
 	{ }
 
@@ -78,6 +81,7 @@ struct SAppSettings {
 	bool	drawAznNeedle;
 	bool	drawAznCollector;
 	bool	drawEntityNames;
+	bool	drawDecoratives;
 	bool	cacheLevels;
 };
 

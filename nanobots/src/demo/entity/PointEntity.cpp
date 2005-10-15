@@ -17,14 +17,15 @@ static const char* POINT_DECOR_NAMES[DECOR_POINT_TYPE_COUNT] = {
 	"Decor1", "Decor1", "Decor1",
 	"Decor2", "Decor2", "Decor2",
 	"Decor3a", "Decor3b", "Decor4",
+	"Decor5", "Decor6", "Decor7",
 };
 
 
 
 CPointEntity::CPointEntity( const CGameMap::SPoint& point )
-:	CMeshEntity( point.type==PT_DECORATIVE ? POINT_DECOR_NAMES[ point.data ] : POINT_TYPENAMES[ point.type ], 1 ),
-	mTimeOffset( gRandom.getFloat(0,10) ),
-	mPoint( &point )
+:	CMeshEntity( point.type==PT_DECORATIVE ? POINT_DECOR_NAMES[ point.data ] : POINT_TYPENAMES[ point.type ], 1 )
+,	mTimeOffset( gRandom.getFloat(0,10) )
+,	mPoint( &point )
 {
 	const CGameMap& gmap = CGameInfo::getInstance().getGameDesc().getMap();
 
@@ -68,6 +69,12 @@ CPointEntity::~CPointEntity()
 
 void CPointEntity::update()
 {
+	// if we're decorative and they are turned off - set color to transparent and return
+	if( (mPoint->type == PT_DECORATIVE) && !gAppSettings.drawDecoratives ) {
+		mColor.w = 0.0f;
+		return;
+	}
+
 	// if we're Hoshimi - go through all needles and see if any stands on me
 	// TBD
 	/*
