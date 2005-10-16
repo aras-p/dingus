@@ -11,7 +11,8 @@ const char* ARG_X = "-x";
 const char* ARG_Y = "-y";
 const char* ARG_SWAPYZ = "-s";
 const char* ARG_TGA = "-t";
-const char* ARG_CREATEUV = "-u";
+const char* ARG_PERVERTEX = "-v";
+//const char* ARG_CREATEUV = "-u";
 
 
 const CCmdlineArgs* gArgs;
@@ -67,6 +68,8 @@ ID3DXMesh* loadMeshFromDMESH( const char* fileName )
 	assert( vstride > 0 );
 	assert( istride==2 || istride==4 );
 	assert( vformat != 0 );
+
+	printf( "  input dmesh: %i verts, %i tris, %i groups\n", nverts, ntris, ngroups );
 
 	// figure out vertex declaration
 	dingus::CVertexFormat format(vformat);
@@ -152,7 +155,7 @@ HRESULT WINAPI gProgressCallback( float percentDone, void* user )
 	return S_OK;
 }
 
-
+/*
 static ID3DXMesh* createUniqueUVs( ID3DXMesh* mesh, int texX, int texY )
 {
 	HRESULT hr;
@@ -204,7 +207,7 @@ static ID3DXMesh* createUniqueUVs( ID3DXMesh* mesh, int texX, int texY )
 
 	return mesh;
 }
-
+*/
 
 static IDirect3DTexture9*	gCreateSignedNormalMap( IDirect3DTexture9* inputNormalMap, bool swapYZ )
 {
@@ -275,14 +278,14 @@ static const int SIM_SH_ORDER = 2;
 static const int SIM_SAMPLES = 1024;
 
 
-void processMesh( const char* meshFileName, const char* nmapFileName, int outX, int outY, bool swapYZ, bool outTGA, bool createUVs )
+void processMesh( const char* meshFileName, const char* nmapFileName, int outX, int outY, bool swapYZ, bool outTGA, bool perVertex/*, bool createUVs*/ )
 {
 	HRESULT hr;
 
 	time_t time1 = clock();
 
 	std::string fileNoExt = stripExtension( nmapFileName ? nmapFileName : meshFileName );
-	std::string resFile = fileNoExt + (outTGA ? "ao.tga" : "ao.dds");
+	std::string resFile = fileNoExt + (perVertex ? ".ao" : (outTGA ? "ao.tga" : "ao.dds"));
 
 	// load mesh
 	printf( "loading mesh '%s'...\n", meshFileName );
@@ -314,14 +317,16 @@ void processMesh( const char* meshFileName, const char* nmapFileName, int outX, 
 	}
 
 	// possibly create UV atlas and write out the resulting mesh
+	/*
 	if( createUVs ) {
 		mesh = createUniqueUVs( mesh, outX, outY );
 	}
+	*/
 
 	// create PRT engine
 	printf( "creating PRT engine...\n" );
 	ID3DXPRTEngine* prtEngine = NULL;
-	hr = D3DXCreatePRTEngine( mesh, NULL, TRUE, NULL, &prtEngine );
+	hr = D3DXCreatePRTEngine( mesh, NULL, perVertex ? FALSE : TRUE, NULL, &prtEngine );
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to create PRT engine" );
 
@@ -339,21 +344,26 @@ void processMesh( const char* meshFileName, const char* nmapFileName, int outX, 
 
 	hr = prtEngine->SetSamplingInfo( SIM_SAMPLES, TRUE, FALSE, FALSE, 0.0f );
 	if( FAILED(hr) )
-		throw std::runtime_error( "Failed to set PRT sampling params" );
+		throw std::runtime_error( "Failed to set PRT sampling parameters" );
 
 	// create PRT buffer
 	printf( "creating PRT buffer...\n" );
 	ID3DXPRTBuffer* prtBuffer = NULL;
-	hr = D3DXCreatePRTBufferTex( outX, outY, SIM_SH_ORDER*SIM_SH_ORDER, 1, &prtBuffer );
+	if( perVertex )
+		hr = D3DXCreatePRTBuffer( mesh->GetNumVertices(), SIM_SH_ORDER*SIM_SH_ORDER, 1, &prtBuffer );
+	else
+		hr = D3DXCreatePRTBufferTex( outX, outY, SIM_SH_ORDER*SIM_SH_ORDER, 1, &prtBuffer );
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to create PRT buffer" );
 
 	// create texture gutter helper
-	printf( "creating texture gutter...\n" );
 	ID3DXTextureGutterHelper* gutter = NULL;
-	hr = D3DXCreateTextureGutterHelper( outX, outY, mesh, float(outX)/1024*16, &gutter );
-	if( FAILED(hr) )
-		throw std::runtime_error( "Failed to create texture gutter" );
+	if( !perVertex ) {
+		printf( "creating texture gutter...\n" );
+		hr = D3DXCreateTextureGutterHelper( outX, outY, mesh, float(outX)/1024*16, &gutter );
+		if( FAILED(hr) )
+			throw std::runtime_error( "Failed to create texture gutter" );
+	}
 
 	// compute PRT
 	printf( "computing PRT...\n" );
@@ -362,100 +372,125 @@ void processMesh( const char* meshFileName, const char* nmapFileName, int outX, 
 			D3DXSHGPUSIMOPT_SHADOWRES1024, SIM_SH_ORDER, 0.001f, 0.01f, prtBuffer );
 	else
 		hr = prtEngine->ComputeDirectLightingSH( SIM_SH_ORDER, prtBuffer );
-
 	if( FAILED(hr) )
 		throw std::runtime_error( "Failed to compute PRT" );
 
 	// scale PRT for ambient occlusion
 	prtBuffer->ScaleBuffer( 2 * sqrtf(D3DX_PI) );
 
-	// apply texture gutter
-	printf( "applying texture gutter...\n" );
-	hr = gutter->ApplyGuttersPRT( prtBuffer );
-	if( FAILED(hr) )
-		throw std::runtime_error( "Failed to apply texture gutter" );
-
-	// create texture to store results
-	printf( "creating texture for results...\n" );
-	IDirect3DTexture9* prtTexture = NULL;
-	hr = D3DXCreateTexture( gD3DDevice.get(), outX, outY, 1,
-		0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &prtTexture );
-	if( FAILED(hr) )
-		throw std::runtime_error( "Failed to create texture" );
-	D3DXFillTexture( prtTexture, gFillBlack, NULL );
-
-	// extract PRT into texture
-	printf( "extracting data to texture...\n" );
-	hr = prtBuffer->ExtractTexture( 0, 0, 4, prtTexture );
-	if( FAILED(hr) )
-		throw std::runtime_error( "Failed to extract to texture" );
-
-	// possibly combine normal map and ambient occlusion
-	D3DLOCKED_RECT lrPRT;
-	prtTexture->LockRect( 0, &lrPRT, NULL, 0 );
-	if( nmapFileName ) {
-		printf( "combining input normal map and AO...\n" );
-		D3DLOCKED_RECT lrNM;
-		normalMap->LockRect( 0, &lrNM, NULL, D3DLOCK_READONLY );
-
-		for( int y = 0; y < outY; ++y ) {
-			const DWORD* rowNM = (const DWORD*)( ((char*)lrNM.pBits) + y*lrNM.Pitch );
-			DWORD* rowPRT = (DWORD*)( ((char*)lrPRT.pBits) + y*lrPRT.Pitch );
-			for( int x = 0; x < outX; ++x ) {
-				DWORD n = *rowNM;
-				*rowPRT = ((*rowPRT) << 8) & 0xFF000000;
-				if( swapYZ ) {
-					*rowPRT |= (n&0x00ff0000) | ((n&0x0000ff00)>>8) | ((n&0x000000ff)<<8);
-				} else {
-					*rowPRT |= n & 0x00ffffff;
-				}
-				++rowPRT;
-				++rowNM;
-			}
-		}
-
-		normalMap->UnlockRect( 0 );
-
-	} else {
-		printf( "filling AO texture...\n" );
-
-		for( int y = 0; y < outY; ++y ) {
-			DWORD* rowPRT = (DWORD*)( ((char*)lrPRT.pBits) + y*lrPRT.Pitch );
-			for( int x = 0; x < outX; ++x ) {
-				DWORD ao = (rowPRT[0] >> 16) & 0xFF;
-				*rowPRT = 0xFF000000 | (ao<<16) | (ao<<8) | ao;
-				++rowPRT;
-			}
-		}
-
-	}
-
-	prtTexture->UnlockRect( 0 );
-
-	// save texture
-	printf( "saving texture '%s'...\n", resFile.c_str() );
-	if( outTGA ) {
-		// TBD: why the output is flipped???
-		FILE* tgaf = fopen( resFile.c_str(), "wb" );
-		if( !tgaf )
-			throw std::runtime_error( "Failed to create output texture file" );
-		prtTexture->LockRect( 0, &lrPRT, NULL, 0 );
-		if( lrPRT.Pitch != outX*4 )
-			throw std::runtime_error( "TBD: catch the case when texture Pitch != size*4" );
-		if( !TGAWriteImage( tgaf, outX, outY, 32, (BYTE*)lrPRT.pBits ) ) {
-			throw std::runtime_error( "Failed to save TGA texture" );
-		}
-		prtTexture->UnlockRect( 0 );
-		fclose( tgaf );
-	} else {
-		hr = D3DXSaveTextureToFile( resFile.c_str(), D3DXIFF_DDS, prtTexture, NULL );
+	if( !perVertex ) {
+		// apply texture gutter
+		printf( "applying texture gutter...\n" );
+		hr = gutter->ApplyGuttersPRT( prtBuffer );
 		if( FAILED(hr) )
-			throw std::runtime_error( "Failed to save texture" );
+			throw std::runtime_error( "Failed to apply texture gutter" );
+		// create texture to store results
+		printf( "creating texture for results...\n" );
+		IDirect3DTexture9* prtTexture = NULL;
+		hr = D3DXCreateTexture( gD3DDevice.get(), outX, outY, 1,
+			0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &prtTexture );
+		if( FAILED(hr) )
+			throw std::runtime_error( "Failed to create texture" );
+		D3DXFillTexture( prtTexture, gFillBlack, NULL );
+
+		// extract PRT into texture
+		printf( "extracting data to texture...\n" );
+		hr = prtBuffer->ExtractTexture( 0, 0, 4, prtTexture );
+		if( FAILED(hr) )
+			throw std::runtime_error( "Failed to extract to texture" );
+
+		// possibly combine normal map and ambient occlusion
+		D3DLOCKED_RECT lrPRT;
+		prtTexture->LockRect( 0, &lrPRT, NULL, 0 );
+		if( nmapFileName ) {
+			printf( "combining input normal map and AO...\n" );
+			D3DLOCKED_RECT lrNM;
+			normalMap->LockRect( 0, &lrNM, NULL, D3DLOCK_READONLY );
+
+			for( int y = 0; y < outY; ++y ) {
+				const DWORD* rowNM = (const DWORD*)( ((char*)lrNM.pBits) + y*lrNM.Pitch );
+				DWORD* rowPRT = (DWORD*)( ((char*)lrPRT.pBits) + y*lrPRT.Pitch );
+				for( int x = 0; x < outX; ++x ) {
+					DWORD n = *rowNM;
+					*rowPRT = ((*rowPRT) << 8) & 0xFF000000;
+					if( swapYZ ) {
+						*rowPRT |= (n&0x00ff0000) | ((n&0x0000ff00)>>8) | ((n&0x000000ff)<<8);
+					} else {
+						*rowPRT |= n & 0x00ffffff;
+					}
+					++rowPRT;
+					++rowNM;
+				}
+			}
+
+			normalMap->UnlockRect( 0 );
+
+		} else {
+			printf( "filling AO texture...\n" );
+
+			for( int y = 0; y < outY; ++y ) {
+				DWORD* rowPRT = (DWORD*)( ((char*)lrPRT.pBits) + y*lrPRT.Pitch );
+				for( int x = 0; x < outX; ++x ) {
+					DWORD ao = (rowPRT[0] >> 16) & 0xFF;
+					*rowPRT = 0xFF000000 | (ao<<16) | (ao<<8) | ao;
+					++rowPRT;
+				}
+			}
+
+		}
+
+		prtTexture->UnlockRect( 0 );
+
+		// save texture
+		printf( "saving texture '%s'...\n", resFile.c_str() );
+		if( outTGA ) {
+			// TBD: why the output is flipped???
+			FILE* tgaf = fopen( resFile.c_str(), "wb" );
+			if( !tgaf )
+				throw std::runtime_error( "Failed to create output texture file" );
+			prtTexture->LockRect( 0, &lrPRT, NULL, 0 );
+			if( lrPRT.Pitch != outX*4 )
+				throw std::runtime_error( "TBD: catch the case when texture Pitch != size*4" );
+			if( !TGAWriteImage( tgaf, outX, outY, 32, (BYTE*)lrPRT.pBits ) ) {
+				throw std::runtime_error( "Failed to save TGA texture" );
+			}
+			prtTexture->UnlockRect( 0 );
+			fclose( tgaf );
+		} else {
+			hr = D3DXSaveTextureToFile( resFile.c_str(), D3DXIFF_DDS, prtTexture, NULL );
+			if( FAILED(hr) )
+				throw std::runtime_error( "Failed to save texture" );
+		}
+		prtTexture->Release();
+		gutter->Release();
+
+	} else {
+		// per-vertex PRT, extract and save output file
+		DWORD nverts = mesh->GetNumVertices();
+		printf( "extracting per-vertex AO from %i verts...\n", nverts );
+		float* prtData = NULL;
+		BYTE* aoData = new BYTE[nverts];
+		prtBuffer->LockBuffer( 0, nverts, &prtData );
+		for( DWORD i = 0; i < nverts; ++i ) {
+			float ao = prtData[i*(SIM_SH_ORDER*SIM_SH_ORDER)];
+			if( ao < 0 ) ao = 0;
+			else if( ao > 1 ) ao = 1;
+			aoData[i] = (BYTE)(ao*255.0f);
+		}
+		prtBuffer->UnlockBuffer();
+
+		printf( "saving AO '%s'...\n", resFile.c_str() );
+		FILE* aof = fopen( resFile.c_str(), "wb" );
+		if( !aof )
+			throw std::runtime_error( "Failed to create output AO file" );
+		fwrite( aoData, nverts, 1, aof );
+		fclose( aof );
+
+		delete[] aoData;
 	}
+
 
 	// cleanup
-	gutter->Release();
-	prtTexture->Release();
 	prtBuffer->Release();
 	prtEngine->Release();
 	if( normalMap )
@@ -495,17 +530,19 @@ int main( int argc, const char** argv )
 		int outputY = gArgs->getInt( -1, ARG_Y );
 		bool swapYZ = gArgs->contains( ARG_SWAPYZ );
 		bool outTGA = gArgs->contains( ARG_TGA );
-		bool createUVs = gArgs->contains( ARG_CREATEUV );
+		bool perVertex = gArgs->contains( ARG_PERVERTEX );
+		//bool createUVs = gArgs->contains( ARG_CREATEUV );
 
 		bool hadErrors = false;
 		if( !meshFileName ) {
 			printf( "ERROR: input mesh required\n" );
 			hadErrors = true;
 		}
-		if( !nmapFileName && (outputX < 0 && outputY < 0) ) {
-			printf( "ERROR: input normalmap or output width/height required\n" );
+		if( !nmapFileName && (outputX < 0 && outputY < 0) && !perVertex ) {
+			printf( "ERROR: input normal map or output width/height or per-vertex required\n" );
 			hadErrors = true;
 		}
+		/*
 		if( nmapFileName && createUVs ) {
 			printf( "ERROR: input normalmap and UV creation can't be used together\n" );
 			hadErrors = true;
@@ -514,6 +551,7 @@ int main( int argc, const char** argv )
 			printf( "ERROR: UV creation requires supplying output width/height\n" );
 			hadErrors = true;
 		}
+		*/
 		if( hadErrors ) {
 			gPrintUsage();
 			return 1;
@@ -524,7 +562,7 @@ int main( int argc, const char** argv )
 		//
 		// process
 
-		processMesh( meshFileName, nmapFileName, outputX, outputY, swapYZ, outTGA, createUVs );
+		processMesh( meshFileName, nmapFileName, outputX, outputY, swapYZ, outTGA, perVertex/*, createUVs*/ );
 
 		//
 		// close

@@ -7,12 +7,17 @@ Usage: AmbOccTool <options>
 	-y <int>	Output texture height
 	-s			If given - swap Y/Z in the input normal map
 	-t			If given - output TGA instead of DDS
-	-u			If given - compute UV parametrization
+	-v			Compute AO per vertex
 	
 Input mesh must contain unique UV parametrization in the first texture
-channel, or -u option must be given (careful on big meshes).
+channel, or "per vertex" option must be used.
 
-Supplying input normal map or output width/height are required. If input
-normal map is given, output is normal map (probably Y/Z swapped) with AO
-placed in alpha channel. If no input normal map is given, output is
-grayscale AO with opaque alpha channel.
+Supplying input normal map, output width/height or per-vertex flag is
+required.
+
+* If input normal map is given: output is normal map (probably Y/Z swapped)
+  with AO placed in alpha channel.
+* If no input normal map is given: output is grayscale AO with opaque alpha
+  channel.
+* If "per vertex" flag is given: output is binary file, with 1 byte per input
+  mesh vertex; bytes encode AO.
