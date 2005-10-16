@@ -6,7 +6,7 @@
 /**
  *  Demo application.
  */
-class CDemo : public CSystem, public IInputListener {
+class CDemo : public CSystem, public IInputListener, public IDeviceResource {
 public:
 	CDemo();
 
@@ -22,6 +22,12 @@ public:
 	// IInputListener
 	virtual void onInputEvent( const CInputEvent& event );
 	virtual void onInputStage();
+
+	// IDeviceResource
+	virtual void createResource();
+	virtual void activateResource();
+	virtual void passivateResource();
+	virtual void deleteResource();
 };
 
 

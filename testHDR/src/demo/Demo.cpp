@@ -169,6 +169,38 @@ void gSetSHEnvCoeffs( CEffectParams& ep )
 	ep.addVector4( "cC", vCoefficients[0] );
 }
 
+void gLoadMeshAO()
+{
+	CMesh& m = gMesh->getMesh();
+	FILE* fao = fopen( "data/mesh/StAnna.ao", "rb" );
+	BYTE* aodata = new BYTE[m.getVertexCount()];
+	fread( aodata, m.getVertexCount(), 1, fao );
+	SVertexXyzDiffuse* vb = (SVertexXyzDiffuse*)m.lockVBWrite();
+	assert( m.getVertexStride() == sizeof(SVertexXyzDiffuse) );
+	for( int i = 0; i < m.getVertexCount(); ++i ) {
+		vb[i].diffuse &= 0x00ffffff;
+		vb[i].diffuse |= (aodata[i] << 24);
+	}
+	m.unlockVBWrite();
+	delete[] aodata;
+	fclose( fao );
+}
+
+
+void CDemo::createResource()
+{
+	gLoadMeshAO();
+}
+void CDemo::activateResource()
+{
+}
+void CDemo::passivateResource()
+{
+}
+void CDemo::deleteResource()
+{
+}
+
 
 void CDemo::initialize( IDingusAppContext& appContext )
 {
@@ -202,19 +234,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	gMesh = new CSceneEntity( "StAnna", "diffuseSHEnvAO" );
 	gSetSHEnvCoeffs( gMesh->getFxParams() );
-
-	// load and "inject" AO into mesh
-	CMesh& m = gMesh->getMesh();
-	FILE* fao = fopen( "data/mesh/StAnna.ao", "rb" );
-	BYTE* aodata = new BYTE[m.getVertexCount()];
-	SVertexXyzDiffuse* vb = (SVertexXyzDiffuse*)m.lockVBWrite();
-	for( int i = 0; i < m.getVertexCount(); ++i ) {
-		vb[i].diffuse &= 0x00ffffff;
-		vb[i].diffuse |= aodata[i] << 24;
-	}
-	m.unlockVBWrite();
-	delete[] aodata;
-	fclose( fao );
+	gLoadMeshAO();
+	CDeviceResourceManager::getInstance().addListener( *this );
 
 	gSceneCenter = gMesh->getAABB().getCenter();
 	gSceneRadius = SVector3(gMesh->getAABB().getMax() - gMesh->getAABB().getMin()).length() * 0.5f;
@@ -279,10 +300,10 @@ void CDemo::onInputEvent( const CInputEvent& event )
 			gCamPitch += dt;
 			break;
 		case DIK_A:
-			gCamDist -= dt*0.7f;
+			gCamDist -= dt * gSceneRadius;
 			break;
 		case DIK_Z:
-			gCamDist += dt*0.7f;
+			gCamDist += dt * gSceneRadius;
 			break;
 		}
 	}
