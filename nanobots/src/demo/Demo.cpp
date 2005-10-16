@@ -614,15 +614,15 @@ static void	gSetupGUI()
 
 			CUIImage* img;
 			for( int p = 1; p < nplayers; ++p ) {
-				gUIDlg->addImage( 0, 16+(p-1)*36, sy+2, 0 /* 34 max */, 10, *RGET_TEX("guiskin"), 136, 488, 150, 500, &img );
-				img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = gColors.team[p].main.c;
-				mst.bar[p] = img;
-
 				gUIDlg->addImage( 0, 15+(p-1)*36, sy+1, 36, 12, *RGET_TEX("guiskin"), 34, 482, 126, 510, &img );
 				img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = gColors.team[p].main.c;
 				mst.frame[p] = img;
 
 				mst.mouseRect.right = img->mX + img->mWidth;
+				
+				gUIDlg->addImage( 0, 17+(p-1)*36, sy+3, 0 /* 32 max */, 8, *RGET_TEX("guiskin"), 136, 488, 150, 500, &img );
+				img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = gColors.team[p].main.c;
+				mst.bar[p] = img;
 			}
 
 			CUIStatic* label;
@@ -1162,6 +1162,8 @@ static void gUpdateMissionStats()
 	const CGameState& state = CGameInfo::getInstance().getState();
 
 	int nmissions = desc.getMissionCount();
+	int nplayers = desc.getPlayerCount();
+
 	float mouseUiX = (gMouseX*0.5f+0.5f) * GUI_X;
 	float mouseUiY = (gMouseY*0.5f+0.5f) * GUI_Y;
 
@@ -1169,9 +1171,33 @@ static void gUpdateMissionStats()
 	// adjust mission bars to show completion status
 	for( int i = 0; i < nmissions; ++i ) {
 		bool vis = gUIMissionStats[i].mouseRect.containsPoint( mouseUiX, mouseUiY );
-		//gUIMissionStats[i].text->setVisible( vis );
 		gUIMissionStats[i].text->setTextColor( vis ? 0xFFffffff : 0x00ffffff );
-		//float barWidth = state.getPlayer(1).
+
+		for( int p = 1; p < nplayers; ++p ) {
+			const CGameState::SMissionStatus& mst = state.getPlayer(p).missions[i];
+			CUIImage& img = *gUIMissionStats[i].bar[p];
+			float barWidth;
+			D3DCOLOR color;
+			const float BAR_WIDTH = 32.0f;
+			switch( mst.state ) {
+			case MST_TOBEDONE:
+				barWidth = mst.completion * BAR_WIDTH;
+				color = gColors.team[p].main.c & 0x60ffffff;
+				break;
+			case MST_DONE:
+				barWidth = BAR_WIDTH;
+				color = gColors.team[p].main.c & 0xC0ffffff;
+				break;
+			case MST_FAILED:
+				barWidth = BAR_WIDTH;
+				color = 0x80ff0000;
+				break;
+			default:
+				assert( false );
+			}
+			img.getElement(0)->colorTexture.colors[UISTATE_NORMAL] = color;
+			img.setSize( barWidth, img.mHeight );
+		}
 	}
 }
 

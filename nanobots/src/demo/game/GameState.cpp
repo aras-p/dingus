@@ -13,6 +13,15 @@ CGameState::CGameState()
 ,	mGameEnded(false)
 ,	mWinner(-1)
 {
+	int nmissions = CGameInfo::getInstance().getGameDesc().getMissionCount();
+	for( int i = 0; i < G_MAX_PLAYERS; ++i ) {
+		mPlayers[i].missions.resize( nmissions );
+		for( int m = 0; m < nmissions; ++m ) {
+			SMissionStatus& mst = mPlayers[i].missions[m];
+			mst.state = MST_TOBEDONE;
+			mst.completion = 0.0f;
+		}
+	}
 }
 
 CGameState::~CGameState()
@@ -164,10 +173,12 @@ void CGameState::updateState( int winnerPlayer )
 		int missionCount = bu::receiveByte();
 		for( int j = 0; j < missionCount; ++j ) {
 			int missionState = bu::receiveByte();
-			//assert( missionState >= MST_TOBEDONE && missionState < MSTCOUNT );
+			assert( missionState >= MST_TOBEDONE && missionState < MSTCOUNT );
 			int completion = bu::receiveByte();
-			//assert( completion >= 0 && completion <= 100 );
-			// TBD
+			assert( completion >= 0 && completion <= 100 );
+
+			mPlayers[i].missions[j].state = (eMissionState)missionState;
+			mPlayers[i].missions[j].completion = completion / 100.0f;
 		}
 	}
 	

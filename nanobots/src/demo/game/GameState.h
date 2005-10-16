@@ -21,17 +21,20 @@ public:
 		int			turn;
 		std::string	message;
 	};
+	struct SMissionStatus {
+		eMissionState	state;
+		float			completion; // 0..1
+	};
 	struct SPlayer {
 		SPlayer() : score(0), injectionPtX(0), injectionPtY(0), aiID(-1), botCount(0) { }
-		int		score;
+		
+		std::vector<SMissionStatus>	missions;
 		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs; // [0] is the most recent one
+		int		score;
 		int		injectionPtX;
 		int		injectionPtY;
 		int		aiID;
 		int		botCount;				// alive entity count
-	};
-	struct SMissionStatus {
-		// TBD
 	};
 
 	typedef std::map<int,CGameEntity*>	TEntityMap;
