@@ -12,7 +12,7 @@ extern SAppSettings gAppSettings;
 
 
 
-const unsigned int CACHED_DATA_VERSION = 20051015;
+const unsigned int CACHED_DATA_VERSION = 20051016;
 
 
 struct SLevelVertex {

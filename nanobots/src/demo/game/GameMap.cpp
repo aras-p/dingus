@@ -180,27 +180,39 @@ std::string CGameMap::initialize()
 			switch( *p ) {
 			case 0xFFff0000:
 				cell.type = CELL_BLOOD1;
-				cell.color = CCOLOR_BLOOD; // TBD
+				cell.color = CCOLOR_BLOOD;
 				break;
 			case 0xFF00ff00:
 				cell.type = CELL_BLOOD2;
-				cell.color = CCOLOR_BONE; // TBD
+				cell.color = CCOLOR_BLOOD;
 				break;
 			case 0xFF0000ff:
 				cell.type = CELL_BLOOD3;
-				cell.color = CCOLOR_NEURON; // TBD
+				cell.color = CCOLOR_BLOOD;
 				break;
 			case 0xFF800000:
 				cell.type = CELL_BLOOD1;
-				cell.color = CCOLOR_BLOOD; // TBD
+				cell.color = CCOLOR_BONE;
 				break;
 			case 0xFF008000:
 				cell.type = CELL_BLOOD2;
-				cell.color = CCOLOR_BONE; // TBD
+				cell.color = CCOLOR_BONE;
 				break;
 			case 0xFF000080:
 				cell.type = CELL_BLOOD3;
-				cell.color = CCOLOR_NEURON; // TBD
+				cell.color = CCOLOR_BONE;
+				break;
+			case 0xFFC80000:
+				cell.type = CELL_BLOOD1;
+				cell.color = CCOLOR_NEURON;
+				break;
+			case 0xFF00C800:
+				cell.type = CELL_BLOOD2;
+				cell.color = CCOLOR_NEURON;
+				break;
+			case 0xFF0000C8:
+				cell.type = CELL_BLOOD3;
+				cell.color = CCOLOR_NEURON;
 				break;
 			default:
 				cell.type = CELL_BONE;
