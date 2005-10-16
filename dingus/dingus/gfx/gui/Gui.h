@@ -110,6 +110,9 @@ public:
 	bool	containsPoint( const POINT& pt ) const {
 		return pt.x >= left && pt.y >= top && pt.x < right && pt.y < bottom;
 	}
+	bool	containsPoint( float x, float y ) const {
+		return x >= left && y >= top && x < right && y < bottom;
+	}
 	void	offset( float dx, float dy ) {
 		left += dx;		top += dy;
 		right += dx;	bottom += dy;
