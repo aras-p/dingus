@@ -11,6 +11,7 @@ const char* ARG_X = "-x";
 const char* ARG_Y = "-y";
 const char* ARG_SWAPYZ = "-s";
 const char* ARG_TGA = "-t";
+const char* ARG_CREATEUV = "-u";
 
 
 const CCmdlineArgs* gArgs;
@@ -151,14 +152,12 @@ HRESULT WINAPI gProgressCallback( float percentDone, void* user )
 	return S_OK;
 }
 
-/*
-static ID3DXMesh* maybeCreateUVs( ID3DXMesh* mesh, int texX, int texY )
+
+static ID3DXMesh* createUniqueUVs( ID3DXMesh* mesh, int texX, int texY )
 {
 	HRESULT hr;
 
-	// TBD: compute atlas not always
 	bool computeAtlas = true;
-	//CD3DXCrackDecl declCrack;
 
 	// get declaration of the mesh, check if has UVs
 	D3DVERTEXELEMENT9 vdecl[MAX_FVF_DECL_SIZE];
@@ -205,7 +204,7 @@ static ID3DXMesh* maybeCreateUVs( ID3DXMesh* mesh, int texX, int texY )
 
 	return mesh;
 }
-*/
+
 
 static IDirect3DTexture9*	gCreateSignedNormalMap( IDirect3DTexture9* inputNormalMap, bool swapYZ )
 {
@@ -276,7 +275,7 @@ static const int SIM_SH_ORDER = 2;
 static const int SIM_SAMPLES = 1024;
 
 
-void processMesh( const char* meshFileName, const char* nmapFileName, int outX, int outY, bool swapYZ, bool outTGA )
+void processMesh( const char* meshFileName, const char* nmapFileName, int outX, int outY, bool swapYZ, bool outTGA, bool createUVs )
 {
 	HRESULT hr;
 
@@ -314,8 +313,10 @@ void processMesh( const char* meshFileName, const char* nmapFileName, int outX, 
 		outY = desc.Height;
 	}
 
-	// possibly create UV atlas
-	//mesh = maybeCreateUVs( mesh, outX, outY );
+	// possibly create UV atlas and write out the resulting mesh
+	if( createUVs ) {
+		mesh = createUniqueUVs( mesh, outX, outY );
+	}
 
 	// create PRT engine
 	printf( "creating PRT engine...\n" );
@@ -468,14 +469,15 @@ void processMesh( const char* meshFileName, const char* nmapFileName, int outX, 
 
 void gPrintUsage()
 {
-	printf( "Usage: executable <options>\n" );
+	printf( "Usage: AmbOccTool <options>\n" );
 	printf( "Options:\n" );
-	printf( "  -m <filename> Input mesh file.\n" );
-	printf( "  -n <filename> Input/output normal map.\n" );
-	printf( "  -x <width>    Output texture height.\n" );
-	printf( "  -y <width>    Output texture width.\n" );
-	printf( "  -s            Swap Y/Z of the normal map.\n" );
-	printf( "  -t            Output TGA instead of DDS.\n" );
+	printf( "  -m <filename> Input mesh file\n" );
+	printf( "  -n <filename> Object space normal map of the mesh (optional)\n" );
+	printf( "  -x <width>    Output texture height\n" );
+	printf( "  -y <width>    Output texture width\n" );
+	printf( "  -s            If given - swap Y/Z in the input normal map\n" );
+	printf( "  -t            If given - output TGA instead of DDS\n" );
+	printf( "  -u            If given - compute UV parametrization\n" );
 }
 
 
@@ -493,6 +495,7 @@ int main( int argc, const char** argv )
 		int outputY = gArgs->getInt( -1, ARG_Y );
 		bool swapYZ = gArgs->contains( ARG_SWAPYZ );
 		bool outTGA = gArgs->contains( ARG_TGA );
+		bool createUVs = gArgs->contains( ARG_CREATEUV );
 
 		bool hadErrors = false;
 		if( !meshFileName ) {
@@ -501,6 +504,14 @@ int main( int argc, const char** argv )
 		}
 		if( !nmapFileName && (outputX < 0 && outputY < 0) ) {
 			printf( "ERROR: input normalmap or output width/height required\n" );
+			hadErrors = true;
+		}
+		if( nmapFileName && createUVs ) {
+			printf( "ERROR: input normalmap and UV creation can't be used together\n" );
+			hadErrors = true;
+		}
+		if( createUVs && (outputX < 0 && outputY < 0) ) {
+			printf( "ERROR: UV creation requires supplying output width/height\n" );
 			hadErrors = true;
 		}
 		if( hadErrors ) {
@@ -513,7 +524,7 @@ int main( int argc, const char** argv )
 		//
 		// process
 
-		processMesh( meshFileName, nmapFileName, outputX, outputY, swapYZ, outTGA );
+		processMesh( meshFileName, nmapFileName, outputX, outputY, swapYZ, outTGA, createUVs );
 
 		//
 		// close

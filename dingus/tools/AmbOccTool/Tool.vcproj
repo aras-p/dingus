@@ -198,6 +198,9 @@
 		<File
 			RelativePath=".\notes.txt">
 		</File>
+		<File
+			RelativePath=".\readme.txt">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

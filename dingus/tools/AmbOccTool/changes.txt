@@ -1,5 +1,6 @@
 Changelog of Ambient Occlusion tool
 
+051016: Resurrected UV atlas generation.
 050705: Removed automatic UV atlas generation. Not practical with UVAtlas
 		on hi-poly meshes, better do in art package before subdivision.
 		Added dependency to NormalMapperFork source in adjacent directory.
