@@ -30,6 +30,9 @@ public:
 		int		aiID;
 		int		botCount;				// alive entity count
 	};
+	struct SMissionStatus {
+		// TBD
+	};
 
 	typedef std::map<int,CGameEntity*>	TEntityMap;
 

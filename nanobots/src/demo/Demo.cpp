@@ -20,6 +20,7 @@
 
 #include "GameInfo.h"
 #include "game/GameState.h"
+#include "game/GameColors.h"
 #include "game/GameDesc.h"
 #include "map/LevelMesh.h"
 #include "map/PointsMesh.h"
@@ -277,9 +278,8 @@ CUIStatic*		gUILabelTilt;
 CUISlider*		gUISliderTilt;
 
 CUIRollout*		gUIRollStats;
-std::vector<CUIControl*>	gUIStatsCtrls;
 CUIRollout*		gUIRollEStats;
-std::vector<CUIControl*>	gUIEStatsCtrls;
+
 bool			gShowEntityStats;
 
 struct SUIPlayerStats {
@@ -293,6 +293,16 @@ CUIStatic*		gUIEStType;
 CUIStatic*		gUIEStHealth;
 CUIStatic*		gUIEStOwner;
 CUIStatic*		gUIEStAZN;
+
+
+struct SUIMissionStats {
+	CUIImage*	frame[G_MAX_PLAYERS];
+	CUIImage*	bar[G_MAX_PLAYERS];
+	CUIStatic*	text;
+	SFRect		mouseRect;
+};
+std::vector<SUIMissionStats>	gUIMissionStats;
+
 
 
 static void gSetPlayMode( bool play )
@@ -360,16 +370,8 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 			case GID_ROL_STATS:
 				{
 					bool vis = cbox->isChecked();
-					int nn = gUIStatsCtrls.size();
-					for( int i = 0; i < nn; ++i )
-						gUIStatsCtrls[i]->setVisible( vis );
 					int dy = gUIRollStats->getRolloutHeight() * (vis ? 1 : -1);
-					nn = gUIEStatsCtrls.size();
-					for( int i = 0; i < nn; ++i ) {
-						CUIControl& ct = *gUIEStatsCtrls[i];
-						ct.setLocation( ct.mX, ct.mY + dy );
-					}
-					gUIRollEStats->setLocation( gUIRollEStats->mX, gUIRollEStats->mY + dy );
+					gUIRollEStats->offsetPos( 0, dy );
 				}
 				break;
 
@@ -378,9 +380,6 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 					bool vis = cbox->isChecked();
 					if( cbox->isEnabled() )
 						gShowEntityStats = vis;
-					int nn = gUIEStatsCtrls.size();
-					for( int i = 0; i < nn; ++i )
-						gUIEStatsCtrls[i]->setVisible( vis );
 				}
 				break;
 
@@ -452,20 +451,27 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 
 #define UISTATS_LABEL \
 	label->getElement(0)->setFont( 0, true, DT_LEFT | DT_VCENTER ); \
-	gUIStatsCtrls.push_back( label )
+	gUIRollStats->addChildControl( *label )
 #define UISTATS_RLABEL \
 	label->getElement(0)->setFont( 0, true, DT_RIGHT | DT_VCENTER ); \
-	gUIStatsCtrls.push_back( label )
+	gUIRollStats->addChildControl( *label )
 #define UISTATS_RLABEL_B \
 	label->getElement(0)->setFont( 2, true, DT_RIGHT | DT_VCENTER ); \
-	gUIStatsCtrls.push_back( label )
+	gUIRollStats->addChildControl( *label )
+
+#define UIMSTATS_LABEL \
+	label->getElement(0)->setFont( 0, true, DT_LEFT | DT_VCENTER ); \
+	gUIRollMStats->addChildControl( *label )
+#define UIMSTATS_RLABEL \
+	label->getElement(0)->setFont( 0, true, DT_RIGHT | DT_VCENTER ); \
+	gUIRollMStats->addChildControl( *label )
 
 #define UIESTATS_LABEL \
 	label->getElement(0)->setFont( 0, true, DT_LEFT | DT_VCENTER ); \
-	gUIEStatsCtrls.push_back( label )
+	gUIRollEStats->addChildControl( *label )
 #define UIESTATS_RLABEL \
 	label->getElement(0)->setFont( 0, true, DT_RIGHT | DT_VCENTER ); \
-	gUIEStatsCtrls.push_back( label )
+	gUIRollEStats->addChildControl( *label )
 
 const int UIHCTL = 16;
 const int UIHROL = 14;
@@ -503,15 +509,18 @@ static void	gSetupGUI()
 			// flag
 			CUIImage* img;
 			gUIDlg->addImage( 0, 4, sy+4, 18, 18, *RGET_S_TEX(PLAYER_TEX_NAMES[p]), 0, 0, CGameDesc::FLAG_SIZE, CGameDesc::FLAG_SIZE, &img );
-			gUIStatsCtrls.push_back( img );
+			gUIRollStats->addChildControl( *img );
+
+			const D3DCOLOR pcolor = gColors.team[p].main.c;
 
 			// name
-			gUIDlg->addImage( 0, 28, sy+2, 97, 26, *RGET_TEX("guiskin"), 32*(p-1)+8, 488, 32*p-8, 504, &img );
-			img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = 0x40FFFFFF;
-			gUIStatsCtrls.push_back( img );
+			gUIDlg->addImage( 0, 28, sy+2, 97, 26, *RGET_TEX("guiskin"), 8, 488, 32-8, 504, &img );
+			img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = (pcolor & 0x00FFFFFF) | 0x40000000;
+			gUIRollStats->addChildControl( *img );
 			
-			gUIDlg->addImage( 0, 27, sy+1, 14, 14, *RGET_TEX("guiskin"), 32*(p-1)+2, 482, 32*p-2, 510, &img );
-			gUIStatsCtrls.push_back( img );
+			gUIDlg->addImage( 0, 27, sy+1, 14, 14, *RGET_TEX("guiskin"), 2, 482, 32-2, 510, &img );
+			img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = pcolor;
+			gUIRollStats->addChildControl( *img );
 			
 			gUIDlg->addStatic( 0, pl.name.c_str(), 45, sy, 80, UIHLAB, false, &label );
 			UISTATS_LABEL;
@@ -543,6 +552,7 @@ static void	gSetupGUI()
 			gUIPlayerStats[0].botCount = label;
 		}
 	}
+
 	// selected entity stats
 	{
 		int sy = gUIRollStats->mY + gUIRollStats->mHeight + gUIRollStats->getRolloutHeight();
@@ -582,6 +592,48 @@ static void	gSetupGUI()
 		UIESTATS_LABEL;
 		gUIEStAZN = label;
 	}
+
+	// mission stats
+	{
+		int sy = 180;
+		int nmissions = desc.getMissionCount();
+
+		// rollout
+		gUIMissionStats.resize( nmissions );
+		for( int m = 0; m < nmissions; ++m ) {
+			SUIMissionStats& mst = gUIMissionStats[m];
+
+			char buf[10];
+			sprintf( buf, "%i", m+1 );
+			gUIDlg->addStatic( 0, buf, 5, sy += UIHLAB, 10, UIHLAB );
+			//gUIDlg->addStatic( 0, desc.getMission(m).desc.c_str(), 15, sy, 75, UIHLAB, false, &label );
+
+			mst.mouseRect.top = sy;
+			mst.mouseRect.left = 5;
+			mst.mouseRect.bottom = sy+UIHLAB;
+
+			CUIImage* img;
+			for( int p = 1; p < nplayers; ++p ) {
+				gUIDlg->addImage( 0, 16+(p-1)*36, sy+2, 0 /* 34 max */, 10, *RGET_TEX("guiskin"), 136, 488, 150, 500, &img );
+				img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = gColors.team[p].main.c;
+				mst.bar[p] = img;
+
+				gUIDlg->addImage( 0, 15+(p-1)*36, sy+1, 36, 12, *RGET_TEX("guiskin"), 34, 482, 126, 510, &img );
+				img->getElement(0)->colorTexture.colors[UISTATE_NORMAL] = gColors.team[p].main.c;
+				mst.frame[p] = img;
+
+				mst.mouseRect.right = img->mX + img->mWidth;
+			}
+
+			CUIStatic* label;
+			gUIDlg->addStatic( 0, desc.getMission(m).desc.c_str(), mst.mouseRect.right+2, sy, 400, UIHLAB*desc.getMission(m).descLines, false, &label );
+			label->getElement(0)->setFont( 0, false, DT_LEFT | DT_TOP );
+			//label->setVisible( false );
+			
+			mst.text = label;
+		}
+	}
+
 	// camera/zoom/tilt
 	{
 		gUIDlg->addCheckBox( GID_CHK_MEGAMAP, "Megamap (M)", 135, 0, 90, UIHCTL, !gAppSettings.followMode, 'M', false, NULL );
@@ -1046,6 +1098,7 @@ static const char* UIST_OWNERNAMES[G_MAX_PLAYERS] = {
 	"P2",
 };
 
+
 static void gUpdateSelEntityStats()
 {
 	char buf[200];
@@ -1101,6 +1154,27 @@ static void gUpdateSelEntityStats()
 	}
 	oldSelID = selID;
 }
+
+
+static void gUpdateMissionStats()
+{
+	const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
+	const CGameState& state = CGameInfo::getInstance().getState();
+
+	int nmissions = desc.getMissionCount();
+	float mouseUiX = (gMouseX*0.5f+0.5f) * GUI_X;
+	float mouseUiY = (gMouseY*0.5f+0.5f) * GUI_Y;
+
+	// show mission description if mouse is over mission bars
+	// adjust mission bars to show completion status
+	for( int i = 0; i < nmissions; ++i ) {
+		bool vis = gUIMissionStats[i].mouseRect.containsPoint( mouseUiX, mouseUiY );
+		//gUIMissionStats[i].text->setVisible( vis );
+		gUIMissionStats[i].text->setTextColor( vis ? 0xFFffffff : 0x00ffffff );
+		//float barWidth = state.getPlayer(1).
+	}
+}
+
 
 
 #include <time.h>
@@ -1451,6 +1525,7 @@ void CDemo::perform()
 
 	// entity stats UI
 	gUpdateSelEntityStats();
+	gUpdateMissionStats();
 	
 	// time UI
 	sprintf( buf, "%i", state.getTurn() );

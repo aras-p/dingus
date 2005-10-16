@@ -167,6 +167,7 @@ void CGameState::updateState( int winnerPlayer )
 			//assert( missionState >= MST_TOBEDONE && missionState < MSTCOUNT );
 			int completion = bu::receiveByte();
 			//assert( completion >= 0 && completion <= 100 );
+			// TBD
 		}
 	}
 	
