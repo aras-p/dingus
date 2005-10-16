@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib msxml2.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /machine:I386 /out:"F:\3dsmax42\plugins\IGameExporter.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
-# ADD LINK32 ..\IGame\3dsmax5\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /machine:I386 /out:"IMMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
+# ADD LINK32 ..\IGame\3dsmax5\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /machine:I386 /out:"DingusMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
 
 !ELSEIF  "$(CFG)" == "IGameExporter - Win32 R5 Hybrid"
 
@@ -83,7 +83,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 ..\IGame\3dsmaxr5\lib\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /machine:I386 /out:"IMMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
-# ADD LINK32 ..\IGame\3dsmax5\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /debug /machine:I386 /out:"IMMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
+# ADD LINK32 ..\IGame\3dsmax5\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /debug /machine:I386 /out:"DingusMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
 
 !ELSEIF  "$(CFG)" == "IGameExporter - Win32 R6 Release"
 
@@ -110,7 +110,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 ..\IGame\3dsmax5\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /machine:I386 /out:"IMMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
-# ADD LINK32 ..\IGame\3dsmax6\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /machine:I386 /out:"IMMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
+# ADD LINK32 ..\IGame\3dsmax6\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /machine:I386 /out:"DingusMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
 
 !ELSEIF  "$(CFG)" == "IGameExporter - Win32 R6 Hybrid"
 
@@ -137,7 +137,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 ..\IGame\3dsmax5\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /debug /machine:I386 /out:"IMMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
-# ADD LINK32 ..\IGame\3dsmax6\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9dt.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /debug /machine:I386 /out:"IMMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
+# ADD LINK32 ..\IGame\3dsmax6\IGame.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib maxscrpt.lib paramblk2.lib d3d9.lib d3dx9dt.lib /nologo /base:"0x1fd90000" /subsystem:windows /dll /debug /machine:I386 /out:"DingusMeshExport.dle" /libpath:"F:\Dev\magma42\maxsdk\lib" /release
 
 !ENDIF 
 

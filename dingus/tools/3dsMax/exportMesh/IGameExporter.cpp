@@ -165,10 +165,10 @@ IGameExporter::~IGameExporter()
 
 int IGameExporter::ExtCount() { return 1; } // one extension
 const TCHAR *IGameExporter::Ext( int n ) { return _T("dmesh"); }
-const TCHAR *IGameExporter::LongDesc() { return _T("IM mesh exporter"); }
-const TCHAR *IGameExporter::ShortDesc() { return _T("IMMeshExporter"); }
+const TCHAR *IGameExporter::LongDesc() { return _T("Dingus mesh exporter"); }
+const TCHAR *IGameExporter::ShortDesc() { return _T("DingusMeshExporter"); }
 const TCHAR *IGameExporter::AuthorName() { return _T("Aras Pranckevicius"); }
-const TCHAR *IGameExporter::CopyrightMessage() { return _T("(c)2003-2004 InteraMotion LLC"); }
+const TCHAR *IGameExporter::CopyrightMessage() { return _T("(c)2003-2005 nesnausk!"); }
 const TCHAR *IGameExporter::OtherMessage1() { return _T(""); }
 const TCHAR *IGameExporter::OtherMessage2() { return _T(""); }
 unsigned int IGameExporter::Version() {	return 100; } // version number * 100

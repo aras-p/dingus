@@ -1,4 +1,4 @@
-LIBRARY IMMeshExport
+LIBRARY DingusMeshExport
 EXPORTS
 	LibDescription			@1
 	LibNumberClasses		@2

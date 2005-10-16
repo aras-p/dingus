@@ -1,4 +1,6 @@
 3dsMax tools changelog
 
+051016: mesh exporter
+	Renamed IMMeshExport.dle to DingusMeshExport.dle
 051005: mesh exporter
 	Ability to turn debug output on/off via dialog
