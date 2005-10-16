@@ -167,6 +167,10 @@ SOURCE=.\data\fx\diffuse.fx
 
 SOURCE=.\data\fx\diffuseSHEnv.fx
 # End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\diffuseSHEnvAO.fx
+# End Source File
 # End Group
 # Begin Source File
 

@@ -8,6 +8,7 @@
 #include <dingus/gfx/gui/Gui.h>
 #include <dingus/math/MathUtils.h>
 #include <dingus/utils/Random.h>
+#include <dingus/gfx/Vertices.h>
 
 
 
@@ -199,8 +200,21 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// scene
 
-	gMesh = new CSceneEntity( "StAnna", "diffuseSHEnv" );
+	gMesh = new CSceneEntity( "StAnna", "diffuseSHEnvAO" );
 	gSetSHEnvCoeffs( gMesh->getFxParams() );
+
+	// load and "inject" AO into mesh
+	CMesh& m = gMesh->getMesh();
+	FILE* fao = fopen( "data/mesh/StAnna.ao", "rb" );
+	BYTE* aodata = new BYTE[m.getVertexCount()];
+	SVertexXyzDiffuse* vb = (SVertexXyzDiffuse*)m.lockVBWrite();
+	for( int i = 0; i < m.getVertexCount(); ++i ) {
+		vb[i].diffuse &= 0x00ffffff;
+		vb[i].diffuse |= aodata[i] << 24;
+	}
+	m.unlockVBWrite();
+	delete[] aodata;
+	fclose( fao );
 
 	gSceneCenter = gMesh->getAABB().getCenter();
 	gSceneRadius = SVector3(gMesh->getAABB().getMax() - gMesh->getAABB().getMin()).length() * 0.5f;
