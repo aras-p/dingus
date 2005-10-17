@@ -7,6 +7,7 @@
 
 #include <dingus/gfx/gui/Gui.h>
 #include <dingus/math/MathUtils.h>
+#include <dingus/math/Vector2.h>
 #include <dingus/utils/Random.h>
 #include <dingus/gfx/Vertices.h>
 
@@ -71,12 +72,18 @@ float	gEnvSHB[ENV_SH_ORDER*ENV_SH_ORDER];
 // --------------------------------------------------------------------------
 // HDR stuff
 
+// Samples we take in downsampling operations
+const int MAX_SAMPLES = 16;
+
 // BB sized 4xFP16 rendertarget
 const char* RT_SCENE_HDR = "sceneHDR";
 
 // First make BB size divisible by this; textures based on this size will
 // be used later.
 const int BB_DIVISIBLE_BY = 8;
+int	gBackBufferCropWidth;
+int	gBackBufferCropHeight;
+
 
 // Scaled down scene RT, 4xFP16
 const float SZ_SCENE_SCALED = 1.0f/4.0f;
@@ -212,7 +219,13 @@ void gLoadMeshAO()
 
 
 void CDemo::createResource() { gLoadMeshAO(); }
-void CDemo::activateResource() { }
+void CDemo::activateResource()
+{
+	int bbw = CD3DDevice::getInstance().getBackBufferWidth();
+	int bbh = CD3DDevice::getInstance().getBackBufferHeight();
+	gBackBufferCropWidth = bbw - bbw % BB_DIVISIBLE_BY;
+	gBackBufferCropHeight = bbh - bbh % BB_DIVISIBLE_BY;
+}
 void CDemo::passivateResource() { }
 void CDemo::deleteResource() { }
 
@@ -269,6 +282,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gMesh->getFxParams().addCubeTexture( "tEnv", *env );
 	gLoadMeshAO();
 	CDeviceResourceManager::getInstance().addListener( *this );
+	activateResource();
 
 	gSceneCenter = gMesh->getAABB().getCenter();
 	gSceneRadius = SVector3(gMesh->getAABB().getMax() - gMesh->getAABB().getMin()).length() * 0.5f;
@@ -350,6 +364,70 @@ void CDemo::onInputStage()
 }
 
 
+void gDownscaleHDR4x()
+{
+	CD3DDevice& dx = CD3DDevice::getInstance();
+
+	SVector2 smpOffsets[MAX_SAMPLES];
+	
+	// render into scaled down HDR target
+	dx.setRenderTarget( RGET_S_SURF(RT_SCENE_SCALED) );
+
+	int bbWidth = dx.getBackBufferWidth();
+	int bbHeight = dx.getBackBufferHeight();
+
+	//const D3DSURFACE_DESC* pBackBufferDesc = DXUTGetBackBufferSurfaceDesc();
+
+	// Create a 1/4 x 1/4 scale copy of the HDR texture. Since bloom textures
+	// are 1/8 x 1/8 scale, border texels of the HDR texture will be discarded 
+	// to keep the dimensions evenly divisible by 8; this allows for precise 
+	// control over sampling inside pixel shaders.
+	//g_pEffect->SetTechnique("DownScale4x4");
+
+	// Place the rectangle in the center of the back buffer surface
+	RECT rectSrc;
+	rectSrc.left = (bbWidth - gBackBufferCropWidth) / 2;
+	rectSrc.top = (bbHeight - gBackBufferCropHeight) / 2;
+	rectSrc.right = rectSrc.left + gBackBufferCropWidth;
+	rectSrc.bottom = rectSrc.top + gBackBufferCropHeight;
+
+	// Get the texture coordinates for the render target
+	/*
+	CoordRect coords;
+	GetTextureCoords( g_pTexScene, &rectSrc, g_pTexSceneScaled, NULL, &coords );
+
+	// Get the sample offsets used within the pixel shader
+	GetSampleOffsets_DownScale4x4( bbWidth, bbHeight, smpOffsets );
+	g_pEffect->SetValue("g_avSampleOffsets", smpOffsets, sizeof(smpOffsets));
+	
+	g_pd3dDevice->SetRenderTarget( 0, pSurfScaledScene );
+	g_pd3dDevice->SetTexture( 0, g_pTexScene );
+	g_pd3dDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+	g_pd3dDevice->SetSamplerState( 0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
+	g_pd3dDevice->SetSamplerState( 0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
+   
+	UINT uiPassCount, uiPass;		
+	hr = g_pEffect->Begin(&uiPassCount, 0);
+	if( FAILED(hr) )
+		goto LCleanReturn;
+
+	for (uiPass = 0; uiPass < uiPassCount; uiPass++)
+	{
+		g_pEffect->BeginPass(uiPass);
+
+		// Draw a fullscreen quad
+		DrawFullScreenQuad( coords );
+
+		g_pEffect->EndPass();
+	}
+
+	g_pEffect->End();
+
+	*/
+}
+
+
+
 static void gRender()
 {
 	CD3DDevice& dx = CD3DDevice::getInstance();
@@ -362,10 +440,10 @@ static void gRender()
 	gMesh->render();
 	G_RENDERCTX->perform();
 
-	/*
     // Create a scaled copy of the scene
-	Scene_To_SceneScaled();
+	gDownscaleHDR4x();
 	
+	/*
 	// Measure luminance
 	MeasureLuminance();
 	
