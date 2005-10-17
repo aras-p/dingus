@@ -152,6 +152,10 @@ SOURCE=.\data\fx\lib\global.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\lib\hdrlib.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\lib\shared.fx
 # End Source File
 # Begin Source File
@@ -170,6 +174,10 @@ SOURCE=.\data\fx\diffuseSHEnv.fx
 # Begin Source File
 
 SOURCE=.\data\fx\diffuseSHEnvAO.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\object.fx
 # End Source File
 # End Group
 # Begin Source File

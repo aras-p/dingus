@@ -1,5 +1,7 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
+#include "lib/hdrlib.fx"
+
 
 float4x4	mWVP;
 
@@ -9,6 +11,7 @@ samplerCUBE smpEnv = sampler_state {
 	MagFilter = Linear; MinFilter = Linear; MipFilter = Linear;
 };
 
+
 // environment map
 float4 cAr;
 float4 cAg;
@@ -17,7 +20,6 @@ float4 cBr;
 float4 cBg;
 float4 cBb;
 float4 cC;
-
 
 float3 evalSHEnv( float4 n )
 {
@@ -41,6 +43,8 @@ float3 evalSHEnv( float4 n )
 	return x1 + x2 + x3;
 }
 
+// --------------------------------------------------------------------------
+//  vertex shader
 
 struct SInput {
 	float4	pos	: POSITION;
@@ -81,7 +85,11 @@ half4 psMain( SOutput i ) : COLOR
 	// diffuse
 	half3 diff = i.diffao.rgb;
 
-	return half4( (diff + spec) * i.diffao.a, 1 );
+	half3 color = (diff + spec) * i.diffao.a;
+
+	// encode into RGBE8
+	//return EncodeRGBE8( color );
+	return half4( color, 1 );
 }
 
 

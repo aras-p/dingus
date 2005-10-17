@@ -11,14 +11,12 @@
 #include <dingus/gfx/Vertices.h>
 
 
-
 // --------------------------------------------------------------------------
 // Demo variables, constants, etc.
 
 IDingusAppContext*	gAppContext;
 int			gGlobalCullMode;	// global cull mode
 float		gTimeParam;			// time parameter for effects
-
 
 bool	gFinished = false;
 bool	gShowStats = false;
@@ -28,28 +26,23 @@ bool	gShowStats = false;
 CDemo::CDemo()
 {
 }
-
 bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProcessing vproc, CD3DEnumErrors& errors )
 {
 	bool ok = true;
-
 	if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
 		errors.addError( "pixel shaders 2.0 required" );
 		ok = false;
 	}
-
 	if( caps.getVShaderVersion() < CD3DDeviceCaps::VS_1_1 ) {
 		if( vproc != CD3DDeviceCaps::VP_SW )
 			ok = false;
 	}
 	return ok;
 }
-
 bool CDemo::shouldFinish()
 {
 	return gFinished;
 }
-
 bool CDemo::shouldShowStats()
 {
 	return gShowStats;
@@ -58,7 +51,7 @@ bool CDemo::shouldShowStats()
 
 
 // --------------------------------------------------------------------------
-// Demo initialization
+// Variables
 
 CCameraEntity	gCamera;
 
@@ -76,8 +69,37 @@ float	gEnvSHB[ENV_SH_ORDER*ENV_SH_ORDER];
 
 
 // --------------------------------------------------------------------------
-// objects
+// HDR stuff
 
+// BB sized 4xFP16 rendertarget
+const char* RT_SCENE_HDR = "sceneHDR";
+
+// First make BB size divisible by this; textures based on this size will
+// be used later.
+const int BB_DIVISIBLE_BY = 8;
+
+// Scaled down scene RT, 4xFP16
+const float SZ_SCENE_SCALED = 1.0f/4.0f;
+const char* RT_SCENE_SCALED = "sceneScaled";
+
+// Luminance textures that the viewer is currently adapted to
+const int SZ_LUMINANCE = 1;
+const D3DFORMAT FMT_LUMINANCE = D3DFMT_R32F; // geforces don't support R16F
+const char* RT_LUM_CURR = "lumCurr";
+const char* RT_LUM_LAST = "lumLast";
+
+// Intermediate textures for computing luminance
+const int NUM_TONEMAP_RTS = 4;
+const char* RT_TONEMAP[NUM_TONEMAP_RTS] = {
+	"toneMap0",
+	"toneMap1",
+	"toneMap2",
+	"toneMap3",
+};
+
+
+// --------------------------------------------------------------------------
+// objects
 
 class CSceneEntity : public CMeshEntity {
 public:
@@ -169,6 +191,8 @@ void gSetSHEnvCoeffs( CEffectParams& ep )
 	ep.addVector4( "cC", vCoefficients[0] );
 }
 
+// --------------------------------------------------------------------------
+
 void gLoadMeshAO()
 {
 	CMesh& m = gMesh->getMesh();
@@ -187,19 +211,10 @@ void gLoadMeshAO()
 }
 
 
-void CDemo::createResource()
-{
-	gLoadMeshAO();
-}
-void CDemo::activateResource()
-{
-}
-void CDemo::passivateResource()
-{
-}
-void CDemo::deleteResource()
-{
-}
+void CDemo::createResource() { gLoadMeshAO(); }
+void CDemo::activateResource() { }
+void CDemo::passivateResource() { }
+void CDemo::deleteResource() { }
 
 
 void CDemo::initialize( IDingusAppContext& appContext )
@@ -211,6 +226,23 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
 	G_INPUTCTX->addListener( *this );
+
+	// --------------------------------
+	// rendertargets
+
+	stb.registerTexture( RT_SCENE_HDR, *new CScreenBasedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,D3DFMT_A16B16G16R16F,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SCENE_HDR );
+	stb.registerTexture( RT_SCENE_SCALED, *new CScreenBasedDivTextureCreator(SZ_SCENE_SCALED,SZ_SCENE_SCALED,BB_DIVISIBLE_BY,1,D3DUSAGE_RENDERTARGET,D3DFMT_A16B16G16R16F,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SCENE_SCALED );
+	stb.registerTexture( RT_LUM_CURR, *new CFixedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_LUM_CURR );
+	stb.registerTexture( RT_LUM_LAST, *new CFixedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_LUM_LAST );
+	for( int i = 0; i < NUM_TONEMAP_RTS; ++i ) {
+		int size = 1 << (2*i); // 1,4,16,...
+		stb.registerTexture( RT_TONEMAP[i], *new CFixedTextureCreator(size,size,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
+		DINGUS_REGISTER_STEX_SURFACE( ssb, RT_TONEMAP[i] );
+	}
 
 	// --------------------------------
 	// common params
@@ -232,8 +264,9 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// scene
 
-	gMesh = new CSceneEntity( "StAnna", "diffuseSHEnvAO" );
+	gMesh = new CSceneEntity( "StAnna", "object" );
 	gSetSHEnvCoeffs( gMesh->getFxParams() );
+	gMesh->getFxParams().addCubeTexture( "tEnv", *env );
 	gLoadMeshAO();
 	CDeviceResourceManager::getInstance().addListener( *this );
 
