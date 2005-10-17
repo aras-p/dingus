@@ -2,6 +2,7 @@
 no codename
 ========
 
+051017: CVertexFormat::calc[Normal/Tangent/Binorm]Offset added.
 051015: CUIRollout::addChildControl()/offsetPos() added.
 051011: CUIDialog::renderBegin()/renderEnd() added.
 051001: Effects are checked for valid/missing state assignments (as

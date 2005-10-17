@@ -188,10 +188,29 @@ int	CVertexFormat::calcSkinWeightsOffset() const
 {
 	return hasPosition() ? 4*3 : 0;
 }
+
 int	CVertexFormat::calcSkinIndicesOffset() const
 {
 	int offset = calcSkinWeightsOffset();
 	if( getSkinDataMode() )
 		offset += calcSkinSize()-4;
 	return offset;
+}
+
+int	CVertexFormat::calcNormalOffset() const
+{
+	int offset = calcSkinIndicesOffset();
+	if( getSkinDataMode() )
+		offset += 4;
+	return offset;
+}
+
+int	CVertexFormat::calcTangentOffset() const
+{
+	return calcNormalOffset() + calcFloat3Size( getNormalMode() );
+}
+
+int	CVertexFormat::calcBinormOffset() const
+{
+	return calcTangentOffset() + calcFloat3Size( getTangentMode() );
 }

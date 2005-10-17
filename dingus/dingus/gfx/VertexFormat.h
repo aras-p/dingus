@@ -95,11 +95,11 @@ public:
 	int calcSkinSize() const;
 	int calcSkinDataType() const;
 
-	int	calcSkinWeightsOffset() const;
-	int	calcSkinIndicesOffset() const;
-	//int	calcNormalOffset() const;
-	//int calcTangentOffset() const;
-	//int calcBinormOffset() const;
+	int calcSkinWeightsOffset() const;
+	int calcSkinIndicesOffset() const;
+	int calcNormalOffset() const;
+	int calcTangentOffset() const;
+	int calcBinormOffset() const;
 
 	//
 	// D3D vertex declaration building
