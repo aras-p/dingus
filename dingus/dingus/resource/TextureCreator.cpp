@@ -21,19 +21,19 @@ IDirect3DTexture9* CFixedTextureCreator::createTexture()
 	UINT width = mWidth;
 	UINT height = mHeight;
 	UINT levels = mLevels;
-	D3DFORMAT fmt = getFormat();
-	D3DXCheckTextureRequirements( &dxdev, &width, &height, &levels, getUsage(), &fmt, getPool() );
+	D3DFORMAT fmt = mFormat;
+	D3DXCheckTextureRequirements( &dxdev, &width, &height, &levels, mUsage, &fmt, mPool );
 	
 	hr = CD3DDevice::getInstance().getDevice().CreateTexture(
 		width, height, levels,
-		getUsage(), fmt, getPool(),
+		mUsage, fmt, mPool,
 		&texture, NULL );
 	if( FAILED( hr ) ) {
 		char buf[1000];
 		sprintf( buf,
 			"FixedTextureCreator: failed to create texture \n"
 			"(w=%i h=%i lvl=%i usage=%i fmt=%i pool=%i)",
-			width, height, levels, getUsage(), fmt, getPool() );
+			width, height, levels, mUsage, fmt, mPool );
 		std::string msg = buf;
 		CConsole::CON_ERROR.write(msg);
 		THROW_DXERROR( hr, msg );
@@ -54,14 +54,45 @@ IDirect3DTexture9* CScreenBasedTextureCreator::createTexture()
 	
 	hr = device.getDevice().CreateTexture(
 		width, height, mLevels,
-		getUsage(), getFormat(), getPool(),
+		mUsage, mFormat, mPool,
 		&texture, NULL );
 	if( FAILED( hr ) ) {
 		char buf[1000];
 		sprintf( buf,
 			"ScreenBasedTextureCreator: failed to create texture \n"
 			"(w=%i h=%i lvl=%i usage=%i fmt=%i pool=%i)",
-			width, height, mLevels, getUsage(), getFormat(), getPool() );
+			width, height, mLevels, mUsage, mFormat, mPool );
+		std::string msg = buf;
+		CConsole::CON_ERROR.write(msg);
+		THROW_DXERROR( hr, msg );
+	}
+	assert( texture );
+	return texture;
+};
+
+IDirect3DTexture9* CScreenBasedDivTextureCreator::createTexture()
+{
+	HRESULT hr;
+	IDirect3DTexture9* texture = NULL;
+
+	CD3DDevice& device = CD3DDevice::getInstance();
+	int bbWidth = device.getBackBufferWidth();
+	int bbHeight = device.getBackBufferHeight();
+	int cropWidth = bbWidth - bbWidth % mBBDivisibleBy;
+	int cropHeight = bbHeight - bbHeight % mBBDivisibleBy;
+	int width = int( cropWidth * mWidthFactor );
+	int height = int( cropHeight * mHeightFactor );
+	
+	hr = device.getDevice().CreateTexture(
+		width, height, mLevels,
+		mUsage, mFormat, mPool,
+		&texture, NULL );
+	if( FAILED( hr ) ) {
+		char buf[1000];
+		sprintf( buf,
+			"CScreenBasedDivTextureCreator: failed to create texture \n"
+			"(w=%i h=%i lvl=%i usage=%i fmt=%i pool=%i)",
+			width, height, mLevels, mUsage, mFormat, mPool );
 		std::string msg = buf;
 		CConsole::CON_ERROR.write(msg);
 		THROW_DXERROR( hr, msg );
@@ -93,14 +124,14 @@ IDirect3DTexture9* CScreenBasedPow2TextureCreator::createTexture()
 	
 	hr = device.getDevice().CreateTexture(
 		width, height, mLevels,
-		getUsage(), getFormat(), getPool(),
+		mUsage, mFormat, mPool,
 		&texture, NULL );
 	if( FAILED( hr ) ) {
 		char buf[1000];
 		sprintf( buf,
 			"ScreenBasedPow2TextureCreator: failed to create texture \n"
 			"(w=%i h=%i lvl=%i usage=%i fmt=%i pool=%i)",
-			width, height, mLevels, getUsage(), getFormat(), getPool() );
+			width, height, mLevels, mUsage, mFormat, mPool );
 		std::string msg = buf;
 		CConsole::CON_ERROR.write(msg);
 		THROW_DXERROR( hr, msg );

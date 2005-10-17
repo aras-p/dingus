@@ -21,15 +21,10 @@ class CAbstractTextureCreator : public ITextureCreator {
 public:
 	CAbstractTextureCreator( DWORD usage, D3DFORMAT format, D3DPOOL pool )
 		:	mUsage(usage), mFormat(format), mPool(pool) { }
-
 protected:
-	DWORD		getUsage() const { return mUsage; }
-	D3DFORMAT	getFormat() const { return mFormat; }
-	D3DPOOL		getPool() const { return mPool; }
-private:
-	DWORD		mUsage;
-	D3DFORMAT	mFormat;
-	D3DPOOL		mPool;
+	const DWORD		mUsage;
+	const D3DFORMAT	mFormat;
+	const D3DPOOL		mPool;
 };
 
 /// Creates fixed size texture
@@ -37,44 +32,39 @@ class CFixedTextureCreator : public CAbstractTextureCreator {
 public:
 	CFixedTextureCreator( int width, int height, int levels, DWORD usage, D3DFORMAT format, D3DPOOL pool )
 		:	CAbstractTextureCreator(usage,format,pool), mWidth(width), mHeight(height), mLevels(levels) { }
-
 	virtual IDirect3DTexture9* createTexture();
-
 protected:
-	int	getWidth() const { return mWidth; }
-	int getHeight() const { return mHeight; }
-	int getLevels() const { return mLevels; }
-	
-private:
-	int			mWidth, mHeight, mLevels;
+	const int mWidth, mHeight, mLevels;
 };
 
-/// Creates texture with seze proportional to backbuffer
+/// Creates texture with size proportional to backbuffer
 class CScreenBasedTextureCreator : public CAbstractTextureCreator {
 public:
 	CScreenBasedTextureCreator( float widthFactor, float heightFactor, int levels, DWORD usage, D3DFORMAT format, D3DPOOL pool )
 		: CAbstractTextureCreator(usage,format,pool), mWidthFactor(widthFactor), mHeightFactor(heightFactor), mLevels(levels) { }
-
 	virtual IDirect3DTexture9* createTexture();
-
-private:
-	float		mWidthFactor;
-	float		mHeightFactor;
-	int			mLevels;
+protected:
+	const float	mWidthFactor;
+	const float	mHeightFactor;
+	const int	mLevels;
 };
 
-/// Creates pow-2 texture with seze proportional to backbuffer (lower pow-2)
-class CScreenBasedPow2TextureCreator : public CAbstractTextureCreator {
+/// Creates texture with size proportional to backbuffer, cropped to make divisible by some number.
+class CScreenBasedDivTextureCreator : public CScreenBasedTextureCreator {
+public:
+	CScreenBasedDivTextureCreator( float widthFactor, float heightFactor, int bbDivisibleBy, int levels, DWORD usage, D3DFORMAT format, D3DPOOL pool )
+		: CScreenBasedTextureCreator(widthFactor,heightFactor,levels,usage,format,pool), mBBDivisibleBy(bbDivisibleBy) { }
+	virtual IDirect3DTexture9* createTexture();
+protected:
+	const int	mBBDivisibleBy;
+};
+
+/// Creates pow-2 texture with size proportional to backbuffer (lower pow-2)
+class CScreenBasedPow2TextureCreator : public CScreenBasedTextureCreator {
 public:
 	CScreenBasedPow2TextureCreator( float widthFactor, float heightFactor, int levels, DWORD usage, D3DFORMAT format, D3DPOOL pool )
-		: CAbstractTextureCreator(usage,format,pool), mWidthFactor(widthFactor), mHeightFactor(heightFactor), mLevels(levels) { }
-
+		: CScreenBasedTextureCreator(widthFactor,heightFactor,levels,usage,format,pool) { }
 	virtual IDirect3DTexture9* createTexture();
-
-private:
-	float		mWidthFactor;
-	float		mHeightFactor;
-	int			mLevels;
 };
 
 
