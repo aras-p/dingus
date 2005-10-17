@@ -59,6 +59,7 @@ half4 psMain20( SPosCol2Tex3F i ) : COLOR {
 	return half4( cbase, 1 );
 }
 
+
 technique tec20
 {
 	pass P0 {
@@ -71,18 +72,17 @@ technique tec20
 }
 
 
+
 // --------------------------------------------------------------------------
 
-/*
-SPosColTex2F vsMain11( SPosCol i ) {
-	SPosColTex2F o;
+SPosColTexFog vsMain11( SPosNCol i ) {
+	SPosColTexFog o;
 
-	float3 n = i.color.xyz*2-1;
+	float3 n = i.normal*2-1;
 	float3 vn = mul( n, (float3x3)mView );
-	o.color = lighting( n, vn );
-	o.color.w = i.color.w;
+	o.color = lighting( n, vn ) * i.color;
 
-	o.uv[0] = o.uv[1] = float2(i.pos.x,i.pos.z) * 0.02;
+	o.uv = float2(i.pos.x,i.pos.z) * 0.020;
 
 	i.pos.y += sin( i.pos.x*0.13+i.pos.z*0.17+fTime ) * 0.1;
 	o.pos = mul( i.pos, mViewProj );
@@ -92,13 +92,11 @@ SPosColTex2F vsMain11( SPosCol i ) {
 	return o;
 }
 
-float4 psMain11( SPosColTex2F i ) : COLOR {
-	float4 cbase1 = tex2D( smpBase1, i.uv[0] );
-	float4 cbase2 = tex2D( smpBase2, i.uv[1] );
-	float4 cbase = lerp( cbase1, cbase2, i.color.a );
-	cbase.rgb *= i.color.rgb;
-	return cbase;
+float4 psMain11( SPosColTexFog i ) : COLOR {
+	float4 cbase = tex2D( smpBase, i.uv );
+	return cbase * i.color;
 }
+
 
 technique tec11
 {
@@ -112,21 +110,21 @@ technique tec11
 }
 
 
+
 // --------------------------------------------------------------------------
 
-SPosColTex2F vsMainFF( SPosCol i ) {
-	SPosColTex2F o;
+SPosColTexFog vsMainFF( SPosNCol i ) {
+	SPosColTexFog o;
+
+	float3 n = i.normal*2-1;
+	float3 vn = mul( n, (float3x3)mView );
+	o.color = lighting( n, vn ) * i.color;
+
+	o.uv = float2(i.pos.x,i.pos.z) * 0.020;
+
 	o.pos = mul( i.pos, mViewProj );
 
-	float3 n = i.color.xyz*2-1;
-	float3 vn = mul( n, (float3x3)mView );
-	o.color = lighting( n, vn );
-	o.color.w = i.color.w;
-
-	o.uv[0] = o.uv[1] = float2(i.pos.x,i.pos.z) * 0.02;
-
-	float d = length(i.pos - vEye);
-	o.fog = (vFog.y - d) * vFog.z;
+	o.fog = gFog( i.pos );
 
 	return o;
 }
@@ -140,28 +138,15 @@ technique tecFFP
 
 		FogEnable = True;
 
-		Sampler[0] = (smpBase1);
-		ColorOp[0] = SelectArg1;
+		Sampler[0] = (smpBase);
+		ColorOp[0] = Modulate;
 		ColorArg1[0] = Texture;
-		AlphaOp[0] = SelectArg1;
-		AlphaArg1[0] = Diffuse;
-
-		Sampler[1] = (smpBase2);
-		ColorOp[1] = BlendCurrentAlpha;
-		ColorArg1[1] = Texture;
-		ColorArg2[1] = Current;
-		AlphaOp[1] = SelectArg1;
-		AlphaArg1[1] = Diffuse;
-
-		ColorOp[2] = Modulate;
-		ColorArg1[2] = Current;
-		ColorArg2[2] = Diffuse;
-		AlphaOp[2] = SelectArg1;
-		AlphaArg1[2] = Current;
-
-		ColorOp[3] = Disable;
-		AlphaOp[3] = Disable;
+		ColorArg2[0] = Diffuse;
+		AlphaOp[0] = Modulate;
+		AlphaArg1[0] = Texture;
+		AlphaArg2[0] = Diffuse;
+		ColorOp[1] = Disable;
+		AlphaOp[1] = Disable;
 	}
 	RESTORE_PASS
 }
-*/
