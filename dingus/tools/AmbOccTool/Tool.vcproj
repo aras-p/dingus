@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="Tool"
+	RootNamespace="Tool"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -170,10 +171,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\VertexFormat.cpp">
-			</File>
-			<File
-				RelativePath=".\src\VertexFormat.h">
+				RelativePath=".\src\stdafx.h">
 			</File>
 		</Filter>
 		<Filter
@@ -190,6 +188,28 @@
 			</File>
 			<File
 				RelativePath="..\NormalMapperFork\TGAIO.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="dingus"
+			Filter="">
+			<File
+				RelativePath="..\..\dingus\gfx\VertexFormat.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="$(ProjectDir)\src"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="$(ProjectDir)\src"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\dingus\gfx\VertexFormat.h">
 			</File>
 		</Filter>
 		<File

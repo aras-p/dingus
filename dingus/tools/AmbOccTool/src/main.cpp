@@ -31,7 +31,7 @@ std::string stripExtension( const char* ss )
 
 // ---- loading code from DMESH files 
 
-#include "VertexFormat.h"
+#include "../../../dingus/gfx/VertexFormat.h"
 
 #define READ_4BYTE(var) fread(&var,1,4,f)
 #define READ_2BYTE(var) fread(&var,1,2,f)
