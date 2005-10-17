@@ -350,6 +350,44 @@ void CDemo::onInputStage()
 }
 
 
+static void gRender()
+{
+	CD3DDevice& dx = CD3DDevice::getInstance();
+
+	// render scene to HDR rendertarget
+	dx.setRenderTarget( RGET_S_SURF(RT_SCENE_HDR) );
+	dx.setDefaultZStencil();
+	dx.clearTargets( true, true, false, 0x00000000, 1.0f, 0L );
+	G_RENDERCTX->applyGlobalEffect();
+	gMesh->render();
+	G_RENDERCTX->perform();
+
+	/*
+    // Create a scaled copy of the scene
+	Scene_To_SceneScaled();
+	
+	// Measure luminance
+	MeasureLuminance();
+	
+	// Calculate the current luminance adaptation level
+	CalculateAdaptation();
+	*/
+	
+	// Final composition to the LDR back buffer: tone mapping & blue shift.
+	dx.setDefaultRenderTarget();
+	
+	// FinalScenePass technique
+	//	float "g_fMiddleGray", g_fKeyValue;
+	//  SetTexture( 0, g_pTexScene ); mag=point min=point
+	//  --SetTexture( 1, g_apTexBloom[0] ); mag=linear min=linear
+	//  --SetTexture( 2, g_apTexStar[0] ); mag=linear min=linear
+	//  SetTexture( 3, g_pTexAdaptedLuminanceCur ); mag=point min=point
+	//  each pass: DrawFullScreenQuad( 0.0f, 0.0f, 1.0f, 1.0f );
+		
+	dx.getDevice().StretchRect( RGET_S_SURF(RT_SCENE_HDR)->getObject(), 0, dx.getBackBuffer(), 0, D3DTEXF_NONE );
+}
+
+
 
 /// Main loop code.
 void CDemo::perform()
@@ -367,29 +405,20 @@ void CDemo::perform()
 	sprintf( buf, "fps: %6.1f", dx.getStats().getFPS() );
 	gUIFPS->setText( buf );
 
+	// camera
 	SMatrix4x4& mc = gCamera.mWorldMat;
 	D3DXMatrixRotationYawPitchRoll( &mc, gCamYaw, gCamPitch, 0.0f );
 	mc.getOrigin() = gSceneCenter;
 	mc.getOrigin() -= mc.getAxisZ() * gCamDist;
-
 	const float camnear = gCamDist * 0.1f;
 	const float camfar = gCamDist * 3.0f;
 	const float camfov = D3DX_PI/4;
 	gCamera.setProjectionParams( camfov, dx.getBackBufferAspect(), camnear, camfar );
-
-	// render
 	gCamera.setOntoRenderContext();
 
-	dx.setDefaultRenderTarget();
-	dx.setDefaultZStencil();
-	dx.clearTargets( true, true, false, 0xFF000000, 1.0f, 0L );
+	// render
 	dx.sceneBegin();
-	G_RENDERCTX->applyGlobalEffect();
-
-	gMesh->render();
-	G_RENDERCTX->perform();
-
-	// render GUI
+	gRender();
 	gUIDlgHUD->onRender( dt );
 	dx.sceneEnd();
 }
