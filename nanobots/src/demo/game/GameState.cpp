@@ -195,7 +195,7 @@ void CGameState::updateState( int winnerPlayer )
 	for( it = mEntities.begin(); it != itEnd; ++it ) {
 		CGameEntity& e = *it->second;
 		if( e.getLastUpdateTurn() < turn ) {
-			e.markDead();
+			e.markDead( turn );
 		}
 	}
 

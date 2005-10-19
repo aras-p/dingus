@@ -24,6 +24,7 @@ CGameEntity::CGameEntity( unsigned short eid, eEntityType type, int owner, int b
 ,	mOwner( owner )
 ,	mMaxHealth( -1 )
 ,	mBornTurn( bornTurn )
+,	mDeathTurn( -1 )
 {
 	assert( type >= 0 && type < ENTITYCOUNT );
 	assert( bornTurn >= 0 );
@@ -85,8 +86,12 @@ void CGameEntity::updateState( int turn, SState& state )
 	mLastUpdateTurn = turn;
 }
 
-void CGameEntity::markDead()
+void CGameEntity::markDead( int turn )
 {
+	if( mDeathTurn >= 0 )
+		return;
+
+	mDeathTurn = turn;
 	int n = mStates.size();
 	for( int i = 0; i < n; ++i )
 		mStates[i].state = ENTSTATE_DEAD;

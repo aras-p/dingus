@@ -157,7 +157,7 @@ void CEntityManager::renderMinimap()
 }
 
 
-void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson )
+void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson, float timeAlpha )
 {
 	CGameInfo& gi = CGameInfo::getInstance();
 
@@ -173,6 +173,8 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	eir.beginInfos();
 	mAttackManager->begin();
 
+	int turn = gi.getState().getTurn();
+
 	// actors
 	const int lodOffset = GFX_DETAIL_LEVELS-1 - gAppSettings.gfxDetail;
 
@@ -180,18 +182,16 @@ void CEntityManager::render( eRenderMode rm, bool entityBlobs, bool thirdPerson 
 	for( it = mActorEntities.begin(); it != itEnd; ++it ) {
 		CActorEntity& e = *it->second;
 		// explosion?
-		// TBD
-		/*
-		float deathA = e.getReplayEntity().getDeathAlpha( t );
-		if( deathA >= 0.0f ) {
-			mAttackManager->renderExplosion( e.mWorldMat.getOrigin(), deathA );
+		if( !e.getGameEntity().isAlive() ) {
+			const int DEATH_TURNS = 4;
+			int deathTurn = e.getGameEntity().getDeathTurn();
+			if( turn >= deathTurn + DEATH_TURNS )
+				continue;
+			float deathAlpha = (turn - deathTurn + timeAlpha) / DEATH_TURNS;
+			mAttackManager->renderExplosion( e.mWorldMat.getOrigin(), deathAlpha );
+			if( deathAlpha > 0.3f )
+				continue;
 		}
-
-		if( !e.isAlive() && (deathA<0.0f || deathA>0.3f) )
-			continue;
-		*/
-		if( !e.getGameEntity().isAlive() )
-			continue;
 
 		// calculate LOD
 		float camdist = cameraMat.getAxisZ().dot( e.mWorldMat.getOrigin() - cameraMat.getOrigin() );

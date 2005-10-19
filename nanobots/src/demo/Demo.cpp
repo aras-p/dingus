@@ -1582,7 +1582,7 @@ void CDemo::perform()
 	G_RENDERCTX->applyGlobalEffect();
 	gi.getLevelMesh().render( RM_NORMAL, insideView ? (CLevelMesh::FULL) : (CLevelMesh::NOTOP) );
 	gi.getPointsMesh().render( RM_NORMAL );
-	gi.getEntities().render( RM_NORMAL, !insideView, insideView );
+	gi.getEntities().render( RM_NORMAL, !insideView, insideView, timeAlpha );
 	G_RENDERCTX->perform();
 
 	// render GUI

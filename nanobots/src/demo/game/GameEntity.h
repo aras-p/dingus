@@ -39,9 +39,10 @@ public:
 	const SState& getStateCurr() const { assert(!mStates.empty()); return mStates[LAG_BEHIND-1]; }
 
 	bool	isAlive() const { assert(!mStates.empty()); return mStates[LAG_BEHIND].state != ENTSTATE_DEAD; }
+	int		getDeathTurn() const { return mDeathTurn; }
 
 	void	updateState( int turn, SState& state );
-	void	markDead();
+	void	markDead( int turn );
 
 protected:
 	void	adjustPosition( int turn, SState& s, bool height );
@@ -62,8 +63,10 @@ private:
 	/// Hit points when entity is born
 	int		mMaxHealth;
 
-	/// The turn entity is born.
+	/// Turn the entity is born.
 	int		mBornTurn;
+	/// Turn the entity died (-1 if alive)
+	int		mDeathTurn;
 
 	/// Previous states history. Current is [0], previous is [1] etc.
 	ringdeque<SState,HISTORY_SIZE>	mStates;
