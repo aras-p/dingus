@@ -3,6 +3,7 @@
 #include "Demo.h"
 #include "MeshEntity.h"
 #include <dingus/renderer/RenderableMesh.h>
+#include <dingus/renderer/RenderableQuad.h>
 #include <dingus/gfx/GfxUtils.h>
 
 #include <dingus/gfx/gui/Gui.h>
@@ -75,8 +76,8 @@ float	gEnvSHB[ENV_SH_ORDER*ENV_SH_ORDER];
 // Samples we take in downsampling operations
 const int MAX_SAMPLES = 16;
 
-// BB sized 4xFP16 rendertarget
-const char* RT_SCENE_HDR = "sceneHDR";
+// BB sized RGBE8 rendertarget
+const char* RT_SCENE = "scene";
 
 // First make BB size divisible by this; textures based on this size will
 // be used later.
@@ -91,7 +92,7 @@ const char* RT_SCENE_SCALED = "sceneScaled";
 
 // Luminance textures that the viewer is currently adapted to
 const int SZ_LUMINANCE = 1;
-const D3DFORMAT FMT_LUMINANCE = D3DFMT_R32F; // geforces don't support R16F
+const D3DFORMAT FMT_LUMINANCE = D3DFMT_R32F; // some geforces don't support R16F
 const char* RT_LUM_CURR = "lumCurr";
 const char* RT_LUM_LAST = "lumLast";
 
@@ -103,6 +104,10 @@ const char* RT_TONEMAP[NUM_TONEMAP_RTS] = {
 	"toneMap2",
 	"toneMap3",
 };
+
+
+CRenderableQuad*	gQuadDownsampleBB;
+SVector2 gDownsampleBBSmpOffsets[MAX_SAMPLES];
 
 
 // --------------------------------------------------------------------------
@@ -243,8 +248,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// rendertargets
 
-	stb.registerTexture( RT_SCENE_HDR, *new CScreenBasedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,D3DFMT_A16B16G16R16F,D3DPOOL_DEFAULT) );
-	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SCENE_HDR );
+	stb.registerTexture( RT_SCENE, *new CScreenBasedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,D3DFMT_A8R8G8B8,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SCENE );
 	stb.registerTexture( RT_SCENE_SCALED, *new CScreenBasedDivTextureCreator(SZ_SCENE_SCALED,SZ_SCENE_SCALED,BB_DIVISIBLE_BY,1,D3DUSAGE_RENDERTARGET,D3DFMT_A16B16G16R16F,D3DPOOL_DEFAULT) );
 	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SCENE_SCALED );
 	stb.registerTexture( RT_LUM_CURR, *new CFixedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
@@ -290,6 +295,14 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gCamYaw = 0.0f;
 	gCamPitch = 0.1f;
 	gCamDist = gSceneRadius * 2.0f;
+
+	// --------------------------------
+	// postprocessing quads
+
+	gQuadDownsampleBB = new CRenderableQuad( renderquad::SCoordRect() );
+	gQuadDownsampleBB->getParams().setEffect( *RGET_FX("downsample4x4") );
+	gQuadDownsampleBB->getParams().addPtr( "vSmpOffsets", sizeof(gDownsampleBBSmpOffsets), gDownsampleBBSmpOffsets );
+	gQuadDownsampleBB->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SCENE) );
 
 	// --------------------------------
 	// GUI
@@ -363,15 +376,36 @@ void CDemo::onInputStage()
 {
 }
 
+// --------------------------------------------------------------------------
 
+
+void gGetDownscale4x4SampleOffsets( DWORD dwWidth, DWORD dwHeight, D3DXVECTOR2 smpOffsets[] )
+{
+	assert( smpOffsets );
+	
+	float tU = 1.0f / dwWidth;
+	float tV = 1.0f / dwHeight;
+	
+	// Sample from the 16 surrounding points. Since the center point will be
+	// in the exact center of 16 texels, a 0.5f offset is needed to specify
+	// a texel center.
+	int index=0;
+	for( int y=0; y < 4; ++y )
+	{
+		for( int x=0; x < 4; ++x )
+		{
+			smpOffsets[ index ].x = (x - 1.5f) * tU;
+			smpOffsets[ index ].y = (y - 1.5f) * tV;
+			index++;
+		}
+	}
+}
+
+
+// scale backbuffer down into small HDR target
 void gDownscaleHDR4x()
 {
 	CD3DDevice& dx = CD3DDevice::getInstance();
-
-	SVector2 smpOffsets[MAX_SAMPLES];
-	
-	// render into scaled down HDR target
-	dx.setRenderTarget( RGET_S_SURF(RT_SCENE_SCALED) );
 
 	int bbWidth = dx.getBackBufferWidth();
 	int bbHeight = dx.getBackBufferHeight();
@@ -382,48 +416,25 @@ void gDownscaleHDR4x()
 	// are 1/8 x 1/8 scale, border texels of the HDR texture will be discarded 
 	// to keep the dimensions evenly divisible by 8; this allows for precise 
 	// control over sampling inside pixel shaders.
-	//g_pEffect->SetTechnique("DownScale4x4");
 
-	// Place the rectangle in the center of the back buffer surface
+	// place the rectangle in the center of the back buffer surface
 	RECT rectSrc;
 	rectSrc.left = (bbWidth - gBackBufferCropWidth) / 2;
 	rectSrc.top = (bbHeight - gBackBufferCropHeight) / 2;
 	rectSrc.right = rectSrc.left + gBackBufferCropWidth;
 	rectSrc.bottom = rectSrc.top + gBackBufferCropHeight;
 
-	// Get the texture coordinates for the render target
-	/*
-	CoordRect coords;
-	GetTextureCoords( g_pTexScene, &rectSrc, g_pTexSceneScaled, NULL, &coords );
+	// get the texture coordinates for the render target
+	renderquad::SCoordRect coords;
+	renderquad::calcCoordRect( *RGET_S_TEX(RT_SCENE), &rectSrc, *RGET_S_TEX(RT_SCENE_SCALED), NULL, coords );
+	gQuadDownsampleBB->setUVRect( coords );
 
-	// Get the sample offsets used within the pixel shader
-	GetSampleOffsets_DownScale4x4( bbWidth, bbHeight, smpOffsets );
-	g_pEffect->SetValue("g_avSampleOffsets", smpOffsets, sizeof(smpOffsets));
-	
-	g_pd3dDevice->SetRenderTarget( 0, pSurfScaledScene );
-	g_pd3dDevice->SetTexture( 0, g_pTexScene );
-	g_pd3dDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
-	g_pd3dDevice->SetSamplerState( 0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
-	g_pd3dDevice->SetSamplerState( 0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
-   
-	UINT uiPassCount, uiPass;		
-	hr = g_pEffect->Begin(&uiPassCount, 0);
-	if( FAILED(hr) )
-		goto LCleanReturn;
-
-	for (uiPass = 0; uiPass < uiPassCount; uiPass++)
-	{
-		g_pEffect->BeginPass(uiPass);
-
-		// Draw a fullscreen quad
-		DrawFullScreenQuad( coords );
-
-		g_pEffect->EndPass();
-	}
-
-	g_pEffect->End();
-
-	*/
+	// get the sample offsets used within the pixel shader
+	gGetDownscale4x4SampleOffsets( bbWidth, bbHeight, gDownsampleBBSmpOffsets );
+	dx.setRenderTarget( RGET_S_SURF(RT_SCENE_SCALED) );
+	G_RENDERCTX->directBegin();
+	G_RENDERCTX->directRender( *gQuadDownsampleBB );
+	G_RENDERCTX->directEnd();
 }
 
 
@@ -432,13 +443,17 @@ static void gRender()
 {
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
-	// render scene to HDR rendertarget
-	dx.setRenderTarget( RGET_S_SURF(RT_SCENE_HDR) );
+	// render scene to backbuffer and copy to scene rendertarget
+	dx.setDefaultRenderTarget();
 	dx.setDefaultZStencil();
 	dx.clearTargets( true, true, false, 0x00000000, 1.0f, 0L );
 	G_RENDERCTX->applyGlobalEffect();
 	gMesh->render();
 	G_RENDERCTX->perform();
+
+	dx.setZStencil( NULL );
+	
+	dx.getDevice().StretchRect( dx.getBackBuffer(), 0, RGET_S_SURF(RT_SCENE)->getObject(), 0, D3DTEXF_NONE );
 
     // Create a scaled copy of the scene
 	gDownscaleHDR4x();
@@ -453,6 +468,7 @@ static void gRender()
 	
 	// Final composition to the LDR back buffer: tone mapping & blue shift.
 	dx.setDefaultRenderTarget();
+	dx.setDefaultZStencil();
 	
 	// FinalScenePass technique
 	//	float "g_fMiddleGray", g_fKeyValue;
@@ -462,7 +478,7 @@ static void gRender()
 	//  SetTexture( 3, g_pTexAdaptedLuminanceCur ); mag=point min=point
 	//  each pass: DrawFullScreenQuad( 0.0f, 0.0f, 1.0f, 1.0f );
 		
-	dx.getDevice().StretchRect( RGET_S_SURF(RT_SCENE_HDR)->getObject(), 0, dx.getBackBuffer(), 0, D3DTEXF_NONE );
+	dx.getDevice().StretchRect( RGET_S_SURF(RT_SCENE_SCALED)->getObject(), 0, dx.getBackBuffer(), 0, D3DTEXF_NONE );
 }
 
 
@@ -512,4 +528,6 @@ void CDemo::shutdown()
 	safeDelete( gUIDlgHUD );
 
 	safeDelete( gMesh );
+
+	safeDelete( gQuadDownsampleBB );
 }
