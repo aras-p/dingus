@@ -314,13 +314,13 @@ CDemoHelpDialog::CDemoHelpDialog()
 	mDlg->addStatic( 0,
 		"Arrows\n"
 		"Ctrl+Arrows\n"
-		"Space\n"
+		//"Space\n"
 		"M\n"
 		"N\n"
 		"S\n"
 		"E\n"
 		"1/2\n"
-		"</>\n"
+		//"</>\n"
 		"PgUp/PgDown\n"
 		"Home/End\n"
 		"Esc\n"
@@ -330,20 +330,20 @@ CDemoHelpDialog::CDemoHelpDialog()
 	mDlg->addStatic( 0,
 		"move & turn\n"
 		"strafe\n"
-		"togge play/pause\n"
+		//"togge play/pause\n"
 		"toggle megamap/3rdperson\n"
 		"toggle minimap\n"
 		"toggle game stats\n"
 		"toggle selected entity stats\n"
 		"select player 1/2 AI\n"
-		"scroll time backward/forward\n"
+		//"scroll time backward/forward\n"
 		"zoom in/out (megamap mode)\n"
 		"tilt up/down (megamap mode)\n"
 		"exit\n"
 		, xcol+80, yline, 150, HC*10, false, &lab );
 	lab->getElement(0)->setFont( 0, false, DT_LEFT | DT_TOP );
 	
-	mDlg->addStatic( 0, "Just in case: the keys are for QWERTY keyboard.", xcol, yline+=HC*8, 400, HC );
+	mDlg->addStatic( 0, "Just in case: the keys are for QWERTY keyboard.", xcol, yline+=HC*7, 400, HC );
 	mDlg->addStatic( 0, "Of course, most of the tasks can be controlled with the GUI!", xcol, yline+=HC-4, 400, HC );
 
 	mDlg->addStatic( 0, "Credits", xcol-10, yline+=HC+HC/2, 200, 18, false, &lab );
@@ -351,11 +351,13 @@ CDemoHelpDialog::CDemoHelpDialog()
 
 	mDlg->addStatic( 0,
 		"This 3D player (code/engine/artwork):\n"
-		"        Aras Pranckevicius and Paulius Liekis [www.nesnausk.org]\n"
-		"\n"
+		"        Aras Pranckevicius and Paulius Liekis [www.nesnausk.org]", xcol, yline+=24, 400, HC*5, false, &lab );
+	lab->getElement(0)->setFont( 0, false, DT_LEFT | DT_TOP );
+	mDlg->addStatic( 0,
 		"Everything else (ideas, SDK, game logic, testing etc.):\n"
-		"        Thomas Lucchini, Richard Clark, Cyril du Bois de Maquillé, Vincent Lascaux"
-		, xcol, yline+=24, 400, HC*5, false, &lab );
+		"        Thomas Lucchini, Richard Clark, Benjamin Gauthey,\n"
+		"        Cyril du Bois de Maquille, Vincent Lascaux"
+		, xcol, yline+=2*14, 400, HC*5, false, &lab );
 	lab->getElement(0)->setFont( 0, false, DT_LEFT | DT_TOP );
 	
 	// buttons
