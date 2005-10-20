@@ -2,9 +2,14 @@
 no codename
 ========
 
+051020: CRenderableQuad added, now drawing fullscreen postprocessing
+		quads is much simpler. System now resets cached D3D stuff every
+		frame; fixes some weird behavior with rendertargets (e.g. if the
+		last rendertarget you render to is not backbuffer).
 051017: CVertexFormat::calc[Normal/Tangent/Binorm]Offset added.
 		CScreenBasedDivTextureCreator added - creates texture proportional
 		to backbuffer (first BB size is made divisible by supplied amount).
+		DINGUS_REGISTER_STEX_SURFACE helped macro added.
 051015: CUIRollout::addChildControl()/offsetPos() added.
 051011: CUIDialog::renderBegin()/renderEnd() added.
 051001: Effects are checked for valid/missing state assignments (as

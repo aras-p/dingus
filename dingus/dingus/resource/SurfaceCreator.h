@@ -84,6 +84,8 @@ private:
 	int				mLevel;
 };
 
+#define DINGUS_REGISTER_STEX_SURFACE(bundle,resid) bundle.registerSurface( resid, *new CTextureLevelSurfaceCreator(*RGET_S_TEX(resid)) )
+
 
 }; // namespace
 

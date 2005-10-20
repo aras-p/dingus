@@ -893,6 +893,14 @@ SOURCE=.\dingus\renderer\RenderableMesh.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\dingus\renderer\RenderableQuad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\dingus\renderer\RenderableQuad.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\dingus\renderer\RenderableSkin.cpp
 # End Source File
 # Begin Source File

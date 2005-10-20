@@ -142,6 +142,11 @@ HRESULT CDingusSystem::performOneTime()
 
 	device.getStats().reset();
 	device.getStats().setFPS( mFPS );
+
+	// needs to reset device cache; otherwise we can get funky things with
+	// render targets
+	device.resetCachedState();
+
 	mApplication->perform();
 
 	//
