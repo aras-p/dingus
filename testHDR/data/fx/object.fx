@@ -85,7 +85,7 @@ half4 psMain( SOutput i ) : COLOR
 	// diffuse
 	half3 diff = i.diffao.rgb;
 
-	half3 color = (diff + spec) * i.diffao.a;
+	half3 color = (diff + spec) * i.diffao.a * 4;
 
 	// encode into RGBE8
 	return EncodeRGBE8( color );

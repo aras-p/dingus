@@ -183,6 +183,14 @@ SOURCE=.\data\fx\downsample4x4.fx
 
 SOURCE=.\data\fx\object.fx
 # End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\resampleAvgLum.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\sampleAvgLum.fx
+# End Source File
 # End Group
 # Begin Source File
 

@@ -92,7 +92,8 @@ const char* RT_SCENE_SCALED = "sceneScaled";
 
 // Luminance textures that the viewer is currently adapted to
 const int SZ_LUMINANCE = 1;
-const D3DFORMAT FMT_LUMINANCE = D3DFMT_R32F; // some geforces don't support R16F
+//const D3DFORMAT FMT_LUMINANCE = D3DFMT_R32F; // some geforces don't support R16F
+const D3DFORMAT FMT_LUMINANCE = D3DFMT_A8R8G8B8; // some geforces don't support R16F
 const char* RT_LUM_CURR = "lumCurr";
 const char* RT_LUM_LAST = "lumLast";
 
@@ -106,8 +107,10 @@ const char* RT_TONEMAP[NUM_TONEMAP_RTS] = {
 };
 
 
+SVector2 gSampleOffsets[MAX_SAMPLES];
 CRenderableQuad*	gQuadDownsampleBB;
-SVector2 gDownsampleBBSmpOffsets[MAX_SAMPLES];
+CRenderableQuad*	gQuadSampleAvgLum;
+CRenderableQuad*	gQuadResampleAvgLum;
 
 
 // --------------------------------------------------------------------------
@@ -301,8 +304,17 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	gQuadDownsampleBB = new CRenderableQuad( renderquad::SCoordRect() );
 	gQuadDownsampleBB->getParams().setEffect( *RGET_FX("downsample4x4") );
-	gQuadDownsampleBB->getParams().addPtr( "vSmpOffsets", sizeof(gDownsampleBBSmpOffsets), gDownsampleBBSmpOffsets );
+	gQuadDownsampleBB->getParams().addPtr( "vSmpOffsets", sizeof(gSampleOffsets), gSampleOffsets );
 	gQuadDownsampleBB->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SCENE) );
+
+	gQuadSampleAvgLum = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
+	gQuadSampleAvgLum->getParams().setEffect( *RGET_FX("sampleAvgLum") );
+	gQuadSampleAvgLum->getParams().addPtr( "vSmpOffsets", sizeof(gSampleOffsets[0])*9, gSampleOffsets );
+	gQuadSampleAvgLum->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SCENE_SCALED) );
+	
+	gQuadResampleAvgLum = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
+	gQuadResampleAvgLum->getParams().setEffect( *RGET_FX("resampleAvgLum") );
+	gQuadResampleAvgLum->getParams().addPtr( "vSmpOffsets", sizeof(gSampleOffsets), gSampleOffsets );
 
 	// --------------------------------
 	// GUI
@@ -410,8 +422,6 @@ void gDownscaleHDR4x()
 	int bbWidth = dx.getBackBufferWidth();
 	int bbHeight = dx.getBackBufferHeight();
 
-	//const D3DSURFACE_DESC* pBackBufferDesc = DXUTGetBackBufferSurfaceDesc();
-
 	// Create a 1/4 x 1/4 scale copy of the HDR texture. Since bloom textures
 	// are 1/8 x 1/8 scale, border texels of the HDR texture will be discarded 
 	// to keep the dimensions evenly divisible by 8; this allows for precise 
@@ -430,11 +440,110 @@ void gDownscaleHDR4x()
 	gQuadDownsampleBB->setUVRect( coords );
 
 	// get the sample offsets used within the pixel shader
-	gGetDownscale4x4SampleOffsets( bbWidth, bbHeight, gDownsampleBBSmpOffsets );
+	gGetDownscale4x4SampleOffsets( bbWidth, bbHeight, gSampleOffsets );
 	dx.setRenderTarget( RGET_S_SURF(RT_SCENE_SCALED) );
 	G_RENDERCTX->directBegin();
 	G_RENDERCTX->directRender( *gQuadDownsampleBB );
 	G_RENDERCTX->directEnd();
+}
+
+
+// measure the average log luminance in the scene.
+void gMeasureLuminance()
+{
+	CD3DDevice& dx = CD3DDevice::getInstance();
+
+	int x, y;
+	
+	D3DSURFACE_DESC desc;
+	int curRT = NUM_TONEMAP_RTS-1;
+	RGET_S_TEX(RT_TONEMAP[curRT])->getObject()->GetLevelDesc( 0, &desc );
+	
+	// initialize the sample offsets for the initial luminance pass.
+	assert( MAX_SAMPLES >= 9 );
+	float tU, tV;
+	tU = 1.0f / (3.0f * desc.Width);
+	tV = 1.0f / (3.0f * desc.Height);
+	
+	int index = 0;
+	for( x = -1; x <= 1; ++x ) {
+		for( y = -1; y <= 1; ++y ) {
+			gSampleOffsets[index].set( x * tU, y * tV );
+			++index;
+		}
+	}
+	
+	// After this pass, the RT_TONEMAP[NUM_TONEMAP_RTS-1] will contain
+	// a scaled, grayscale copy of the HDR scene. Individual texels contain
+	// the log of average luminance values for points sampled on the HDR
+	// texture.
+	dx.setRenderTarget( RGET_S_SURF(RT_TONEMAP[curRT]) );
+	G_RENDERCTX->directBegin();
+	G_RENDERCTX->directRender( *gQuadSampleAvgLum );
+	G_RENDERCTX->directEnd();
+
+	//g_pd3dDevice->SetSamplerState( 1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+	//g_pd3dDevice->SetSamplerState( 1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+	
+	--curRT;
+	
+	// initialize the sample offsets for the iterative luminance passes
+	while( curRT > 0 )
+	{
+		CD3DTexture* rtCurr1 = RGET_S_TEX(RT_TONEMAP[curRT+1]);
+		rtCurr1->getObject()->GetLevelDesc( 0, &desc );
+		gGetDownscale4x4SampleOffsets( desc.Width, desc.Height, gSampleOffsets );
+		
+		// Each of these passes continue to scale down the log of average
+		// luminance texture created above, storing intermediate results in 
+		// RT_TONEMAP[1] through RT_TONEMAP[NUM_TONEMAP_RTS-1].
+
+		dx.setRenderTarget( RGET_S_SURF(RT_TONEMAP[curRT]) );
+		dx.getStateManager().SetTexture( 0, rtCurr1->getObject() );
+		dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+		dx.getStateManager().SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+		G_RENDERCTX->directBegin();
+		G_RENDERCTX->directRender( *gQuadResampleAvgLum );
+		G_RENDERCTX->directEnd();
+		--curRT;
+	}
+	
+	// Downsample to 1x1
+	/*
+	g_apTexToneMap[1]->GetLevelDesc( 0, &desc );
+	GetSampleOffsets_DownScale4x4( desc.Width, desc.Height, gSampleOffsets );
+	
+	
+	// Perform the final pass of the average luminance calculation. This pass
+	// scales the 4x4 log of average luminance texture from above and performs
+	// an exp() operation to return a single texel cooresponding to the average
+	// luminance of the scene in g_apTexToneMap[0].
+	g_pEffect->SetTechnique("ResampleAvgLumExp");
+	g_pEffect->SetValue("g_avSampleOffsets", gSampleOffsets, sizeof(gSampleOffsets));
+	
+	g_pd3dDevice->SetRenderTarget(0, RGET_S_TEX(RT_TONEMAP[0]));
+	g_pd3dDevice->SetTexture(0, g_apTexToneMap[1]);
+	g_pd3dDevice->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	g_pd3dDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+	
+	
+	hr = g_pEffect->Begin(&uiPassCount, 0);
+	if( FAILED(hr) )
+		goto LCleanReturn;
+	
+	for (uiPass = 0; uiPass < uiPassCount; uiPass++)
+	{
+		g_pEffect->BeginPass(uiPass);
+		
+		// Draw a fullscreen quad to sample the RT
+		DrawFullScreenQuad(0.0f, 0.0f, 1.0f, 1.0f);
+		
+		g_pEffect->EndPass();
+	}
+	
+	g_pEffect->End();
+	
+	*/
 }
 
 
@@ -455,13 +564,13 @@ static void gRender()
 	
 	dx.getDevice().StretchRect( dx.getBackBuffer(), 0, RGET_S_SURF(RT_SCENE)->getObject(), 0, D3DTEXF_NONE );
 
-    // Create a scaled copy of the scene
+    // create a scaled down copy of the scene
 	gDownscaleHDR4x();
 	
-	/*
-	// Measure luminance
-	MeasureLuminance();
+	// measure luminance
+	gMeasureLuminance();
 	
+	/*
 	// Calculate the current luminance adaptation level
 	CalculateAdaptation();
 	*/
@@ -478,7 +587,7 @@ static void gRender()
 	//  SetTexture( 3, g_pTexAdaptedLuminanceCur ); mag=point min=point
 	//  each pass: DrawFullScreenQuad( 0.0f, 0.0f, 1.0f, 1.0f );
 		
-	dx.getDevice().StretchRect( RGET_S_SURF(RT_SCENE_SCALED)->getObject(), 0, dx.getBackBuffer(), 0, D3DTEXF_NONE );
+	dx.getDevice().StretchRect( RGET_S_SURF(RT_TONEMAP[2])->getObject(), 0, dx.getBackBuffer(), 0, D3DTEXF_NONE );
 }
 
 
@@ -530,4 +639,6 @@ void CDemo::shutdown()
 	safeDelete( gMesh );
 
 	safeDelete( gQuadDownsampleBB );
+	safeDelete( gQuadSampleAvgLum );
+	safeDelete( gQuadResampleAvgLum );
 }
