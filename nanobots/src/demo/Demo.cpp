@@ -263,7 +263,6 @@ CGameSetupDialog*	gUIGameSetupDlg;
 
 CUIRollout*		gUIRollMinimap;
 CUIStatic*		gUILabelTime;
-CUIStatic*		gUILabelStarting;
 CUIStatic*		gUILabelFPS;
 
 //CUIButton*		gUIBtnTimeRew; // TBD
@@ -443,9 +442,41 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 	}
 }
 
+
+const char* PLAYER_TEX_NAMES[G_MAX_PLAYERS] = {
+	NULL,
+	RID_TEX_PLAYER1,
+	RID_TEX_PLAYER2,
+};
+
+
 void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 {
 	CGameInfo::getInstance().getEntities().renderLabels( dlg );
+
+	const CGameState& state = CGameInfo::getInstance().getState();
+
+	// display "game starting"
+	if( state.getServerState().state == GST_STARTING ) {
+		dlg.imDrawText( "Game starting...", 1, DT_CENTER|DT_VCENTER, 0xFFffffff, SFRect(0,260,640,282) );
+	}
+
+	// display "game ended" and winner
+	if( state.isGameEnded() ) {
+		dlg.imDrawText( "Game ended!", 1, DT_CENTER|DT_VCENTER, 0xFFffffff, SFRect(0,230,640,252) );
+		int winnerIndex = state.getWinnerPlayer();
+		if( winnerIndex < 1 ) {
+			dlg.imDrawText( "No winner...", 1, DT_CENTER|DT_VCENTER, 0xFFffffff, SFRect(0,255,640,277) );
+		} else {
+			char buf[200];
+			_snprintf( buf, 199, "Winner: %s with score %i", 
+				CGameInfo::getInstance().getGameDesc().getPlayer(winnerIndex).name.c_str(),
+				state.getPlayer(winnerIndex).score );
+			dlg.imDrawText( buf, 1, DT_CENTER|DT_VCENTER, 0xFFffffff, SFRect(0,255,640,277) );
+			dlg.imDrawSprite( 0xFFffffff, makeRECT(0,0,CGameDesc::FLAG_SIZE,CGameDesc::FLAG_SIZE),
+				RGET_S_TEX(PLAYER_TEX_NAMES[winnerIndex]), SFRect(300,280,340,320) );
+		}
+	}
 }
 
 
@@ -495,11 +526,6 @@ static void	gSetupGUI()
 		gUIDlg->addRollout( GID_ROL_STATS, "Stats (S)", 0, sy, 130, UIHROL, 6 + nplayers*2*UIHLAB, true, 'S', false, &gUIRollStats );
 
 		// player stats
-		const char* PLAYER_TEX_NAMES[G_MAX_PLAYERS] = {
-			NULL,
-			RID_TEX_PLAYER1,
-			RID_TEX_PLAYER2,
-		};
 		for( int p = 1; p < nplayers; ++p ) {
 			sy += 5;
 			const CGameDesc::SPlayer& pl = desc.getPlayer(p);
@@ -675,9 +701,6 @@ static void	gSetupGUI()
 
 		// TBD
 		//gUIDlg->addSlider( GID_SLD_TIME, 285-22, 462, 355-285+22*3, UIHCTL, 0, gi.getReplay().getGameTurnCount()-1, 0, false, &gUISliderTime );
-		
-		gUIDlg->addStatic( 0, "Game starting...", 0, 260, 640, 22, false, &gUILabelStarting );
-		gUILabelStarting->getElement(0)->setFont( 1, false, DT_CENTER | DT_VCENTER );
 		
 		gUIDlg->addStatic( 0, "", 3, 480-UIHLAB-1, 100, UIHLAB, false, &gUILabelFPS );
 	}
@@ -1376,11 +1399,9 @@ void CDemo::perform()
 	} else {
 		// if server state is starting, update it
 		if( state.getServerState().state == GST_STARTING ) {
-			gUILabelStarting->setVisible( true );
 			gUILabelTime->setVisible( false );
 			state.updateServerState( false, false );
 		} else {
-			gUILabelStarting->setVisible( false );
 			gUILabelTime->setVisible( true );
 			// update game state
 			if( tmv - gLastGameUpdateTime >= time_value::fromsec(desc.getTurnDT()*0.5f) ) {
