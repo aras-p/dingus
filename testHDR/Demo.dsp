@@ -165,18 +165,6 @@ SOURCE=.\data\fx\lib\structs.fx
 # End Group
 # Begin Source File
 
-SOURCE=.\data\fx\diffuse.fx
-# End Source File
-# Begin Source File
-
-SOURCE=.\data\fx\diffuseSHEnv.fx
-# End Source File
-# Begin Source File
-
-SOURCE=.\data\fx\diffuseSHEnvAO.fx
-# End Source File
-# Begin Source File
-
 SOURCE=.\data\fx\downsample4x4.fx
 # End Source File
 # Begin Source File
@@ -186,6 +174,10 @@ SOURCE=.\data\fx\object.fx
 # Begin Source File
 
 SOURCE=.\data\fx\resampleAvgLum.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\resampleAvgLumExp.fx
 # End Source File
 # Begin Source File
 

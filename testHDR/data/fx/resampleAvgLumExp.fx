@@ -15,7 +15,7 @@ float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
 	{
 		sample += tex2D( s0, uv + vSmpOffsets[i] );
 	}
-	sample /= MAX_SAMPLES;
+	sample = exp( sample/MAX_SAMPLES );
 	return float4( sample, sample, sample, 1 );
 }
 
