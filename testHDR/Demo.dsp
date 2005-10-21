@@ -173,6 +173,10 @@ SOURCE=.\data\fx\downsample4x4.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\finalScenePass.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\object.fx
 # End Source File
 # Begin Source File

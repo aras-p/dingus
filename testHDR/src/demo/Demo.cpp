@@ -60,6 +60,8 @@ CCameraEntity	gCamera;
 
 CUIDialog*		gUIDlgHUD;
 CUIStatic*		gUIFPS;
+CUISlider*		gUISldMiddleGray;
+
 
 float	gCamYaw;
 float	gCamPitch;
@@ -118,6 +120,11 @@ CRenderableQuad*	gQuadSampleAvgLum;
 CRenderableQuad*	gQuadResampleAvgLum;
 CRenderableQuad*	gQuadResampleAvgLumExp;
 CRenderableQuad*	gQuadCalcAdaptedLum;
+CRenderableQuad*	gQuadFinalScenePass;
+
+
+float	gHDRMiddleGray;
+
 
 // --------------------------------------------------------------------------
 // objects
@@ -339,6 +346,10 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gQuadCalcAdaptedLum = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
 	gQuadCalcAdaptedLum->getParams().setEffect( *RGET_FX("calcAdaptedLum") );
 	gQuadCalcAdaptedLum->getParams().addFloatRef( "fDeltaTime", &gDeltaTimeParam );
+	
+	gQuadFinalScenePass = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
+	gQuadFinalScenePass->getParams().setEffect( *RGET_FX("finalScenePass") );
+	gQuadFinalScenePass->getParams().addFloatRef( "fMiddleGray", &gHDRMiddleGray );
 
 	// --------------------------------
 	// GUI
@@ -347,12 +358,13 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlgHUD->setCallback( gUICallback );
 
 	const int hctl = 16;
-	const int hrol = 14;
 
-	// fps
-	{
-		gUIDlgHUD->addStatic( 0, "", 5,  460, 200, 20, false, &gUIFPS );
-	}
+	// FPS
+	gUIDlgHUD->addStatic( 0, "", 5,  460, 200, 20, false, &gUIFPS );
+
+	// tweakables
+	gUIDlgHUD->addStatic( 0, "Middle gray:", 5,  5, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 100, 5, 100, hctl, 0, 100, 18, false, &gUISldMiddleGray );
 }
 
 
@@ -605,17 +617,20 @@ static void gRender()
 	
 	// Final composition to the LDR back buffer: tone mapping & blue shift.
 	dx.setDefaultRenderTarget();
-	dx.setDefaultZStencil();
+
+	dx.getStateManager().SetTexture( 0, RGET_S_TEX(RT_SCENE)->getObject() );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_LUM[gCurrLuminanceIndex])->getObject() );
+	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	//  --SetTexture( 2, g_apTexBloom[0] ); mag=linear min=linear
+	//  --SetTexture( 3, g_apTexStar[0] ); mag=linear min=linear
+	G_RENDERCTX->directBegin();
+	G_RENDERCTX->directRender( *gQuadFinalScenePass );
+	G_RENDERCTX->directEnd();
 	
-	// FinalScenePass technique
-	//	float "g_fMiddleGray", g_fKeyValue;
-	//  SetTexture( 0, g_pTexScene ); mag=point min=point
-	//  --SetTexture( 1, g_apTexBloom[0] ); mag=linear min=linear
-	//  --SetTexture( 2, g_apTexStar[0] ); mag=linear min=linear
-	//  SetTexture( 3, g_pTexAdaptedLuminanceCur ); mag=point min=point
-	//  each pass: DrawFullScreenQuad( 0.0f, 0.0f, 1.0f, 1.0f );
-		
-	dx.getDevice().StretchRect( RGET_S_SURF(RT_TONEMAP[0])->getObject(), 0, dx.getBackBuffer(), 0, D3DTEXF_NONE );
+	dx.setDefaultZStencil();
 }
 
 
@@ -629,6 +644,8 @@ void CDemo::perform()
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 	gTimeParam = float(t);
 	gDeltaTimeParam = dt;
+
+	gHDRMiddleGray = gUISldMiddleGray->getValue() / 100.0f;
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
@@ -672,4 +689,5 @@ void CDemo::shutdown()
 	safeDelete( gQuadResampleAvgLum );
 	safeDelete( gQuadResampleAvgLumExp );
 	safeDelete( gQuadCalcAdaptedLum );
+	safeDelete( gQuadFinalScenePass );
 }

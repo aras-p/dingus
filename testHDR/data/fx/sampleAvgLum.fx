@@ -1,8 +1,6 @@
 #include "lib/hdrlib.fx"
 
 
-static const float3 LUMINANCE_VECTOR = float3(0.2125f, 0.7154f, 0.0721f);
-
 static const int MAX_SAMPLES = 9;
 float2 vSmpOffsets[MAX_SAMPLES];
 

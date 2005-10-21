@@ -4,6 +4,13 @@
 #define __HDR_LIB_FX
 
 
+static const float3 LUMINANCE_VECTOR = float3(0.2125f, 0.7154f, 0.0721f);
+
+// The per-color weighting to be used for blue shift under low light.
+static const float3 BLUE_SHIFT_VECTOR = float3(1.05f, 0.97f, 1.27f); 
+
+
+
 // --------------------------------------------------------------------------
 
 /**
