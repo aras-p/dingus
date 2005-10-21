@@ -165,6 +165,10 @@ SOURCE=.\data\fx\lib\structs.fx
 # End Group
 # Begin Source File
 
+SOURCE=.\data\fx\calcAdaptedLum.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\downsample4x4.fx
 # End Source File
 # Begin Source File

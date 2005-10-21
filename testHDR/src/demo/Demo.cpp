@@ -19,6 +19,7 @@
 IDingusAppContext*	gAppContext;
 int			gGlobalCullMode;	// global cull mode
 float		gTimeParam;			// time parameter for effects
+float		gDeltaTimeParam;	// delta time parameter for effects
 
 bool	gFinished = false;
 bool	gShowStats = false;
@@ -93,8 +94,13 @@ const char* RT_SCENE_SCALED = "sceneScaled";
 // Luminance textures that the viewer is currently adapted to
 const int SZ_LUMINANCE = 1;
 const D3DFORMAT FMT_LUMINANCE = D3DFMT_R32F; // some geforces don't support R16F
-const char* RT_LUM_CURR = "lumCurr";
-const char* RT_LUM_LAST = "lumLast";
+
+const char* RT_LUM[2] = {
+	"lum1",
+	"lum2",
+};
+int	gCurrLuminanceIndex = 0; // into RT_LUM texture
+
 
 // Intermediate textures for computing luminance
 const int NUM_TONEMAP_RTS = 4;
@@ -111,7 +117,7 @@ CRenderableQuad*	gQuadDownsampleBB;
 CRenderableQuad*	gQuadSampleAvgLum;
 CRenderableQuad*	gQuadResampleAvgLum;
 CRenderableQuad*	gQuadResampleAvgLumExp;
-
+CRenderableQuad*	gQuadCalcAdaptedLum;
 
 // --------------------------------------------------------------------------
 // objects
@@ -208,6 +214,11 @@ void gSetSHEnvCoeffs( CEffectParams& ep )
 
 // --------------------------------------------------------------------------
 
+void gClearSurface( CD3DSurface* surf )
+{
+	CD3DDevice::getInstance().getDevice().ColorFill( surf->getObject(), NULL, 0 );
+}
+
 void gLoadMeshAO()
 {
 	CMesh& m = gMesh->getMesh();
@@ -233,9 +244,12 @@ void CDemo::activateResource()
 	int bbh = CD3DDevice::getInstance().getBackBufferHeight();
 	gBackBufferCropWidth = bbw - bbw % BB_DIVISIBLE_BY;
 	gBackBufferCropHeight = bbh - bbh % BB_DIVISIBLE_BY;
+	gClearSurface( RGET_S_SURF(RT_LUM[0]) );
+	gClearSurface( RGET_S_SURF(RT_LUM[1]) );
 }
 void CDemo::passivateResource() { }
 void CDemo::deleteResource() { }
+
 
 
 void CDemo::initialize( IDingusAppContext& appContext )
@@ -255,10 +269,12 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SCENE );
 	stb.registerTexture( RT_SCENE_SCALED, *new CScreenBasedDivTextureCreator(SZ_SCENE_SCALED,SZ_SCENE_SCALED,BB_DIVISIBLE_BY,1,D3DUSAGE_RENDERTARGET,D3DFMT_A16B16G16R16F,D3DPOOL_DEFAULT) );
 	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SCENE_SCALED );
-	stb.registerTexture( RT_LUM_CURR, *new CFixedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
-	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_LUM_CURR );
-	stb.registerTexture( RT_LUM_LAST, *new CFixedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
-	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_LUM_LAST );
+	stb.registerTexture( RT_LUM[0], *new CFixedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_LUM[0] );
+	gClearSurface( RGET_S_SURF(RT_LUM[0]) );
+	stb.registerTexture( RT_LUM[1], *new CFixedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_LUM[1] );
+	gClearSurface( RGET_S_SURF(RT_LUM[1]) );
 	for( int i = 0; i < NUM_TONEMAP_RTS; ++i ) {
 		int size = 1 << (2*i); // 1,4,16,...
 		stb.registerTexture( RT_TONEMAP[i], *new CFixedTextureCreator(size,size,1,D3DUSAGE_RENDERTARGET, FMT_LUMINANCE,D3DPOOL_DEFAULT) );
@@ -319,6 +335,10 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gQuadResampleAvgLumExp = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
 	gQuadResampleAvgLumExp->getParams().setEffect( *RGET_FX("resampleAvgLumExp") );
 	gQuadResampleAvgLumExp->getParams().addPtr( "vSmpOffsets", sizeof(gSampleOffsets), gSampleOffsets );
+	
+	gQuadCalcAdaptedLum = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
+	gQuadCalcAdaptedLum->getParams().setEffect( *RGET_FX("calcAdaptedLum") );
+	gQuadCalcAdaptedLum->getParams().addFloatRef( "fDeltaTime", &gDeltaTimeParam );
 
 	// --------------------------------
 	// GUI
@@ -528,6 +548,35 @@ void gMeasureLuminance()
 }
 
 
+void gCalculateAdaptation()
+{
+	CD3DDevice& dx = CD3DDevice::getInstance();
+
+	// swap current & last luminance
+	int prevLumIndex = gCurrLuminanceIndex;
+	gCurrLuminanceIndex = (gCurrLuminanceIndex+1) % 2;
+	
+	//PDIRECT3DSURFACE9 pSurfAdaptedLum = NULL;
+	//V( g_pTexAdaptedLuminanceCur->GetSurfaceLevel(0, &pSurfAdaptedLum) );
+	
+	// This simulates the light adaptation that occurs when moving from a 
+	// dark area to a bright area, or vice versa. The
+	// RT_LUM[gCurrLuminanceIndex] texture stores a single texel
+	// corresponding to the user's adapted level.
+
+	dx.setRenderTarget( RGET_S_SURF(RT_LUM[gCurrLuminanceIndex]) );
+	dx.getStateManager().SetTexture( 0, RGET_S_TEX(RT_LUM[prevLumIndex])->getObject() );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_TONEMAP[0])->getObject() );
+	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+	G_RENDERCTX->directBegin();
+	G_RENDERCTX->directRender( *gQuadCalcAdaptedLum );
+	G_RENDERCTX->directEnd();
+}
+
+
 
 static void gRender()
 {
@@ -551,10 +600,8 @@ static void gRender()
 	// measure luminance
 	gMeasureLuminance();
 	
-	/*
-	// Calculate the current luminance adaptation level
-	CalculateAdaptation();
-	*/
+	// calculate the current luminance adaptation level
+	gCalculateAdaptation();
 	
 	// Final composition to the LDR back buffer: tone mapping & blue shift.
 	dx.setDefaultRenderTarget();
@@ -581,6 +628,7 @@ void CDemo::perform()
 	double t = CSystemTimer::getInstance().getTimeS();
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 	gTimeParam = float(t);
+	gDeltaTimeParam = dt;
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
@@ -623,4 +671,5 @@ void CDemo::shutdown()
 	safeDelete( gQuadSampleAvgLum );
 	safeDelete( gQuadResampleAvgLum );
 	safeDelete( gQuadResampleAvgLumExp );
+	safeDelete( gQuadCalcAdaptedLum );
 }
