@@ -63,7 +63,7 @@ SOutput vsMain( SInput i ) {
 	o.pos	= mul( i.pos, mWVP );
 	float3 n = i.nao.xyz*2-1;
 	o.diffao.rgb = evalSHEnv( float4(n,1) );
-	o.diffao.a = i.nao.w * 0.7 + 0.4;
+	o.diffao.a = i.nao.w * 0.9 + 0.1;
 
 	o.n = n;
 
@@ -88,7 +88,7 @@ half4 psMain( SOutput i ) : COLOR
 	// AO
 	half ao = i.diffao.a;
 
-	half3 color = (diff + spec) * ao * 10;
+	half3 color = (diff + spec) * ao;
 
 	return EncodeRGBE8( color );
 }

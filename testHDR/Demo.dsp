@@ -191,6 +191,10 @@ SOURCE=.\data\fx\resampleAvgLumExp.fx
 
 SOURCE=.\data\fx\sampleAvgLum.fx
 # End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\skybox.fx
+# End Source File
 # End Group
 # Begin Source File
 

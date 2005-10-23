@@ -122,6 +122,8 @@ CRenderableQuad*	gQuadResampleAvgLumExp;
 CRenderableQuad*	gQuadCalcAdaptedLum;
 CRenderableQuad*	gQuadFinalScenePass;
 
+CRenderableMesh*	gMeshSkybox;
+
 
 float	gHDRMiddleGray;
 
@@ -351,6 +353,13 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gQuadFinalScenePass->getParams().setEffect( *RGET_FX("finalScenePass") );
 	gQuadFinalScenePass->getParams().addFloatRef( "fMiddleGray", &gHDRMiddleGray );
 
+	CMesh* msky = RGET_MESH("skybox");
+	gMeshSkybox = new CRenderableMesh( *msky, 0, NULL, -1 );
+	gMeshSkybox->getParams().setEffect( *RGET_FX("skybox") );
+	gMeshSkybox->getParams().addCubeTexture( "tEnv", *env );
+	gMeshSkybox->getParams().addVector3Ref( "vPos", gCamera.mWorldMat.getOrigin() );
+
+
 	// --------------------------------
 	// GUI
 
@@ -573,7 +582,6 @@ void gCalculateAdaptation()
 	// RT_LUM[gCurrLuminanceIndex] texture stores a single texel
 	// corresponding to the user's adapted level.
 
-	/*
 	dx.setRenderTarget( RGET_S_SURF(RT_LUM[gCurrLuminanceIndex]) );
 	dx.getStateManager().SetTexture( 0, RGET_S_TEX(RT_LUM[prevLumIndex])->getObject() );
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
@@ -584,10 +592,6 @@ void gCalculateAdaptation()
 	G_RENDERCTX->directBegin();
 	G_RENDERCTX->directRender( *gQuadCalcAdaptedLum );
 	G_RENDERCTX->directEnd();
-	*/
-	dx.getDevice().StretchRect(
-		RGET_S_SURF(RT_TONEMAP[0])->getObject(), NULL,
-		RGET_S_SURF(RT_LUM[gCurrLuminanceIndex])->getObject(), NULL, D3DTEXF_NONE );
 }
 
 
@@ -602,6 +606,7 @@ static void gRender()
 	dx.clearTargets( true, true, false, 0x00000000, 1.0f, 0L );
 	G_RENDERCTX->applyGlobalEffect();
 	gMesh->render();
+	G_RENDERCTX->attach( *gMeshSkybox );
 	G_RENDERCTX->perform();
 
 	dx.setZStencil( NULL );
@@ -615,7 +620,7 @@ static void gRender()
 	gMeasureLuminance();
 	
 	// calculate the current luminance adaptation level
-	//gCalculateAdaptation();
+	gCalculateAdaptation();
 	
 	// Final composition to the LDR back buffer: tone mapping & blue shift.
 	dx.setDefaultRenderTarget();
@@ -623,8 +628,8 @@ static void gRender()
 	dx.getStateManager().SetTexture( 0, RGET_S_TEX(RT_SCENE)->getObject() );
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
-	//dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_LUM[gCurrLuminanceIndex])->getObject() );
-	dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_TONEMAP[0])->getObject() );
+	dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_LUM[gCurrLuminanceIndex])->getObject() );
+	//dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_TONEMAP[0])->getObject() );
 	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MINFILTER, D3DTEXF_POINT );
 	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
 	//  --SetTexture( 2, g_apTexBloom[0] ); mag=linear min=linear
@@ -635,6 +640,7 @@ static void gRender()
 	
 	dx.setDefaultZStencil();
 
+	/*
 	D3DVIEWPORT9 vp;
 	vp.X = 300;
 	vp.Y = 5;
@@ -651,6 +657,7 @@ static void gRender()
 	vp.Width = dx.getBackBufferWidth();
 	vp.Height = dx.getBackBufferHeight();
 	dx.getDevice().SetViewport( &vp );
+	*/
 }
 
 
@@ -710,4 +717,6 @@ void CDemo::shutdown()
 	safeDelete( gQuadResampleAvgLumExp );
 	safeDelete( gQuadCalcAdaptedLum );
 	safeDelete( gQuadFinalScenePass );
+	
+	safeDelete( gMeshSkybox );
 }

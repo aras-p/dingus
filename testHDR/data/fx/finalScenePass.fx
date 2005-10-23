@@ -18,7 +18,7 @@ float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
 	// For very low light conditions, the rods will dominate the perception
 	// of light, and therefore color will be desaturated and shifted
 	// towards blue.
-	if( false )
+	if( true )
 	{
 		// Define a linear blending from -1.5 to 2.6 (log scale) which
 		// determines the lerp amount for blue shift
@@ -36,16 +36,16 @@ float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
 	//if( frac(uv.x*16) > 0.5 )
 	if( true )
 	{
+		const float LUM_WHITE = 1.5;
+
 		sample *= fMiddleGray / (adaptedLum + 0.001f);
+		//sample *= (1.0 + sample/LUM_WHITE);
 		sample /= (1.0 + sample);
 	}  
 
 	// Add the star and bloom post processing effects
 	//sample += g_fStarScale * vStar;
 	//sample += g_fBloomScale * vBloom;
-
-	if( uv.x > 0.95 )
-		sample = adaptedLum;
 
 	return float4( sample, 1 );
 }
