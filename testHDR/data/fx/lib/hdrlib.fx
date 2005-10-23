@@ -10,84 +10,29 @@ static const float3 LUMINANCE_VECTOR = float3(0.2125f, 0.7154f, 0.0721f);
 static const float3 BLUE_SHIFT_VECTOR = float3(1.05f, 0.97f, 1.27f); 
 
 
+#define MAX_EXP (63.0)
+#define MIN_EXP (-64.0)
+static const float2 SCALE_BIAS = float2( MAX_EXP-MIN_EXP, MIN_EXP );
+static const float2 INV_SCALE_BIAS = float2( 1.0/(MAX_EXP-MIN_EXP), -MIN_EXP/(MAX_EXP-MIN_EXP) );
+
 
 // --------------------------------------------------------------------------
 
-/**
- * RGBE8 Encoding/Decoding
- * The RGBE8 format stores a mantissa per color channel and a shared exponent
- * stored in alpha. Since the exponent is shared, it's computed based on the
- * highest intensity color component. The resulting color is RGB * 2^Alpha,
- * which scales the data across a logarithmic scale.
- */
 float4 EncodeRGBE8( in float3 rgb )
 {
 	float4 vEncoded;
-
-    // Determine the largest color component
 	float maxComponent = max( max(rgb.r, rgb.g), rgb.b );
-	
-	// Round to the nearest integer exponent
-	float fExp = ceil( log2(maxComponent) );
-
-    // Divide the components by the shared exponent
-	vEncoded.rgb = rgb / exp2(fExp);
-	
-	// Store the shared exponent in the alpha channel
-	vEncoded.a = (fExp + 128) / 255;
-
+	float fexp = ceil( log2(maxComponent) );
+	vEncoded.rgb = rgb / exp2(fexp);
+	vEncoded.a = fexp * INV_SCALE_BIAS.x + INV_SCALE_BIAS.y;
 	return vEncoded;
 }
 
 float3 DecodeRGBE8( in float4 rgbe )
 {
-	float3 vDecoded;
-
-    // Retrieve the shared exponent
-	float fExp = rgbe.a * 255 - 128;
-	
-	// Multiply through the color components
-	vDecoded = rgbe.rgb * exp2(fExp);
-	
-	return vDecoded;
+	return rgbe.rgb * exp2( rgbe.a * SCALE_BIAS.x + SCALE_BIAS.y );
 }
 
-
-// --------------------------------------------------------------------------
-
-/**
- * RE8 Encoding/Decoding
- * The RE8 encoding is simply a single channel version of RGBE8, useful for
- * storing non-color floating point data (such as calculated scene luminance)
- */
-float4 EncodeRE8( in float f )
-{
-    float4 vEncoded = float4( 0, 0, 0, 0 );
-    
-    // Round to the nearest integer exponent
-    float fExp = ceil( log2(f) );
-    
-    // Divide by the exponent
-    vEncoded.r = f / exp2(fExp);
-    
-    // Store the exponent
-    vEncoded.a = (fExp + 128) / 255;
-    
-    return vEncoded;
-}
-
-float DecodeRE8( in float4 rgbe )
-{
-    float fDecoded;
-
-    // Retrieve the shared exponent
-	float fExp = rgbe.a * 255 - 128;
-	
-	// Multiply through the color components
-	fDecoded = rgbe.r * exp2(fExp);
-
-	return fDecoded;  
-}
 
 
 #endif

@@ -12,6 +12,8 @@ public:
 
 	// IDingusApplication
 	virtual bool checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProcessing vproc, CD3DEnumErrors& errors );
+	virtual void initD3DSettingsPref( SD3DSettingsPref& pref );
+	
 	virtual void initialize( IDingusAppContext& appContext );
 	virtual void shutdown();
 	virtual bool shouldFinish();

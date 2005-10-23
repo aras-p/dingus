@@ -11,6 +11,7 @@
 #include <dingus/math/Vector2.h>
 #include <dingus/utils/Random.h>
 #include <dingus/gfx/Vertices.h>
+#include <dingus/dxutils/d3dsettings.h>
 
 
 // --------------------------------------------------------------------------
@@ -42,6 +43,13 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 	}
 	return ok;
 }
+
+void CDemo::initD3DSettingsPref( SD3DSettingsPref& pref )
+{
+	// TBD: does not work now!
+	//pref.fsaaType = D3DMULTISAMPLE_4_SAMPLES;
+}
+
 bool CDemo::shouldFinish()
 {
 	return gFinished;

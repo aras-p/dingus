@@ -33,12 +33,11 @@ float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
 	// Map the high range of color values into a range appropriate for
 	// display, taking into account the user's adaptation level, and selected
 	// value for middle gray
-	//if( frac(uv.x*16) > 0.5 )
 	if( true )
 	{
-		const float LUM_WHITE = 1.5;
 
 		sample *= fMiddleGray / (adaptedLum + 0.001f);
+		//const float LUM_WHITE = 1.5;
 		//sample *= (1.0 + sample/LUM_WHITE);
 		sample /= (1.0 + sample);
 	}  
