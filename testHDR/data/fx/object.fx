@@ -77,7 +77,7 @@ SOutput vsMain( SInput i ) {
 half4 psMain( SOutput i ) : COLOR
 {
 	// sample specular envmap
-	const float REFLECTIVITY = 0.001;
+	const float REFLECTIVITY = 0.0;
 	i.n = normalize(i.n);
 	half3 refl = reflect( i.v, i.n );
 	half3 spec = texCUBE( smpEnv, refl ).rgb * REFLECTIVITY;
@@ -88,11 +88,9 @@ half4 psMain( SOutput i ) : COLOR
 	// AO
 	half ao = i.diffao.a;
 
-	half3 color = (diff + spec) * ao;
+	half3 color = (diff + spec) * ao * 10;
 
-	// encode into RGBE8
 	return EncodeRGBE8( color );
-	//return half4( color, 1 );
 }
 
 

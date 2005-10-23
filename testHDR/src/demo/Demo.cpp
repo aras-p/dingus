@@ -568,14 +568,12 @@ void gCalculateAdaptation()
 	int prevLumIndex = gCurrLuminanceIndex;
 	gCurrLuminanceIndex = (gCurrLuminanceIndex+1) % 2;
 	
-	//PDIRECT3DSURFACE9 pSurfAdaptedLum = NULL;
-	//V( g_pTexAdaptedLuminanceCur->GetSurfaceLevel(0, &pSurfAdaptedLum) );
-	
 	// This simulates the light adaptation that occurs when moving from a 
 	// dark area to a bright area, or vice versa. The
 	// RT_LUM[gCurrLuminanceIndex] texture stores a single texel
 	// corresponding to the user's adapted level.
 
+	/*
 	dx.setRenderTarget( RGET_S_SURF(RT_LUM[gCurrLuminanceIndex]) );
 	dx.getStateManager().SetTexture( 0, RGET_S_TEX(RT_LUM[prevLumIndex])->getObject() );
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
@@ -586,6 +584,10 @@ void gCalculateAdaptation()
 	G_RENDERCTX->directBegin();
 	G_RENDERCTX->directRender( *gQuadCalcAdaptedLum );
 	G_RENDERCTX->directEnd();
+	*/
+	dx.getDevice().StretchRect(
+		RGET_S_SURF(RT_TONEMAP[0])->getObject(), NULL,
+		RGET_S_SURF(RT_LUM[gCurrLuminanceIndex])->getObject(), NULL, D3DTEXF_NONE );
 }
 
 
@@ -613,7 +615,7 @@ static void gRender()
 	gMeasureLuminance();
 	
 	// calculate the current luminance adaptation level
-	gCalculateAdaptation();
+	//gCalculateAdaptation();
 	
 	// Final composition to the LDR back buffer: tone mapping & blue shift.
 	dx.setDefaultRenderTarget();
@@ -621,7 +623,8 @@ static void gRender()
 	dx.getStateManager().SetTexture( 0, RGET_S_TEX(RT_SCENE)->getObject() );
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
-	dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_LUM[gCurrLuminanceIndex])->getObject() );
+	//dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_LUM[gCurrLuminanceIndex])->getObject() );
+	dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_TONEMAP[0])->getObject() );
 	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MINFILTER, D3DTEXF_POINT );
 	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
 	//  --SetTexture( 2, g_apTexBloom[0] ); mag=linear min=linear
@@ -631,6 +634,23 @@ static void gRender()
 	G_RENDERCTX->directEnd();
 	
 	dx.setDefaultZStencil();
+
+	D3DVIEWPORT9 vp;
+	vp.X = 300;
+	vp.Y = 5;
+	vp.Width = 64;
+	vp.Height = 64;
+	vp.MinZ = 0;
+	vp.MaxZ = 1;
+	dx.getDevice().SetViewport( &vp );
+	dx.clearTargets( true, true, false, 0, 1.0f, 0L );
+	gMesh->render();
+	G_RENDERCTX->perform();
+
+	vp.X = 0; vp.Y = 0;
+	vp.Width = dx.getBackBufferWidth();
+	vp.Height = dx.getBackBufferHeight();
+	dx.getDevice().SetViewport( &vp );
 }
 
 

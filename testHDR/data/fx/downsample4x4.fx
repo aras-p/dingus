@@ -17,8 +17,8 @@ float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
 	float3 sample = 0.0f;
 	for( int i=0; i < MAX_SAMPLES; i++ )
 	{
-		float4 srgbe = tex2D( smpBase, uv + vSmpOffsets[i] );
-		sample += DecodeRGBE8( srgbe );
+		float4 s = tex2D( smpBase, uv + vSmpOffsets[i] );
+		sample += DecodeRGBE8( s );
 	}
 	return float4( sample / MAX_SAMPLES, 1 );
 }

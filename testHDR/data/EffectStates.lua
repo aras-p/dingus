@@ -24,6 +24,7 @@ restored = {
 	{ 'PatchSegments', '0' },
 	{ 'ShadeMode', 'Gouraud' },
 	{ 'SlopeScaleDepthBias', '0' },
+	{ 'SRGBWriteEnable', 'False' },
 	{ 'ZFunc', 'Less' },
 	{ 'Wrap0', '0' },
 	{ 'Wrap1', '0' },
