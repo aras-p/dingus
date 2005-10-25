@@ -673,7 +673,7 @@ void gBrightPass()
 
 void gBloom()
 {
-	const int BLOOM_ITERATIONS = 3;
+	const int BLOOM_ITERATIONS = 5;
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
@@ -689,8 +689,8 @@ void gBloom()
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
 
 	for( int i = 0; i < BLOOM_ITERATIONS; ++i ) {
-		float offsetU = (i + 0.5f) * tU;
-		float offsetV = (i + 0.5f) * tV;
+		float offsetU = (i*1.05f + 0.5f) * tU;
+		float offsetV = (i*1.05f + 0.5f) * tV;
 		gSampleOffsets[0].set( -offsetU,  offsetV );
 		gSampleOffsets[1].set( -offsetU, -offsetV );
 		gSampleOffsets[2].set(  offsetU,  offsetV );

@@ -77,13 +77,16 @@ SOutput vsMain( SInput i ) {
 half4 psMain( SOutput i ) : COLOR
 {
 	// sample specular envmap
-	const float REFLECTIVITY = 0.0;
+	/*
+	const float REFLECTIVITY = 0.01;
 	i.n = normalize(i.n);
 	half3 refl = reflect( i.v, i.n );
 	half3 spec = texCUBE( smpEnv, refl ).rgb * REFLECTIVITY;
+	*/
+	half3 spec = 0;
 
 	// diffuse
-	half3 diff = i.diffao.rgb;
+	half3 diff = i.diffao.rgb * 0.7;
 
 	// AO
 	half ao = i.diffao.a;
