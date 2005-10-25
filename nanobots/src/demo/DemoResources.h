@@ -54,16 +54,14 @@ extern const char* RMODE_PREFIX[RMCOUNT];
 // --------------------------------------------------------------------------
 
 const int GFX_DETAIL_LEVELS = 4;
-const int SFX_MAX_VOLUME = 100;
 
 
-static const DWORD CFG_VERSION = 20051015;
+static const DWORD CFG_VERSION = 20051025;
 
 
 struct SAppSettings {
 	SAppSettings()
 		: gfxDetail(GFX_DETAIL_LEVELS-1),
-		musicVolume(65), soundVolume(80),
 		megaZoom(30.0f), megaTilt(50.0f),
 		followMode(false), showMinimap(true),
 		drawAznNeedle(true), drawAznCollector(false),
@@ -72,8 +70,6 @@ struct SAppSettings {
 	{ }
 
 	int		gfxDetail;
-	int		musicVolume;
-	int		soundVolume;
 	float	megaZoom;
 	float	megaTilt;
 	bool	followMode;

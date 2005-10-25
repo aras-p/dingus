@@ -6,9 +6,6 @@
 // --------------------------------------------------------------------------
 
 const int GID_SLD_GFX_DETAIL = 6000;
-const int GID_SLD_SFX_VOLMUSIC = 6001;
-const int GID_SLD_SFX_VOLSOUND = 6002;
-//const int GID_CHK_MEGAMAP = 6003;
 const int GID_CHK_LEVELCACHE = 6004;
 
 
@@ -37,7 +34,7 @@ CDemoSettingsDialog::CDemoSettingsDialog( const CD3DEnumeration& enumeration, co
 	mDlg->setCallback( dialogCallback );
 	mDlg->setBackgroundColors( 0xA0303030 );
 	mDlg->setLocation( 50, 50 );
-	mDlg->setSize( 540, 380 );
+	mDlg->setSize( 540, 320 );
 	mDlg->setFont( 1, "Arial", 22, 50 );
 	mDlg->setFont( 2, "Arial", 14, 50 );
 
@@ -83,19 +80,6 @@ CDemoSettingsDialog::CDemoSettingsDialog( const CD3DEnumeration& enumeration, co
 		mDlg->addStatic( 0, "Vertex processing:", xcol+295, yline, 83, HC );
 		mDlg->addComboBox( IDC_VERTEXPROCESSING_COMBO, xcol+380, yline, 98, HC );
 	}
-	// audio settings
-	{
-		const int xcol = 30;
-		yline += 40;
-		mDlg->addStatic( 0, "Audio settings", xcol-10, yline, 200, 22, false, &lab );
-		lab->getElement(0)->setFont( 1, false, DT_LEFT | DT_VCENTER );
-
-		mDlg->addStatic( 0, "Ambient volume:", xcol, yline+=24, 78, HC );
-		mDlg->addSlider( GID_SLD_SFX_VOLMUSIC, xcol+80, yline, 100, HC, 0, SFX_MAX_VOLUME, SFX_MAX_VOLUME/2 );
-		
-		mDlg->addStatic( 0, "Sound volume:", xcol+200, yline, 78, HC );
-		mDlg->addSlider( GID_SLD_SFX_VOLSOUND, xcol+280, yline, 100, HC, 0, SFX_MAX_VOLUME, SFX_MAX_VOLUME/2 );
-	}
 	// game settings
 	{
 		const int xcol = 30;
@@ -103,7 +87,6 @@ CDemoSettingsDialog::CDemoSettingsDialog( const CD3DEnumeration& enumeration, co
 		mDlg->addStatic( 0, "Game settings", xcol-10, yline, 200, 22, false, &lab );
 		lab->getElement(0)->setFont( 1, false, DT_LEFT | DT_VCENTER );
 
-		//mDlg->addCheckBox( GID_CHK_MEGAMAP, "Start in megamap mode", xcol, yline+=24, 150, HC, mAppSettings.startMegamap );
 		mDlg->addCheckBox( GID_CHK_LEVELCACHE, "Cache tissue meshes", xcol, yline+=24, 150, HC, mAppSettings.cacheLevels );
 	}
 
@@ -138,9 +121,6 @@ void CDemoSettingsDialog::showDialog( const CD3DSettings& settings )
 
 	// settings to the UI
 	mDlg->getSlider( GID_SLD_GFX_DETAIL )->setValue( mAppSettings.gfxDetail );
-	mDlg->getSlider( GID_SLD_SFX_VOLMUSIC )->setValue( mAppSettings.musicVolume );
-	mDlg->getSlider( GID_SLD_SFX_VOLSOUND )->setValue( mAppSettings.soundVolume );
-	//mDlg->getCheckBox( GID_CHK_MEGAMAP )->setChecked( mAppSettings.startMegamap );
 	mDlg->getCheckBox( GID_CHK_LEVELCACHE )->setChecked( mAppSettings.cacheLevels );
 }
 
@@ -258,9 +238,6 @@ void CALLBACK CDemoSettingsDialog::dialogCallback( UINT evt, int ctrlID, CUICont
 			assert( inst->mState == STATE_ACTIVE );
 			inst->mState = STATE_OK;
 			inst->mAppSettings.gfxDetail = inst->mDlg->getSlider(GID_SLD_GFX_DETAIL)->getValue();
-			inst->mAppSettings.musicVolume = inst->mDlg->getSlider(GID_SLD_SFX_VOLMUSIC)->getValue();
-			inst->mAppSettings.soundVolume = inst->mDlg->getSlider(GID_SLD_SFX_VOLSOUND)->getValue();
-			//inst->mAppSettings.startMegamap = inst->mDlg->getCheckBox(GID_CHK_MEGAMAP)->isChecked();
 			inst->mAppSettings.cacheLevels = inst->mDlg->getCheckBox(GID_CHK_LEVELCACHE)->isChecked();
 			break;
 		case IDCANCEL:

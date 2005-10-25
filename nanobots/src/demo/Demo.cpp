@@ -14,9 +14,6 @@
 #include <dingus/math/MathUtils.h>
 #include <dingus/gfx/geometry/DynamicVBManager.h>
 
-#include <dingus/audio/AudioListener.h>
-#include <dingus/audio/Sound.h>
-
 
 #include "GameInfo.h"
 #include "game/GameState.h"
@@ -129,8 +126,6 @@ void CDemo::initD3DSettingsPref( SD3DSettingsPref& pref )
 	}
 
 	settings.gfxDetail = clamp( settings.gfxDetail, 0, GFX_DETAIL_LEVELS-1 );
-	settings.musicVolume = clamp( settings.musicVolume, 0, SFX_MAX_VOLUME );
-	settings.soundVolume = clamp( settings.soundVolume, 0, SFX_MAX_VOLUME );
 	gReadSettings = true;
 
 	fclose( f );
@@ -219,9 +214,6 @@ SVector3	gMouseRay;
 // game network updates
 time_value	gLastGameUpdateTime;
 
-// background sound
-CSound*	gSndHeart;
-
 
 
 // --------------------------------------------------------------------------
@@ -238,8 +230,8 @@ const int	GID_ROL_ESTATS = 1007;
 const int	GID_CHK_OPTIONS = 1050;
 const int	GID_CHK_HELP = 1051;
 
-//const int	GID_BTN_SELAI1 = 1100; // TBD
-//const int	GID_BTN_SELAI2 = 1101;
+const int	GID_BTN_SELAI1 = 1100;
+const int	GID_BTN_SELAI2 = 1101;
 
 const int	GID_CHK_AZN_NEED = 1110;
 const int	GID_CHK_AZN_COLL = 1111;
@@ -319,20 +311,17 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 
 	switch( evt ) {
 	case UIEVENT_BUTTON_CLICKED:
-		/*
-		// TBD
 		switch( ctrlID ) {
-		case GID_BTN_PLAY:
-			gSetPlayMode( !gPlayMode );
-			break;
+		// TBD case GID_BTN_PLAY:
+		//	gSetPlayMode( !gPlayMode );
+		//	break;
 		case GID_BTN_SELAI1:
-			gi.getEntities().setSelectedEntity( gi.getReplay().getPlayer(0).entityAI );
+			gi.getEntities().setSelectedEntityID( gi.getState().getPlayer(1).aiID );
 			break;
 		case GID_BTN_SELAI2:
-			gi.getEntities().setSelectedEntity( gi.getReplay().getPlayer(1).entityAI );
+			gi.getEntities().setSelectedEntityID( gi.getState().getPlayer(2).aiID );
 			break;
 		}
-		*/
 		break;
 	case UIEVENT_CHECKBOX_CHANGED:
 		{
@@ -706,12 +695,10 @@ static void	gSetupGUI()
 	}
 	// other
 	{
-		/* // TBD
 		gUIDlg->addButton( GID_BTN_SELAI1, "Sel AI1 (1)", 2, 300, 60, UIHLAB, '1' );
 		gUIDlg->addButton( GID_BTN_SELAI2, "Sel AI2 (2)", 2, 316, 60, UIHLAB, '2' );
-		if( nplayers < 2 )
+		if( nplayers < 3 )
 			gUIDlg->getButton(GID_BTN_SELAI2)->setEnabled( false );
-		*/
 		
 		gUIDlg->addCheckBox( GID_CHK_AZN_NEED, "AZN Needles", 2, 332, 90, UIHCTL, gAppSettings.drawAznNeedle, 0, false, NULL );
 		gUIDlg->addCheckBox( GID_CHK_AZN_COLL, "AZN Collectors", 2, 332+16, 90, UIHCTL, gAppSettings.drawAznCollector, 0, false, NULL );
@@ -810,6 +797,12 @@ static void gUIDrawProgress( const char* msg )
 }
 
 
+static void gPreloadStuff()
+{
+	CONS << "Preloading resources..." << endl;
+
+}
+
 
 void CDemo::initialize( IDingusAppContext& appContext )
 {
@@ -860,10 +853,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gSettingsDlgWasActive = false;
 	gUIHelpDlg = new CDemoHelpDialog();
 	gHelpDlgWasActive = false;
-
-	gSndHeart = new CSound( *RGET_SOUND(CSoundDesc("heart", true)) );
-	gSndHeart->setLooping( true );
-	gSndHeart->setVolume( gAppSettings.musicVolume * 0.01f );
 
 	gLastGameUpdateTime = time_value();
 
@@ -1384,12 +1373,9 @@ void CDemo::perform()
 	bool insideView = gAppSettings.followMode && !gameSetupActive;
 
 	//
-	// perform input, audio etc.
+	// perform input
 
 	G_INPUTCTX->perform();
-
-	G_AUDIOCTX->beginScene( CSystemTimer::getInstance().getTime() );
-	G_AUDIOCTX->updateListener();
 
 	//
 	// update game if it's started
@@ -1580,21 +1566,6 @@ void CDemo::perform()
 	sprintf( buf, "fps: %.1f", dx.getStats().getFPS() );
 	gUILabelFPS->setText( buf );
 
-	// update sound listener
-	G_AUDIOCTX->getListener().transform = gCamera.mWorldMat;
-	G_AUDIOCTX->getListener().velocity.set(0,0,0);
-
-	float heartVol = gAppSettings.musicVolume * 0.01f;
-	if( gSndHeart->getVolume() != heartVol )
-		gSndHeart->setVolume( heartVol );
-	if( !gPlayMode ) {
-		gSndHeart->stop();
-	} else if( gSndHeart->isPlaying() ) {
-		gSndHeart->update();
-	} else {
-		gSndHeart->start();
-	}
-
 	gFogParam.set( fognear, fogfar, 1.0f/(fogfar-fognear), 0 );
 
 
@@ -1627,7 +1598,6 @@ void CDemo::perform()
 	}
 
 	dx.sceneEnd();
-	G_AUDIOCTX->endScene();
 }
 
 
@@ -1643,7 +1613,6 @@ void CDemo::shutdown()
 	CONS << "Shutting down..." << endl;
 	CGameInfo::finalize();
 
-	delete gSndHeart;
 	delete gDebugRenderer;
 
 	safeDelete( gUIDlg );

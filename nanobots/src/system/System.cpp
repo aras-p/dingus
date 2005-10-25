@@ -107,14 +107,6 @@ void CSystem::setupContexts( HWND hwnd )
 	G_INPUTCTX->addDevice( *(new CDIKeyboard(hwnd,*directInput8)) );
 	CONS << " add DI mouse device" << endl;
 	G_INPUTCTX->addDevice( *(new CDIMouse(hwnd,*directInput8)) );
-
-	// sound
-	CONS << "create audio context" << endl;
-	new CAudioContext( hwnd );
-	CONS << "  open audio context" << endl;
-	G_AUDIOCTX->open();
-	CONS << "  initialize sound bundle" << endl;
-	CSoundBundle::getInstance().initialize( gSavedDataPath + "sound/" );
 }
 
 
@@ -126,10 +118,6 @@ void CSystem::destroyContexts()
 	assert( G_INPUTCTX );
 	stl_utils::wipe( G_INPUTCTX->getDevices() );
 	safeDelete( G_INPUTCTX );
-
-	assert( G_AUDIOCTX );
-	CSoundBundle::finalize();
-	safeDelete( G_AUDIOCTX );
 }
 
 void CSystem::destroyBundles()

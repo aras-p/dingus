@@ -12,7 +12,6 @@
 
 CActorEntity::CActorEntity( const CGameEntity& ge )
 :	CMeshEntity( ge.getTypeName(), LOD_COUNT ),
-	mSoundPlayedTurn(-10),
 	mGameEntity( &ge ),
 	mOutlineTTL(0.0f)
 {
@@ -104,27 +103,11 @@ CActorEntity::CActorEntity( const CGameEntity& ge )
 	mPositions = pos0;
 	delete[] pos1;
 	*/
-
-	// sounds
-	mSndAttack = new CSound( *RGET_SOUND(CSoundDesc("Attack",false)) );
-	mSndAttack->setLooping( true );
-
-	mSndBirth = new CSound( *RGET_SOUND(CSoundDesc((etype==ENTITY_NEEDLE||etype==ENTITY_BLOCKER)?"Build":"Spawn",false)) );
-
-	if( ai ) {
-		mSndInjured = new CSound( *RGET_SOUND(CSoundDesc("Alarm",false)) );
-		mSndInjured->setMinDist( 150.0f );
-		mSndInjured->setMaxDist( 300.0f );
-	} else
-		mSndInjured = 0;
 }
 
 CActorEntity::~CActorEntity()
 {
 	//delete[] mPositions;
-	delete mSndAttack;
-	delete mSndBirth;
-	safeDelete( mSndInjured );
 }
 
 
@@ -175,70 +158,4 @@ void CActorEntity::update( float timeAlpha )
 	} else {
 		mOutlineTTL = 0.0f;
 	}
-
-	// sounds
-	updateSounds( !alive );
 }
-
-void CActorEntity::updateSounds( bool dead )
-{
-	// only play sounds in normal play mode
-	if( !gPlayMode || dead ) {
-		mSndAttack->stop();
-		return;
-	}
-
-	// TBD
-	/*
-	float t = CGameInfo::getInstance().getTime();
-	int turn = int(t);
-	float turnA = t - turn;
-
-	const CReplayEntity::SState& sPrev = mReplayEntity->getTurnState( turn-1 );
-	const CReplayEntity::SState& sNow = mReplayEntity->getTurnState( turn );
-
-	const float volume = gAppSettings.soundVolume * 0.01f;
-
-	// attack sound
-	mSndAttack->setTransform( mWorldMat );
-	mSndAttack->setMinDist( gAppSettings.followMode ? 10.0f : gAppSettings.megaZoom );
-	mSndAttack->setMaxDist( gAppSettings.followMode ? 100.0f : gAppSettings.megaZoom * 3 );
-	if( sNow.state == ENTSTATE_ATTACK ) {
-		
-		// attacking now. either fade in if was not attacking, or leave
-		if( sPrev.state != ENTSTATE_ATTACK )
-			mSndAttack->setVolume( turnA * volume );
-		else
-			mSndAttack->setVolume( volume );
-		mSndAttack->startOrUpdate();
-	} else {
-		// not attacking now. either stop if was not attacking, or fade out
-		if( sPrev.state != ENTSTATE_ATTACK )
-			mSndAttack->stop();
-		else {
-			mSndAttack->setVolume( (1.0f - turnA) * volume );
-			mSndAttack->startOrUpdate();
-		}
-	}
-
-	// birth sound
-	mSndBirth->setMinDist( gAppSettings.followMode ? 1.0f : gAppSettings.megaZoom );
-	mSndBirth->setMaxDist( gAppSettings.followMode ? 30.0f : gAppSettings.megaZoom * 3 );
-	mSndBirth->setVolume( (gAppSettings.followMode ? 1.0f : 0.7f) * volume );
-	if( turn == mReplayEntity->getBornTurn() ) {
-		if( !mSndBirth->isPlaying() ) {
-			mSndBirth->setTransform( mWorldMat );
-			mSndBirth->start();
-		}
-	}
-
-	// injured?
-	if( mSndInjured && !mSndInjured->isPlaying() ) {
-		if( sNow.health < sPrev.health ) {
-			mSndInjured->setTransform( mWorldMat );
-			mSndInjured->start();
-		}
-	}
-	*/
-}
-

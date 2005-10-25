@@ -163,7 +163,10 @@ void CGameState::updateState( int winnerPlayer )
 
 			if( newEntity ) {
 				CGameInfo::getInstance().onNewEntity( *entity );
-				// TBD: detect born AIs, needles etc
+				// detect born AI
+				if( type == ENTITY_AI ) {
+					mPlayers[pid].aiID = bid;
+				}
 			}
 		}
 	}
@@ -196,6 +199,10 @@ void CGameState::updateState( int winnerPlayer )
 		CGameEntity& e = *it->second;
 		if( e.getLastUpdateTurn() < turn ) {
 			e.markDead( turn );
+			// detect died AIs
+			if( e.getType() == ENTITY_AI ) {
+				mPlayers[e.getOwner()].aiID = -1;
+			}
 		}
 	}
 

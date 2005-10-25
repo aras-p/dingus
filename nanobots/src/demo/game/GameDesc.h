@@ -34,8 +34,6 @@ public:
 	int		getTurnsPerSecond() const { return mTurnsPerSecond; }
 	float	getTurnDT() const { return mTurnDT; }
 
-	//bool	isSinglePlayer() const { return mPlayerCount==2; }
-	//bool	isComputerPlayer( int index ) const { return index == mPlayerCount-1; }
 	int		getPlayerCount() const { return mPlayerCount; }
 	const SPlayer& getPlayer( int i ) const { return mPlayers[i]; }
 

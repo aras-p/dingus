@@ -3,7 +3,6 @@
 
 #include "MeshEntity.h"
 #include "../DemoResources.h"
-#include <dingus/audio/Sound.h>
 
 class CGameEntity;
 
@@ -32,15 +31,6 @@ public:
 	float	getOutlineDY() const { return mOutlineDY; }
 
 private:
-	void	updateSounds( bool dead );
-
-private:
-	CSound*	mSndAttack;
-	CSound*	mSndBirth;
-	CSound*	mSndInjured;
-
-	int		mSoundPlayedTurn;
-
 	const CGameEntity*	mGameEntity;
 	//SVector3*	mPositions;
 
