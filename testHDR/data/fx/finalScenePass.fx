@@ -2,9 +2,11 @@
 
 
 float fMiddleGray;
+float fBloomScale = 1.0f;
 
 sampler s0 : register(s0); // input scene RBGE
 sampler s1 : register(s1); // adapted luminance
+sampler s2 : register(s2); // bloom
 
 
 float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
@@ -12,8 +14,7 @@ float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
 	float3 sample = DecodeRGBE8( tex2D(s0, uv) );
 	float adaptedLum = tex2D(s1, float2(0.5f, 0.5f));
 
-	//float4 vBloom = tex2D(s2, uv);
-	//float4 vStar = tex2D(s3, uv);
+	half4 bloom = tex2D(s2, uv);
 
 	// For very low light conditions, the rods will dominate the perception
 	// of light, and therefore color will be desaturated and shifted
@@ -42,9 +43,8 @@ float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
 		sample /= (1.0 + sample);
 	}  
 
-	// Add the star and bloom post processing effects
-	//sample += g_fStarScale * vStar;
-	//sample += g_fBloomScale * vBloom;
+	// add bloom
+	sample += bloom * fBloomScale;
 
 	return float4( sample, 1 );
 }

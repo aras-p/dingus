@@ -122,12 +122,27 @@ const char* RT_TONEMAP[NUM_TONEMAP_RTS] = {
 };
 
 
+const D3DFORMAT FMT_BRIGHT_PASS = D3DFMT_A8R8G8B8;
+const char* RT_BRIGHT_PASS = "brightpass";
+
+// Textures used for bloom
+const char* RT_BLOOM = "bloom";
+
+const int NUM_BLOOM_TMP_TEXTURES = 2;
+const char* RT_BLOOM_TMP[NUM_BLOOM_TMP_TEXTURES] = {
+	"bloomTmp0",
+	"bloomTmp1",
+};
+
+
 SVector2 gSampleOffsets[MAX_SAMPLES];
 CRenderableQuad*	gQuadDownsampleBB;
 CRenderableQuad*	gQuadSampleAvgLum;
 CRenderableQuad*	gQuadResampleAvgLum;
 CRenderableQuad*	gQuadResampleAvgLumExp;
 CRenderableQuad*	gQuadCalcAdaptedLum;
+CRenderableQuad*	gQuadBrightPass;
+CRenderableQuad*	gQuadIterativeBloom;
 CRenderableQuad*	gQuadFinalScenePass;
 
 CRenderableMesh*	gMeshSkybox;
@@ -271,6 +286,7 @@ void CDemo::deleteResource() { }
 
 void CDemo::initialize( IDingusAppContext& appContext )
 {
+	int i;
 	gAppContext = &appContext;
 	CSharedTextureBundle& stb = CSharedTextureBundle::getInstance();
 	CSharedSurfaceBundle& ssb = CSharedSurfaceBundle::getInstance();
@@ -292,10 +308,18 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	stb.registerTexture( RT_LUM[1], *new CFixedTextureCreator(1,1,1,D3DUSAGE_RENDERTARGET,FMT_LUMINANCE,D3DPOOL_DEFAULT) );
 	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_LUM[1] );
 	gClearSurface( RGET_S_SURF(RT_LUM[1]) );
-	for( int i = 0; i < NUM_TONEMAP_RTS; ++i ) {
+	for( i = 0; i < NUM_TONEMAP_RTS; ++i ) {
 		int size = 1 << (2*i); // 1,4,16,...
 		stb.registerTexture( RT_TONEMAP[i], *new CFixedTextureCreator(size,size,1,D3DUSAGE_RENDERTARGET, FMT_LUMINANCE,D3DPOOL_DEFAULT) );
 		DINGUS_REGISTER_STEX_SURFACE( ssb, RT_TONEMAP[i] );
+	}
+	stb.registerTexture( RT_BRIGHT_PASS, *new CScreenBasedDivTextureCreator(SZ_SCENE_SCALED,SZ_SCENE_SCALED,BB_DIVISIBLE_BY,1,D3DUSAGE_RENDERTARGET,FMT_BRIGHT_PASS,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_BRIGHT_PASS );
+	stb.registerTexture( RT_BLOOM, *new CScreenBasedDivTextureCreator(SZ_SCENE_SCALED,SZ_SCENE_SCALED,BB_DIVISIBLE_BY,1,D3DUSAGE_RENDERTARGET,FMT_BRIGHT_PASS,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_BLOOM );
+	for( i = 0; i < NUM_BLOOM_TMP_TEXTURES; ++i ) {
+		stb.registerTexture( RT_BLOOM_TMP[i], *new CScreenBasedDivTextureCreator(SZ_SCENE_SCALED,SZ_SCENE_SCALED,BB_DIVISIBLE_BY,1,D3DUSAGE_RENDERTARGET,FMT_BRIGHT_PASS,D3DPOOL_DEFAULT) );
+		DINGUS_REGISTER_STEX_SURFACE( ssb, RT_BLOOM_TMP[i] );
 	}
 
 	// --------------------------------
@@ -337,7 +361,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	gQuadDownsampleBB = new CRenderableQuad( renderquad::SCoordRect() );
 	gQuadDownsampleBB->getParams().setEffect( *RGET_FX("downsample4x4") );
-	gQuadDownsampleBB->getParams().addPtr( "vSmpOffsets", sizeof(gSampleOffsets), gSampleOffsets );
+	gQuadDownsampleBB->getParams().addPtr( "vSmpOffsets", sizeof(gSampleOffsets[0])*4, gSampleOffsets );
 	gQuadDownsampleBB->getParams().addTexture( "tBase", *RGET_S_TEX(RT_SCENE) );
 
 	gQuadSampleAvgLum = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
@@ -356,6 +380,14 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gQuadCalcAdaptedLum = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
 	gQuadCalcAdaptedLum->getParams().setEffect( *RGET_FX("calcAdaptedLum") );
 	gQuadCalcAdaptedLum->getParams().addFloatRef( "fDeltaTime", &gDeltaTimeParam );
+	
+	gQuadBrightPass = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
+	gQuadBrightPass->getParams().setEffect( *RGET_FX("brightPass") );
+	gQuadBrightPass->getParams().addFloatRef( "fMiddleGray", &gHDRMiddleGray );
+	
+	gQuadIterativeBloom = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
+	gQuadIterativeBloom->getParams().setEffect( *RGET_FX("bloom") );
+	gQuadIterativeBloom->getParams().addPtr( "vSmpOffsets", sizeof(gSampleOffsets[0])*4, gSampleOffsets );
 	
 	gQuadFinalScenePass = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
 	gQuadFinalScenePass->getParams().setEffect( *RGET_FX("finalScenePass") );
@@ -434,7 +466,7 @@ void CDemo::onInputEvent( const CInputEvent& event )
 	}
 
 	gCamPitch = clamp( gCamPitch, -D3DX_PI*0.4f, D3DX_PI*0.4f );
-	gCamDist = clamp( gCamDist, gSceneRadius * 0.5f, gSceneRadius * 4.0f );
+	gCamDist = clamp( gCamDist, gSceneRadius * 0.3f, gSceneRadius * 4.0f );
 }
 
 void CDemo::onInputStage()
@@ -466,6 +498,23 @@ void gGetDownscale4x4SampleOffsets( DWORD dwWidth, DWORD dwHeight, D3DXVECTOR2 s
 	}
 }
 
+void gGetDownscale4x4SampleOffsetsLinear( DWORD dwWidth, DWORD dwHeight, SVector2 smpOffsets[] )
+{
+	assert( smpOffsets );
+	
+	float tU = 1.0f / dwWidth;
+	float tV = 1.0f / dwHeight;
+	
+	// Sample from the 16 surrounding points. Since the center point will be
+	// in the exact center of 16 texels, a 0.5f offset is needed to specify
+	// a texel center. Use bilinear blending so that we only have to
+	// sample 4 locations.
+	smpOffsets[0].set( -1.0f*tU, -1.0f*tV );
+	smpOffsets[1].set( -1.0f*tU,  1.0f*tV );
+	smpOffsets[2].set(  1.0f*tU, -1.0f*tV );
+	smpOffsets[3].set(  1.0f*tU,  1.0f*tV );
+}
+
 
 // scale backbuffer down into small HDR target
 void gDownscaleHDR4x()
@@ -493,7 +542,7 @@ void gDownscaleHDR4x()
 	gQuadDownsampleBB->setUVRect( coords );
 
 	// get the sample offsets used within the pixel shader
-	gGetDownscale4x4SampleOffsets( bbWidth, bbHeight, gSampleOffsets );
+	gGetDownscale4x4SampleOffsetsLinear( bbWidth, bbHeight, gSampleOffsets );
 	dx.setRenderTarget( RGET_S_SURF(RT_SCENE_SCALED) );
 	G_RENDERCTX->directBegin();
 	G_RENDERCTX->directRender( *gQuadDownsampleBB );
@@ -603,6 +652,65 @@ void gCalculateAdaptation()
 }
 
 
+void gBrightPass()
+{
+	CD3DDevice& dx = CD3DDevice::getInstance();
+
+	// The bright-pass filter removes everything from the scene except
+	// lights and bright reflections
+	dx.setRenderTarget( RGET_S_SURF(RT_BRIGHT_PASS) );
+	dx.getStateManager().SetTexture( 0, RGET_S_TEX(RT_SCENE_SCALED)->getObject() );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_LUM[gCurrLuminanceIndex])->getObject() );
+	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+	G_RENDERCTX->directBegin();
+	G_RENDERCTX->directRender( *gQuadBrightPass );
+	G_RENDERCTX->directEnd();
+}
+
+
+void gBloom()
+{
+	const int BLOOM_ITERATIONS = 3;
+
+	CD3DDevice& dx = CD3DDevice::getInstance();
+
+	D3DSURFACE_DESC desc;
+	RGET_S_TEX(RT_BLOOM)->getObject()->GetLevelDesc( 0, &desc );
+
+	float tU = 1.0f / desc.Width;
+	float tV = 1.0f / desc.Height;
+	
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
+	dx.getStateManager().SetSamplerState( 0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
+
+	for( int i = 0; i < BLOOM_ITERATIONS; ++i ) {
+		float offsetU = (i + 0.5f) * tU;
+		float offsetV = (i + 0.5f) * tV;
+		gSampleOffsets[0].set( -offsetU,  offsetV );
+		gSampleOffsets[1].set( -offsetU, -offsetV );
+		gSampleOffsets[2].set(  offsetU,  offsetV );
+		gSampleOffsets[3].set(  offsetU, -offsetV );
+		const char* texSrc;
+		const char* texDst;
+		texSrc = (i==0) ? RT_BRIGHT_PASS : RT_BLOOM_TMP[(i+1)%NUM_BLOOM_TMP_TEXTURES];
+		texDst = (i==BLOOM_ITERATIONS-1) ? RT_BLOOM : RT_BLOOM_TMP[i%NUM_BLOOM_TMP_TEXTURES];
+		dx.setRenderTarget( RGET_S_SURF(texDst) );
+		dx.getStateManager().SetTexture( 0, RGET_S_TEX(texSrc)->getObject() );
+		G_RENDERCTX->directBegin();
+		G_RENDERCTX->directRender( *gQuadIterativeBloom );
+		G_RENDERCTX->directEnd();
+	}
+
+	
+	//dx.getDevice().StretchRect( RGET_S_SURF(RT_BRIGHT_PASS)->getObject(), 0, RGET_S_SURF(RT_BLOOM)->getObject(), 0, D3DTEXF_NONE );
+}
+
+
 
 static void gRender()
 {
@@ -629,24 +737,34 @@ static void gRender()
 	
 	// calculate the current luminance adaptation level
 	gCalculateAdaptation();
+
+	// bright pass filter
+	gBrightPass();
+
+	// bloom
+	gBloom();
 	
-	// Final composition to the LDR back buffer: tone mapping & blue shift.
+	// composition to the LDR back buffer: tone mapping, blue shift, bloom.
 	dx.setDefaultRenderTarget();
 
 	dx.getStateManager().SetTexture( 0, RGET_S_TEX(RT_SCENE)->getObject() );
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
 	dx.getStateManager().SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
 	dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_LUM[gCurrLuminanceIndex])->getObject() );
-	//dx.getStateManager().SetTexture( 1, RGET_S_TEX(RT_TONEMAP[0])->getObject() );
 	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MINFILTER, D3DTEXF_POINT );
 	dx.getStateManager().SetSamplerState( 1, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
-	//  --SetTexture( 2, g_apTexBloom[0] ); mag=linear min=linear
-	//  --SetTexture( 3, g_apTexStar[0] ); mag=linear min=linear
+	dx.getStateManager().SetTexture( 2, RGET_S_TEX(RT_BLOOM)->getObject() );
+	dx.getStateManager().SetSamplerState( 2, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+	dx.getStateManager().SetSamplerState( 2, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
 	G_RENDERCTX->directBegin();
 	G_RENDERCTX->directRender( *gQuadFinalScenePass );
 	G_RENDERCTX->directEnd();
 	
 	dx.setDefaultZStencil();
+
+	//dx.getDevice().StretchRect(
+	//	RGET_S_SURF(RT_BRIGHT_PASS)->getObject(), 0,
+	//	dx.getBackBuffer(), 0, D3DTEXF_NONE );
 
 	/*
 	D3DVIEWPORT9 vp;
@@ -724,6 +842,8 @@ void CDemo::shutdown()
 	safeDelete( gQuadResampleAvgLum );
 	safeDelete( gQuadResampleAvgLumExp );
 	safeDelete( gQuadCalcAdaptedLum );
+	safeDelete( gQuadBrightPass );
+	safeDelete( gQuadIterativeBloom );
 	safeDelete( gQuadFinalScenePass );
 	
 	safeDelete( gMeshSkybox );

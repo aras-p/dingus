@@ -1,14 +1,14 @@
 #include "lib/hdrlib.fx"
 
 
-static const int MAX_SAMPLES = 16;
+static const int MAX_SAMPLES = 4;
 float2 vSmpOffsets[MAX_SAMPLES];
 
 
 texture tBase;
 sampler2D smpBase = sampler_state {
 	Texture = (tBase);
-	MagFilter = Point; MinFilter = Point; MipFilter = Point;
+	MagFilter = Linear; MinFilter = Linear; MipFilter = Point;
 	AddressU = Clamp; AddressV = Clamp;
 };
 
@@ -27,7 +27,7 @@ technique tec20
 {
 	pass P0 {
 		VertexShader = NULL;
-		PixelShader = compile ps_3_0 psMain(); // TBD: fixme for ps2.0!
+		PixelShader = compile ps_2_0 psMain();
 	}
 	RESTORE_PASS
 }

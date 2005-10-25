@@ -165,6 +165,14 @@ SOURCE=.\data\fx\lib\structs.fx
 # End Group
 # Begin Source File
 
+SOURCE=.\data\fx\bloom.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\brightPass.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\calcAdaptedLum.fx
 # End Source File
 # Begin Source File
