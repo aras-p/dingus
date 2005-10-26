@@ -7,7 +7,7 @@ float3	vPos;
 texture tEnv;
 samplerCUBE smpEnv = sampler_state {
 	Texture = (tEnv);
-	MagFilter = Linear; MinFilter = Linear; MipFilter = Linear;
+	MagFilter = Point; MinFilter = Point; MipFilter = Point;
 };
 
 

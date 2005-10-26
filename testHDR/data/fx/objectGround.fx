@@ -4,12 +4,9 @@
 #include "lib/shadowmap.fx"
 
 
-texture tEnv;
-samplerCUBE smpEnv = sampler_state {
-	Texture = (tEnv);
-	MagFilter = Point; MinFilter = Point; MipFilter = Point;
-	AddressU = Wrap; AddressV = Wrap;
-};
+float3	vPos;
+float	fSize;
+
 
 texture		tShadow;
 sampler2D	smpShadow = sampler_state {
@@ -59,29 +56,23 @@ float3 evalSHEnv( float4 n )
 
 struct SInput {
 	float4	pos	: POSITION;
-	float4	nao	: NORMAL;
+	float3	n	: NORMAL;
 };
 
 struct SOutput {
 	float4	pos	: POSITION;
 	half3	diff : COLOR0;
-	half2	ao	: COLOR1;
-	half3	n	: TEXCOORD0;
-	half3	v	: TEXCOORD1;
-	float3	shz	: TEXCOORD2;
+	float3	shz	: TEXCOORD0;
 };
 
 SOutput vsMain( SInput i ) {
 	SOutput o;
+	i.pos.xyz = i.pos.xzy;
+	i.pos.xyz *= fSize * 5;
+	i.pos.xz += vPos.xz;
 	o.pos	= mul( i.pos, mViewProj );
-	float3 n = i.nao.xyz*2-1;
-	o.diff = evalSHEnv( float4(n,1) );
-	o.ao.xy = float2( i.nao.w * 0.9 + 0.1, i.nao.w * 0.6 + 0.4 );
 
-	o.n = n;
-
-	// view vector
-	o.v = i.pos.xyz - vEye;
+	o.diff = evalSHEnv( float4(0,1,0,1) );
 
 	gShadowProj( i.pos, mShadowProj, mLightViewProj, o.shz.xy, o.shz.z );
 
@@ -91,24 +82,15 @@ SOutput vsMain( SInput i ) {
 
 half4 psMain( SOutput i ) : COLOR
 {
-	// sample specular envmap
-	/*
-	const float REFLECTIVITY = 0.01;
-	i.n = normalize(i.n);
-	half3 refl = reflect( i.v, i.n );
-	half3 spec = texCUBE( smpEnv, refl ).rgb * REFLECTIVITY;
-	*/
-	half3 spec = 0;
-
 	const float MATERIAL_DIFFUSE = 0.7;
 
 	// lighting: environment
 	half3 color = 0;
-	color += (i.diff * MATERIAL_DIFFUSE + spec) * i.ao.x;
+	color += (i.diff * MATERIAL_DIFFUSE);
 
 	// lighting: sunlight
 	half shadow = gSampleShadow( smpShadow, i.shz.xy, i.shz.z );
-	color += saturate(dot(i.n,-vLightDir)) * fLightIntensity * shadow * i.ao.y;
+	color += saturate(dot(half3(0,1,0),-vLightDir)) * fLightIntensity * shadow;
 
 	return EncodeRGBE8( color );
 }

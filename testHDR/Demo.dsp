@@ -197,6 +197,14 @@ SOURCE=.\data\fx\object.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\objectGround.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\objectLight.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\resampleAvgLum.fx
 # End Source File
 # Begin Source File

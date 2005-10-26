@@ -21,9 +21,9 @@ float4 psMain( in float2 uv : TEXCOORD0 ) : COLOR
 	// towards blue.
 	if( true )
 	{
-		// Define a linear blending from -1.5 to 2.6 (log scale) which
+		// Define a linear blending from -1.5 to 1.6 (log scale) which
 		// determines the lerp amount for blue shift
-		float blueShiftCoeff = 1.0f - (adaptedLum + 1.5)/4.1;
+		float blueShiftCoeff = 1.0f - (adaptedLum + 1.5)/3.1;
 		blueShiftCoeff = saturate(blueShiftCoeff);
 
 		// Lerp between current color and blue, desaturated copy

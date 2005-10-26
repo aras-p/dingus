@@ -30,11 +30,16 @@ bool	gShowStats = false;
 CDemo::CDemo()
 {
 }
+
 bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProcessing vproc, CD3DEnumErrors& errors )
 {
 	bool ok = true;
 	if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_2_0 ) {
 		errors.addError( "pixel shaders 2.0 required" );
+		ok = false;
+	}
+	if( !caps.hasFloatTextures() ) {
+		errors.addError( "floating point texture support required" );
 		ok = false;
 	}
 	if( caps.getVShaderVersion() < CD3DDeviceCaps::VS_1_1 ) {
@@ -162,12 +167,17 @@ float	gHDRMiddleGray;
 CRenderableMesh*	gMeshNormal;
 CRenderableMesh*	gMeshCaster;
 
+CRenderableMesh*	gMeshGround;
+CRenderableMesh*	gMeshLight;
+SVector3			gLightPos;
+
 SVector3	gSceneCenter;
 float		gSceneRadius;
 
 // --------------------------------------------------------------------------
 // shadow mapping
 
+bool			gUseDSTShadows;
 
 CCameraEntity	gShadowLight;
 SMatrix4x4		gShadowLightViewProj;
@@ -180,15 +190,26 @@ float			gLightIntensity;
 const int SZ_SHADOWMAP = 2048;
 const char* RT_SHADOW = "shadow";
 const char* RT_SHADOWZ = "shadowZ";
+const char* RT_SHADOW_DSTRT = "shadowDstRT";
 
 void gShadowInit()
 {
 	CSharedTextureBundle& stb = CSharedTextureBundle::getInstance();
 	CSharedSurfaceBundle& ssb = CSharedSurfaceBundle::getInstance();
 
-	stb.registerTexture( RT_SHADOW, *new CFixedTextureCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,1,D3DUSAGE_RENDERTARGET,D3DFMT_R32F,D3DPOOL_DEFAULT) );
-	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SHADOW );
-	ssb.registerSurface( RT_SHADOWZ, *new CFixedSurfaceCreator(SZ_SHADOWMAP, SZ_SHADOWMAP, true, D3DFMT_D24S8 ) );
+	gUseDSTShadows = CD3DDevice::getInstance().getCaps().hasShadowMaps();
+
+	if( gUseDSTShadows ) {
+		CEffectBundle::getInstance().setMacro( "DST_SHADOWS", "1" );
+		stb.registerTexture( RT_SHADOW_DSTRT, *new CFixedTextureCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,1,D3DUSAGE_RENDERTARGET,D3DFMT_R5G6B5,D3DPOOL_DEFAULT) );
+		DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SHADOW_DSTRT );
+		stb.registerTexture( RT_SHADOW, *new CFixedTextureCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,1,D3DUSAGE_DEPTHSTENCIL,D3DFMT_D24X8,D3DPOOL_DEFAULT) );
+		DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SHADOW );
+	} else {
+		stb.registerTexture( RT_SHADOW, *new CFixedTextureCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,1,D3DUSAGE_RENDERTARGET,D3DFMT_R32F,D3DPOOL_DEFAULT) );
+		DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SHADOW );
+		ssb.registerSurface( RT_SHADOWZ, *new CFixedSurfaceCreator(SZ_SHADOWMAP, SZ_SHADOWMAP, true, D3DFMT_D24S8 ) );
+	}
 
 	//G_RENDERCTX->getGlobalParams().addFloatRef( "fShadowBias", &gShadowBias );
 	G_RENDERCTX->getGlobalParams().addFloatRef( "fLightIntensity", &gLightIntensity );
@@ -207,6 +228,9 @@ void gShadowRender()
 	D3DXMatrixRotationYawPitchRoll( &gShadowLight.mWorldMat, gShadowYaw, gShadowPitch, 0.0f );
 	gShadowLight.mWorldMat.getOrigin() = gSceneCenter;
 	gShadowLight.mWorldMat.getOrigin() -= gShadowLight.mWorldMat.getAxisZ() * gShadowDist;
+	gLightPos = gSceneCenter;
+	gLightPos -= gShadowLight.mWorldMat.getAxisZ() * gShadowDist * 20.0f;
+
 	gShadowDist = gSceneRadius * 1.5f;
 	gShadowLight.setOrthoParams( gSceneRadius*2, gSceneRadius*2, gSceneRadius*0.3f, gSceneRadius*4.0f );
 	// update matrices
@@ -218,13 +242,24 @@ void gShadowRender()
 
 	// render shadow map
 	CD3DDevice& dx = CD3DDevice::getInstance();
-	dx.setRenderTarget( RGET_S_SURF(RT_SHADOW) );
-	dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
+	if( gUseDSTShadows ) {
+		dx.setRenderTarget( RGET_S_SURF(RT_SHADOW_DSTRT) );
+		dx.setZStencil( RGET_S_SURF(RT_SHADOW) );
+		dx.getStateManager().SetRenderState( D3DRS_COLORWRITEENABLE, 0 );
+		dx.clearTargets( false, true, false, 0xFFffffff, 1.0f );
+	} else {
+		dx.setRenderTarget( RGET_S_SURF(RT_SHADOW) );
+		dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
+		dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
+	}
 
-	dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
 	G_RENDERCTX->applyGlobalEffect();
 	G_RENDERCTX->attach( *gMeshCaster );
 	G_RENDERCTX->perform();
+
+	if( gUseDSTShadows ) {
+		dx.getStateManager().SetRenderState( D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_BLUE|D3DCOLORWRITEENABLE_ALPHA );
+	}
 }
 
 
@@ -375,7 +410,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// HDR environment
 
-	CD3DCubeTexture* env = RGET_CUBETEX("HdrEnv_rnl");
+	//CD3DCubeTexture* env = RGET_CUBETEX("HdrEnv_DH0001");
+	CD3DCubeTexture* env = RGET_CUBETEX("HdrEnv_StPeters");
 	D3DXSHProjectCubeMap( ENV_SH_ORDER, env->getObject(), gEnvSHR, gEnvSHG, gEnvSHB );
 
 	//SVector3 lightDir( -0.4f, 1.0f, -0.8f );
@@ -385,8 +421,19 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// scene
 
-	gMeshCaster = new CRenderableMesh( *RGET_MESH("StAnna"), 0, NULL, 0 );
+	gMeshLight = new CRenderableMesh( *RGET_MESH("Sphere"), 0, NULL, -1 );
+	gMeshLight->getParams().setEffect( *RGET_FX("objectLight") );
+	gMeshLight->getParams().addVector3Ref( "vPos", gLightPos );
+
+	gMeshCaster = new CRenderableMesh( *RGET_MESH("StAnnaPos"), 0, NULL, 0 );
 	gMeshCaster->getParams().setEffect( *RGET_FX("caster") );
+
+	gMeshGround = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
+	gMeshGround->getParams().setEffect( *RGET_FX("objectGround") );
+	gSetSHEnvCoeffs( gMeshGround->getParams() );
+	gMeshGround->getParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOW) );
+	gMeshGround->getParams().addFloatRef( "fSize", &gSceneRadius );
+	gMeshGround->getParams().addVector3Ref( "vPos", gSceneCenter );
 
 	gMeshNormal = new CRenderableMesh( *RGET_MESH("StAnna"), 0, NULL, 0 );
 	gMeshNormal->getParams().setEffect( *RGET_FX("object") );
@@ -442,7 +489,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gQuadFinalScenePass->getParams().addFloatRef( "fMiddleGray", &gHDRMiddleGray );
 
 	CMesh* msky = RGET_MESH("skybox");
-	gMeshSkybox = new CRenderableMesh( *msky, 0, NULL, -1 );
+	gMeshSkybox = new CRenderableMesh( *msky, 0, NULL, -2 );
 	gMeshSkybox->getParams().setEffect( *RGET_FX("skybox") );
 	gMeshSkybox->getParams().addCubeTexture( "tEnv", *env );
 	gMeshSkybox->getParams().addVector3Ref( "vPos", gCamera.mWorldMat.getOrigin() );
@@ -782,6 +829,8 @@ static void gRender()
 	gCamera.setOntoRenderContext();
 	G_RENDERCTX->applyGlobalEffect();
 	G_RENDERCTX->attach( *gMeshNormal );
+	G_RENDERCTX->attach( *gMeshGround );
+	G_RENDERCTX->attach( *gMeshLight );
 	G_RENDERCTX->attach( *gMeshSkybox );
 	G_RENDERCTX->perform();
 
@@ -875,9 +924,12 @@ void CDemo::perform()
 	SMatrix4x4& mc = gCamera.mWorldMat;
 	D3DXMatrixRotationYawPitchRoll( &mc, gCamYaw, gCamPitch, 0.0f );
 	mc.getOrigin() = gSceneCenter;
+	mc.getOrigin().y *= 0.7f;
 	mc.getOrigin() -= mc.getAxisZ() * gCamDist;
+	if( mc.getOrigin().y < gSceneRadius*0.01f )
+		mc.getOrigin().y = gSceneRadius*0.01f;
 	const float camnear = gCamDist * 0.1f;
-	const float camfar = gCamDist * 3.0f;
+	const float camfar = gCamDist + gSceneRadius*3.0f;
 	const float camfov = D3DX_PI/4;
 	gCamera.setProjectionParams( camfov, dx.getBackBufferAspect(), camnear, camfar );
 
@@ -899,7 +951,9 @@ void CDemo::shutdown()
 	safeDelete( gUIDlgHUD );
 
 	safeDelete( gMeshNormal );
+	safeDelete( gMeshGround );
 	safeDelete( gMeshCaster );
+	safeDelete( gMeshLight );
 
 	safeDelete( gQuadDownsampleBB );
 	safeDelete( gQuadSampleAvgLum );
