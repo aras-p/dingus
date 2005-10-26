@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "Demo.h"
-#include "MeshEntity.h"
+#include "Entity.h"
 #include <dingus/renderer/RenderableMesh.h>
 #include <dingus/renderer/RenderableQuad.h>
 #include <dingus/gfx/GfxUtils.h>
@@ -70,6 +70,10 @@ CUIDialog*		gUIDlgHUD;
 CUIStatic*		gUIFPS;
 CUISlider*		gUISldMiddleGray;
 CUIStatic*		gUILabMiddleGray;
+
+CUISlider*		gUISldLightIntensity;
+CUISlider*		gUISldLightYaw;
+CUISlider*		gUISldLightPitch;
 
 
 float	gCamYaw;
@@ -155,36 +159,73 @@ float	gHDRMiddleGray;
 // --------------------------------------------------------------------------
 // objects
 
-class CSceneEntity : public CMeshEntity {
-public:
-	CSceneEntity( const std::string& meshName, const std::string& fxName )
-		: CMeshEntity( meshName )
-	{
-		mRenderMesh = new CRenderableMesh( getMesh(), CRenderableMesh::ALL_GROUPS, &mWorldMat.getOrigin(), 0 );
-		CEffectParams& ep = mRenderMesh->getParams();
-		ep.setEffect( *RGET_FX(fxName) );
-		addMatricesToParams( ep );
-	}
-	virtual ~CSceneEntity()
-	{
-		safeDelete( mRenderMesh );
-	}
+CRenderableMesh*	gMeshNormal;
+CRenderableMesh*	gMeshCaster;
 
-	void render()
-	{
-		updateWVPMatrices();
-		G_RENDERCTX->attach( *mRenderMesh );
-	}
-
-	CEffectParams& getFxParams() { return mRenderMesh->getParams(); }
-
-private:
-	CRenderableMesh*	mRenderMesh;
-};
-
-CSceneEntity*	gMesh;
 SVector3	gSceneCenter;
 float		gSceneRadius;
+
+// --------------------------------------------------------------------------
+// shadow mapping
+
+
+CCameraEntity	gShadowLight;
+SMatrix4x4		gShadowLightViewProj;
+SMatrix4x4		gShadowTexProj;
+float			gShadowYaw, gShadowPitch, gShadowDist;
+float			gLightIntensity;
+//float			gShadowBias;
+
+
+const int SZ_SHADOWMAP = 2048;
+const char* RT_SHADOW = "shadow";
+const char* RT_SHADOWZ = "shadowZ";
+
+void gShadowInit()
+{
+	CSharedTextureBundle& stb = CSharedTextureBundle::getInstance();
+	CSharedSurfaceBundle& ssb = CSharedSurfaceBundle::getInstance();
+
+	stb.registerTexture( RT_SHADOW, *new CFixedTextureCreator(SZ_SHADOWMAP,SZ_SHADOWMAP,1,D3DUSAGE_RENDERTARGET,D3DFMT_R32F,D3DPOOL_DEFAULT) );
+	DINGUS_REGISTER_STEX_SURFACE( ssb, RT_SHADOW );
+	ssb.registerSurface( RT_SHADOWZ, *new CFixedSurfaceCreator(SZ_SHADOWMAP, SZ_SHADOWMAP, true, D3DFMT_D24S8 ) );
+
+	//G_RENDERCTX->getGlobalParams().addFloatRef( "fShadowBias", &gShadowBias );
+	G_RENDERCTX->getGlobalParams().addFloatRef( "fLightIntensity", &gLightIntensity );
+	G_RENDERCTX->getGlobalParams().addVector3Ref( "vLightDir", gShadowLight.mWorldMat.getAxisZ() );
+	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mLightViewProj", gShadowLightViewProj );
+	G_RENDERCTX->getGlobalParams().addMatrix4x4Ref( "mShadowProj", gShadowTexProj );
+}
+
+
+void gShadowRender()
+{
+	// position the light camera
+	gLightIntensity = gUISldLightIntensity->getValue() * 0.1f;
+	gShadowYaw = D3DXToRadian( gUISldLightYaw->getValue() );
+	gShadowPitch = D3DXToRadian( gUISldLightPitch->getValue() );
+	D3DXMatrixRotationYawPitchRoll( &gShadowLight.mWorldMat, gShadowYaw, gShadowPitch, 0.0f );
+	gShadowLight.mWorldMat.getOrigin() = gSceneCenter;
+	gShadowLight.mWorldMat.getOrigin() -= gShadowLight.mWorldMat.getAxisZ() * gShadowDist;
+	gShadowDist = gSceneRadius * 1.5f;
+	gShadowLight.setOrthoParams( gSceneRadius*2, gSceneRadius*2, gSceneRadius*0.3f, gSceneRadius*4.0f );
+	// update matrices
+	gShadowLight.setOntoRenderContext();
+	gShadowLightViewProj = G_RENDERCTX->getCamera().getViewProjMatrix();
+	gfx::textureProjectionWorld( gShadowLightViewProj, SZ_SHADOWMAP, SZ_SHADOWMAP, gShadowTexProj );
+
+	//gShadowBias = gSceneRadius * 0.001f;
+
+	// render shadow map
+	CD3DDevice& dx = CD3DDevice::getInstance();
+	dx.setRenderTarget( RGET_S_SURF(RT_SHADOW) );
+	dx.setZStencil( RGET_S_SURF(RT_SHADOWZ) );
+
+	dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
+	G_RENDERCTX->applyGlobalEffect();
+	G_RENDERCTX->attach( *gMeshCaster );
+	G_RENDERCTX->perform();
+}
 
 
 // --------------------------------------------------------------------------
@@ -254,7 +295,7 @@ void gClearSurface( CD3DSurface* surf )
 
 void gLoadMeshAO()
 {
-	CMesh& m = gMesh->getMesh();
+	CMesh& m = gMeshNormal->getMesh();
 	FILE* fao = fopen( "data/mesh/StAnna.ao", "rb" );
 	BYTE* aodata = new BYTE[m.getVertexCount()];
 	fread( aodata, m.getVertexCount(), 1, fao );
@@ -322,6 +363,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 		stb.registerTexture( RT_BLOOM_TMP[i], *new CScreenBasedDivTextureCreator(SZ_SCENE_SCALED,SZ_SCENE_SCALED,BB_DIVISIBLE_BY,1,D3DUSAGE_RENDERTARGET,FMT_BRIGHT_PASS,D3DPOOL_DEFAULT) );
 		DINGUS_REGISTER_STEX_SURFACE( ssb, RT_BLOOM_TMP[i] );
 	}
+	gShadowInit();
 
 	// --------------------------------
 	// common params
@@ -343,15 +385,20 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	// --------------------------------
 	// scene
 
-	gMesh = new CSceneEntity( "StAnna", "object" );
-	gSetSHEnvCoeffs( gMesh->getFxParams() );
-	gMesh->getFxParams().addCubeTexture( "tEnv", *env );
+	gMeshCaster = new CRenderableMesh( *RGET_MESH("StAnna"), 0, NULL, 0 );
+	gMeshCaster->getParams().setEffect( *RGET_FX("caster") );
+
+	gMeshNormal = new CRenderableMesh( *RGET_MESH("StAnna"), 0, NULL, 0 );
+	gMeshNormal->getParams().setEffect( *RGET_FX("object") );
+	gSetSHEnvCoeffs( gMeshNormal->getParams() );
+	gMeshNormal->getParams().addCubeTexture( "tEnv", *env );
+	gMeshNormal->getParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOW) );
 	gLoadMeshAO();
 	CDeviceResourceManager::getInstance().addListener( *this );
 	activateResource();
 
-	gSceneCenter = gMesh->getAABB().getCenter();
-	gSceneRadius = SVector3(gMesh->getAABB().getMax() - gMesh->getAABB().getMin()).length() * 0.5f;
+	gSceneCenter = gMeshNormal->getMesh().getTotalAABB().getCenter();
+	gSceneRadius = SVector3(gMeshNormal->getMesh().getTotalAABB().getMax() - gMeshNormal->getMesh().getTotalAABB().getMin()).length() * 0.5f;
 
 	gCamYaw = 0.0f;
 	gCamPitch = 0.1f;
@@ -416,6 +463,13 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlgHUD->addStatic( 0, "Middle gray:", 5,  5, 100, hctl );
 	gUIDlgHUD->addSlider( 0, 100, 5, 70, hctl, 0, 4, 2, false, &gUISldMiddleGray );
 	gUIDlgHUD->addStatic( 0, "", 180,  5, 100, hctl, false, &gUILabMiddleGray );
+	
+	gUIDlgHUD->addStatic( 0, "Light intens:", 300, 5, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 360, 5, 120, hctl, 1, 100, 10, false, &gUISldLightIntensity );
+	gUIDlgHUD->addStatic( 0, "Light yaw:", 300, 25, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 360, 25, 120, hctl, 0, 360, 45, false, &gUISldLightYaw );
+	gUIDlgHUD->addStatic( 0, "Light pitch:", 300, 45, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 360, 45, 120, hctl, 10, 80, 60, false, &gUISldLightPitch );
 }
 
 
@@ -718,12 +772,16 @@ static void gRender()
 {
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
+	// render scene to shadow map
+	gShadowRender();
+
 	// render scene to backbuffer and copy to scene rendertarget
 	dx.setDefaultRenderTarget();
 	dx.setDefaultZStencil();
 	dx.clearTargets( true, true, false, 0x00000000, 1.0f, 0L );
+	gCamera.setOntoRenderContext();
 	G_RENDERCTX->applyGlobalEffect();
-	gMesh->render();
+	G_RENDERCTX->attach( *gMeshNormal );
 	G_RENDERCTX->attach( *gMeshSkybox );
 	G_RENDERCTX->perform();
 
@@ -822,7 +880,6 @@ void CDemo::perform()
 	const float camfar = gCamDist * 3.0f;
 	const float camfov = D3DX_PI/4;
 	gCamera.setProjectionParams( camfov, dx.getBackBufferAspect(), camnear, camfar );
-	gCamera.setOntoRenderContext();
 
 	// render
 	dx.sceneBegin();
@@ -841,7 +898,8 @@ void CDemo::shutdown()
 {
 	safeDelete( gUIDlgHUD );
 
-	safeDelete( gMesh );
+	safeDelete( gMeshNormal );
+	safeDelete( gMeshCaster );
 
 	safeDelete( gQuadDownsampleBB );
 	safeDelete( gQuadSampleAvgLum );

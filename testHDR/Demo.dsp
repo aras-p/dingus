@@ -156,6 +156,10 @@ SOURCE=.\data\fx\lib\hdrlib.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\data\fx\lib\shadowmap.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\data\fx\lib\shared.fx
 # End Source File
 # Begin Source File
@@ -174,6 +178,10 @@ SOURCE=.\data\fx\brightPass.fx
 # Begin Source File
 
 SOURCE=.\data\fx\calcAdaptedLum.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\data\fx\caster.fx
 # End Source File
 # Begin Source File
 

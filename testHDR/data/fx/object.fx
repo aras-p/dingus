@@ -1,14 +1,21 @@
 #include "lib/shared.fx"
 #include "lib/structs.fx"
 #include "lib/hdrlib.fx"
+#include "lib/shadowmap.fx"
 
-
-float4x4	mWVP;
 
 texture tEnv;
 samplerCUBE smpEnv = sampler_state {
 	Texture = (tEnv);
 	MagFilter = Linear; MinFilter = Linear; MipFilter = Linear;
+	AddressU = Wrap; AddressV = Wrap;
+};
+
+texture		tShadow;
+sampler2D	smpShadow = sampler_state {
+	Texture = (tShadow);
+		MinFilter = Point; MagFilter = Point; MipFilter = None;
+	AddressU = Clamp; AddressV = Clamp;
 };
 
 
@@ -56,11 +63,12 @@ struct SOutput {
 	half4	diffao : COLOR0;
 	half3	n	: TEXCOORD0;
 	half3	v	: TEXCOORD1;
+	float3	shz	: TEXCOORD2;
 };
 
 SOutput vsMain( SInput i ) {
 	SOutput o;
-	o.pos	= mul( i.pos, mWVP );
+	o.pos	= mul( i.pos, mViewProj );
 	float3 n = i.nao.xyz*2-1;
 	o.diffao.rgb = evalSHEnv( float4(n,1) );
 	o.diffao.a = i.nao.w * 0.9 + 0.1;
@@ -69,6 +77,8 @@ SOutput vsMain( SInput i ) {
 
 	// view vector
 	o.v = i.pos.xyz - vEye;
+
+	gShadowProj( i.pos, mShadowProj, mLightViewProj, o.shz.xy, o.shz.z );
 
 	return o;
 }
@@ -85,13 +95,15 @@ half4 psMain( SOutput i ) : COLOR
 	*/
 	half3 spec = 0;
 
-	// diffuse
-	half3 diff = i.diffao.rgb * 0.7;
+	const float MATERIAL_DIFFUSE = 0.7;
 
-	// AO
-	half ao = i.diffao.a;
+	// lighting: environment
+	half3 color = 0;
+	color += (i.diffao.rgb * MATERIAL_DIFFUSE + spec) * i.diffao.a;
 
-	half3 color = (diff + spec) * ao;
+	// lighting: sunlight
+	half shadow = gSampleShadow( smpShadow, i.shz.xy, i.shz.z );
+	color += saturate(dot(i.n,-vLightDir)) * fLightIntensity * shadow;
 
 	return EncodeRGBE8( color );
 }
