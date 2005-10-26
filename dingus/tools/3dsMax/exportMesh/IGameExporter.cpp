@@ -1001,14 +1001,6 @@ int IGameExporter::DoExport( const TCHAR *name, ExpInterface *ei, Interface *i, 
 	if( !mFile )
 		return IMPEXP_FAIL;
 
-	// debug output
-	if( mOptions.mDebugOutput ) {
-		if( gDebugFile )
-			fclose( gDebugFile );
-		gDebugFile = NULL;
-		mDebugFileName = std::string(buf) + ".txt";
-	}
-	
 	// Set a global prompt display switch
 	mShowPrompts = suppressPrompts ? false : true;
 	mExportSelected = (options & SCENE_EXPORT_SELECTED) ? true : false;
@@ -1020,6 +1012,14 @@ int IGameExporter::DoExport( const TCHAR *name, ExpInterface *ei, Interface *i, 
 		}
 	}
 	
+	// debug output
+	if( mOptions.mDebugOutput ) {
+		if( gDebugFile )
+			fclose( gDebugFile );
+		gDebugFile = NULL;
+		mDebugFileName = std::string(buf) + ".txt";
+	}
+
 	mCurrNodeProgress = 0;
 	ip->ProgressStart( _T("Exporting meshes.."), TRUE, gProgressBarFn, NULL );
 
