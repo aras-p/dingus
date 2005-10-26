@@ -69,6 +69,7 @@ CCameraEntity	gCamera;
 CUIDialog*		gUIDlgHUD;
 CUIStatic*		gUIFPS;
 CUISlider*		gUISldMiddleGray;
+CUIStatic*		gUILabMiddleGray;
 
 
 float	gCamYaw;
@@ -413,7 +414,8 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	// tweakables
 	gUIDlgHUD->addStatic( 0, "Middle gray:", 5,  5, 100, hctl );
-	gUIDlgHUD->addSlider( 0, 100, 5, 100, hctl, 0, 100, 18, false, &gUISldMiddleGray );
+	gUIDlgHUD->addSlider( 0, 100, 5, 70, hctl, 0, 4, 2, false, &gUISldMiddleGray );
+	gUIDlgHUD->addStatic( 0, "", 180,  5, 100, hctl, false, &gUILabMiddleGray );
 }
 
 
@@ -791,6 +793,8 @@ static void gRender()
 /// Main loop code.
 void CDemo::perform()
 {
+	char buf[100];
+
 	G_INPUTCTX->perform();
 	
 	double t = CSystemTimer::getInstance().getTimeS();
@@ -798,12 +802,14 @@ void CDemo::perform()
 	gTimeParam = float(t);
 	gDeltaTimeParam = dt;
 
-	gHDRMiddleGray = gUISldMiddleGray->getValue() / 100.0f;
+	gHDRMiddleGray = 0.045f * (1<<gUISldMiddleGray->getValue());
+	sprintf( buf, "%g", gHDRMiddleGray );
+	gUILabMiddleGray->setText( buf );
+
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
 
 	// FPS
-	char buf[100];
 	sprintf( buf, "fps: %6.1f", dx.getStats().getFPS() );
 	gUIFPS->setText( buf );
 
