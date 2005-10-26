@@ -1,5 +1,7 @@
 3dsMax tools changelog
 
+051026: mesh exporter
+	If normals are not exported, then vertices are properly welded
 051016: mesh exporter
 	Renamed IMMeshExport.dle to DingusMeshExport.dle
 051005: mesh exporter

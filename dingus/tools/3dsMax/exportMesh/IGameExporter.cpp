@@ -496,9 +496,13 @@ const char* IGameExporter::meshAddNode( SNodeInfo& info, int& vertOffset, int& t
 				v->w.x = v->w.y = v->w.z = 0.0f;
 				v->i = 0;
 			}
-			mesh.GetNormal( f, i, p );
-			v->n.x = p.x; v->n.y = p.y; v->n.z = p.z;
-			D3DXVec3Normalize( &v->n, &v->n );
+			if( mOptions.mDoNormals ) {
+				mesh.GetNormal( f, i, p );
+				v->n.x = p.x; v->n.y = p.y; v->n.z = p.z;
+				D3DXVec3Normalize( &v->n, &v->n );
+			} else {
+				v->n.x = 1; v->n.y = 0; v->n.z = 0;
+			}
 			v->t.x = 1; v->t.y = 0; v->t.z = 0;
 			v->b.x = 1; v->b.y = 0; v->b.z = 0;
 			// UV channels
