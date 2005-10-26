@@ -20,6 +20,7 @@ public:
 	CRenderableMesh( CMesh& mesh, int group, const SVector3* origin = 0, int priority = 0 );
 
 	const CMesh& getMesh() const { return *mMesh; }
+	CMesh& getMesh() { return *mMesh; }
 	void setGroup( int g ) { mGroup = g; }
 	int getGroup() const { return mGroup; }
 
