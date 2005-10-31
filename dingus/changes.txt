@@ -2,6 +2,9 @@
 no codename
 ========
 
+051031: Texture/CubeTexture bundles can load .hdr images.
+		CubeTexture bundle now supports loading cubemaps from vertical
+		cross format.
 051020: CRenderableQuad added, now drawing fullscreen postprocessing
 		quads is much simpler. System now resets cached D3D stuff every
 		frame; fixes some weird behavior with rendertargets (e.g. if the

@@ -17,6 +17,7 @@ CTextureBundle::CTextureBundle()
 	addExtension( ".png" );
 	addExtension( ".jpg" );
 	addExtension( ".tga" );
+	addExtension( ".hdr" );
 	addExtension( ".bmp" );
 }
 
