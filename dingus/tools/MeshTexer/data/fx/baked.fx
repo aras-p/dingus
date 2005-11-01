@@ -81,25 +81,5 @@ technique tec0
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_2_0 psMain();
 	}
-	pass PLast {
-	}
-}
-
-technique tecFFP
-{
-	pass P0 {
-		VertexShader = compile vs_1_1 vsMain();
-		PixelShader = NULL;
-
-		// TBD
-		Sampler[0] = (smpNormalAO);
-		ColorOp[0] = SelectArg1;
-		ColorArg1[0] = Texture;
-		AlphaOp[0] = SelectArg1;
-		AlphaArg1[0] = Texture;
-		ColorOp[1] = Disable;
-		AlphaOp[1] = Disable;
-	}
-	pass PLast {
-	}
+	RESTORE_PASS
 }

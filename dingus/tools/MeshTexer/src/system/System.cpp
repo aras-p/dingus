@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "System.h"
 
+#include <dingus/lua/LuaSingleton.h>
 #include <dingus/gfx/gui/Gui.h>
 
 #include <dingus/gfx/geometry/DynamicVBManager.h>
@@ -49,11 +50,13 @@ void CSystem::setupBundles( const std::string& dataPath, dingus::CReloadableBund
 {
 	gSavedDataPath = dataPath;
 
+	CLuaSingleton::init( "" );
 	CTextureBundle::getInstance().addDirectory( dataPath + "tex/" );
 	CCubeTextureBundle::getInstance().addDirectory( dataPath + "tex/" );
 	CMeshBundle::getInstance().addDirectory( dataPath + "mesh/" );
 	CEffectBundle::getInstance().addDirectory( dataPath + "fx/" );
 	//CFontBundle::getInstance().addDirectory( dataPath );
+	CEffectBundle::getInstance().setStatesConfig( (dataPath + "EffectStates.lua").c_str() );
 
 	CDynamicVBManager::initialize( 2 * 1024 * 1024 ); // 2 megabytes
 	CDynamicVBManager& vbManager = CDynamicVBManager::getInstance();
@@ -123,5 +126,6 @@ void CSystem::destroyBundles()
 	CTextureBundle::finalize();
 	CVertexDeclBundle::finalize();
 	
+	CLuaSingleton::finalize();
 	CUIResourceManager::finalize();
 }

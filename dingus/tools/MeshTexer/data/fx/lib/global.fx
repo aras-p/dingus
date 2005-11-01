@@ -4,6 +4,8 @@
 
 technique tec0 {
 	pass P0 {
+		VertexShader = NULL;
+		PixelShader = NULL;
 		AlphaBlendEnable = False;
 		CullMode = <iCull>;
 		FillMode = <iFill>;
