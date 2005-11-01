@@ -7,7 +7,6 @@
 #include <dingus/gfx/geometry/DynamicVBManager.h>
 
 #include <dingus/console/W32StdConsoleRenderingContext.h>
-#include <dingus/console/WDebugConsoleRenderingContext.h>
 
 #include <dingus/input/DIKeyboard.h>
 #include <dingus/input/DIMouse.h>
@@ -23,8 +22,8 @@ SAppStartupParams CSystem::getStartupParams()
 	sp.dataPath = "data/";
 	sp.windowWidth = 640;
 	sp.windowHeight = 480;
-	sp.minColorBits = 4;
-	sp.minAlphaBits = 4;
+	sp.minColorBits = 8;
+	sp.minAlphaBits = 8;
 	sp.minZBits = 24;
 	sp.minStencilBits = 0;
 	sp.usesZBuffer = true;
@@ -38,9 +37,9 @@ SAppStartupParams CSystem::getStartupParams()
 
 IConsoleRenderingContext* CSystem::createStdConsoleCtx( HWND hwnd )
 {
-	if( DEV_MODE )
-		return new CW32StdConsoleRenderingContext();
-	else
+	//if( DEV_MODE )
+	//	return new CW32StdConsoleRenderingContext();
+	//else
 		return NULL;
 }
 
