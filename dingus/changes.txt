@@ -1,5 +1,5 @@
 
-no codename
+Dingus tag 051101
 ========
 
 051031: Texture/CubeTexture bundles can load .hdr images.
