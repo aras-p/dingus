@@ -1,11 +1,10 @@
 #include "lib/hdrlib.fx"
+#include "lib/shared.fx"
 
 
 static const float  BRIGHT_PASS_THRESHOLD  = 2.0f; // default 5.0f
 static const float  BRIGHT_PASS_OFFSET     = 5.0f; // default 10.0f
 
-
-float fMiddleGray;
 
 sampler s0 : register(s0); // input scene float
 sampler s1 : register(s1); // adapted luminance

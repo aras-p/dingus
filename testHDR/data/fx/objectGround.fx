@@ -20,37 +20,6 @@ sampler2D	smpShadow = sampler_state {
 };
 
 
-// environment map
-float4 cAr;
-float4 cAg;
-float4 cAb;
-float4 cBr;
-float4 cBg;
-float4 cBb;
-float4 cC;
-
-float3 evalSHEnv( float4 n )
-{
-	float3 x1, x2, x3;
-
-	// Linear + constant polynomial terms
-	x1.r = dot(cAr,n);
-	x1.g = dot(cAg,n);
-	x1.b = dot(cAb,n);
-
-	// 4 of the quadratic polynomials
-	float4 vB = n.xyzz * n.yzzx;
-	x2.r = dot(cBr,vB);
-	x2.g = dot(cBg,vB);
-	x2.b = dot(cBb,vB);
-
-	// Final quadratic polynomial
-	float vC = n.x*n.x - n.y*n.y;
-	x3 = cC.rgb * vC;
-
-	return x1 + x2 + x3;
-}
-
 // --------------------------------------------------------------------------
 //  vertex shader
 

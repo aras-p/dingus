@@ -36,6 +36,7 @@ SOutput vsMain( SInput i ) {
 half4 psMain( SOutput i ) : COLOR
 {
 	float3 c = texCUBE( smpEnv, i.uvw );
+	c *= fEnvIntensity;
 	return EncodeRGBE8( c );
 }
 

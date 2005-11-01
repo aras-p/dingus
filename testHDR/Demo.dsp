@@ -107,14 +107,6 @@ SOURCE=.\src\demo\Entity.cpp
 
 SOURCE=.\src\demo\Entity.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\MeshEntity.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\demo\MeshEntity.h
-# End Source File
 # End Group
 # Begin Group "system"
 

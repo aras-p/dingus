@@ -1,7 +1,7 @@
 #include "lib/hdrlib.fx"
+#include "lib/shared.fx"
 
 
-float fMiddleGray;
 float fBloomScale = 1.0f;
 
 sampler s0 : register(s0); // input scene RBGE

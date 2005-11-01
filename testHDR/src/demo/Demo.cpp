@@ -76,7 +76,10 @@ CUIStatic*		gUIFPS;
 CUISlider*		gUISldMiddleGray;
 CUIStatic*		gUILabMiddleGray;
 
+CUISlider*		gUISldEnvIntensity;
+CUIStatic*		gUILabEnvIntensity;
 CUISlider*		gUISldLightIntensity;
+CUIStatic*		gUILabLightIntensity;
 CUISlider*		gUISldLightYaw;
 CUISlider*		gUISldLightPitch;
 
@@ -89,6 +92,17 @@ const int ENV_SH_ORDER = 3;
 float	gEnvSHR[ENV_SH_ORDER*ENV_SH_ORDER];
 float	gEnvSHG[ENV_SH_ORDER*ENV_SH_ORDER];
 float	gEnvSHB[ENV_SH_ORDER*ENV_SH_ORDER];
+float	gEnvSHRScaled[ENV_SH_ORDER*ENV_SH_ORDER];
+float	gEnvSHGScaled[ENV_SH_ORDER*ENV_SH_ORDER];
+float	gEnvSHBScaled[ENV_SH_ORDER*ENV_SH_ORDER];
+
+SVector4	gEnvSHConstAr;
+SVector4	gEnvSHConstAg;
+SVector4	gEnvSHConstAb;
+SVector4	gEnvSHConstBr;
+SVector4	gEnvSHConstBg;
+SVector4	gEnvSHConstBb;
+SVector4	gEnvSHConstC;
 
 
 // --------------------------------------------------------------------------
@@ -159,6 +173,7 @@ CRenderableMesh*	gMeshSkybox;
 
 
 float	gHDRMiddleGray;
+float	gEnvIntensity;
 
 
 // --------------------------------------------------------------------------
@@ -271,9 +286,12 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 }
 
 
-void gSetSHEnvCoeffs( CEffectParams& ep )
+void gUpdateSHEnvCoeffs()
 {
-	float* fLight[3] = { gEnvSHR, gEnvSHG, gEnvSHB };
+	D3DXSHScale( gEnvSHRScaled, ENV_SH_ORDER, gEnvSHR, gEnvIntensity );
+	D3DXSHScale( gEnvSHGScaled, ENV_SH_ORDER, gEnvSHG, gEnvIntensity );
+	D3DXSHScale( gEnvSHBScaled, ENV_SH_ORDER, gEnvSHB, gEnvIntensity );
+	float* fLight[3] = { gEnvSHRScaled, gEnvSHGScaled, gEnvSHBScaled };
 
 	// Lighting environment coefficients
 	D3DXVECTOR4 vCoefficients[3];
@@ -297,9 +315,12 @@ void gSetSHEnvCoeffs( CEffectParams& ep )
 		vCoefficients[iChannel].w =  fC0*fLight[iChannel][0] - fC3*fLight[iChannel][6];
 	}
 
-	ep.addVector4( "cAr", vCoefficients[0] );
-	ep.addVector4( "cAg", vCoefficients[1] );
-	ep.addVector4( "cAb", vCoefficients[2] );
+	gEnvSHConstAr = vCoefficients[0];
+	gEnvSHConstAg = vCoefficients[1];
+	gEnvSHConstAb = vCoefficients[2];
+	//ep.addVector4( "cAr", vCoefficients[0] );
+	//ep.addVector4( "cAg", vCoefficients[1] );
+	//ep.addVector4( "cAb", vCoefficients[2] );
 
 	for( iChannel=0; iChannel<3; iChannel++ )
 	{
@@ -309,16 +330,20 @@ void gSetSHEnvCoeffs( CEffectParams& ep )
 		vCoefficients[iChannel].w =     -fC2*fLight[iChannel][7];
 	}
 
-	ep.addVector4( "cBr", vCoefficients[0] );
-	ep.addVector4( "cBg", vCoefficients[1] );
-	ep.addVector4( "cBb", vCoefficients[2] );
+	gEnvSHConstBr = vCoefficients[0];
+	gEnvSHConstBg = vCoefficients[1];
+	gEnvSHConstBb = vCoefficients[2];
+	//ep.addVector4( "cBr", vCoefficients[0] );
+	//ep.addVector4( "cBg", vCoefficients[1] );
+	//ep.addVector4( "cBb", vCoefficients[2] );
 
 	vCoefficients[0].x = fC4*fLight[0][8];
 	vCoefficients[0].y = fC4*fLight[1][8];
 	vCoefficients[0].z = fC4*fLight[2][8];
 	vCoefficients[0].w = 1.0f;
 
-	ep.addVector4( "cC", vCoefficients[0] );
+	gEnvSHConstC = vCoefficients[0];
+	//ep.addVector4( "cC", vCoefficients[0] );
 }
 
 // --------------------------------------------------------------------------
@@ -406,12 +431,20 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gGlobalCullMode = D3DCULL_NONE;
 	G_RENDERCTX->getGlobalParams().addIntRef( "iCull", &gGlobalCullMode );
 	G_RENDERCTX->getGlobalParams().addFloatRef( "fTime", &gTimeParam );
+	G_RENDERCTX->getGlobalParams().addFloatRef( "fMiddleGray", &gHDRMiddleGray );
+	G_RENDERCTX->getGlobalParams().addFloatRef( "fEnvIntensity", &gEnvIntensity );
+	G_RENDERCTX->getGlobalParams().addVector4Ref( "vSHAr", gEnvSHConstAr );
+	G_RENDERCTX->getGlobalParams().addVector4Ref( "vSHAg", gEnvSHConstAg );
+	G_RENDERCTX->getGlobalParams().addVector4Ref( "vSHAb", gEnvSHConstAb );
+	G_RENDERCTX->getGlobalParams().addVector4Ref( "vSHBr", gEnvSHConstBr );
+	G_RENDERCTX->getGlobalParams().addVector4Ref( "vSHBg", gEnvSHConstBg );
+	G_RENDERCTX->getGlobalParams().addVector4Ref( "vSHBb", gEnvSHConstBb );
+	G_RENDERCTX->getGlobalParams().addVector4Ref( "vSHC", gEnvSHConstC );
 
 	// --------------------------------
 	// HDR environment
 
-	//CD3DCubeTexture* env = RGET_CUBETEX("HdrEnv_DH0001");
-	CD3DCubeTexture* env = RGET_CUBETEX("HdrEnv_StPeters");
+	CD3DCubeTexture* env = RGET_CUBETEX("HdrEnv");
 	D3DXSHProjectCubeMap( ENV_SH_ORDER, env->getObject(), gEnvSHR, gEnvSHG, gEnvSHB );
 
 	//SVector3 lightDir( -0.4f, 1.0f, -0.8f );
@@ -430,14 +463,12 @@ void CDemo::initialize( IDingusAppContext& appContext )
 
 	gMeshGround = new CRenderableMesh( *RGET_MESH("billboard"), 0, NULL, 0 );
 	gMeshGround->getParams().setEffect( *RGET_FX("objectGround") );
-	gSetSHEnvCoeffs( gMeshGround->getParams() );
 	gMeshGround->getParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOW) );
 	gMeshGround->getParams().addFloatRef( "fSize", &gSceneRadius );
 	gMeshGround->getParams().addVector3Ref( "vPos", gSceneCenter );
 
 	gMeshNormal = new CRenderableMesh( *RGET_MESH("StAnna"), 0, NULL, 0 );
 	gMeshNormal->getParams().setEffect( *RGET_FX("object") );
-	gSetSHEnvCoeffs( gMeshNormal->getParams() );
 	gMeshNormal->getParams().addCubeTexture( "tEnv", *env );
 	gMeshNormal->getParams().addTexture( "tShadow", *RGET_S_TEX(RT_SHADOW) );
 	gLoadMeshAO();
@@ -478,7 +509,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	
 	gQuadBrightPass = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
 	gQuadBrightPass->getParams().setEffect( *RGET_FX("brightPass") );
-	gQuadBrightPass->getParams().addFloatRef( "fMiddleGray", &gHDRMiddleGray );
 	
 	gQuadIterativeBloom = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
 	gQuadIterativeBloom->getParams().setEffect( *RGET_FX("bloom") );
@@ -486,7 +516,6 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	
 	gQuadFinalScenePass = new CRenderableQuad( renderquad::SCoordRect(0,0,1,1) );
 	gQuadFinalScenePass->getParams().setEffect( *RGET_FX("finalScenePass") );
-	gQuadFinalScenePass->getParams().addFloatRef( "fMiddleGray", &gHDRMiddleGray );
 
 	CMesh* msky = RGET_MESH("skybox");
 	gMeshSkybox = new CRenderableMesh( *msky, 0, NULL, -2 );
@@ -510,13 +539,18 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlgHUD->addStatic( 0, "Middle gray:", 5,  5, 100, hctl );
 	gUIDlgHUD->addSlider( 0, 100, 5, 70, hctl, 0, 4, 2, false, &gUISldMiddleGray );
 	gUIDlgHUD->addStatic( 0, "", 180,  5, 100, hctl, false, &gUILabMiddleGray );
-	
-	gUIDlgHUD->addStatic( 0, "Light intens:", 300, 5, 100, hctl );
-	gUIDlgHUD->addSlider( 0, 360, 5, 120, hctl, 1, 100, 10, false, &gUISldLightIntensity );
-	gUIDlgHUD->addStatic( 0, "Light yaw:", 300, 25, 100, hctl );
-	gUIDlgHUD->addSlider( 0, 360, 25, 120, hctl, 0, 360, 45, false, &gUISldLightYaw );
-	gUIDlgHUD->addStatic( 0, "Light pitch:", 300, 45, 100, hctl );
-	gUIDlgHUD->addSlider( 0, 360, 45, 120, hctl, 10, 80, 60, false, &gUISldLightPitch );
+
+	int y = 5;
+	gUIDlgHUD->addStatic( 0, "Env intens:", 300, y += 20, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 360, y, 200, hctl, 1, 100, 10, false, &gUISldEnvIntensity );
+	gUIDlgHUD->addStatic( 0, "", 570,  y, 100, hctl, false, &gUILabEnvIntensity );
+	gUIDlgHUD->addStatic( 0, "Light intens:", 300, y += 20, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 360, y, 200, hctl, 1, 100, 10, false, &gUISldLightIntensity );
+	gUIDlgHUD->addStatic( 0, "", 570,  y, 100, hctl, false, &gUILabLightIntensity );
+	gUIDlgHUD->addStatic( 0, "Light yaw:", 300, y += 20, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 360, y, 120, hctl, 0, 360, 45, false, &gUISldLightYaw );
+	gUIDlgHUD->addStatic( 0, "Light pitch:", 300, y += 20, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 360, y, 120, hctl, 10, 80, 60, false, &gUISldLightPitch );
 }
 
 
@@ -808,9 +842,6 @@ void gBloom()
 		G_RENDERCTX->directRender( *gQuadIterativeBloom );
 		G_RENDERCTX->directEnd();
 	}
-
-	
-	//dx.getDevice().StretchRect( RGET_S_SURF(RT_BRIGHT_PASS)->getObject(), 0, RGET_S_SURF(RT_BLOOM)->getObject(), 0, D3DTEXF_NONE );
 }
 
 
@@ -836,7 +867,7 @@ static void gRender()
 
 	dx.setZStencil( NULL );
 	
-	dx.getDevice().StretchRect( dx.getBackBuffer(), 0, RGET_S_SURF(RT_SCENE)->getObject(), 0, D3DTEXF_NONE );
+	dx.getDevice().StretchRect( dx.getBackBuffer(), 0, RGET_S_SURF(RT_SCENE)->getObject(), 0, dx.getCaps().getStretchFilter() );
 
     // create a scaled down copy of the scene
 	gDownscaleHDR4x();
@@ -912,6 +943,14 @@ void CDemo::perform()
 	gHDRMiddleGray = 0.045f * (1<<gUISldMiddleGray->getValue());
 	sprintf( buf, "%g", gHDRMiddleGray );
 	gUILabMiddleGray->setText( buf );
+	
+	gEnvIntensity = gUISldEnvIntensity->getValue() * 0.1f;
+	gUpdateSHEnvCoeffs();
+	
+	sprintf( buf, "%g", gEnvIntensity );
+	gUILabEnvIntensity->setText( buf );
+	sprintf( buf, "%g", gLightIntensity );
+	gUILabLightIntensity->setText( buf );
 
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
