@@ -18,7 +18,8 @@ Features:
 * HDR rendering: mostly copied from DX SDK sample HDRLighting (tone mapping,
   luminance adaptation, blue shift, bloom).
 * Diffuse lighting from environment (9 coeff. SH) and direct sunlight with
-  shadow map; using per-vertex ambient occlusion term.
+  shadow map; using per-vertex ambient occlusion term. Shadow map uses DST
+  if available, else fallbacks to R32F.
 * Model is still a WIP version of St. Anne's Church in Vilnius, Lithuania.
   Modeling is done by Siger, see thread at cgtalk.lt/viewtopic.php?t=2505
   (Lithuanian). The model is not authored with realtime rendering in mind,
