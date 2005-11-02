@@ -74,6 +74,8 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 	}
 
 	// require at least this amount of vidmem
+	// Do not check this - messes up with TurboCache and similar cards
+	/*
 	const int videoMB = 8;
 	if( caps.getVideoMemoryMB() < videoMB ) {
 		char buf[200];
@@ -81,6 +83,7 @@ bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProc
 		errors.addError( buf );
 		ok = false;
 	}
+	*/
 
 	// GF4MX hack - force SWVP
 	if( caps.getPShaderVersion() < CD3DDeviceCaps::PS_1_1 && caps.getVShaderVersion() > CD3DDeviceCaps::VS_FFP ) {
