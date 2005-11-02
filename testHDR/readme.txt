@@ -13,7 +13,7 @@ Usage:
 Requirements:
 * Good DX9 video card: pixel shaders 2.0 and floating point textures
   required. Good performance is also a plus!
-  
+
 Features:
 * HDR rendering: mostly copied from DX SDK sample HDRLighting (tone mapping,
   luminance adaptation, blue shift, bloom).
@@ -27,6 +27,11 @@ Features:
 * The light probe is courtesy of Paul Debevec: http://www.debevec.org
   You can swap in your own probe in data/tex/HdrEnv.dds - in native DDS
   cubemap or vertical cross HDR format (just rename to .dds).
+
+Notes:
+* It seems that anti aliasing does not work on some ATI hardware. I'm still
+  figuring out whether this is my bug or HW feature (e.g. MSAA does not
+  resolve alpha channel, or something like that).
 
 
 - Aras, 2005 11 01
