@@ -67,6 +67,7 @@ float	gCamDist;
 const float kMeterSize = 100.0f;
 
 
+CUICheckBox*	gUIChkAnimObjects;
 CUICheckBox*	gUIChkDrawLights;
 CUICheckBox*	gUIChkDrawCones;
 CUICheckBox*	gUIChkDrawBounds;
@@ -134,28 +135,33 @@ void gInitializeScene( const char* fileName )
 		{
 			SVector3 pos;
 			SQuaternion rot;
-			fscanf( f, "%s pos %f %f %f rot %f %f %f %f\n",
+			SVector3 diff;
+			fscanf( f, "%s pos %f %f %f rot %f %f %f %f diff %f %f %f\n",
 				name,
 				&pos.x, &pos.y, &pos.z,
-				&rot.x, &rot.y, &rot.z, &rot.w
+				&rot.x, &rot.y, &rot.z, &rot.w,
+				&diff.x, &diff.y, &diff.z
 			);
 			SceneEntity* obj = new SceneEntity( name );
 			obj->mWorldMat = SMatrix4x4( pos, rot );
+			obj->m_Color = diff * (1.0f / 255.0f);
 			gScene.push_back( obj );
 		}
 		else if( !strcmp(type,"spot") )
 		{
-			SVector3 pos, dir;
+			SVector3 pos, dir, color;
 			float ang;
-			fscanf( f, "%s pos %f %f %f dir %f %f %f angle %f\n",
+			fscanf( f, "%s pos %f %f %f dir %f %f %f angle %f color %f %f %f\n",
 				name,
 				&pos.x, &pos.y, &pos.z,
 				&dir.x, &dir.y, &dir.z,
-				&ang
+				&ang,
+				&color.x, &color.y, &color.z
 			);
 			Light* l = new Light();
 			l->mWorldMat.getOrigin() = pos;
 			l->mWorldMat.getAxisZ() = -dir;
+			l->m_Color = color * (1.0f/255.0f);
 			l->mWorldMat.spaceFromAxisZ();
 			l->setProjectionParams( D3DXToRadian(ang), 1.0f, 10.0f, 1000.0f );
 			l->updateViewConeAngleFOV();
@@ -191,7 +197,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gInitializeScene( "data/scene.txt" );
 
 	gCamYaw = 0.0f;
-	gCamPitch = 0.1f;
+	gCamPitch = 0.4f;
 	gCamDist = 3.0f * kMeterSize;
 
 	// --------------------------------
@@ -209,10 +215,11 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlgHUD->addStatic( 0, "Shadow quality:", 5, y+=hctl, 100, hctl );
 	gUIDlgHUD->addSlider( 0, 100, y, 70, hctl, 1, 10, 6, false, &gUISldShadowQuality );
 
-	gUIDlgHUD->addCheckBox( 0, "Draw lights", 5, y+=hctl, 100, 16, true, 0, false, &gUIChkDrawLights );
-	gUIDlgHUD->addCheckBox( 0, "Draw cones",  5, y+=hctl, 100, 16, false, 0, false, &gUIChkDrawCones );
-	gUIDlgHUD->addCheckBox( 0, "Draw bounds", 5, y+=hctl, 100, 16, false, 0, false, &gUIChkDrawBounds );
-	gUIDlgHUD->addCheckBox( 0, "Draw stats",  5, y+=hctl, 100, 16, true, 0, false, &gUIChkDrawStats );
+	gUIDlgHUD->addCheckBox( 0, "Anim objects", 5, y+=hctl, 100, 16, false, 0, false, &gUIChkAnimObjects );
+	gUIDlgHUD->addCheckBox( 0, "Draw lights",  5, y+=hctl, 100, 16, true, 0, false, &gUIChkDrawLights );
+	gUIDlgHUD->addCheckBox( 0, "Draw cones",   5, y+=hctl, 100, 16, false, 0, false, &gUIChkDrawCones );
+	gUIDlgHUD->addCheckBox( 0, "Draw bounds",  5, y+=hctl, 100, 16, false, 0, false, &gUIChkDrawBounds );
+	gUIDlgHUD->addCheckBox( 0, "Draw stats",   5, y+=hctl, 100, 16, true, 0, false, &gUIChkDrawStats );
 }
 
 
@@ -290,8 +297,14 @@ void gRenderDebug()
 		// render light cone
 		if( gUIChkDrawLights->isChecked() )
 		{
-			gDebugRenderer->renderCone( l->mWorldMat.getOrigin(), l->getViewCone().axis, cosf(l->getFOV()/2), sinf(l->getFOV()/2), l->getZFar(), kMeterSize*0.01f, 0x2000FF00 );
-			gDebugRenderer->renderSphere( l->mWorldMat.getOrigin(), kMeterSize*0.007f, 0x2000FF00 );
+			D3DXCOLOR colr;
+			colr.r = l->m_Color.x;
+			colr.g = l->m_Color.y;
+			colr.b = l->m_Color.z;
+			colr.a = 0.15f;
+			D3DCOLOR col = colr;
+			gDebugRenderer->renderCone( l->mWorldMat.getOrigin(), l->getViewCone().axis, cosf(l->getFOV()/2), sinf(l->getFOV()/2), l->getZFar(), kMeterSize*0.01f, col);
+			gDebugRenderer->renderSphere( l->mWorldMat.getOrigin(), kMeterSize*0.05f, col );
 		}
 
 		// render all shadow buffer cones of this light
@@ -326,7 +339,7 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 	char buf[1000];
 	const float x1 = 5;
 	const float x2 = 60;
-	float y = 200;
+	float y = 260;
 	const float dy = 15;
 	dlg.imDrawText( "objects:", 0, DT_LEFT|DT_TOP, 0xC0ffffff, SFRect(x1,y,x2,y+dy), true );
 	dlg.imDrawText( itoa((int)gScene.size(),buf,10), 0, DT_LEFT|DT_TOP, 0xFFffffff, SFRect(x2,y,x2+100,y+dy), true );
@@ -357,6 +370,30 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 }
 
 
+static void gAnimate( float dt )
+{
+	if( gUIChkAnimObjects->isChecked() )
+	{
+		size_t nobjs = gScene.size();
+		for( size_t i = 0; i < nobjs; ++i )
+		{
+			SceneEntity& obj = *gScene[i];
+			if( !obj.m_CanAnimate )
+				continue;
+
+			SMatrix4x4 mr;
+			D3DXMatrixRotationYawPitchRoll(
+				&mr,
+				cosf(i)*dt*0.6f,
+				sinf(i)*dt*0.3f,
+				cosf(i)*dt*0.2f
+			);
+			obj.mWorldMat = mr * obj.mWorldMat;
+		}
+	}
+}
+
+
 /// Main loop code.
 void CDemo::perform()
 {
@@ -369,6 +406,8 @@ void CDemo::perform()
 	float dt = CSystemTimer::getInstance().getDeltaTimeS();
 
 	CD3DDevice& dx = CD3DDevice::getInstance();
+
+	gAnimate( dt );
 
 	// FPS
 	sprintf( buf, "fps: %6.1f", dx.getStats().getFPS() );

@@ -4,9 +4,11 @@
 
 float4x4 mWorld;
 float4x4 mWVP;
+float3	 vColor;
 
 float3	vLightPos;
 float3	vLightDir;
+float3	vLightColor;
 float	fLightCosAngle;
 float4x4	mShadowProj;
 float4x4	mLightViewProj;
@@ -17,6 +19,7 @@ struct SOutput {
 	half3	n	: TEXCOORD0;
 	half3	tol	: TEXCOORD1;
 	float4	shz	: TEXCOORD2;
+	half3	col : COLOR0;
 };
 
 SOutput vsMain( SPosN i )
@@ -30,6 +33,8 @@ SOutput vsMain( SPosN i )
 	o.n = mul( n, (float3x3)mWorld );
 	
 	o.tol = normalize( vLightPos - wpos );
+	
+	o.col = vColor * vLightColor;
 
 	gShadowProj( float4(wpos,1), mShadowProj, mLightViewProj, o.shz );
 
@@ -39,6 +44,7 @@ SOutput vsMain( SPosN i )
 
 half4 psMain( SOutput i ) : COLOR
 {
+	// shadow
 	half shadow = gSampleShadow( smpShadow, i.shz );
 	
 	// spot light
@@ -47,10 +53,8 @@ half4 psMain( SOutput i ) : COLOR
 
 	// TBD: attenuation
 	
-	//half shadow = 1;
-	const float DIFFUSE = 0.7;
-	half color = saturate(dot(i.n,i.tol)) * shadow * DIFFUSE;
-	return color;
+	half3 color = i.col.rgb * (saturate(dot(i.n,i.tol)) * shadow);
+	return half4( color, 1 );
 	
 	//return half4(i.n*0.5+0.5,1);
 }

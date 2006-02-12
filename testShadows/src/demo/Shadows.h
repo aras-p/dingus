@@ -39,6 +39,8 @@ private:
 
 public:
 	ShadowBufferPtrs	m_ShadowBuffers;
+	SVector3			m_Color;
+	bool				m_CanAnimate;
 };
 
 
@@ -76,6 +78,7 @@ struct Light : public CCameraEntity
 {
 	ShadowBufferPtrs	m_ShadowBuffers;	// SBs that this light uses
 	SceneEntityPtrs		m_Entities;			// objects in light
+	SVector3			m_Color;
 };
 
 extern LightPtrs gLights;

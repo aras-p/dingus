@@ -13,6 +13,7 @@ LightPtrs				gLights;
 
 static SVector3 gLightPos;
 static SVector3 gLightDir;
+static SVector3 gLightColor;
 static float gLightCosAngle;
 static SMatrix4x4 gShadowLightViewProj;
 static SMatrix4x4 gShadowTexProj;
@@ -53,9 +54,13 @@ const char* FX_NAMES[RMCOUNT] = {
 
 SceneEntity::SceneEntity( const std::string& name )
 :	mMesh(0)
+,	m_CanAnimate(false)
 {
 	assert( !name.empty() );
 	mMesh = RGET_MESH(name);
+
+	if( name=="Teapot" || name=="Torus" )
+		m_CanAnimate = true;
 
 	const CAABox& aabb = mMesh->getTotalAABB();
 	// not really optimal, but oh well!
@@ -71,9 +76,11 @@ SceneEntity::SceneEntity( const std::string& name )
 	CEffectParams& ep = mRenderMeshes[RM_NORMAL]->getParams();
 	ep.addVector3Ref( "vLightPos", gLightPos );
 	ep.addVector3Ref( "vLightDir", gLightDir );
+	ep.addVector3Ref( "vLightColor", gLightColor );
 	ep.addFloatRef( "fLightCosAngle", &gLightCosAngle );
 	ep.addMatrix4x4Ref( "mLightViewProj", gShadowLightViewProj );
 	ep.addMatrix4x4Ref( "mShadowProj", gShadowTexProj );
+	ep.addVector3Ref( "vColor", m_Color );
 }
 
 SceneEntity::~SceneEntity()
@@ -416,6 +423,7 @@ void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 			// set light constants
 			gLightPos = light.mWorldMat.getOrigin();
 			gLightDir = light.mWorldMat.getAxisZ();
+			gLightColor = light.m_Color;
 			gLightCosAngle = light.getViewCone().cosAngle;
 			gShadowLightViewProj = shadowBuffer.m_ViewProjMatrix;
 			gShadowTexProj = shadowBuffer.m_TextureProjMatrix;
