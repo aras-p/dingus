@@ -71,6 +71,7 @@ CUICheckBox*	gUIChkDrawLights;
 CUICheckBox*	gUIChkDrawCones;
 CUICheckBox*	gUIChkDrawBounds;
 CUICheckBox*	gUIChkDrawStats;
+CUISlider*		gUISldShadowQuality;
 
 
 // --------------------------------------------------------------------------
@@ -203,10 +204,13 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	const int hctl = 16;
 	int y = 100-hctl;
 
-	// FPS
 	gUIDlgHUD->addStatic( 0, "", 5,  460, 200, 20, false, &gUIFPS );
+
+	gUIDlgHUD->addStatic( 0, "Shadow quality:", 5, y+=hctl, 100, hctl );
+	gUIDlgHUD->addSlider( 0, 100, y, 70, hctl, 1, 10, 6, false, &gUISldShadowQuality );
+
 	gUIDlgHUD->addCheckBox( 0, "Draw lights", 5, y+=hctl, 100, 16, true, 0, false, &gUIChkDrawLights );
-	gUIDlgHUD->addCheckBox( 0, "Draw cones",  5, y+=hctl, 100, 16, true, 0, false, &gUIChkDrawCones );
+	gUIDlgHUD->addCheckBox( 0, "Draw cones",  5, y+=hctl, 100, 16, false, 0, false, &gUIChkDrawCones );
 	gUIDlgHUD->addCheckBox( 0, "Draw bounds", 5, y+=hctl, 100, 16, false, 0, false, &gUIChkDrawBounds );
 	gUIDlgHUD->addCheckBox( 0, "Draw stats",  5, y+=hctl, 100, 16, true, 0, false, &gUIChkDrawStats );
 }
@@ -278,8 +282,8 @@ void gRenderDebug()
 
 	gDebugRenderer->beginDebug();
 
-	int i;
-	int nLights = gLights.size();
+	size_t i;
+	size_t nLights = gLights.size();
 	for( i = 0; i < nLights; ++i )
 	{
 		Light* l = gLights[i];
@@ -293,8 +297,8 @@ void gRenderDebug()
 		// render all shadow buffer cones of this light
 		if( gUIChkDrawCones->isChecked() )
 		{
-			int nSBs = l->m_ShadowBuffers.size();
-			for( int j = 0; j < nSBs; ++j )
+			size_t nSBs = l->m_ShadowBuffers.size();
+			for( size_t j = 0; j < nSBs; ++j )
 			{
 				ShadowBuffer* sb = l->m_ShadowBuffers[j];
 				gDebugRenderer->renderCone( l->mWorldMat.getOrigin(), sb->m_LSpaceCone.axis, sb->m_LSpaceCone.cosAngle, sb->m_LSpaceCone.sinAngle, l->getZFar()*0.5f, kMeterSize*0.007f, 0x100000FF );
@@ -322,16 +326,16 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg )
 	char buf[1000];
 	const float x1 = 5;
 	const float x2 = 60;
-	float y = 170;
+	float y = 200;
 	const float dy = 15;
 	dlg.imDrawText( "objects:", 0, DT_LEFT|DT_TOP, 0xC0ffffff, SFRect(x1,y,x2,y+dy), true );
-	dlg.imDrawText( itoa(gScene.size(),buf,10), 0, DT_LEFT|DT_TOP, 0xFFffffff, SFRect(x2,y,x2+100,y+dy), true );
+	dlg.imDrawText( itoa((int)gScene.size(),buf,10), 0, DT_LEFT|DT_TOP, 0xFFffffff, SFRect(x2,y,x2+100,y+dy), true );
 	y += dy;
 	dlg.imDrawText( "lights:", 0, DT_LEFT|DT_TOP, 0xC0ffffff, SFRect(x1,y,x2,y+dy), true );
-	dlg.imDrawText( itoa(gLights.size(),buf,10), 0, DT_LEFT|DT_TOP, 0xFFffffff, SFRect(x2,y,x2+100,y+dy), true );
+	dlg.imDrawText( itoa((int)gLights.size(),buf,10), 0, DT_LEFT|DT_TOP, 0xFFffffff, SFRect(x2,y,x2+100,y+dy), true );
 	y += dy;
 	dlg.imDrawText( "cones:", 0, DT_LEFT|DT_TOP, 0xC0ffffff, SFRect(x1,y,x2,y+dy), true );
-	dlg.imDrawText( itoa(gShadowBuffers.size(),buf,10), 0, DT_LEFT|DT_TOP, 0xFFffffff, SFRect(x2,y,x2+100,y+dy), true );
+	dlg.imDrawText( itoa((int)gShadowBuffers.size(),buf,10), 0, DT_LEFT|DT_TOP, 0xFFffffff, SFRect(x2,y,x2+100,y+dy), true );
 	y += dy;
 
 	for( int sbSize = kMinShadowRTSize; sbSize <= kMaxShadowRTSize; sbSize *= 2 )
@@ -370,6 +374,8 @@ void CDemo::perform()
 	sprintf( buf, "fps: %6.1f", dx.getStats().getFPS() );
 	gUIFPS->setText( buf );
 
+	float shadowQuality = gUISldShadowQuality->getValue() * 200;
+
 	// camera
 	SMatrix4x4& mc = gCamera.mWorldMat;
 	D3DXMatrixRotationYawPitchRoll( &mc, gCamYaw, gCamPitch, 0.0f );
@@ -382,7 +388,7 @@ void CDemo::perform()
 	// render
 	dx.sceneBegin();
 
-	RenderSceneWithShadows( gCamera );
+	RenderSceneWithShadows( gCamera, shadowQuality );
 	gRenderDebug();
 
 	gUIDlgHUD->onRender( dt );

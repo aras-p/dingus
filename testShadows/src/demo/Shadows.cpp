@@ -105,21 +105,55 @@ struct ObjectRenderData
 };
 
 
-const float kShadowDensityQuality = 2048;
 const float kWidestViewConeCosAngle = 0.5f; // full cone is 120 degrees
 
 
+static void OptimizeShadowConeForSpotLight( ShadowBuffer* sb )
+{
+#if !_DEBUG
+	// don't do the optimization in debug mode - makes error checks harder
 
-void RenderSceneWithShadows( CCameraEntity& camera )
+	// for spot light, it makes no sense to use wider cone than the spot light itself
+	const float kWiderABit = 0.01f;
+	if( sb->m_LSpaceCone.cosAngle + kWiderABit < sb->m_Light->getFOVConeCosAngle() )
+	{
+		sb->m_LSpaceCone.axis = sb->m_Light->getViewCone().axis;
+		sb->m_LSpaceCone.cosAngle = sb->m_Light->getFOVConeCosAngle() - kWiderABit;
+		sb->m_LSpaceCone.UpdateAngle();
+	}
+#endif
+}
+
+
+#if _DEBUG
+static void CheckIfSBEnclosesReceivers( const ShadowBuffer* sb )
+{
+	size_t nobjs = sb->m_Entities.size();
+	const SVector3 lightPos = sb->m_Light->mWorldMat.getOrigin();
+	for( size_t i = 0; i < nobjs; ++i )
+	{
+		const SceneEntity& obj = *sb->m_Entities[i];
+		SVector3 lightRelPos = obj.mWorldMat.getOrigin() - lightPos;
+		ViewCone objLightSpaceCone;
+		ConeMake( lightRelPos, obj.getRadius(), objLightSpaceCone );
+		bool encloses = DoesCone2EncloseCone1( objLightSpaceCone, sb->m_LSpaceCone );
+		assert( encloses );
+	}
+}
+#endif
+
+
+
+void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 {
 	camera.updateViewConeAngleFull();
 	camera.updateViewCone();
 
 	gShadowRTManager->BeginFrame();
 
-	int i, j;
-	int nsceneobjs = gScene.size();
-	int nlights = gLights.size();
+	size_t i, j;
+	size_t nsceneobjs = gScene.size();
+	size_t nlights = gLights.size();
 
 	static std::vector<ObjectRenderData>	objRenderData;
 	objRenderData.resize( nsceneobjs );
@@ -143,7 +177,7 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 			float dist = camera.distanceToRelPos( eyeRelPos );
 			if( dist < camera.getZNear() )
 				dist = camera.getZNear();
-			objRenderData[i].desiredPixelDensity = kShadowDensityQuality / dist;
+			objRenderData[i].desiredPixelDensity = shadowQuality / dist;
 		}
 	}
 
@@ -186,8 +220,8 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 
 			// Try to find an existing shadowbuffer that encloses the object
 			// and has a high enough density
-			int nLightSBs = light.m_ShadowBuffers.size();
-			for( int sb = 0; sb < nLightSBs; ++sb )
+			size_t nLightSBs = light.m_ShadowBuffers.size();
+			for( size_t sb = 0; sb < nLightSBs; ++sb )
 			{
 				ShadowBuffer& shadowBuffer = *light.m_ShadowBuffers[sb];
 				// if the object cone is enclosed by the shadowbuffer cone
@@ -200,6 +234,7 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 #if _DEBUG
 						assert( std::find(shadowBuffer.m_Entities.begin(), shadowBuffer.m_Entities.end(), &obj) == shadowBuffer.m_Entities.end() );
 						shadowBuffer.m_Entities.push_back( &obj );
+						CheckIfSBEnclosesReceivers( &shadowBuffer );
 #endif
 						obj.m_ShadowBuffers.push_back( &shadowBuffer );
 						found = true;
@@ -219,13 +254,13 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 				float bestPixelDensity = -1.0f;
 				float desiredPixelDensity = objData.desiredPixelDensity * objDistToLight;
 				
-				int nLightSBs = light.m_ShadowBuffers.size();
-				for( int sb = 0; sb < nLightSBs; ++sb )
+				size_t nLightSBs = light.m_ShadowBuffers.size();
+				for( size_t sb = 0; sb < nLightSBs; ++sb )
 				{
 					ShadowBuffer& shadowBuffer = *light.m_ShadowBuffers[sb];
 					// Find the union between the SB's cone and the object's light-space cone
 					ViewCone unionCone;
-					eConeUnionResult res = ConeUnion( &unionCone, shadowBuffer.m_LSpaceCone, objLightSpaceCone, false );
+					eConeUnionResult res = ConeUnion( &unionCone, shadowBuffer.m_LSpaceCone, objLightSpaceCone, true );
 					if( res == CUR_NOBOUND )
 						continue;
 					if( unionCone.cosAngle < kWidestViewConeCosAngle )
@@ -245,13 +280,15 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 
 				if( found )
 				{
-#if _DEBUG
-					assert( std::find(bestSB->m_Entities.begin(), bestSB->m_Entities.end(), &obj) == bestSB->m_Entities.end() );
-					bestSB->m_Entities.push_back( &obj );
-#endif
 					obj.m_ShadowBuffers.push_back( bestSB );
 					bestSB->m_LSpaceCone = bestCone;
 					bestSB->m_PixelDensity = bestPixelDensity;
+					OptimizeShadowConeForSpotLight( bestSB );
+#if _DEBUG
+					assert( std::find(bestSB->m_Entities.begin(), bestSB->m_Entities.end(), &obj) == bestSB->m_Entities.end() );
+					bestSB->m_Entities.push_back( &obj );
+					CheckIfSBEnclosesReceivers( bestSB );
+#endif
 				}
 			}
 
@@ -262,10 +299,12 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 				shadowBuffer->m_LSpaceCone = objLightSpaceCone;
 				shadowBuffer->m_PixelDensity = objData.desiredPixelDensity * objDistToLight;
 				shadowBuffer->m_Light = &light;
+				OptimizeShadowConeForSpotLight( shadowBuffer );
 				gShadowBuffers.push_back( shadowBuffer );
 #if _DEBUG
 				assert( std::find(shadowBuffer->m_Entities.begin(), shadowBuffer->m_Entities.end(), &obj) == shadowBuffer->m_Entities.end() );
 				shadowBuffer->m_Entities.push_back( &obj );
+				CheckIfSBEnclosesReceivers( shadowBuffer );
 #endif
 				obj.m_ShadowBuffers.push_back( shadowBuffer );
 				light.m_ShadowBuffers.push_back( shadowBuffer );
@@ -274,8 +313,8 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 
 		// now all the receivers in this light have SBs allocated, so
 		// get the real shadow buffer RTs and whatnot
-		int nLightSBs = light.m_ShadowBuffers.size();
-		for( int sb = 0; sb < nLightSBs; ++sb )
+		size_t nLightSBs = light.m_ShadowBuffers.size();
+		for( size_t sb = 0; sb < nLightSBs; ++sb )
 		{
 			ShadowBuffer& shadowBuffer = *light.m_ShadowBuffers[sb];
 			shadowBuffer.m_RTSize = (int)ConeSizeOfTexture( shadowBuffer.m_LSpaceCone, shadowBuffer.m_PixelDensity );
@@ -287,13 +326,13 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 		}
 
 		// Find which objects cast shadows into the SBs
-		int nLightObjects = light.m_Entities.size();
+		size_t nLightObjects = light.m_Entities.size();
 		nLightSBs = light.m_ShadowBuffers.size();
 		for( j = 0; j < nLightObjects; ++j )
 		{
 			SceneEntity& obj = *light.m_Entities[j];
 			SVector3 lightRelPos = obj.mWorldMat.getOrigin() - light.mWorldMat.getOrigin();
-			for( int sb = 0; sb < nLightSBs; ++sb )
+			for( size_t sb = 0; sb < nLightSBs; ++sb )
 			{
 				ShadowBuffer& shadowBuffer = *light.m_ShadowBuffers[sb];
 				if( shadowBuffer.m_LSpaceCone.IntersectsSphere( lightRelPos, obj.getRadius() ) )
@@ -309,8 +348,8 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 	for( i = 0; i < nlights; ++i )
 	{
 		Light& light = *gLights[i];
-		int nLightSBs = light.m_ShadowBuffers.size();
-		for( int sb = 0; sb < nLightSBs; ++sb )
+		size_t nLightSBs = light.m_ShadowBuffers.size();
+		for( size_t sb = 0; sb < nLightSBs; ++sb )
 		{
 			ShadowBuffer& shadowBuffer = *light.m_ShadowBuffers[sb];
 			// set render target to this SB
@@ -321,9 +360,9 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 			shadowBuffer.SetOntoRenderContext();
 			G_RENDERCTX->applyGlobalEffect();
 			// render all casters
-			int nobjs = shadowBuffer.m_Casters.size();
+			size_t nobjs = shadowBuffer.m_Casters.size();
 			G_RENDERCTX->directBegin();
-			for( int o = 0; o < nobjs; ++o )
+			for( size_t o = 0; o < nobjs; ++o )
 				shadowBuffer.m_Casters[o]->render( RM_CASTER, true, true );
 			G_RENDERCTX->directEnd();
 		}
@@ -364,9 +403,9 @@ void RenderSceneWithShadows( CCameraEntity& camera )
 
 		SceneEntity& obj = *gScene[i];
 		// additively render all lights on this object
-		int nObjSBs = obj.m_ShadowBuffers.size();
+		size_t nObjSBs = obj.m_ShadowBuffers.size();
 		assert( nObjSBs <= nlights );
-		for( int sb = 0; sb < nObjSBs; ++sb )
+		for( size_t sb = 0; sb < nObjSBs; ++sb )
 		{
 			ShadowBuffer& shadowBuffer = *obj.m_ShadowBuffers[sb];
 			Light& light = *shadowBuffer.m_Light;

@@ -83,7 +83,7 @@ extern LightPtrs gLights;
 
 // --------------------------------------------------------------------------
 
-void RenderSceneWithShadows( CCameraEntity& camera );
+void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality );
 
 
 #endif

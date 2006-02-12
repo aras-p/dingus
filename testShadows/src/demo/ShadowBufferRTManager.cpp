@@ -39,7 +39,7 @@ void ShadowBufferRTManager::BeginFrame()
 	for( it = mSizeToRTs.begin(); it != itEnd; ++it )
 	{
 		RenderTargets& rts = it->second;
-		for( int i = 0; i < rts.size(); ++i )
+		for( size_t i = 0; i < rts.size(); ++i )
 		{
 			rts[i].used = false;
 		}
@@ -56,7 +56,7 @@ void ShadowBufferRTManager::GetSizeStats( int size, int& outActive, int& outTota
 		return;
 
 	const RenderTargets& rts = it->second;
-	outTotal = rts.size();
+	outTotal = (int)rts.size();
 	for( int i = 0; i < outTotal; ++i )
 	{
 		if( rts[i].used )
@@ -74,7 +74,7 @@ bool ShadowBufferRTManager::RequestBuffer( int& size, CD3DTexture** outTex, CD3D
 	if( it != mSizeToRTs.end() )
 	{
 		RenderTargets& rts = it->second;
-		for( int i = 0; i < rts.size(); ++i )
+		for( size_t i = 0; i < rts.size(); ++i )
 		{
 			if( !rts[i].used )
 			{

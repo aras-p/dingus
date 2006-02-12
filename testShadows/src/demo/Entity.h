@@ -89,6 +89,7 @@ public:
 	float getZNear() const { return mZNear; }
 	float getZFar() const { return mZFar; }
 	float getFOV() const { return mFOV; }
+	float getFOVConeCosAngle() const { return mFOVConeCosAngle; }
 
 	/**
 	 *  Gets world space ray from camera's viewing plane coordinates.
@@ -115,6 +116,7 @@ private:
 	SMatrix4x4	mProjectionMatrix;
 	bool	mOrtho;
 	float	mFOV;
+	float	mFOVConeCosAngle;
 	float	mZNear;
 	float	mZFar;
 	float	mViewHalfWidth; // at distance 1

@@ -20,7 +20,7 @@ void CCameraEntity::updateViewConeAngleFull()
 
 void CCameraEntity::updateViewConeAngleFOV()
 {
-	mViewCone.cosAngle = cosf( mFOV * 0.5f );
+	mViewCone.cosAngle = mFOVConeCosAngle;
 	mViewCone.UpdateAngle();
 }
 
@@ -29,6 +29,7 @@ void CCameraEntity::setProjectionParams( float fov, float aspect, float znear, f
 	mOrtho = false;
 	D3DXMatrixPerspectiveFovLH( &mProjectionMatrix, fov, aspect, znear, zfar );
 	mFOV = fov;
+	mFOVConeCosAngle = cosf(fov * 0.5f);
 	mZNear = znear;
 	mZFar = zfar;
 	mViewHalfWidth = 1.0f / mProjectionMatrix._11;
@@ -51,6 +52,7 @@ void CCameraEntity::setProjFrom( const CCameraEntity& c )
 {
 	mOrtho = c.mOrtho;
 	mFOV = c.mFOV;
+	mFOVConeCosAngle = c.mFOVConeCosAngle;
 	mZNear = c.mZNear;
 	mZFar = c.mZFar;
 	mViewHalfWidth = c.mViewHalfWidth;

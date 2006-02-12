@@ -104,7 +104,7 @@ eConeUnionResult ConeUnion( ViewCone* out, const ViewCone &cone1, const ViewCone
 		// Yep. OK, the test is really simple - which is bigger?
 		if ( cone1.cosAngle < cone2.cosAngle )
 		{
-			if ( bAlwaysSetResult )
+			if( bAlwaysSetResult )
 			{
 				out->axis = cone1.axis;
 				out->cosAngle = cone1.cosAngle - fVeryCloseEnough;
