@@ -133,8 +133,8 @@ void CMeshBundle::createResource()
 {
 	const TStringVector& ext = getExtensions();
 	const TStringVector& dir = getDirectories();
-	int ne = ext.size();
-	int nd = dir.size();
+	size_t ne = ext.size();
+	size_t nd = dir.size();
 
 	// reload all objects
 	TResourceMap::iterator it;
@@ -142,9 +142,9 @@ void CMeshBundle::createResource()
 		CMesh& res = *it->second;
 		assert( !res.isCreated() );
 		// try all directories
-		for( int d = 0; d < nd; ++d ) {
+		for( size_t d = 0; d < nd; ++d ) {
 			// try all extensions
-			for( int e = 0; e < ne; ++e ) {
+			for( size_t e = 0; e < ne; ++e ) {
 				CResourceId fullid( dir[d] + it->first.getUniqueName() + ext[e] );
 				bool ok = loadMesh( it->first, fullid, res );
 				if( ok )

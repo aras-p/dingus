@@ -9,44 +9,44 @@ using namespace dingus;
 
 
 void CStringHelper::replaceTabs( std::string& s ) {
-	int n = s.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = s.size();
+	for( size_t i = 0; i < n; ++i ) {
 		if( s[i] == '\t' ) s[i] = ' ';
 	}
 }
 
 void CStringHelper::replaceLineEnds( std::string& s )
 {
-	int n = s.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = s.size();
+	for( size_t i = 0; i < n; ++i ) {
 		if( s[i]=='\n' || s[i]=='\r' ) s[i] = ' ';
 	}
 }
 
 void CStringHelper::replaceWhitespace( std::string& s )
 {
-	int n = s.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = s.size();
+	for( size_t i = 0; i < n; ++i ) {
 		if( !isprint(s[i]) ) s[i] = ' ';
 	}
 }
 
 void CStringHelper::trimString( std::string& s ) 
 {
-	int first = s.find_first_not_of( " \t\n\r" );
+	size_t first = s.find_first_not_of( " \t\n\r" );
 	if( first < 0 ) {
 		s = "";
 		return;
 	}
-	int last = s.find_last_not_of( " \t\n\r" );
+	size_t last = s.find_last_not_of( " \t\n\r" );
 	s = s.substr( first, (last-first+1) );
 }
 
 int CStringHelper::countLines( const std::string& s )
 {
 	int c = 1;
-	int n = s.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = s.size();
+	for( size_t i = 0; i < n; ++i ) {
 		if( s[i]=='\n' ) ++c;
 	}
 	return c;
@@ -131,8 +131,8 @@ bool CStringHelper::isName( const std::string& name )
 	if( name.empty() )
 		return false;
 	if( !isLetter( name[0] ) && name[0]!='_' ) return false;
-	int n = name.size();
-	for( int i = 1; i < n; ++i )
+	size_t n = name.size();
+	for( size_t i = 1; i < n; ++i )
 		if( !( isLetter( name[i] ) || isDigit( name[i] ) || ( name[i] == '_' ) ) )
 			return false;
 	return true;
@@ -150,15 +150,15 @@ bool CStringHelper::equalsIgnoreCase( const std::string& s0, const std::string& 
 
 void CStringHelper::toLower( std::string& s )
 {
-	int n = s.size();
-	for( int i = 0; i < n; ++i )
+	size_t n = s.size();
+	for( size_t i = 0; i < n; ++i )
 		s[i] = (char)tolower(s[i]);
 }
 
 void CStringHelper::toUpper( std::string& s )
 {
-	int n = s.size();
-	for( int i = 0; i < n; ++i )
+	size_t n = s.size();
+	for( size_t i = 0; i < n; ++i )
 		s[i] = (char)toupper(s[i]);
 }
 

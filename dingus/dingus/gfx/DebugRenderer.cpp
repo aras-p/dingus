@@ -96,8 +96,6 @@ CDebugRenderer::TDebugVertex* CDebugRenderer::requestVertices( int triangleCount
 
 void CDebugRenderer::internalRenderLine( const SVector3& pta, const SVector3& ptb, float width, D3DCOLOR color, TDebugVertex* vb ) const
 {
-	const SMatrix4x4& camRotMat = mRenderCtx->getCamera().getCameraRotMatrix();
-	const SMatrix4x4& camViewMat = mRenderCtx->getCamera().getViewMatrix();
 	const SVector3& camPos = mRenderCtx->getCamera().getEye3();
 
 	// direction of the line in world space
@@ -141,6 +139,53 @@ void CDebugRenderer::renderCoordFrame( const SMatrix4x4& matrix, float size, D3D
 	internalRenderLine( o, o + matrix.getAxisY()*size, width, color & 0xFF00ff00, vb +  6 );
 	internalRenderLine( o, o + matrix.getAxisZ()*size, width, color & 0xFF0000ff, vb + 12 );
 }
+
+void CDebugRenderer::renderCone( const SVector3& center, const SVector3& axis, float cosAngle, float sinAngle, float length, float lineWidth, D3DCOLOR color )
+{
+	const int SIDE_COUNT = 20;
+	const int RING_COUNT = 6;
+	const int SIDE_LINE_COUNT = 10;
+
+	const int TOTAL_LINE_COUNT = SIDE_LINE_COUNT + RING_COUNT*SIDE_COUNT;
+
+	TDebugVertex* vb = requestVertices( TOTAL_LINE_COUNT * 2 );
+
+	SVector3 perp1, perp2;
+	axis.planeSpace( perp1, perp2 );
+
+	SVector3 axisMCos = axis * cosAngle;
+	perp1 *= sinAngle;
+	perp2 *= sinAngle;
+
+	// rings
+	float dtheta = D3DX_PI*2 / SIDE_COUNT;
+	for( int r = 0; r < RING_COUNT; ++r )
+	{
+		float theta = dtheta;
+		float len = length / RING_COUNT * (r+1);
+		SVector3 prevDelta = axisMCos + perp1;
+		for( int i = 0; i < SIDE_COUNT; ++i, theta += dtheta )
+		{
+			SVector3 delta = axisMCos + (perp1 * cosf(theta) + perp2 * sinf(theta));
+			internalRenderLine( center + prevDelta * len, center + delta * len, lineWidth, color, vb );
+			prevDelta = delta;
+			vb += 6;
+		}
+	}
+
+	// sides
+	dtheta = D3DX_PI*2 / SIDE_LINE_COUNT;
+	{
+		float theta = dtheta;
+		for( int i = 0; i < SIDE_LINE_COUNT; ++i, theta += dtheta )
+		{
+			SVector3 delta = axisMCos + (perp1 * cosf(theta) + perp2 * sinf(theta));
+			internalRenderLine( center, center + delta * length, lineWidth, color, vb );
+			vb += 6;
+		}
+	}
+}
+
 
 void CDebugRenderer::renderBox( const SMatrix4x4& matrix, const SVector3& size, D3DCOLOR color )
 {

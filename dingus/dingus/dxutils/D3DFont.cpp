@@ -136,20 +136,20 @@ HRESULT CD3DFont::createDeviceObjects(/* IDirect3DDevice9& device */)
 	
 	// Loop through all printable character and output them to the bitmap..
 	// Meanwhile, keep track of the corresponding tex coords for each character.
-	DWORD x = 0;
-	DWORD y = 0;
+	int x = 0;
+	int y = 0;
 	TCHAR str[2] = _T("x");
 	SIZE size;
 	
 	// Calculate the spacing between characters based on line height
 	GetTextExtentPoint32( hDC, TEXT(" "), 1, &size );
-	x = mSpacing = (DWORD) ceil(size.cy * 0.3f);
+	x = mSpacing = (int)ceil(size.cy * 0.3f);
 	
 	for( TCHAR c=32; c<127; c++ ) {
 		str[0] = c;
 		GetTextExtentPoint32( hDC, str, 1, &size );
 		
-		if( (DWORD)(x + size.cx + mSpacing) > mTexWidth ) {
+		if( x + size.cx + mSpacing > mTexWidth ) {
 			x  = mSpacing;
 			y += size.cy+1;
 		}

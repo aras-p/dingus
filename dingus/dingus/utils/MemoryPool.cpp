@@ -41,7 +41,7 @@ void CMemoryPool::deallocateAll()
 
 void CMemoryPool::allocNewBubble()
 {
-	int sizeMultiplier;
+	size_t sizeMultiplier;
 	
 	if( mDontGrow && !mBubbles.empty() ) {
 		ASSERT_FAIL_MSG( "CMemoryPool::allocNewBubble: can't grow" );
@@ -50,8 +50,8 @@ void CMemoryPool::allocNewBubble()
 	
 	sizeMultiplier = mBubbles.size() + 1;
 	
-	int elemCount = mBlocksPerBubble * sizeMultiplier;
-	int bubbleSize = mBlockSize * elemCount;
+	size_t elemCount = mBlocksPerBubble * sizeMultiplier;
+	size_t bubbleSize = mBlockSize * elemCount;
 	SBubble *bubble = (SBubble*)malloc( sizeof(SBubble) + bubbleSize - 1 );
 	assert( bubble );
 	
@@ -65,7 +65,7 @@ void CMemoryPool::allocNewBubble()
 	assert( mHeadOfFreeList );
 	
 	void **newBubble = (void**)mHeadOfFreeList;
-	for( int j = 0; j < elemCount-1; ++j ) {
+	for( size_t j = 0; j < elemCount-1; ++j ) {
 		newBubble[0] = (char*)newBubble + mBlockSize;
 		newBubble = (void**)newBubble[0];
 	}

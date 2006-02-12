@@ -89,8 +89,8 @@ HRESULT dingus::setDeviceCursor( IDirect3DDevice9& device, HCURSOR hCursor )
 	DWORD		dwHeightDest;
 	COLORREF	crColor;
 	COLORREF	crMask;
-	int 		x;
-	int 		y;
+	DWORD 		x;
+	DWORD 		y;
 	BITMAPINFO	bmi;
 	COLORREF*	pcrArrayColor = NULL;
 	COLORREF*	pcrArrayMask = NULL;

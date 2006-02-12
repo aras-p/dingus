@@ -109,7 +109,7 @@ int CVertexFormat::calcComponentCount() const
 	return size;
 }
 
-#define COMMON_ELS { els->Stream = stream; els->Offset = offset; els->Method = D3DDECLMETHOD_DEFAULT; }
+#define COMMON_ELS { els->Stream = (WORD)stream; els->Offset = (WORD)offset; els->Method = D3DDECLMETHOD_DEFAULT; }
 
 void CVertexFormat::calcVertexDecl( D3DVERTEXELEMENT9* els, int stream, int uvIdx ) const
 {
@@ -118,7 +118,7 @@ void CVertexFormat::calcVertexDecl( D3DVERTEXELEMENT9* els, int stream, int uvId
 	if( hasPosition() ) {
 		COMMON_ELS;
 		els->Type = D3DDECLTYPE_FLOAT3; els->Usage = D3DDECLUSAGE_POSITION;
-		els->UsageIndex = stream;
+		els->UsageIndex = static_cast<BYTE>(stream);
 		++els;
 		offset += 4*3;
 	}
@@ -127,39 +127,39 @@ void CVertexFormat::calcVertexDecl( D3DVERTEXELEMENT9* els, int stream, int uvId
 		// weights (only if non-1-bone)
 		if( getSkinMode() != SKIN_1BONE ) {
 			COMMON_ELS;
-			els->Type = calcSkinDataType(); els->Usage = D3DDECLUSAGE_BLENDWEIGHT;
-			els->UsageIndex = stream;
+			els->Type = static_cast<BYTE>(calcSkinDataType()); els->Usage = D3DDECLUSAGE_BLENDWEIGHT;
+			els->UsageIndex = static_cast<BYTE>(stream);
 			++els;
 			offset += calcSkinSize()-4;
 		}
 		// indices
 		COMMON_ELS;
 		els->Type = D3DDECLTYPE_D3DCOLOR; els->Usage = D3DDECLUSAGE_BLENDINDICES;
-		els->UsageIndex = stream;
+		els->UsageIndex = static_cast<BYTE>(stream);
 		++els;
 		offset += 4;
 	}
 	// normal
 	if( getNormalMode() ) {
 		COMMON_ELS;
-		els->Type = calcFloat3Type(getNormalMode()); els->Usage = D3DDECLUSAGE_NORMAL;
-		els->UsageIndex = stream;
+		els->Type = static_cast<BYTE>(calcFloat3Type(getNormalMode())); els->Usage = D3DDECLUSAGE_NORMAL;
+		els->UsageIndex = static_cast<BYTE>(stream);
 		++els;
 		offset += calcFloat3Size(getNormalMode());
 	}
 	// tangent
 	if( getTangentMode() ) {
 		COMMON_ELS;
-		els->Type = calcFloat3Type(getTangentMode()); els->Usage = D3DDECLUSAGE_TANGENT;
-		els->UsageIndex = stream;
+		els->Type = static_cast<BYTE>(calcFloat3Type(getTangentMode())); els->Usage = D3DDECLUSAGE_TANGENT;
+		els->UsageIndex = static_cast<BYTE>(stream);
 		++els;
 		offset += calcFloat3Size(getTangentMode());
 	}
 	// binormal
 	if( getBinormMode() ) {
 		COMMON_ELS;
-		els->Type = calcFloat3Type(getBinormMode()); els->Usage = D3DDECLUSAGE_BINORMAL;
-		els->UsageIndex = stream;
+		els->Type = static_cast<BYTE>(calcFloat3Type(getBinormMode())); els->Usage = D3DDECLUSAGE_BINORMAL;
+		els->UsageIndex = static_cast<BYTE>(stream);
 		++els;
 		offset += calcFloat3Size(getBinormMode());
 	}
@@ -167,7 +167,7 @@ void CVertexFormat::calcVertexDecl( D3DVERTEXELEMENT9* els, int stream, int uvId
 	if( hasColor() ) {
 		COMMON_ELS;
 		els->Type = D3DDECLTYPE_D3DCOLOR; els->Usage = D3DDECLUSAGE_COLOR;
-		els->UsageIndex = stream;
+		els->UsageIndex = static_cast<BYTE>(stream);
 		++els;
 		offset += 4;
 	}
@@ -176,8 +176,8 @@ void CVertexFormat::calcVertexDecl( D3DVERTEXELEMENT9* els, int stream, int uvId
 		eUVMode uv = getUVMode(i);
 		if( uv ) {
 			COMMON_ELS;
-			els->Type = calcUVType(uv); els->Usage = D3DDECLUSAGE_TEXCOORD;
-			els->UsageIndex = uvIdx + i;
+			els->Type = static_cast<BYTE>(calcUVType(uv)); els->Usage = D3DDECLUSAGE_TEXCOORD;
+			els->UsageIndex = static_cast<BYTE>(uvIdx + i);
 			++els;
 			offset += calcUVSize(uv);
 		}

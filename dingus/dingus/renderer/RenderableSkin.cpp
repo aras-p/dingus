@@ -29,7 +29,7 @@ CRenderableSkin::CRenderableSkin( CSkinMesh& mesh, int group, const SVector3* sk
 
 	getParams().addInt( bonesParamName, mesh.getBonesPerVertex()-1 );
 
-	int vec3sPerPal = mesh.getPaletteSize() * 4;
+	size_t vec3sPerPal = mesh.getPaletteSize() * 4;
 	if( mPaletteSkinMatrices.size() < vec3sPerPal )
 		mPaletteSkinMatrices.resize( vec3sPerPal );
 }

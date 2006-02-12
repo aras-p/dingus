@@ -66,13 +66,6 @@ private:
 };
 
 
-// We have API changes in D3DX effects from Summer 2004...
-#undef USE_D3DX_SUMMER_2004
-#if D3DX_VERSION >= 0x0902 && D3DX_SDK_VERSION >= 22
-	#define USE_D3DX_SUMMER_2004
-#endif
-
-
 
 }; // namespace
 

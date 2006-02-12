@@ -315,7 +315,7 @@ void CDXConfibDBImpl::SyntaxError( char* ErrorText )
 //
 DWORD CDXConfibDBImpl::GetDigit()
 {
-	DWORD result=-1;
+	DWORD result = (DWORD)-1;
 	
 	if( *m_pchCurrent>='0' && *m_pchCurrent<='9' )
 	{
@@ -360,19 +360,19 @@ DWORD CDXConfibDBImpl::GetNumber()
 			if( result==-1 )
 			{
 				SyntaxError( "Number expected" );
-				return -1;
+				return (DWORD)-1;
 			}
 			
 			while( *m_pchCurrent>='0' && *m_pchCurrent<='9' )
 			{
-				DWORD tmp=GetDigit();
-				if( tmp==-1 )
+				DWORD tmp = GetDigit();
+				if( tmp == (DWORD)-1 )
 					break;
 				
 				if( result>=16602069666338596456 )
 				{
 					SyntaxError( "Number too large" );		
-					return -1;
+					return (DWORD)-1;
 				}
 				
 				result=result*10+tmp;
@@ -386,7 +386,7 @@ DWORD CDXConfibDBImpl::GetNumber()
 		else
 		{
 			SyntaxError( "Number expected" );		
-			return -1;
+			return (DWORD)-1;
 		}
 	}
 	//
@@ -396,10 +396,10 @@ DWORD CDXConfibDBImpl::GetNumber()
 	
 	DWORD tmp=GetDigit();
 	
-	if( tmp==-1 )
+	if( tmp == (DWORD)-1 )
 	{
 		SyntaxError( "Number expected" );
-		return -1;
+		return (DWORD)-1;
 	}
 	
 	result = 0;
@@ -410,7 +410,7 @@ DWORD CDXConfibDBImpl::GetNumber()
 		if( hexcount>=8 )
 		{
 			SyntaxError( "Number too large" );		
-			return -1;
+			return (DWORD)-1;
 		}
 		
 		result=result*16+tmp;
@@ -575,29 +575,29 @@ DWORD CDXConfibDBImpl::Get4Digits()
 	
 	DWORD tmp=GetDigit();
 	
-	if( tmp==-1 )
-		return -1;
+	if( tmp == (DWORD)-1 )
+		return (DWORD)-1;
 	
 	result=tmp<<12;
 	
 	tmp=GetDigit();
 	
-	if( tmp==-1 )
-		return -1;
+	if( tmp == (DWORD)-1 )
+		return (DWORD)-1;
 	
 	result|=tmp<<8;
 	
 	tmp=GetDigit();
 	
-	if( tmp==-1 )
-		return -1;
+	if( tmp == (DWORD)-1 )
+		return (DWORD)-1;
 	
 	result|=tmp<<4;
 	
 	tmp=GetDigit();
 	
-	if( tmp==-1 )
-		return -1;
+	if( tmp == (DWORD)-1 )
+		return (DWORD)-1;
 	
 	result|=tmp;
 	
@@ -609,12 +609,12 @@ DWORD CDXConfibDBImpl::Get4Digits()
 //
 DWORD CDXConfibDBImpl::sGet4Digits()
 {
-	DWORD temp=Get4Digits();
+	DWORD tmp = Get4Digits();
 	
-	if( temp==-1 )
-		return temp;
+	if( tmp == (DWORD)-1 )
+		return (DWORD)-1;
 	
-	return ((temp&0xff00)>>8) + ((temp&0xff)<<8);
+	return ((tmp&0xff00)>>8) + ((tmp&0xff)<<8);
 }
 
 bool CDXConfibDBImpl::NextStringIs(const char* psz)
@@ -1499,7 +1499,7 @@ bool CDXConfibDBImpl::DoDisplayVendorAndDevice()
 	//
 	// Find correct VendorID
 	//
-	DWORD Vendor=-1;
+	DWORD Vendor = (DWORD)-1;
 	do {
 		if( NextStringIs(kDBKwDisplayVendor) ) {
 			m_pchCurrent+=13;
@@ -1566,7 +1566,7 @@ bool CDXConfibDBImpl::DoDisplayVendorAndDevice()
 	
 	//
 	// Now search for DeviceID	(Until next vendor or end of file is found)
-	DWORD DeviceID=-1;
+	DWORD DeviceID = (DWORD)-1;
 	do {
 		if( NextStringIs(kDBKwDisplayVendor) )
 			break;

@@ -16,10 +16,10 @@ namespace dingus {
  */
 class CVBManagerSource : public IChunkSource<TVBChunk> {
 public:
-	CVBManagerSource( int stride ) : mStride(stride) { }
-	virtual SHARED_CHUNK lock( int count ) { return CDynamicVBManager::getInstance().allocateChunk( count, mStride ); }
+	CVBManagerSource( unsigned int stride ) : mStride(stride) { }
+	virtual SHARED_CHUNK lock( unsigned int count ) { return CDynamicVBManager::getInstance().allocateChunk( count, mStride ); }
 private:
-	int					mStride;
+	unsigned int	mStride;
 };
 
 }; // namespace

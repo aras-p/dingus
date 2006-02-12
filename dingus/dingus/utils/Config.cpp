@@ -74,7 +74,7 @@ void CConfig::prepareLine( const std::string& in, std::string& name, std::string
 	name = "";
 	data = "";
 	other = "";
-	int i = 0;
+	size_t i = 0;
 	SKIPWS(in);
 	// read name
 	if( in[i] == '[' ) { // section
@@ -222,7 +222,7 @@ CConfig::TStringVector CConfig::readSn( const std::string& section, const std::s
 	TStringVector res;
 	std::string s = readS( section, name, "" );
 
-	int i = 0;
+	size_t i = 0;
 	while( i < s.size() ) {
 		while( i<s.size() && isspace(s[i]) )
 			++i;
@@ -241,7 +241,7 @@ CConfig::TIntVector CConfig::readIn( const std::string& section, const std::stri
 	TIntVector res;
 	std::string s = readS( section, name, "" );
 
-	int i = 0;
+	size_t i = 0;
 	while( i < s.size() ) {
 		while( i<s.size() && isspace(s[i]) )
 			++i;
@@ -260,7 +260,7 @@ CConfig::TFloatVector CConfig::readFn( const std::string& section, const std::st
 	TFloatVector res;
 	std::string s = readS( section, name, "" );
 
-	int i = 0;
+	size_t i = 0;
 	while( i < s.size() ) {
 		while( i<s.size() && isspace(s[i]) )
 			++i;
@@ -279,7 +279,7 @@ CConfig::TBoolVector CConfig::readBn( const std::string& section, const std::str
 	TBoolVector res;
 	std::string s = readS( section, name, "" );
 
-	int i = 0;
+	size_t i = 0;
 	while( i < s.size() ) {
 		while( i<s.size() && isspace(s[i]) )
 			++i;

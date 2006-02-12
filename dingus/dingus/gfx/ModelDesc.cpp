@@ -101,7 +101,7 @@ void CModelDesc::fillFxParams( int group, CEffectParams& dest ) const
 	const SParams& p = getParams( group );
 	dest.setEffect( *RGET_FX( getFxID(group) ) );
 
-	int i;
+	size_t i;
 	for( i = 0; i < p.textures.size(); ++i ) {
 		const SParams::TNameIDPair& e = p.textures[i];	
 		dest.addTexture( e.first.c_str(), *RGET_TEX( e.second ) );

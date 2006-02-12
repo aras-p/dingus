@@ -45,7 +45,7 @@ void CSkinUpdater::update()
 
 	// update skin matrices
 	SMatrix4x4 skinMat;
-	int n = mBoneToCurveMap.size();
+	int n = (int)mBoneToCurveMap.size();
 	assert( n == mSkeletonInfo->getBoneCount() );
 	for( int b = 0; b < n; ++b ) {
 		// matrix for skinning = invPoseMatrix * boneWorldMatrix

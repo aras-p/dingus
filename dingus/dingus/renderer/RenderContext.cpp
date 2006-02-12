@@ -117,7 +117,7 @@ void CRenderContext::applyGlobalEffect()
 {
 	// global params and effect
 	mGlobalParams.applyToEffect();
-	int passes = mGlobalEffect->beginFx();
+	mGlobalEffect->beginFx();
 	mGlobalEffect->beginPass( 0 );
 	mGlobalEffect->endPass();
 	mGlobalEffect->endFx();

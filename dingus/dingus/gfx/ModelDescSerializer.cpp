@@ -110,7 +110,7 @@ bool CModelDescSerializer::saveToFile( const char* fileName, const CModelDesc& d
 		// params
 		const CModelDesc::SParams& p = desc.getParams(i);
 		fprintf( f, "\tparams = {\n" );
-		int j;
+		size_t j;
 		for( j = 0; j < p.textures.size(); ++j ) {
 			const CModelDesc::SParams::TNameIDPair& e = p.textures[j];
 			fprintf( f, "\t\t{ 'tex', '%s', '%s' },\n", e.first.c_str(), e.second.c_str() );

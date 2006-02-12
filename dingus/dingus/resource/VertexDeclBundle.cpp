@@ -14,8 +14,8 @@ using namespace dingus;
 
 IDirect3DVertexDeclaration9* CVertexDeclBundle::createDecl( const CVertexDesc& d ) const
 {
-	int i;
-	int n = d.getStreams().size();
+	BYTE i;
+	BYTE n = BYTE( d.getStreams().size() );
 
 	// count elements
 	int nelems = 0;
@@ -28,7 +28,7 @@ IDirect3DVertexDeclaration9* CVertexDeclBundle::createDecl( const CVertexDesc& d
 	D3DVERTEXELEMENT9* e = els;
 	for( i = 0; i < n; ++i ) {
 		const CVertexStreamDesc& s = d.getStreams()[i];
-		s.getFormat().calcVertexDecl( e, i, s.getUVIndex() );
+		s.getFormat().calcVertexDecl( e, i, (BYTE)s.getUVIndex() );
 		e += s.getFormat().calcComponentCount();
 	}
 	D3DVERTEXELEMENT9 elEnd = D3DDECL_END();

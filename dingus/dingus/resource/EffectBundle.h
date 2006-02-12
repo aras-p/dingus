@@ -31,6 +31,9 @@ public:
 	void	setOptimizeShaders( bool opt ) { mOptimizeShaders = opt; }
 	bool	isUsingStateManager() const { return mUseStateManager; }
 	void	setUsingStateManager( bool stmgr ) { mUseStateManager = stmgr; }
+#ifdef DINGUS_HAVE_D3DX_FEB_2005
+	void	setSkipConstants( const char* skipConstants ) { mSkipConstants = skipConstants; }
+#endif
 	const std::string& getLastErrors() const { return mLastErrors; }
 
 	/**
@@ -74,6 +77,7 @@ private:
 
 	bool	mUseStateManager;
 	bool	mOptimizeShaders;
+	const char* mSkipConstants;
 	mutable std::string		mLastErrors;
 
 	TMacroVector			mMacros;

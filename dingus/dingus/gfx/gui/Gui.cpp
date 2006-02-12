@@ -105,7 +105,7 @@ CUIDialog::~CUIDialog()
 
 	mFonts.clear();
 
-	for( int i = 0; i < mDefaultElements.size(); ++i ) {
+	for( size_t i = 0; i < mDefaultElements.size(); ++i ) {
 		safeDelete( mDefaultElements[i] );
 	}
 	mDefaultElements.clear();
@@ -114,8 +114,8 @@ CUIDialog::~CUIDialog()
 
 void CUIDialog::removeControl( int cid )
 {
-	int n = mControls.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mControls.size();
+	for( size_t i = 0; i < n; ++i ) {
 		CUIControl* ctrl = mControls[ i ];
 		if( ctrl->getID() == cid ) {
 			// Clear focus first
@@ -142,7 +142,7 @@ void CUIDialog::removeAllControls()
 		sCtrlPressed = NULL;
 	mCtrlMouseOver = NULL;
 
-	for( int i = 0; i < mControls.size(); ++i )
+	for( size_t i = 0; i < mControls.size(); ++i )
 		safeDelete( mControls[i] );
 	mControls.clear();
 }
@@ -160,8 +160,8 @@ void CUIDialog::refresh()
 	sCtrlPressed = NULL;
 	mCtrlMouseOver = NULL;
 
-	int n = mControls.size();
-	for( int i=0; i < n; ++i ) {
+	size_t n = mControls.size();
+	for( size_t i=0; i < n; ++i ) {
 		mControls[i]->refresh();
 	}
 
@@ -285,8 +285,8 @@ void CUIDialog::onRender( float dt )
 
 	// If the dialog is minimized, skip rendering its controls.
 	if( !mMinimized ) {
-		int n = mControls.size();
-		for( int i = 0; i < n; ++i ) {
+		size_t n = mControls.size();
+		for( size_t i = 0; i < n; ++i ) {
 			CUIControl* ctrl = mControls[i];
 			// Focused control is drawn last
 			if( ctrl == sCtrlFocus )
@@ -314,18 +314,18 @@ void CUIDialog::sendEvent( UINT evt, bool userTriggered, CUIControl* ctrl )
 }
 
 
-void CUIDialog::setFont( UINT index, const char* facename, LONG height, LONG weight )
+void CUIDialog::setFont( size_t index, const char* facename, LONG height, LONG weight )
 {
 	// Make sure the list is at least as large as the index being set
-	for( UINT i = mFonts.size(); i <= index; ++i )
-		mFonts.push_back( -1 );
+	for( size_t i = (int)mFonts.size(); i <= index; ++i )
+		mFonts.push_back( (size_t)-1 );
 
-	int fontIdx = CUIResourceManager::getInstance().addFont( facename, height, weight );
+	size_t fontIdx = CUIResourceManager::getInstance().addFont( facename, height, weight );
 	mFonts[index] = fontIdx;
 }
 
 
-SUIFontNode* CUIDialog::getFont( UINT index ) const
+SUIFontNode* CUIDialog::getFont( size_t index ) const
 {
 	assert( index >= 0 && index < mFonts.size() );
 	return CUIResourceManager::getInstance().getFontNode( mFonts[ index ] );
@@ -407,8 +407,8 @@ bool CUIDialog::msgProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			// Not yet handled, see if this matches a control's hotkey
 			// [Activate the hotkey if the focus doesn't belong to an edit box.]
 			if( msg == WM_KEYUP ) {
-				int n = mControls.size();
-				for( int i = 0; i < n; ++i ) {
+				size_t n = mControls.size();
+				for( size_t i = 0; i < n; ++i ) {
 					CUIControl* ctrl = mControls[ i ];
 					if( ctrl->isEnabled() && ctrl->getHotkey() == wParam ) {
 						ctrl->onHotkey();
@@ -473,13 +473,13 @@ bool CUIDialog::msgProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			if( !mDoMouseInput )
 				return false;
 
-			mousePoint.x -= mX;
-			mousePoint.y -= mY;
+			mousePoint.x -= (LONG)mX;
+			mousePoint.y -= (LONG)mY;
 
 			// If caption is enabled, offset the Y coordinate by the
 			// negative of its height.
 			if( mHasCaption )
-				mousePoint.y -= mCaptionHeight;
+				mousePoint.y -= (LONG)mCaptionHeight;
 
 			// Give first chance to the focused control.
 			if( isFocus ) {
@@ -522,8 +522,8 @@ CUIControl* CUIDialog::getControlAtPoint( POINT pt )
 {
 	// Search through all child controls for the first one which
 	// contains the mouse point
-	int n = mControls.size();
-	for( int i=0; i < n; ++i ) {
+	size_t n = mControls.size();
+	for( size_t i=0; i < n; ++i ) {
 		CUIControl* ctrl = mControls[i];
 		assert( ctrl );
 		//if( ctrl == NULL )
@@ -584,11 +584,11 @@ void CUIDialog::onMouseMove( POINT pt )
 }
 
 
-HRESULT CUIDialog::setDefaultElement( eUIControlType ctrlType, UINT index, SUIElement* element )
+HRESULT CUIDialog::setDefaultElement( eUIControlType ctrlType, size_t index, SUIElement* element )
 {
 	// If this element type already exist in the list, simply update the stored element
-	int n = mDefaultElements.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mDefaultElements.size();
+	for( size_t i = 0; i < n; ++i ) {
 		SElementHolder* holder = mDefaultElements[ i ];
 		
 		if( holder->ctrlType == ctrlType && holder->index == index ) {
@@ -612,10 +612,10 @@ HRESULT CUIDialog::setDefaultElement( eUIControlType ctrlType, UINT index, SUIEl
 }
 
 
-SUIElement* CUIDialog::getDefaultElement( eUIControlType ctrlType, UINT index )
+SUIElement* CUIDialog::getDefaultElement( eUIControlType ctrlType, size_t index )
 {
-	int n = mDefaultElements.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mDefaultElements.size();
+	for( size_t i = 0; i < n; ++i ) {
 		SElementHolder* holder = mDefaultElements[ i ];
 		if( holder->ctrlType == ctrlType && holder->index == index )
 			return &holder->element;
@@ -645,8 +645,8 @@ HRESULT CUIDialog::addStatic( int cid, const char* text, int x, int y, int width
 	// set the cid and list index
 	ctrl->setID( cid ); 
 	ctrl->setText( text );
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->mDefault = isDefault;
 
 	return S_OK;
@@ -670,8 +670,8 @@ HRESULT CUIDialog::addImage( int cid, int x, int y, int width, int height, CD3DT
 
 	// set the cid and list index
 	ctrl->setID( cid ); 
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->mDefault = false;
 
 	return S_OK;
@@ -697,8 +697,8 @@ HRESULT CUIDialog::addButton( int cid, const char* text, int x, int y, int width
 	// set the cid and list index
 	ctrl->setID( cid ); 
 	ctrl->setText( text );
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->setHotkey( hotkey );
 	ctrl->mDefault = isDefault;
 
@@ -725,8 +725,8 @@ HRESULT CUIDialog::addCheckBox( int cid, const char* text, int x, int y, int wid
 	// set the cid and list index
 	ctrl->setID( cid ); 
 	ctrl->setText( text );
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->setHotkey( hotkey );
 	ctrl->mDefault = isDefault;
 	ctrl->setChecked( chk );
@@ -750,9 +750,9 @@ HRESULT CUIDialog::addRollout( int cid, const char* text, int x, int y, int widt
 
 	ctrl->setID( cid ); 
 	ctrl->setText( text );
-	ctrl->setRolloutHeight( rollHeight );
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setRolloutHeight( float(rollHeight) );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->setHotkey( hotkey );
 	ctrl->mDefault = isDefault;
 	ctrl->setExpanded( expanded );
@@ -781,8 +781,8 @@ HRESULT CUIDialog::addRadioButton( int cid, UINT group, const char* text, int x,
 	ctrl->setID( cid ); 
 	ctrl->setText( text );
 	ctrl->setButtonGroup( group );
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->setHotkey( hotkey );
 	ctrl->setChecked( chk );
 	ctrl->mDefault = isDefault;
@@ -810,8 +810,8 @@ HRESULT CUIDialog::addComboBox( int cid, int x, int y, int width, int height, UI
 
 	// set the cid and list index
 	ctrl->setID( cid ); 
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->setHotkey( hotkey );
 	ctrl->mDefault = isDefault;
 
@@ -837,8 +837,8 @@ HRESULT CUIDialog::addSlider( int cid, int x, int y, int width, int height, int 
 
 	// set the cid and list index
 	ctrl->setID( cid ); 
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->mDefault = isDefault;
 	ctrl->setRange( min, max );
 	ctrl->setValue( value );
@@ -865,8 +865,8 @@ HRESULT CUIDialog::addListBox( int cid, int x, int y, int width, int height, DWO
 
 	// set the cid and position
 	ctrl->setID( cid );
-	ctrl->setLocation( x, y );
-	ctrl->setSize( width, height );
+	ctrl->setLocation( float(x), float(y) );
+	ctrl->setSize( float(width), float(height) );
 	ctrl->setStyle( style );
 
 	return S_OK;
@@ -883,7 +883,7 @@ HRESULT CUIDialog::initControl( CUIControl* ctrl )
 	ctrl->mIndex = mControls.size();
 	
 	// Look for a default element entries
-	for( int i=0; i < mDefaultElements.size(); i++ ) {
+	for( size_t i=0; i < mDefaultElements.size(); i++ ) {
 		SElementHolder* holder = mDefaultElements[ i ];
 		if( holder->ctrlType == ctrl->getType() )
 			ctrl->setElement( holder->index, &holder->element );
@@ -909,8 +909,8 @@ HRESULT CUIDialog::addControl( CUIControl* ctrl )
 
 CUIControl* CUIDialog::getControl( int cid )
 {
-	int n = mControls.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mControls.size();
+	for( size_t i = 0; i < n; ++i ) {
 		CUIControl* ctrl = mControls[ i ];
 		if( ctrl->getID() == cid )
 			return ctrl;
@@ -921,8 +921,8 @@ CUIControl* CUIDialog::getControl( int cid )
 
 CUIControl* CUIDialog::getControl( int cid, eUIControlType ctrlType )
 {
-	int n = mControls.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mControls.size();
+	for( size_t i = 0; i < n; ++i ) {
 		CUIControl* ctrl = mControls[ i ];
 		if( ctrl->getID() == cid && ctrl->getType() == ctrlType )
 			return ctrl;
@@ -933,7 +933,7 @@ CUIControl* CUIDialog::getControl( int cid, eUIControlType ctrlType )
 
 CUIControl* CUIDialog::getNextControl( CUIControl* ctrl )
 {
-	int index = ctrl->mIndex + 1;
+	size_t index = ctrl->mIndex + 1;
 	CUIDialog* dialog = ctrl->mDialog;
 	// Cycle through dialogs in the loop to find the next control. Note
 	// that if only one control exists in all looped dialogs it will
@@ -947,7 +947,7 @@ CUIControl* CUIDialog::getNextControl( CUIControl* ctrl )
 
 CUIControl* CUIDialog::getPrevControl( CUIControl* ctrl )
 {
-	int index = ctrl->mIndex - 1;
+	size_t index = ctrl->mIndex - 1;
 	CUIDialog* dialog = ctrl->mDialog;
 	// Cycle through dialogs in the loop to find the next control. Note
 	// that if only one control exists in all looped dialogs it will
@@ -964,11 +964,11 @@ CUIControl* CUIDialog::getPrevControl( CUIControl* ctrl )
 
 // --------------------------------------------------------------------------
 
-void CUIDialog::clearRadioButtonGroup( UINT group )
+void CUIDialog::clearRadioButtonGroup( int group )
 {
 	// Find all radio buttons with the given group number
-	int n = mControls.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mControls.size();
+	for( size_t i = 0; i < n; ++i ) {
 		CUIControl* ctrl = mControls[ i ];
 		if( ctrl->getType() == UICTRL_RADIOBUTTON ) {
 			CUIRadioButton* rctrl = (CUIRadioButton*) ctrl;
@@ -1052,7 +1052,7 @@ HRESULT CUIDialog::drawRect( const SFRect* rect, D3DCOLOR color )
 
 
 /*
-HRESULT CUIDialog::drawPolyLine( const POINT* points, UINT pointCount, D3DCOLOR color )
+HRESULT CUIDialog::drawPolyLine( const POINT* points, size_t pointCount, D3DCOLOR color )
 {
 	SUIScreenVertex* vertices = new SUIScreenVertex[ pointCount ];
 	if( vertices == NULL )
@@ -1063,7 +1063,7 @@ HRESULT CUIDialog::drawPolyLine( const POINT* points, UINT pointCount, D3DCOLOR 
 
 	SUIScreenVertex* vtx = vertices;
 	const POINT* pt = points;
-	for( UINT i = 0; i < pointCount; ++i ) {
+	for( size_t i = 0; i < pointCount; ++i ) {
 		vtx->x = resmgr.xToBB( mX + pt->x, dx.getBackBufferWidth() );
 		vtx->y = resmgr.yToBB( mY + pt->y, dx.getBackBufferHeight() );
 		vtx->z = 0.5f;
@@ -1184,7 +1184,7 @@ HRESULT CUIDialog::imDrawSprite( const D3DXCOLOR& color, const RECT& texRect, CD
 }
 
 
-HRESULT CUIDialog::imDrawText( const char* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow, int count )
+HRESULT CUIDialog::imDrawText( const char* text, size_t fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow, int count )
 {
 	HRESULT hr = S_OK;
 
@@ -1226,7 +1226,7 @@ HRESULT CUIDialog::imDrawText( const char* text, UINT fontIdx, DWORD format, con
 }
 
 
-HRESULT CUIDialog::imDrawText( const wchar_t* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow, int count )
+HRESULT CUIDialog::imDrawText( const wchar_t* text, size_t fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow, int count )
 {
 	HRESULT hr = S_OK;
 
@@ -1300,8 +1300,8 @@ void CUIDialog::clearFocus()
 void CUIDialog::focusDefaultControl()
 {
 	// Check for default control in this dialog
-	int n = mControls.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mControls.size();
+	for( size_t i = 0; i < n; ++i ) {
 		CUIControl* ctrl = mControls[ i ];
 		if( ctrl->mDefault ) {
 			// remove focus from the current control
@@ -1594,13 +1594,13 @@ void CUIDialog::initDefaultElements()
 CUIResourceManager::CUIResourceManager( int screenX, int screenY )
 :	mStateBlock(NULL), mSprite(NULL),
 	mScreenX( screenX ), mScreenY( screenY ),
-	mInvScreenX( 1.0/screenX ), mInvScreenY( 1.0/screenY )
+	mInvScreenX( 1.0f/screenX ), mInvScreenY( 1.0f/screenY )
 {
 }
 
 CUIResourceManager::~CUIResourceManager()
 {
-	for( int i = 0; i < mFontCache.size(); ++i )
+	for( size_t i = 0; i < mFontCache.size(); ++i )
 		safeDelete( mFontCache[i] );
 	mFontCache.clear();   
 }
@@ -1621,7 +1621,7 @@ void CUIResourceManager::createResource()
 void CUIResourceManager::activateResource()
 {
 	HRESULT hr = S_OK;
-	for( int i = 0; i < mFontCache.size(); ++i ) {
+	for( size_t i = 0; i < mFontCache.size(); ++i ) {
 		hr = createFont( i );
 		assert( SUCCEEDED(hr) );
 		//SUIFontNode* fontNode = mFontCache[ i ];
@@ -1637,7 +1637,7 @@ void CUIResourceManager::activateResource()
 
 void CUIResourceManager::passivateResource()
 {
-	for( int i = 0; i < mFontCache.size(); ++i ) {
+	for( size_t i = 0; i < mFontCache.size(); ++i ) {
 		//SUIFontNode* fontNode = mFontCache[ i ];
 		//if( fontNode->font )
 		//	fontNode->font->OnLostDevice();
@@ -1661,13 +1661,13 @@ void CUIResourceManager::deleteResource()
 int CUIResourceManager::addFont( const char* facename, LONG height, LONG weight )
 {
 	// See if this font already exists
-	for( int i=0; i < mFontCache.size(); i++ ) {
+	for( size_t i=0; i < mFontCache.size(); i++ ) {
 		SUIFontNode* fontNode = mFontCache[i];
 		if( 0 == _strnicmp( fontNode->facename, facename, MAX_PATH-1 ) &&
 			fontNode->height == height &&
 			fontNode->weight == weight )
 		{
-			return i;
+			return (int)i;
 		}
 	}
 
@@ -1682,16 +1682,16 @@ int CUIResourceManager::addFont( const char* facename, LONG height, LONG weight 
 	newFontNode->weight = weight;
 	mFontCache.push_back( newFontNode );
 	
-	int fontIdx = mFontCache.size()-1;
+	size_t fontIdx = mFontCache.size()-1;
 
 	// If a device is available, try to create immediately
 	if( CD3DDevice::getInstance().isDevice() )
 		createFont( fontIdx );
 
-	return fontIdx;
+	return (int)fontIdx;
 }
 
-HRESULT CUIResourceManager::createFont( UINT fontIdx )
+HRESULT CUIResourceManager::createFont( size_t fontIdx )
 {
 	HRESULT hr = S_OK;
 
@@ -1699,8 +1699,7 @@ HRESULT CUIResourceManager::createFont( UINT fontIdx )
 
 	safeRelease( fontNode->font );
 
-	int height = xToBB( fontNode->height, CD3DDevice::getInstance().getBackBufferWidth() );
-	//int height = yToBB( fontNode->height, CD3DDevice::getInstance().getBackBufferHeight() );
+	int height = (int)xToBB( float(fontNode->height), CD3DDevice::getInstance().getBackBufferWidth() );
 	V_RETURN( D3DXCreateFont( &CD3DDevice::getInstance().getDevice(), height, 0, fontNode->weight, 1, FALSE, DEFAULT_CHARSET, 
 							  OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, 
 							  fontNode->facename, &fontNode->font ) );
@@ -1737,15 +1736,13 @@ void CUIControl::setTextColor( D3DCOLOR color )
 }
 
 
-HRESULT CUIControl::setElement( UINT index, SUIElement* element )
+HRESULT CUIControl::setElement( size_t index, SUIElement* element )
 {
-	HRESULT hr = S_OK;
-
 	if( element == NULL )
 		return E_INVALIDARG;
 
 	// Make certain the array is this large
-	for( UINT i = mElements.size(); i <= index; ++i ) {
+	for( size_t i = mElements.size(); i <= index; ++i ) {
 		SUIElement* newElem = new SUIElement();
 		if( newElem == NULL )
 			return E_OUTOFMEMORY;
@@ -1761,8 +1758,8 @@ void CUIControl::refresh()
 {
 	mMouseOver = false;
 	mHasFocus = false;
-	int n = mElements.size();
-	for( int i = 0; i < n; ++i )
+	size_t n = mElements.size();
+	for( size_t i = 0; i < n; ++i )
 		mElements[i]->refresh();
 }
 
@@ -1783,8 +1780,8 @@ CUIStatic::CUIStatic( CUIDialog *dialog )
 
 	ZeroMemory( &mText, sizeof(mText) );  
 
-	int n = mElements.size();
-	for( int i=0; i < n; ++i )
+	size_t n = mElements.size();
+	for( size_t i=0; i < n; ++i )
 		safeDelete( mElements[i] );
 	mElements.clear();
 }
@@ -1804,7 +1801,7 @@ void CUIStatic::render( IDirect3DDevice9* device, float dt )
 	mDialog->drawText( mText, element, &mBBox, !element->darkFont );
 }
 
-HRESULT CUIStatic::getTextCopy( char* strDest, UINT bufferCount )
+HRESULT CUIStatic::getTextCopy( char* strDest, size_t bufferCount )
 {
 	// Validate incoming parameters
 	if( strDest == NULL || bufferCount == 0 )
@@ -1836,8 +1833,8 @@ CUIImage::CUIImage( CUIDialog *dialog )
 	mType = UICTRL_IMAGE;
 	mDialog = dialog;
 
-	int n = mElements.size();
-	for( int i=0; i < n; ++i )
+	size_t n = mElements.size();
+	for( size_t i=0; i < n; ++i )
 		safeDelete( mElements[i] );
 	mElements.clear();
 }
@@ -1953,7 +1950,7 @@ void CUIButton::render( IDirect3DDevice9* device, float dt )
 	float blendRate = ( state == UISTATE_PRESSED ) ? 0.0f : 0.8f;
 
 	SFRect rcWindow = mBBox;
-	rcWindow.offset( nOffsetX, nOffsetY );
+	rcWindow.offset( float(nOffsetX), float(nOffsetY) );
 
  	// blend current color
 	element->colorTexture.blend( state, dt, blendRate );
@@ -2152,8 +2149,8 @@ void CUIRollout::setCheckedInternal( bool chk, bool fromInput )
 		mDialog->sendEvent( UIEVENT_CHECKBOX_CHANGED, fromInput, this ); 
 
 		// set visibility for child controls
-		int n = mChildControls.size();
-		for( int i = 0; i < n; ++i ) {
+		size_t n = mChildControls.size();
+		for( size_t i = 0; i < n; ++i ) {
 			mChildControls[i]->setVisible( mChecked );
 		}
 	}
@@ -2162,8 +2159,8 @@ void CUIRollout::setCheckedInternal( bool chk, bool fromInput )
 void CUIRollout::offsetPos( float dx, float dy )
 {
 	setLocation( mX + dx, mY + dy );
-	int n = mChildControls.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mChildControls.size();
+	for( size_t i = 0; i < n; ++i ) {
 		CUIControl& ctrl = *mChildControls[i];
 		ctrl.setLocation( ctrl.mX + dx, ctrl.mY + dy );
 	}
@@ -2362,7 +2359,7 @@ void CUIComboBox::updateRects()
 	mScrollBar.setSize( mSBWidth, mRectDropdown.getHeight() - 2 );
 	SUIFontNode* fontNode = CUIResourceManager::getInstance().getFontNode( mElements[ 2 ]->fontIdx );
 	if( fontNode && fontNode->height ) {
-		mScrollBar.setPageSize( mRectDropdownText.getHeight() / fontNode->height );
+		mScrollBar.setPageSize( int(mRectDropdownText.getHeight() / fontNode->height) );
 		// The selected item may have been scrolled off the page.
 		// Ensure that it is in page again.
 		mScrollBar.showItem( mSelected );
@@ -2457,7 +2454,7 @@ bool CUIComboBox::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam 
 		{
 			if( mOpened && mRectDropdown.containsPoint( pt ) ) {
 				// Determine which item has been selected
-				for( int i=0; i < mItems.size(); i++ ) {
+				for( int i=0; i < (int)mItems.size(); i++ ) {
 					SUIComboItem* item = mItems[ i ];
 					if( item -> vis && item->activeRect.containsPoint( pt ) ) {
 						mFocused = i;
@@ -2493,7 +2490,7 @@ bool CUIComboBox::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam 
 			// Perhaps this click is within the dropdown
 			if( mOpened && mRectDropdown.containsPoint( pt ) ) {
 				// Determine which item has been selected
-				for( int i=mScrollBar.getTrackPos(); i < mItems.size(); i++ ) {
+				for( int i = mScrollBar.getTrackPos(); i < (int)mItems.size(); i++ ) {
 					SUIComboItem* item = mItems[ i ];
 					if( item -> vis && item->activeRect.containsPoint( pt ) ) {
 						mFocused = mSelected = i;
@@ -2597,9 +2594,9 @@ void CUIComboBox::render( IDirect3DDevice9* device, float dt )
 	if( !sbInit ) {
 		// Update the page size of the scroll bar
 		if( CUIResourceManager::getInstance().getFontNode( element->fontIdx )->height )
-			mScrollBar.setPageSize( mRectDropdownText.getHeight() / CUIResourceManager::getInstance().getFontNode( element->fontIdx )->height );
+			mScrollBar.setPageSize( int(mRectDropdownText.getHeight() / CUIResourceManager::getInstance().getFontNode( element->fontIdx )->height) );
 		else
-			mScrollBar.setPageSize( mRectDropdownText.getHeight() );
+			mScrollBar.setPageSize( int(mRectDropdownText.getHeight()) );
 		sbInit = true;
 	}
 
@@ -2625,7 +2622,7 @@ void CUIComboBox::render( IDirect3DDevice9* device, float dt )
 	float curY = mRectDropdownText.top;
 	float nRemainingHeight = mRectDropdownText.getHeight();
 
-	for( int i = mScrollBar.getTrackPos(); i < mItems.size(); ++i ) {
+	for( size_t i = mScrollBar.getTrackPos(); i < mItems.size(); ++i ) {
 		SUIComboItem* item = mItems[ i ];
 
 		// Make sure there's room left in the dropdown
@@ -2701,7 +2698,7 @@ void CUIComboBox::render( IDirect3DDevice9* device, float dt )
 	element = mElements[ 1 ];
 	element->colorTexture.blend( state, dt, blendRate );
 	SFRect rcWindow = mRectButton;
-	rcWindow.offset( nOffsetX, nOffsetY );
+	rcWindow.offset( float(nOffsetX), float(nOffsetY) );
 	mDialog->drawSprite( element, &rcWindow );
 }
 
@@ -2726,7 +2723,7 @@ HRESULT CUIComboBox::addItem( const char* text, const void* data, bool updateSel
 	mItems.push_back( item );
 
 	// Update the scroll bar with new range
-	mScrollBar.setTrackRange( 0, mItems.size() );
+	mScrollBar.setTrackRange( 0, (int)mItems.size() );
 
 	// If this is the only item in the list, it's selected
 	if( updateSelectionIf1st && getItemCount() == 1 ) {
@@ -2739,41 +2736,41 @@ HRESULT CUIComboBox::addItem( const char* text, const void* data, bool updateSel
 }
 
 
-void CUIComboBox::removeItem( UINT index )
+void CUIComboBox::removeItem( size_t index )
 {
 	SUIComboItem* item = mItems[ index ];
 	safeDelete( item );
 	mItems.erase( mItems.begin() + index );
-	mScrollBar.setTrackRange( 0, mItems.size() );
-	if( mSelected >= mItems.size() )
-		mSelected = mItems.size() - 1;
+	mScrollBar.setTrackRange( 0, (int)mItems.size() );
+	if( mSelected >= (int)mItems.size() )
+		mSelected = (int)mItems.size() - 1;
 }
 
 
 void CUIComboBox::removeAllItems()
 {
-	for( int i=0; i < mItems.size(); i++ )
+	for( size_t i=0; i < mItems.size(); i++ )
 		safeDelete( mItems[i] );
 	mItems.clear();
 	mScrollBar.setTrackRange( 0, 1 );
 	mFocused = mSelected = -1;
 }
 
-bool CUIComboBox::containsItem( const char* text, UINT start ) const
+bool CUIComboBox::containsItem( const char* text, size_t start ) const
 {
 	return ( -1 != findItem( text, start ) );
 }
 
 
-int CUIComboBox::findItem( const char* text, UINT start ) const
+int CUIComboBox::findItem( const char* text, size_t start ) const
 {
 	if( text == NULL )
 		return -1;
 
-	for( int i = start; i < mItems.size(); i++ ) {
+	for( size_t i = start; i < mItems.size(); i++ ) {
 		SUIComboItem* item = mItems[i];
 		if( 0 == strcmp( item->text, text ) ) {
-			return i;
+			return (int)i;
 		}
 	}
 
@@ -2814,9 +2811,9 @@ const void* CUIComboBox::getItemData( const char* text )
 }
 
 
-HRESULT CUIComboBox::setSelectedByIndex( UINT index )
+HRESULT CUIComboBox::setSelectedByIndex( int index )
 {
-	if( index >= getItemCount() )
+	if( index >= (int)getItemCount() )
 		return E_INVALIDARG;
 
 	mFocused = mSelected = index;
@@ -2844,7 +2841,7 @@ HRESULT CUIComboBox::setSelectedByText( const char* text )
 
 HRESULT CUIComboBox::setSelectedByData( const void* data )
 {
-	for( int i=0; i < mItems.size(); i++ ) {
+	for( int i=0; i < (int)mItems.size(); i++ ) {
 		SUIComboItem* item = mItems[i];
 		if( item->data == data ) {
 			mFocused = mSelected = i;
@@ -2954,7 +2951,7 @@ bool CUISlider::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam )
 
 				mDragStartX = pt.x;
 				//m_nDragY = pt.y;
-				mDragOffset = mButtonX - mDragStartX;
+				mDragOffset = (int)mButtonX - mDragStartX;
 
 				//m_nDragValue = mValue;
 
@@ -2998,7 +2995,7 @@ bool CUISlider::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam )
 		{
 			if( mPressed )
 			{
-				setValueInternal( getValueFromPos( mX + pt.x + mDragOffset ), true );
+				setValueInternal( getValueFromPos( (int)mX + pt.x + mDragOffset ), true );
 				return true;
 			}
 
@@ -3224,7 +3221,7 @@ bool CUIScrollBar::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam
 			// Check for click on thumb
 			if( mRectThumb.containsPoint( pt ) ) {
 				dragging = true;
-				ThumbOffsetY = pt.y - mRectThumb.top;
+				ThumbOffsetY = pt.y - (int)mRectThumb.top;
 				return true;
 			}
 
@@ -3253,7 +3250,7 @@ bool CUIScrollBar::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam
 		case WM_MOUSEMOVE: {
 			if( dragging ) {
 				mRectThumb.bottom += pt.y - ThumbOffsetY - mRectThumb.top;
-				mRectThumb.top = pt.y - ThumbOffsetY;
+				mRectThumb.top = float( pt.y - ThumbOffsetY );
 				if( mRectThumb.top < mRectTrack.top )
 					mRectThumb.offset( 0, mRectTrack.top - mRectThumb.top );
 				else if( mRectThumb.bottom > mRectTrack.bottom )
@@ -3261,12 +3258,12 @@ bool CUIScrollBar::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam
 
 				// Compute first item index based on thumb position
 				int nMaxFirstItem = mEnd - mStart - mPageSize;  // Largest possible index for first item
-				int nMaxThumb = mRectTrack.getHeight() - mRectThumb.getHeight();	// Largest possible thumb position from the top
+				int nMaxThumb = int( mRectTrack.getHeight() - mRectThumb.getHeight() );	// Largest possible thumb position from the top
 
-				mPosition = mStart +
+				mPosition = mStart + int(
 							  ( mRectThumb.top - mRectTrack.top +
 								nMaxThumb / ( nMaxFirstItem * 2 ) ) * // Shift by half a row to avoid last row covered by only one pixel
-							  nMaxFirstItem  / nMaxThumb;
+							  nMaxFirstItem  / nMaxThumb );
 
 				return true;
 			}
@@ -3435,7 +3432,7 @@ void CUIListBox::updateRects()
 	mScrollBar.setSize( mSBWidth, mHeight );
 	SUIFontNode* fontNode = CUIResourceManager::getInstance().getFontNode( mElements[ 0 ]->fontIdx );
 	if( fontNode && fontNode->height ) {
-		mScrollBar.setPageSize( mRectText.getHeight() / fontNode->height );
+		mScrollBar.setPageSize( int(mRectText.getHeight() / fontNode->height) );
 
 		// The selected item may have been scrolled off the page.
 		// Ensure that it is in page again.
@@ -3459,7 +3456,7 @@ HRESULT CUIListBox::addItem( const char *text, const void *data )
 	pNewItem->selected = false;
 
 	mItems.push_back( pNewItem );
-	mScrollBar.setTrackRange( 0, mItems.size() );
+	mScrollBar.setTrackRange( 0, (int)mItems.size() );
 
 	return S_OK;
 }
@@ -3479,7 +3476,7 @@ HRESULT CUIListBox::insertItem( int index, const char *text, const void *data )
 	pNewItem->selected = false;
 
 	mItems.insert( mItems.begin() + index, pNewItem );
-	mScrollBar.setTrackRange( 0, mItems.size() );
+	mScrollBar.setTrackRange( 0, (int)mItems.size() );
 
 	return S_OK;
 }
@@ -3495,9 +3492,9 @@ void CUIListBox::removeItem( int index )
 
 	delete item;
 	mItems.erase( mItems.begin() + index );
-	mScrollBar.setTrackRange( 0, mItems.size() );
+	mScrollBar.setTrackRange( 0, (int)mItems.size() );
 	if( mSelected >= (int)mItems.size() )
-		mSelected = mItems.size() - 1;
+		mSelected = (int)mItems.size() - 1;
 
 	mDialog->sendEvent( UIEVENT_LISTBOX_SELECTION, true, this );
 }
@@ -3517,7 +3514,7 @@ void CUIListBox::removeItemByData( const void *data )
 
 void CUIListBox::removeAllItems()
 {
-	for( int i = 0; i < mItems.size(); ++i )
+	for( size_t i = 0; i < mItems.size(); ++i )
 	{
 		SUIListItem *item = mItems[ i ];
 		delete item;
@@ -3586,7 +3583,7 @@ void CUIListBox::selectItem( int newIndex )
 	if( mSelected < 0 )
 		mSelected = 0;
 	if( mSelected >= (int)mItems.size() )
-		mSelected = mItems.size() - 1;
+		mSelected = (int)mItems.size() - 1;
 
 	if( nOldSelected != mSelected )
 	{
@@ -3642,14 +3639,14 @@ bool CUIListBox::handleKeyb( UINT msg, WPARAM wParam, LPARAM lParam )
 						case VK_NEXT: mSelected += mScrollBar.getPageSize() - 1; break;
 						case VK_PRIOR: mSelected -= mScrollBar.getPageSize() - 1; break;
 						case VK_HOME: mSelected = 0; break;
-						case VK_END: mSelected = mItems.size() - 1; break;
+						case VK_END: mSelected = (int)mItems.size() - 1; break;
 					}
 
 					// Perform capping
 					if( mSelected < 0 )
 						mSelected = 0;
 					if( mSelected >= (int)mItems.size() )
-						mSelected = mItems.size() - 1;
+						mSelected = (int)mItems.size() - 1;
 
 					if( nOldSelected != mSelected )
 					{
@@ -3725,7 +3722,7 @@ bool CUIListBox::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam )
 
 				int nClicked;
 				if( mTextHeight )
-					nClicked = mScrollBar.getTrackPos() + ( pt.y - mRectText.top ) / mTextHeight;
+					nClicked = mScrollBar.getTrackPos() + int(( pt.y - mRectText.top ) / mTextHeight);
 				else
 					nClicked = -1;
 
@@ -3875,7 +3872,7 @@ bool CUIListBox::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam )
 
 				int nItem;
 				if( mTextHeight )
-					nItem = mScrollBar.getTrackPos() + ( pt.y - mRectText.top ) / mTextHeight;
+					nItem = mScrollBar.getTrackPos() + int(( pt.y - mRectText.top ) / mTextHeight);
 				else
 					nItem = -1;
 
@@ -3949,9 +3946,9 @@ void CUIListBox::render( IDirect3DDevice9* device, float dt )
 		if( !sbInit ) {
 			// Update the page size of the scroll bar
 			if( mTextHeight )
-				mScrollBar.setPageSize( mRectText.getHeight() / mTextHeight );
+				mScrollBar.setPageSize( int(mRectText.getHeight() / mTextHeight) );
 			else
-				mScrollBar.setPageSize( mRectText.getHeight() );
+				mScrollBar.setPageSize( int(mRectText.getHeight()) );
 			sbInit = true;
 		}
 
@@ -4044,7 +4041,7 @@ void SUIElement::setTexture( CD3DTexture* tex, const RECT* texRect )
 	colorTexture.init( false );
 }
 
-void SUIElement::setFont( UINT fIdx, bool dark, DWORD textFmt )
+void SUIElement::setFont( size_t fIdx, bool dark, DWORD textFmt )
 {
 	fontIdx = fIdx;
 	textFormat = textFmt;

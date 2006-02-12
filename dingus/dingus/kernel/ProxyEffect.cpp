@@ -164,7 +164,7 @@ void CD3DXEffect::endFx()
 
 void CD3DXEffect::beginPass( int p )
 {
-#ifdef USE_D3DX_SUMMER_2004
+#ifdef DINGUS_HAVE_D3DX_SUMMER_2004
 	HRESULT hr = getObject()->BeginPass( p );
 #else
 	HRESULT hr = getObject()->Pass( p );
@@ -174,7 +174,7 @@ void CD3DXEffect::beginPass( int p )
 
 void CD3DXEffect::endPass()
 {
-#ifdef USE_D3DX_SUMMER_2004
+#ifdef DINGUS_HAVE_D3DX_SUMMER_2004
 	HRESULT hr = getObject()->EndPass();
 	assert( SUCCEEDED(hr) );
 #endif
@@ -182,7 +182,7 @@ void CD3DXEffect::endPass()
 
 void CD3DXEffect::commitParams()
 {
-#ifdef USE_D3DX_SUMMER_2004
+#ifdef DINGUS_HAVE_D3DX_SUMMER_2004
 	HRESULT hr = getObject()->CommitChanges();
 	assert( SUCCEEDED(hr) );
 #endif

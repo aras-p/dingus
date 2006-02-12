@@ -87,7 +87,7 @@ public:
 
 public:
 	D3DADAPTER_IDENTIFIER9	adapterID;
-	UINT					adapterOrdinal;
+	int					adapterOrdinal;
 	TDisplayModeVector	displayModes;
 	TDeviceInfoVector	deviceInfos;
 	mutable CD3DEnumErrors		errors;

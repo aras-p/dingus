@@ -53,7 +53,7 @@ public:
 
 	void addBoneInfo( int parentIdx, const SMatrix4x4& invPoseMatrix, const std::string& name );
 
-	int getBoneCount() const { return mBones.size(); }
+	int getBoneCount() const { return (int)mBones.size(); }
 	const CBoneInfo& getBone( int idx ) const { assert(idx>=0 && idx<mBones.size()); return mBones[idx]; }
 
 	/// @return -1 if not found

@@ -92,12 +92,12 @@ protected:
 	 *  to id and use loadResourceById(), or some other bundle to load.
 	 */
 	virtual T* tryLoadResourceById( const CResourceId& id ) {
-		int nd = mDirectories.size();
-		int ne = mExtensions.size();
+		size_t nd = mDirectories.size();
+		size_t ne = mExtensions.size();
 		// try all directories
-		for( int d = 0; d < nd; ++d ) {
+		for( size_t d = 0; d < nd; ++d ) {
 			// try all extensions
-			for( int e = 0; e < ne; ++e ) {
+			for( size_t e = 0; e < ne; ++e ) {
 				CResourceId fullid( mDirectories[d] + id.getUniqueName() + mExtensions[e] );
 				T* resource = loadResourceById( id, fullid );
 				if( resource )

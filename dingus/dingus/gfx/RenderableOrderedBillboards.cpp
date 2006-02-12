@@ -38,7 +38,7 @@ void CRenderableOrderedBillboards::beforeRender( CRenderable& r, CRenderContext&
 		return;
 	
 	// render into VB
-	mChunk = mVBSource.lock( mBills.size() * 4 ); // 4 verts per billboard
+	mChunk = mVBSource.lock( static_cast<unsigned int>(mBills.size()) * 4 ); // 4 verts per billboard
 	TVertex* vb = reinterpret_cast<TVertex*>( mChunk->getData() );
 	TBillVector::const_iterator bit, bitEnd = mBills.end();
 	for( bit = mBills.begin(); bit != bitEnd; ++bit ) {
@@ -82,14 +82,14 @@ void CRenderableOrderedBillboards::render( const CRenderContext& ctx )
 	// set IB/VB
 	assert( mIB );
 	device.setIndexBuffer( mIB );
-	device.setVertexBuffer( 0, &mChunk->getBuffer(), 0, mChunk->getStride() );
+	device.setVertexBuffer( 0, &mChunk->getBuffer(), 0, static_cast<UINT>(mChunk->getStride()) );
 	device.setDeclarationFVF( FVF_XYZ_DIFFUSE_TEX1 );
 
 	// render pieces of billboards
 	CD3DTexture* texture = mBills[0].texture;
 	int texStart = 0;
-	int n = mBills.size();
-	for( int i = 1; i < n; ++i ) { // from second one
+	unsigned int n = (unsigned int)mBills.size();
+	for( unsigned int i = 1; i < n; ++i ) { // from second one
 		const SOBillboard& b = mBills[i];
 		if( b.texture == texture )
 			continue;
@@ -102,7 +102,7 @@ void CRenderableOrderedBillboards::render( const CRenderContext& ctx )
 
 		// draw portion
 		dx.DrawIndexedPrimitive( D3DPT_TRIANGLELIST,
-			mChunk->getOffset() + texStart*4, 0, (i-texStart)*4, 0, (i-texStart)*2 );
+			static_cast<UINT>(mChunk->getOffset()) + texStart*4, 0, (i-texStart)*4, 0, (i-texStart)*2 );
 
 		// new texture
 		texture = b.texture;
@@ -121,11 +121,11 @@ void CRenderableOrderedBillboards::render( const CRenderContext& ctx )
 
 	// draw portion
 	dx.DrawIndexedPrimitive( D3DPT_TRIANGLELIST,
-		mChunk->getOffset() + texStart*4, 0, (n-texStart)*4, 0, (n-texStart)*2 );
+		static_cast<INT>(mChunk->getOffset()) + texStart*4, 0, (n-texStart)*4, 0, (n-texStart)*2 );
 	// stats
 	stats.incDrawCalls();
 
 	// stats
-	stats.incVerticesRendered( mChunk->getSize() );
-	stats.incPrimsRendered( mChunk->getSize()/2 );
+	stats.incVerticesRendered( static_cast<int>(mChunk->getSize()) );
+	stats.incPrimsRendered( static_cast<int>(mChunk->getSize()/2) );
 }

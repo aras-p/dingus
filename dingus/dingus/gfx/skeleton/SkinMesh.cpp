@@ -149,9 +149,6 @@ void CSkinMesh::createResource( const CMesh& srcMesh, const CSkeletonInfo& skelI
 	hr = dxResMesh->UpdateSemantics( decl );
 
 	
-	// TEST
-	DWORD strSrc = dxSrcMesh->GetNumBytesPerVertex();
-	DWORD strRes = dxResMesh->GetNumBytesPerVertex();
 	assert( dxSrcMesh->GetNumBytesPerVertex() == dxResMesh->GetNumBytesPerVertex() );
 
 
@@ -193,7 +190,7 @@ void CSkinMesh::createResource( const CMesh& srcMesh, const CSkeletonInfo& skelI
 		assert( ngroups == boneComboCount );
 		D3DXATTRIBUTERANGE* attrs = new D3DXATTRIBUTERANGE[ngroups];
 		hr = dxResMesh->GetAttributeTable( attrs, &ngroups );
-		for( int g = 0; g < ngroups; ++g ) {
+		for( DWORD g = 0; g < ngroups; ++g ) {
 			const D3DXATTRIBUTERANGE& gr = attrs[g];
 			mMesh->addGroup( CMesh::CGroup(gr.VertexStart, gr.VertexCount, gr.FaceStart, gr.FaceCount) );
 		}
@@ -203,7 +200,7 @@ void CSkinMesh::createResource( const CMesh& srcMesh, const CSkeletonInfo& skelI
 	// copy palette infos
 	{
 		const D3DXBONECOMBINATION* boneComb = reinterpret_cast<const D3DXBONECOMBINATION*>( boneCombos->GetBufferPointer() );
-		for( int bc = 0; bc < boneComboCount; ++bc ) {
+		for( DWORD bc = 0; bc < boneComboCount; ++bc ) {
 			mPalettes.push_back( CSkinBonePalette() );
 			CSkinBonePalette& bpal = mPalettes.back();
 			bpal.beginPalette( boneComb->AttribId );

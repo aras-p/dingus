@@ -7,11 +7,13 @@
 
 // precompiled headers stuff
 
-#pragma warning(disable:4786)
-#pragma warning(disable:4018)
+//#pragma warning(disable:4786)
+//#pragma warning(disable:4018)
 #pragma warning(disable:4511) // copy constructor can't be generated
 #pragma warning(disable:4512) // assignment operator can't be generated
 #pragma warning(disable:4100) // unreferenced formal parameter
+#pragma warning(disable:4201) // nonstandard extension used: nameless struct
+#pragma warning(disable:4702) // unreachable code (lots of that in STL)
 
 // synch unicode settings
 #ifdef _UNICODE
@@ -67,6 +69,18 @@ typedef std::string		unistring;
 // D3D
 #include <d3d9.h>
 #include <d3dx9.h>
+
+// We have various API changes in D3DX SDKs...
+#undef DINGUS_HAVE_D3DX_SUMMER_2004
+#undef DINGUS_HAVE_D3DX_FEB_2005
+
+#if D3DX_VERSION >= 0x0902 && D3DX_SDK_VERSION >= 22
+#define DINGUS_HAVE_D3DX_SUMMER_2004
+#endif
+#if D3DX_VERSION >= 0x0902 && D3DX_SDK_VERSION >= 25 // don't know about 25 for sure, just guessing!
+#define DINGUS_HAVE_D3DX_FEB_2005
+#endif
+
 
 // smart pointers
 #include <boost/intrusive_ptr.hpp>

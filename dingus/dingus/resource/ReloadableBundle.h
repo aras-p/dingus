@@ -32,8 +32,8 @@ class CReloadableBundleManager : public IReloadableBundle, public CNotifier<IRel
 public:
 	// IReloadableBundle
 	virtual void reload() {
-		int n = getListeners().size();
-		for( int i = 0; i < n; ++i )
+		size_t n = getListeners().size();
+		for( size_t i = 0; i < n; ++i )
 			getListeners()[i]->reload();
 	}
 };

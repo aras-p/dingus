@@ -138,11 +138,9 @@ CInputEvents CDIMouse::poll()
 
 	long x = dims.lX;
 	long y = dims.lY;
-	long z = dims.lZ;
 
 	long ox = mOldDims.lX;
 	long oy = mOldDims.lY;
-	long oz = mOldDims.lZ;
 	
 	for( int i = 0; i < BUTTON_COUNT; i++ ) {
 		CMouseEvent::eMouseButton btn = dim2button(i);

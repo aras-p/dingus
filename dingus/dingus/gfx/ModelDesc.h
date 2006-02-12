@@ -91,7 +91,7 @@ inline CModelDesc::CModelDesc( const CResourceId& meshID )
 
 inline int CModelDesc::getGroupCount() const
 {
-	return mGroups.size();
+	return (int)mGroups.size();
 }
 
 inline int CModelDesc::getRenderPriority( int group ) const

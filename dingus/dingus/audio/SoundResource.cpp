@@ -289,7 +289,7 @@ bool CSoundResource::restoreBufferAndFill( IDirectSoundBuffer* buffer, bool repe
 	return true;
 }
 
-long CSoundResource::get3DBuffer( DWORD index, IDirectSound3DBuffer** buffer3D )
+long CSoundResource::get3DBuffer( int index, IDirectSound3DBuffer** buffer3D )
 {
 	if( mDSBuffers == NULL )
 		return false;

@@ -216,14 +216,14 @@ HRESULT CD3DEnumeration::enumerate()
 
 		TDwordVector adapterFormatList; // D3DFORMAT
 		
-		for( int ifmt = 0; ifmt < mAllowedFormats.size(); ++ifmt ) {
+		for( size_t ifmt = 0; ifmt < mAllowedFormats.size(); ++ifmt ) {
 			D3DFORMAT format = (D3DFORMAT)mAllowedFormats[ifmt];
 			int modeCount = mDirect3D->GetAdapterModeCount( adOrd, format );
 			for( int mode = 0; mode < modeCount; ++mode ) {
 				D3DDISPLAYMODE dm;
 				mDirect3D->EnumAdapterModes( adOrd, format, mode, &dm );
-				if( dm.Width < mMinFullscreenWidth || 
-					dm.Height < mMinFullscreenHeight ||
+				if( dm.Width < (UINT)mMinFullscreenWidth || 
+					dm.Height < (UINT)mMinFullscreenHeight ||
 					gGetColorChannelBits(dm.Format) < mMinColorChannelBits )
 				{
 					continue;
@@ -325,7 +325,7 @@ HRESULT CD3DEnumeration::enumerateDeviceCombos( const SD3DAdapterInfo& adapterIn
 	//
 	// see which adapter formats are supported by this device
 
-	for( int iaf = 0; iaf < adapterFormats.size(); ++iaf ) {
+	for( size_t iaf = 0; iaf < adapterFormats.size(); ++iaf ) {
 		D3DFORMAT format = (D3DFORMAT)adapterFormats[iaf];
 		for( int ibbf = 0; ibbf < bbufferFormatCount; ibbf++ ) {
 			D3DFORMAT bbufferFormat = bbufferFormats[ibbf];
@@ -432,9 +432,9 @@ void CD3DEnumeration::buildMultiSampleTypes( SD3DDeviceCombo& devCombo )
 		D3DMULTISAMPLE_15_SAMPLES,
 		D3DMULTISAMPLE_16_SAMPLES,
 	};
-	const int msTypeCount = sizeof(msTypes) / sizeof(msTypes[0]);
+	const size_t msTypeCount = sizeof(msTypes) / sizeof(msTypes[0]);
 	
-	for( int imst = 0; imst < msTypeCount; ++imst ) {
+	for( size_t imst = 0; imst < msTypeCount; ++imst ) {
 		D3DMULTISAMPLE_TYPE	msType = msTypes[imst];
 		DWORD msQuality;
 		if( SUCCEEDED( mDirect3D->CheckDeviceMultiSampleType(
@@ -452,9 +452,9 @@ void CD3DEnumeration::buildMultiSampleTypes( SD3DDeviceCombo& devCombo )
 void CD3DEnumeration::buildConflicts( SD3DDeviceCombo& devCombo )
 {
 	
-	for( int ids = 0; ids < devCombo.depthStencilFormats.size(); ++ids ) {
+	for( size_t ids = 0; ids < devCombo.depthStencilFormats.size(); ++ids ) {
 		D3DFORMAT format = (D3DFORMAT)devCombo.depthStencilFormats[ids];
-		for( int ims = 0; ims < devCombo.multiSampleTypes.size(); ++ims ) {
+		for( size_t ims = 0; ims < devCombo.multiSampleTypes.size(); ++ims ) {
 			D3DMULTISAMPLE_TYPE msType = (D3DMULTISAMPLE_TYPE)devCombo.multiSampleTypes[ims];
 			if( FAILED( mDirect3D->CheckDeviceMultiSampleType(
 				devCombo.adapterOrdinal, devCombo.deviceType,

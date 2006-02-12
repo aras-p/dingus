@@ -152,7 +152,7 @@ struct SBlendColor {
 class SUIElement {
 public:
 	void setTexture( CD3DTexture* tex, const RECT* texRect );
-	void setFont( UINT font, bool dark, DWORD textFmt = DT_CENTER | DT_VCENTER );
+	void setFont( size_t font, bool dark, DWORD textFmt = DT_CENTER | DT_VCENTER );
 	
 	void refresh();
 	
@@ -162,7 +162,7 @@ public:
 	RECT	textureRect; 	// Bounding rect of this element on the composite texture
 
 	CD3DTexture* texture;	// Texture for this element 
-	UINT	fontIdx; 		// Index of the font for this element
+	size_t	fontIdx; 		// Index of the font for this element
 	DWORD	textFormat; 	// The format argument to drawText 
 	bool	darkFont;		// Is the text dark (no need for the shadow)?
 };
@@ -210,12 +210,12 @@ public:
 	bool isControlEnabled( int cid );
 	void setControlEnabled( int cid, bool enabled );
 
-	void clearRadioButtonGroup( UINT nGroup );
+	void clearRadioButtonGroup( int nGroup );
 	void clearComboBox( int cid );
 
 	// Access the default display Elements used when adding new controls
-	HRESULT 	setDefaultElement( eUIControlType ctrlType, UINT index, SUIElement* element );
-	SUIElement* getDefaultElement( eUIControlType ctrlType, UINT index );
+	HRESULT 	setDefaultElement( eUIControlType ctrlType, size_t index, SUIElement* element );
+	SUIElement* getDefaultElement( eUIControlType ctrlType, size_t index );
 
 	// Methods called by controls
 	void sendEvent( UINT evt, bool userTriggered, CUIControl* ctrl );
@@ -223,7 +223,7 @@ public:
 
 	// render helpers
 	HRESULT drawRect( const SFRect* rect, D3DCOLOR color );
-	//HRESULT drawPolyLine( const POINT* points, UINT pointCount, D3DCOLOR color );
+	//HRESULT drawPolyLine( const POINT* points, size_t pointCount, D3DCOLOR color );
 	HRESULT drawSprite( SUIElement* element, const SFRect* dest );
 	//HRESULT calcTextRect( const char* text, SUIElement* element, SFRect* dest, int count = -1 );
 	HRESULT drawText( const char* text, SUIElement* element, const SFRect* dest, bool shadow = false, int count = -1 );
@@ -231,8 +231,8 @@ public:
 
 	// immediate mode renderers
 	HRESULT imDrawSprite( const D3DXCOLOR& color, const RECT& texRect, CD3DTexture* tex, const SFRect& destScr );
-	HRESULT imDrawText( const char* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow = false, int count = -1 );
-	HRESULT imDrawText( const wchar_t* text, UINT fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow = false, int count = -1 );
+	HRESULT imDrawText( const char* text, size_t fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow = false, int count = -1 );
+	HRESULT imDrawText( const wchar_t* text, size_t fontIdx, DWORD format, const D3DXCOLOR& color, const SFRect& destScr, bool shadow = false, int count = -1 );
 
 	// Attributes
 	bool isMinimized() const { return mMinimized; }
@@ -295,8 +295,8 @@ public:
 
 	
 	// Shared resource access.
-	void setFont( UINT index, const char* facename, LONG height, LONG weight );
-	SUIFontNode* getFont( UINT index ) const;
+	void setFont( size_t index, const char* facename, LONG height, LONG weight );
+	SUIFontNode* getFont( size_t index ) const;
 	void	setDefaultTexture( CD3DTexture& texture ) { mDefaultTexture = &texture; }
 
 
@@ -327,7 +327,7 @@ private:
 	struct SElementHolder {
 		SUIElement		element;
 		eUIControlType	ctrlType;
-		int				index;
+		size_t			index;
 	};
 
 private:
@@ -352,7 +352,7 @@ private:
 	TUICallbackEvent mCallbackEvent;
 
 	CD3DTexture*	mDefaultTexture;
-	std::vector< int > mFonts; 	 // Index into mFontCache;
+	std::vector< size_t > mFonts; 	 // Index into mFontCache;
 
 	std::vector< CUIControl* >	mControls;
 	std::vector< SElementHolder* >	mDefaultElements;
@@ -395,7 +395,7 @@ public:
 	static CUIResourceManager& getInstance() { assert(mSingleInstance); return *mSingleInstance; }
 public:
 	int addFont( const char* facename, LONG height, LONG weight );
-	SUIFontNode* getFontNode( int index ) { return mFontCache[ index ]; }
+	SUIFontNode* getFontNode( size_t index ) { return mFontCache[ index ]; }
 
 	float	xToBB( float x, int bbx ) const { return x * mInvScreenX * bbx; }
 	float	yToBB( float y, int bby ) const { return y * mInvScreenY * bby; }
@@ -416,7 +416,7 @@ protected:
 	static CUIResourceManager*	mSingleInstance;
 	CUIResourceManager( int screenX, int screenY );
 	~CUIResourceManager();
-	HRESULT createFont( UINT index );
+	HRESULT createFont( size_t index );
 
 private:
 	std::vector< SUIFontNode* > mFontCache; // Shared fonts
@@ -480,8 +480,8 @@ public:
 	void setUserData( void *userdata ) { mUserData = userdata; }
 	void *getUserData() const { return mUserData; }
 
-	SUIElement* getElement( UINT index ) { return mElements[ index ]; }
-	HRESULT setElement( UINT index, SUIElement* element );
+	SUIElement* getElement( size_t index ) { return mElements[ index ]; }
+	HRESULT setElement( size_t index, SUIElement* element );
 
 	//
 	// Public members
@@ -497,7 +497,7 @@ public:
 
 	// These members are set by the container
 	CUIDialog*	mDialog;	// Parent container
-	UINT		mIndex;		// Index within the control list
+	size_t		mIndex;		// Index within the control list
 	
 	std::vector< SUIElement* > mElements;  // Display elements
 
@@ -525,7 +525,7 @@ public:
 	virtual void render( IDirect3DDevice9* device, float dt );
 	virtual bool containsPoint( const POINT& pt ) const { return false; }
 
-	HRESULT getTextCopy( char* strDest, UINT bufferCount );
+	HRESULT getTextCopy( char* strDest, size_t bufferCount );
 	const char* getText() const { return mText; }
 	HRESULT setText( const char* text );
 
@@ -745,7 +745,6 @@ public:
 	virtual void	updateRects();
 
 	DWORD	getStyle() const { return mStyle; }
-	int		getSize() const { return mItems.size(); }
 	void	setStyle( DWORD style ) { mStyle = style; }
 	void	setScrollBarWidth( float width ) { mSBWidth = width; updateRects(); }
 	void	setBorder( float border, float margin ) { mBorder = border; mMargin = margin; }
@@ -756,7 +755,7 @@ public:
 	void	removeItemByData( const void *data );
 	void	removeAllItems();
 
-	UINT	getItemCount() const { return mItems.size(); }
+	size_t	getItemCount() const { return mItems.size(); }
 	SUIListItem* getItem( int index );
 	int getSelectedIndex( int prevSelected = -1 ) const;
 	SUIListItem* getSelectedItem( int prevSelected = -1 ) { return getItem( getSelectedIndex( prevSelected ) ); }
@@ -808,9 +807,9 @@ public:
 
 	HRESULT addItem( const char* text, const void* data, bool updateSelectionIf1st );
 	void	removeAllItems();
-	void	removeItem( UINT index );
-	bool	containsItem( const char* text, UINT start=0 ) const;
-	int 	findItem( const char* text, UINT start=0 ) const;
+	void	removeItem( size_t index );
+	bool	containsItem( const char* text, size_t start=0 ) const;
+	int 	findItem( const char* text, size_t start=0 ) const;
 	const void*	getItemData( const char* text );
 	void	setDropHeight( float height ) { mDropHeight = height; updateRects(); }
 	void	setScrollBarWidth( float width ) { mSBWidth = width; updateRects(); }
@@ -818,10 +817,10 @@ public:
 	const void*	getSelectedData();
 	SUIComboItem* getSelectedItem();
 
-	UINT	getItemCount() const { return mItems.size(); }
-	SUIComboItem* getItem( UINT index ) { return mItems[ index ]; }
+	size_t	getItemCount() const { return mItems.size(); }
+	SUIComboItem* getItem( size_t index ) { return mItems[ index ]; }
 
-	HRESULT setSelectedByIndex( UINT index );
+	HRESULT setSelectedByIndex( int index );
 	HRESULT setSelectedByText( const char* text );
 	HRESULT setSelectedByData( const void* data );  
 

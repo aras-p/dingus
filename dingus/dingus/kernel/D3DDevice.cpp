@@ -35,12 +35,12 @@ void CD3DDevice::resetCachedState()
 	mActiveZS = (IDirect3DSurface9*)-1;
 	for( i = 0; i < VSTREAM_COUNT; ++i ) {
 		mActiveVB[i] = (IDirect3DVertexBuffer9*)-1;
-		mActiveVBOffset[i] = -1;
-		mActiveVBStride[i] = -1;
+		mActiveVBOffset[i] = (unsigned int)-1;
+		mActiveVBStride[i] = (unsigned int)-1;
 	}
 	mActiveIB = (CD3DIndexBuffer*)-1;
 	mActiveDeclaration = (CD3DVertexDecl*)-1;
-	mActiveFVF = -1;
+	mActiveFVF = (DWORD)-1;
 }
 
 void CD3DDevice::activateDevice( HWND deviceWindow )

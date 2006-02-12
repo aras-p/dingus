@@ -274,15 +274,15 @@ bool CD3DApplication::findBestWindowedMode( bool requireHAL, bool requireREF )
 	const SD3DDeviceInfo* bestDeviceInfo = NULL;
 	const SD3DDeviceCombo* bestDeviceCombo = NULL;
 	
-	for( int iai = 0; iai < mEnumeration.mAdapterInfos.size(); ++iai ) {
+	for( size_t iai = 0; iai < mEnumeration.mAdapterInfos.size(); ++iai ) {
 		const SD3DAdapterInfo* adInfo = mEnumeration.mAdapterInfos[iai];
-		for( int idi = 0; idi < adInfo->deviceInfos.size(); ++idi ) {
+		for( size_t idi = 0; idi < adInfo->deviceInfos.size(); ++idi ) {
 			const SD3DDeviceInfo* devInfo = adInfo->deviceInfos[idi];
 			if( requireHAL && devInfo->caps.getDeviceType() != D3DDEVTYPE_HAL )
 				continue;
 			if( requireREF && devInfo->caps.getDeviceType() != D3DDEVTYPE_REF )
 				continue;
-			for( int idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
+			for( size_t idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
 				const SD3DDeviceCombo* devCombo = devInfo->deviceCombos[idc];
 				bool matchesBB = (devCombo->backBufferFormat == devCombo->adapterFormat);
 				if( !devCombo->isWindowed )
@@ -357,16 +357,16 @@ bool CD3DApplication::findBestFullscreenMode( bool requireHAL, bool requireREF )
 	const SD3DDeviceInfo* bestDeviceInfo = NULL;
 	const SD3DDeviceCombo* bestDeviceCombo = NULL;
 	
-	for( int iai = 0; iai < mEnumeration.mAdapterInfos.size(); ++iai ) {
+	for( size_t iai = 0; iai < mEnumeration.mAdapterInfos.size(); ++iai ) {
 		const SD3DAdapterInfo* adInfo = mEnumeration.mAdapterInfos[iai];
 		mD3D->GetAdapterDisplayMode( adInfo->adapterOrdinal, &adapterDesktopDM );
-		for( int idi = 0; idi < adInfo->deviceInfos.size(); ++idi ) {
+		for( size_t idi = 0; idi < adInfo->deviceInfos.size(); ++idi ) {
 			const SD3DDeviceInfo* devInfo = adInfo->deviceInfos[idi];
 			if( requireHAL && devInfo->caps.getDeviceType() != D3DDEVTYPE_HAL )
 				continue;
 			if( requireREF && devInfo->caps.getDeviceType() != D3DDEVTYPE_REF )
 				continue;
-			for( int idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
+			for( size_t idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
 				const SD3DDeviceCombo* devCombo = devInfo->deviceCombos[idc];
 				bool matchesBB = (devCombo->backBufferFormat == devCombo->adapterFormat);
 				bool matchesDesktop = (devCombo->adapterFormat == adapterDesktopDM.Format);
@@ -410,7 +410,7 @@ _endComboSearch:
 	bestDM.Height = 0;
 	bestDM.Format = D3DFMT_UNKNOWN;
 	bestDM.RefreshRate = 0;
-	for( int idm = 0; idm < bestAdapterInfo->displayModes.size(); ++idm ) {
+	for( size_t idm = 0; idm < bestAdapterInfo->displayModes.size(); ++idm ) {
 		const D3DDISPLAYMODE& pdm = bestAdapterInfo->displayModes[idm];
 		if( pdm.Format != bestDeviceCombo->adapterFormat )
 			continue;
@@ -472,7 +472,7 @@ HRESULT CD3DApplication::chooseInitialD3DSettings()
 
 void CD3DApplication::modifyD3DSettingsFromPref()
 {
-	int i;
+	size_t i;
 
 	const SD3DSettingsPref& p = mSettingsPref;
 	CD3DSettings s = mSettings;
@@ -496,7 +496,7 @@ void CD3DApplication::modifyD3DSettingsFromPref()
 	mismatch = true;
 	for( i = 0; i < en.mAdapterInfos.size(); ++i ) {
 		adapter = mEnumeration.mAdapterInfos[i];
-		if( adapter->adapterID.VendorId == p.adapterVendorID && adapter->adapterID.DeviceId == p.adapterDeviceID ) {
+		if( adapter->adapterID.VendorId == (DWORD)p.adapterVendorID && adapter->adapterID.DeviceId == (DWORD)p.adapterDeviceID ) {
 			mismatch = false;
 			s.mSettings[s.mMode].adapterInfo = adapter;
 			break;
@@ -561,7 +561,7 @@ void CD3DApplication::modifyD3DSettingsFromPref()
 			dm = &adapter->displayModes[i];
 			if( dm->Format != devCombo->adapterFormat )
 				continue;
-			if( dm->Width == p.fsWidth && dm->Height == p.fsHeight && dm->RefreshRate == p.fsRefresh ) {
+			if( dm->Width == (UINT)p.fsWidth && dm->Height == (UINT)p.fsHeight && dm->RefreshRate == (UINT)p.fsRefresh ) {
 				mismatch = false;
 				s.mSettings[s.mMode].displayMode = *dm;
 				break;
@@ -574,7 +574,7 @@ void CD3DApplication::modifyD3DSettingsFromPref()
 	// find AA
 	mismatch = true;
 	for( i = 0; i < devCombo->multiSampleTypes.size(); ++i ) {
-		if( devCombo->multiSampleTypes[i] == p.fsaaType ) {
+		if( devCombo->multiSampleTypes[i] == (DWORD)p.fsaaType ) {
 			mismatch = false;
 			s.mSettings[s.mMode].multisampleType = (D3DMULTISAMPLE_TYPE)p.fsaaType;
 			break;
@@ -583,15 +583,15 @@ void CD3DApplication::modifyD3DSettingsFromPref()
 	if( mismatch )
 		return;
 
-	if( devCombo->multiSampleQualities[p.fsaaType] > p.fsaaQuality ) {
-		s.mSettings[s.mMode].multisampleQuality = p.fsaaQuality;
+	if( devCombo->multiSampleQualities[p.fsaaType] > (DWORD)p.fsaaQuality ) {
+		s.mSettings[s.mMode].multisampleQuality = (DWORD)p.fsaaQuality;
 	} else
 		return;
 
 	// find z/stencil
 	mismatch = true;
 	for( i = 0; i < devCombo->depthStencilFormats.size(); ++i ) {
-		if( devCombo->depthStencilFormats[i] == p.zstencil ) {
+		if( devCombo->depthStencilFormats[i] == (DWORD)p.zstencil ) {
 			mismatch = false;
 			s.mSettings[s.mMode].depthStencilFormat = (D3DFORMAT)p.zstencil;
 			break;
@@ -1988,11 +1988,11 @@ HRESULT CD3DApplication::displayErrorMsg( HRESULT hr, eAppMsg type )
 		
 	case NOCOMPATIBLEDEVICES:
 		{
-			int i;
+			size_t i;
 			std::string msg;
 			msg  = "Could not find any compatible Direct3D devices.\n\n";
 			msg += "Devices present on the system:\n";
-			int n = mEnumeration.mIncompatAdapterInfos.size();
+			size_t n = mEnumeration.mIncompatAdapterInfos.size();
 			for( i = 0; i < n; ++i ) {
 				const SD3DAdapterInfo& adapter = *mEnumeration.mIncompatAdapterInfos[i];
 				msg += "  ";
@@ -2079,11 +2079,13 @@ HRESULT CD3DApplication::displayErrorMsg( HRESULT hr, eAppMsg type )
 
 // --------------------------------------------------------------------------
 
+/*
 static INT_PTR CALLBACK gScreenSettingsDlgProcStub( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	// TBD
 	//return gD3DApp->ssScreenSettingsDlgProc( hwnd, msg, wParam, lParam );
 }
+*/
 
 void CD3DApplication::ssScreenSettingsDlg( HWND hwndParent )
 {
@@ -2091,4 +2093,3 @@ void CD3DApplication::ssScreenSettingsDlg( HWND hwndParent )
 	//LPCTSTR pstrTemplate = MAKEINTRESOURCE( IDD_SINGLEMONITORSETTINGS );
 	//DialogBox(mInstance, pstrTemplate, hwndParent, screenSettingsDlgProcStub );
 }
-

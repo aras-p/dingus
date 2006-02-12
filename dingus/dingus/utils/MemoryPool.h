@@ -18,7 +18,7 @@ public:
 	/// Allocate single block
 	void*	allocate();
 	/// Allocate less than single block
-	void*	allocate( unsigned int amount );
+	void*	allocate( size_t amount );
 	/// Deallocate
 	void	deallocate( void *ptr );
 	/// Deallocate everyting
@@ -26,7 +26,7 @@ public:
 	
 private:
 	struct SBubble {
-		int 	mByteCount;
+		size_t 	mByteCount;
 		char	mData[1]; // actually mByteCount
 	};
 	typedef std::vector<SBubble*>	TBubbleVector;

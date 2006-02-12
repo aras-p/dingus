@@ -18,24 +18,24 @@ public:
 	typedef typename DingusSmartPtr< CBufferChunk<BUFFER> >	TSharedPtr;
 	
 public:
-	CBufferChunk( BUFFER& buffer, unsigned char* data, int offset, int count, int stride );
+	CBufferChunk( BUFFER& buffer, unsigned char* data, unsigned int offset, unsigned int count, unsigned int stride );
 	
-	void unlock( int count = 0 );
+	void unlock( unsigned int count = 0 );
 	unsigned char* getData() const { return mData; }
-	int getOffset() const { return mOffset; }
-	int getSize() const { return mCount; }
+	unsigned int getOffset() const { return mOffset; }
+	unsigned int getSize() const { return mCount; }
 	bool isValid() const { return mValid; }
-	int getStride() const { return mStride; }
+	unsigned int getStride() const { return mStride; }
 	BUFFER& getBuffer() const { assert(mBuffer); return *mBuffer; }
 	
 	void invalidate() { mValid = false; }
 
 protected:
 	BUFFER*		mBuffer;	// The buffer
-	unsigned char*		mData;		// Pointer to start of chunk data
-	int			mOffset;	// Offset from buffer start, in elements (not bytes!)
-	int			mCount;		// Element (not bytes!) count in chunk
-	int			mStride;	// Element size in bytes
+	unsigned char*	mData;		// Pointer to start of chunk data
+	unsigned int	mOffset;	// Offset from buffer start, in elements (not bytes!)
+	unsigned int	mCount;		// Element (not bytes!) count in chunk
+	unsigned int	mStride;	// Element size in bytes
 
 	bool		mValid;		// Is this chunk still valid?
 };
@@ -43,7 +43,7 @@ protected:
 
 
 template< typename BUFFER >
-CBufferChunk<BUFFER>::CBufferChunk( BUFFER& buffer, unsigned char* data, int offset, int count, int stride )
+CBufferChunk<BUFFER>::CBufferChunk( BUFFER& buffer, unsigned char* data, unsigned int offset, unsigned int count, unsigned int stride )
 :	mBuffer( &buffer ),
 	mData( data ),
 	mOffset( offset ),
@@ -56,7 +56,7 @@ CBufferChunk<BUFFER>::CBufferChunk( BUFFER& buffer, unsigned char* data, int off
 
 
 template< typename BUFFER >
-void CBufferChunk<BUFFER>::unlock( int count )
+void CBufferChunk<BUFFER>::unlock( unsigned int count )
 {
 	if( mCount )
 		mBuffer->getObject()->Unlock();

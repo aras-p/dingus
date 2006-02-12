@@ -77,7 +77,7 @@ private:
 	struct SAnimState {
 		SAnimState() : bunch(0), posStream(0), rotStream(0), scale3Stream(0) { }
 
-		void	setupState( const CAnimationBunch* b, time_value startTime, float duration, float numCurves, bool& hasScale );
+		void	setupState( const CAnimationBunch* b, time_value startTime, float duration, int numCurves, bool& hasScale );
 		void	resetState() { bunch = NULL; posStream=0; rotStream=0; scale3Stream=0; }
 
 		const CAnimationBunch*			bunch;

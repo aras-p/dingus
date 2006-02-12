@@ -87,6 +87,7 @@ public:
 	CConsoleChannel& operator <<( int num ) { char msg[50]; itoa(num, msg, 10); buf += msg; return *this; }
 	CConsoleChannel& operator <<( char c ) { buf += c; return *this; }
 	CConsoleChannel& operator <<( DWORD num ) { char msg[50]; sprintf(msg,"%u",num); buf += msg; return *this; }
+	CConsoleChannel& operator <<( size_t num ) { char msg[50]; sprintf(msg,"%u",(DWORD)num); buf += msg; return *this; }
 	CConsoleChannel& operator <<( float num ) { char msg[50]; sprintf(msg,"%g",num); buf += msg; return *this; }
 	CConsoleChannel& operator <<( double num ) { char msg[50]; sprintf(msg,"%g",num); buf += msg; return *this; }
 	CConsoleChannel& operator <<( D3DXCOLOR const& col ) { char msg[100]; sprintf( msg, "(%01.2f %01.2f %01.2f %01.2f)", col.r, col.g, col.b, col.a ); buf += msg; return *this; }

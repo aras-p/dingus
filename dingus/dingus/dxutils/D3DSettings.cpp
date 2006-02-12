@@ -104,7 +104,7 @@ void CAbstractD3DSettingsDialog::adapterChanged()
 	
 	// update device combo box
 	comboBoxClear( IDC_DEVICE_COMBO );
-	for( int idi = 0; idi < adInfo->deviceInfos.size(); ++idi ) {
+	for( size_t idi = 0; idi < adInfo->deviceInfos.size(); ++idi ) {
 		const SD3DDeviceInfo* devInfo = adInfo->deviceInfos[idi];
 		comboBoxAdd( IDC_DEVICE_COMBO, devInfo, gD3DDevTypeToString( devInfo->caps.getDeviceType() ) );
 		if( devInfo->caps.getDeviceType() == mSettings.getDevType() )
@@ -129,7 +129,7 @@ void CAbstractD3DSettingsDialog::deviceChanged()
 	// update fullscreen/windowed radio buttons
 	bool hasWindowedCombo = false;
 	bool hasFullscreenCombo = false;
-	for( int idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
+	for( size_t idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
 		const SD3DDeviceCombo* devCombo = devInfo->deviceCombos[idc];
 		if( devCombo->isWindowed )
 			hasWindowedCombo = true;
@@ -209,7 +209,7 @@ void CAbstractD3DSettingsDialog::windowedFullscreenChanged()
 
 		// update adapter format combo box
 		comboBoxClear( IDC_ADAPTERFORMAT_COMBO );
-		for( int idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
+		for( size_t idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
 			const SD3DDeviceCombo* devCombo = devInfo->deviceCombos[idc];
 			D3DFORMAT fmt = devCombo->adapterFormat;
 			if( !comboBoxContainsText( IDC_ADAPTERFORMAT_COMBO, dingus::convertD3DFormatToString( fmt ) ) ) {
@@ -252,7 +252,7 @@ void CAbstractD3DSettingsDialog::adapterFormatChanged()
 		const D3DDISPLAYMODE& fullscreenDM = mSettings.mSettings[CD3DSettings::FULLSCREEN].displayMode;
 		
 		comboBoxClear( IDC_RESOLUTION_COMBO );
-		for( int idm = 0; idm < adInfo->displayModes.size(); ++idm ) {
+		for( size_t idm = 0; idm < adInfo->displayModes.size(); ++idm ) {
 			const D3DDISPLAYMODE& dm = adInfo->displayModes[idm];
 			if( dm.Format == fmt ) {
 				DWORD dwResolutionData;
@@ -277,7 +277,7 @@ void CAbstractD3DSettingsDialog::adapterFormatChanged()
 		return;
 
 	comboBoxClear( IDC_BACKBUFFERFORMAT_COMBO );
-	for( int idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
+	for( size_t idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
 		const SD3DDeviceCombo* devCombo = devInfo->deviceCombos[idc];
 		bool settingsWnd = (mSettings.mMode == CD3DSettings::WINDOWED);
 
@@ -315,7 +315,7 @@ void CAbstractD3DSettingsDialog::resolutionChanged()
 	// update refresh rate list based on new resolution
 	D3DFORMAT adapterFormat = (D3DFORMAT)PtrToUlong( comboBoxSelected( IDC_ADAPTERFORMAT_COMBO ) );
 	comboBoxClear( IDC_REFRESHRATE_COMBO );
-	for( int idm = 0; idm < adInfo->displayModes.size(); ++idm ) {
+	for( size_t idm = 0; idm < adInfo->displayModes.size(); ++idm ) {
 		const D3DDISPLAYMODE& dm = adInfo->displayModes[idm];
 		if( dm.Format == adapterFormat &&
 			dm.Width  == width &&
@@ -364,7 +364,7 @@ void CAbstractD3DSettingsDialog::backBufferFormatChanged()
 		return;
 	
 	comboBoxClear( IDC_VERTEXPROCESSING_COMBO );
-	for( int ivpt = 0; ivpt < devInfo->vertexProcessings.size(); ++ivpt ) {
+	for( size_t ivpt = 0; ivpt < devInfo->vertexProcessings.size(); ++ivpt ) {
 		CD3DDeviceCaps::eVertexProcessing vpt = devInfo->vertexProcessings[ivpt];
 		comboBoxAdd( IDC_VERTEXPROCESSING_COMBO, ULongToPtr(vpt), gVertexProcessingToString(vpt) );
 		if( vpt == mSettings.getVertexProcessing() )
@@ -376,7 +376,7 @@ void CAbstractD3DSettingsDialog::backBufferFormatChanged()
 		comboBoxSelectIndex( IDC_VERTEXPROCESSING_COMBO, 0 );
 	}
 
-	for( int idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
+	for( size_t idc = 0; idc < devInfo->deviceCombos.size(); ++idc ) {
 		const SD3DDeviceCombo* devCombo = devInfo->deviceCombos[idc];
 		bool settingsWnd = (mSettings.mMode == CD3DSettings::WINDOWED);
 		if( devCombo->isWindowed == settingsWnd &&
@@ -387,7 +387,7 @@ void CAbstractD3DSettingsDialog::backBufferFormatChanged()
 			
 			comboBoxClear( IDC_DEPTHSTENCILBUFFERFORMAT_COMBO );
 			if( mEnumeration->mUsesDepthBuffer ) {
-				for( int ifmt = 0; ifmt < devCombo->depthStencilFormats.size(); ++ifmt ) {
+				for( size_t ifmt = 0; ifmt < devCombo->depthStencilFormats.size(); ++ifmt ) {
 					D3DFORMAT fmt = (D3DFORMAT)devCombo->depthStencilFormats[ifmt];
 					comboBoxAdd( IDC_DEPTHSTENCILBUFFERFORMAT_COMBO, ULongToPtr(fmt), 
 						dingus::convertD3DFormatToString(fmt) );
@@ -428,12 +428,12 @@ void CAbstractD3DSettingsDialog::depthStencilBufferChanged()
 	// build multisample list
 	const SD3DDeviceCombo& devCombo = mSettings.getDeviceCombo();
 	comboBoxClear( IDC_MULTISAMPLE_COMBO );
-	for( int ims = 0; ims < devCombo.multiSampleTypes.size(); ++ims ) {
+	for( size_t ims = 0; ims < devCombo.multiSampleTypes.size(); ++ims ) {
 		D3DMULTISAMPLE_TYPE msType = (D3DMULTISAMPLE_TYPE)devCombo.multiSampleTypes[ims];
 		
 		// check for DS/MS conflicts
 		bool conflictFound = false;
-		for( int iconf = 0; iconf < devCombo.conflicts.size(); ++iconf ) {
+		for( size_t iconf = 0; iconf < devCombo.conflicts.size(); ++iconf ) {
 			const SD3DDeviceCombo::SDSMSConflict& conf = devCombo.conflicts[iconf];
 			if( conf.format == fmt && conf.type == msType ) {
 				conflictFound = true;
@@ -461,7 +461,7 @@ void CAbstractD3DSettingsDialog::multiSampleTypeChanged()
 	const SD3DDeviceCombo& devCombo = mSettings.getDeviceCombo();
 	DWORD maxQuality = 0;
 	
-	for( int ims = 0; ims < devCombo.multiSampleTypes.size(); ++ims ) {
+	for( size_t ims = 0; ims < devCombo.multiSampleTypes.size(); ++ims ) {
 		D3DMULTISAMPLE_TYPE msType = (D3DMULTISAMPLE_TYPE)devCombo.multiSampleTypes[ims];
 		if( msType == mst ) {
 			maxQuality = devCombo.multiSampleQualities[ims];
@@ -470,7 +470,7 @@ void CAbstractD3DSettingsDialog::multiSampleTypeChanged()
 	}
 	
 	comboBoxClear( IDC_MULTISAMPLE_QUALITY_COMBO );
-	for( int msq = 0; msq < maxQuality; msq++ ) {
+	for( size_t msq = 0; msq < maxQuality; msq++ ) {
 		TCHAR str[100];
 		wsprintf( str, TEXT("%d"), msq );
 		comboBoxAdd( IDC_MULTISAMPLE_QUALITY_COMBO, UlongToPtr( msq ), str );
@@ -633,7 +633,7 @@ INT_PTR CD3DSettingsDialogWin32::dialogProc( HWND hDlg, UINT msg, WPARAM wParam,
 			
 			// fill adapter combo box, updating the selected adapter will trigger
 			// updates of the rest of the dialog.
-			for( int iai = 0; iai < mEnumeration->mAdapterInfos.size(); ++iai ) {
+			for( size_t iai = 0; iai < mEnumeration->mAdapterInfos.size(); ++iai ) {
 				const SD3DAdapterInfo* adInfo = mEnumeration->mAdapterInfos[iai];
 				TCHAR strDescription[512];
 				dingus::convertAnsiStringToGenericCch( strDescription, adInfo->adapterID.Description, 512 );

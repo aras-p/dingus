@@ -27,5 +27,5 @@ CW32StdConsoleRenderingContext::~CW32StdConsoleRenderingContext()
 void CW32StdConsoleRenderingContext::write( const std::string& message )
 {
 	DWORD charsWritten;
-	WriteConsole( mConsoleHandle, message.c_str(), message.length(), &charsWritten, NULL );
+	WriteConsole( mConsoleHandle, message.c_str(), (DWORD)message.length(), &charsWritten, NULL );
 }

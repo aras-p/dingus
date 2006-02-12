@@ -1,4 +1,11 @@
 
+Dingus small rare developments
+========
+060212: Migrated to VS.NET2003 (finally!), VC6 support may break at any
+		time. Major cleanup of warnings. Removed old unused code
+		(collision, physics, visibility).
+		
+
 Dingus tag 051101
 ========
 

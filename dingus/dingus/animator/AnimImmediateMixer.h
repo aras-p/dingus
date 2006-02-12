@@ -27,12 +27,12 @@ public:
 	
 	/** Stream data: the stream and it's weight. */
 	struct SStreamData {
-		SStreamData( const streamptr_type& stream, float weight, int skipCurves, int useCurves )
+		SStreamData( const streamptr_type& stream, float weight, unsigned int skipCurves, unsigned int useCurves )
 			: mStream(stream), mWeight(weight), mSkipCurves(skipCurves), mUseCurves(useCurves) { }
 		streamptr_type	mStream;
 		float			mWeight;
-		int				mSkipCurves; // if 0 - use all
-		int				mUseCurves; // if 0 - use all
+		unsigned int	mSkipCurves; // if 0 - use all
+		unsigned int	mUseCurves; // if 0 - use all
 	};
 
 public:
@@ -46,8 +46,8 @@ public:
 	void clearStreams() { mStreams.clear(); }
 
 	/// Blend the streams into provided destination array.
-	void update( time_value timenow, int numCurves, value_type* dest, bool normalizeWeights, int destStride = sizeof(value_type) ) {
-		int i, n = mStreams.size();
+	void update( time_value timenow, size_t numCurves, value_type* dest, bool normalizeWeights, int destStride = sizeof(value_type) ) {
+		size_t i, n = mStreams.size();
 
 		// no streams?
 		if( !n ) return;
@@ -79,7 +79,7 @@ public:
 			s.mStream->update( timenow, &mScratchValues[0], sizeof(value_type) );
 			// blend all or a subset of curves
 			char* destVal = reinterpret_cast<char*>(dest);
-			int ncrv = numCurves;
+			size_t ncrv = numCurves;
 			if( s.mUseCurves > 0 ) {
 				assert( s.mSkipCurves >= 0 );
 				assert( s.mUseCurves > 0 );
@@ -87,7 +87,7 @@ public:
 				ncrv = s.mSkipCurves + s.mUseCurves;
 				destVal += destStride * s.mSkipCurves;
 			}
-			for( int c = s.mSkipCurves; c < ncrv; ++c, destVal += destStride ) {
+			for( size_t c = s.mSkipCurves; c < ncrv; ++c, destVal += destStride ) {
 				value_type& dv = *reinterpret_cast<value_type*>(destVal);
 				if( firstStream )
 					SBlender<value_type>::calcFirst( dv, mScratchValues[c], streamWeight );

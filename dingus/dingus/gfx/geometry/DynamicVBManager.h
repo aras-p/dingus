@@ -23,7 +23,7 @@ public:
 	static const D3DPOOL	VB_POOL;
 
 public:
-	static void initialize( int capacityBytes ) {
+	static void initialize( unsigned int capacityBytes ) {
 		CDynamicVBManager* vbmgr = new CDynamicVBManager( capacityBytes );
 		assert( vbmgr );
 		assignInstance( *vbmgr );
@@ -40,16 +40,16 @@ public:
 
 protected:
 	// interface for CManagedBuffer
-	virtual byte* lockBuffer( int byteStart, int byteCount );
+	virtual byte* lockBuffer( unsigned int byteStart, unsigned int byteCount );
 
-	CD3DVertexBuffer* allocateBuffer( int capacityBytes );
+	CD3DVertexBuffer* allocateBuffer( unsigned int capacityBytes );
 
 private:
-	IDirect3DVertexBuffer9* createBuffer( int capacityBytes );
+	IDirect3DVertexBuffer9* createBuffer( unsigned int capacityBytes );
 
 private:
 	// CSingleton
-	CDynamicVBManager( int capacityBytes );
+	CDynamicVBManager( unsigned int capacityBytes );
 	static CDynamicVBManager* createInstance() {
 		ASSERT_FAIL_MSG( "must be initialized first" );
 		return NULL;

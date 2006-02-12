@@ -38,7 +38,7 @@ void CSkeletonInfo::addBoneInfo( int parentIdx, const SMatrix4x4& invPoseMatrix,
 	CBoneInfo b( invPoseMatrix, localPose, name, parentIdx );
 	mBones.push_back( b );
 
-	std::pair<TNameIndexMap::iterator,bool> res = mNameMap.insert( std::make_pair( name, mBones.size()-1 ) );
+	std::pair<TNameIndexMap::iterator,bool> res = mNameMap.insert( std::make_pair( name, (int)mBones.size()-1 ) );
 	assert( res.second == true );
 }
 

@@ -187,7 +187,8 @@ void CMesh::computeAABBs()
 	if( !mVertexFormat.hasPosition() )
 		return;
 	const char* vb = reinterpret_cast<const char*>( lockVBRead() );
-	for( int i = 0; i < mGroups.size(); ++i ) {
+	size_t nGroups = mGroups.size();
+	for( size_t i = 0; i < nGroups; ++i ) {
 		CGroup& g = mGroups[i];
 		g.getAABB().setNull();
 		for( int v = 0; v < g.getVertexCount(); ++v ) {

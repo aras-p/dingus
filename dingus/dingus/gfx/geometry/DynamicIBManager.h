@@ -23,7 +23,7 @@ public:
 	static const D3DPOOL	IB_POOL;
 
 public:
-	static void initialize( int capacityBytes ) {
+	static void initialize( unsigned int capacityBytes ) {
 		CDynamicIBManager* ibmgr = new CDynamicIBManager( capacityBytes );
 		assert( ibmgr );
 		assignInstance( *ibmgr );
@@ -40,16 +40,16 @@ public:
 
 protected:
 	// interface for CManagedBuffer
-	virtual byte* lockBuffer( int byteStart, int byteCount );
+	virtual byte* lockBuffer( unsigned int byteStart, unsigned int byteCount );
 
-	CD3DIndexBuffer* allocateBuffer( int capacityBytes );
+	CD3DIndexBuffer* allocateBuffer( unsigned int capacityBytes );
 
 private:
-	IDirect3DIndexBuffer9* createBuffer( int capacityBytes );
+	IDirect3DIndexBuffer9* createBuffer( unsigned int capacityBytes );
 
 private:
 	// CSingleton
-	CDynamicIBManager( int capacityBytes );
+	CDynamicIBManager( size_t capacityBytes );
 	static CDynamicIBManager* createInstance() {
 		ASSERT_FAIL_MSG( "must be initialized first" );
 		return NULL;

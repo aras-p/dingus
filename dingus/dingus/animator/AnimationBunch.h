@@ -160,7 +160,7 @@ inline void CAnimationBunch::addCurveDesc( const std::string& name, int parentIn
 }
 inline int CAnimationBunch::getCurveCount() const
 {
-	return mCurveDescs.size();
+	return (int)mCurveDescs.size();
 }
 inline const std::string& CAnimationBunch::getCurveName( int curveIdx ) const
 {
@@ -177,10 +177,11 @@ inline int CAnimationBunch::getCurveChildrenCount( int curveIdx ) const
 	assert( curveIdx >= 0 && curveIdx < mCurveDescs.size() );
 	return mCurveDescs[curveIdx].mChildrenCount;
 }
-inline int	CAnimationBunch::getCurveIndexByName( const std::string& name ) const
+inline int CAnimationBunch::getCurveIndexByName( const std::string& name ) const
 {
-	for( int i = 0; i < mCurveDescs.size(); ++i ) {
-		if( getCurveName(i) == name )
+	int n = (int)mCurveDescs.size();
+	for( int i = 0; i < n; ++i ) {
+		if( mCurveDescs[i].mName == name )
 			return i;
 	}
 	return -1;

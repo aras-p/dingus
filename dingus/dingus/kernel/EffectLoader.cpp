@@ -16,6 +16,9 @@
 
 using namespace dingus;
 
+#define DEBUG_SHADERS 0
+
+
 // --------------------------------------------------------------------------
 //  render state definitions
 
@@ -179,7 +182,7 @@ SFxState FX_STATES[] = {
 const int FX_STATES_SIZE = sizeof(FX_STATES) / sizeof(FX_STATES[0]);
 
 /// @return State index into FX_STATES, given its type and code.
-int	findState( eFxStateType type, int code )
+int	findState( eFxStateType type, DWORD code )
 {
 	for( int i = 0; i < FX_STATES_SIZE; ++i ) {
 		if( FX_STATES[i].type == type && FX_STATES[i].code == code )
@@ -244,10 +247,10 @@ public:
 	{
 		assert( mPassStart.size() == mPassCounts.size() );
 		if( !mPassCounts.empty() ) {
-			mPassCounts.back() = mStates.size() - mPassStart.back();
+			mPassCounts.back() = (int)mStates.size() - mPassStart.back();
 		}
 		++mCurrentPass;
-		mPassStart.push_back( mStates.size() );
+		mPassStart.push_back( (int)mStates.size() );
 		mPassCounts.push_back( 0 );
 	}
 
@@ -255,7 +258,7 @@ public:
 	{
 		assert( mPassStart.size() == mPassCounts.size() );
 		if( !mPassCounts.empty() ) {
-			mPassCounts.back() = mStates.size() - mPassStart.back();
+			mPassCounts.back() = (int)mStates.size() - mPassStart.back();
 		}
 		++mCurrentPass;
 	}
@@ -272,8 +275,8 @@ public:
 	{
 		FILE* f = fopen( fileName, "wt" );
 		fprintf( f, "pass P0 {\n" );
-		int n = mStates.size();
-		for( int i = 0; i < n; ++i ) {
+		size_t n = mStates.size();
+		for( size_t i = 0; i < n; ++i ) {
 			const SState& s = mStates[i];
 			// new pass?
 			if( i > 0 && s.pass != mStates[i-1].pass ) {
@@ -346,7 +349,7 @@ public:
     STDMETHOD(SetNPatchMode)( float numSegments )
 	{
 		int index = findState( FXST_NPATCH, 0 );
-		mStates.push_back( SState( mCurrentPass, index, -1, numSegments ) );
+		mStates.push_back( SState( mCurrentPass, index, -1, (DWORD)numSegments ) );
 		return S_OK;
 	}
     STDMETHOD(SetFVF)( DWORD fvf )
@@ -486,8 +489,8 @@ private:
 
 private:
 	const SStateRestored* findRestoredState( int index ) const {
-		int n = mStatesRestored.size();
-		for( int i = 0; i < n; ++i ) {
+		size_t n = mStatesRestored.size();
+		for( size_t i = 0; i < n; ++i ) {
 			if( mStatesRestored[i].index == index )
 				return &mStatesRestored[i];
 		}
@@ -553,7 +556,7 @@ bool CEffectRestorePassGenerator::loadConfig( const char* fileName )
 		
 		std::string name = luaSt.getElement(1).getString();
 		luaSt.discard();
-		int value = luaSt.getElement(2).getNumber();
+		int value = int( luaSt.getElement(2).getNumber() );
 		luaSt.discard();
 
 		int index = findState( name.c_str() );
@@ -576,8 +579,8 @@ bool CEffectRestorePassGenerator::loadConfig( const char* fileName )
 
 std::string CEffectRestorePassGenerator::checkEffect( const CEffectStateInspector& fx ) const
 {
-	int i;
-	int nstates = fx.getStates().size();
+	size_t i;
+	size_t nstates = fx.getStates().size();
 
 	std::string errs = "";
 
@@ -586,7 +589,7 @@ std::string CEffectRestorePassGenerator::checkEffect( const CEffectStateInspecto
 	for( i = 0; i < mStatesRequired.size(); ++i ) {
 		int reqState = mStatesRequired[i].index;
 		bool found = false;
-		for( int j = 0; j < nstates; ++j ) {
+		for( size_t j = 0; j < nstates; ++j ) {
 			const CEffectStateInspector::SState& st = fx.getStates()[j];
 			if( st.pass != 0 ) // only check first pass
 				break;
@@ -609,7 +612,7 @@ std::string CEffectRestorePassGenerator::checkEffect( const CEffectStateInspecto
 	for( i = 0; i < mStatesDependent.size(); ++i ) {
 		const SStateDependent& depState = mStatesDependent[i];
 		bool found = false;
-		int foundAt;
+		size_t foundAt;
 		for( foundAt = 0; foundAt < nstates; ++foundAt ) {
 			const CEffectStateInspector::SState& st = fx.getStates()[foundAt];
 			if( st.index == depState.index && st.value == depState.value ) {
@@ -624,7 +627,7 @@ std::string CEffectRestorePassGenerator::checkEffect( const CEffectStateInspecto
 			int pass = fx.getStates()[foundAt].pass;
 			int passStart = fx.getPassStateStart(pass);
 			int passEnd = passStart + fx.getPassStateCount(pass);
-			for( int j = 0; j < depState.needed.size(); ++j ) {
+			for( size_t j = 0; j < depState.needed.size(); ++j ) {
 				int neededState = depState.needed[j];
 				bool foundNeeded = false;
 				for( int k = passStart; k < passEnd; ++k ) {
@@ -661,8 +664,8 @@ std::string CEffectRestorePassGenerator::checkEffect( const CEffectStateInspecto
 
 std::string CEffectRestorePassGenerator::generateRestorePass( const CEffectStateInspector& fx ) const
 {
-	int i;
-	int nstates = fx.getStates().size();
+	size_t i;
+	size_t nstates = fx.getStates().size();
 
 	// generate restoring pass
 	// NOTE: it seems that (Oct 2004 SDK) fx macros don't support newlines.
@@ -726,11 +729,13 @@ void fxloader::shutdown()
 //  main effect loading code
 
 
+
 bool dingus::fxloader::load(
 	const std::string& id, const std::string& fileName,
+	const char* skipConstants,
 	CD3DXEffect& dest, std::string& errorMsgs,
 	ID3DXEffectPool* pool, ID3DXEffectStateManager* stateManager,
-	const D3DXMACRO* macros, int macroCount, bool optimizeShaders, CConsoleChannel& console )
+	const D3DXMACRO* macros, size_t macroCount, bool optimizeShaders, CConsoleChannel& console )
 {
 	// 1. load effect from file, find valid technique
 	// 2. if it has restoring pass, exit: all is done
@@ -758,10 +763,27 @@ bool dingus::fxloader::load(
 	errorMsgs = "";
 
 	assert( pool );
+
+#ifdef DINGUS_HAVE_D3DX_FEB_2005
+	HRESULT hres = D3DXCreateEffectFromFileEx(
+#else
 	HRESULT hres = D3DXCreateEffectFromFile(
+#endif
+
 		&CD3DDevice::getInstance().getDevice(),
-		fileName.c_str(), newMacros, NULL, // TBD ==> includes
+		fileName.c_str(),
+		newMacros,
+		NULL, // TBD ==> includes
+
+#ifdef DINGUS_HAVE_D3DX_FEB_2005
+		skipConstants,
+#endif
+
+#if DEBUG_SHADERS
+		D3DXSHADER_SKIPOPTIMIZATION | D3DXSHADER_DEBUG,
+#else
 		optimizeShaders ? 0 : D3DXSHADER_SKIPOPTIMIZATION,
+#endif
 		pool, &fx, &errors );
 	if( errors && errors->GetBufferSize() > 1 ) {
 		std::string msg = "messages compiling effect '" + fileName + "': ";

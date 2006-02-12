@@ -29,7 +29,7 @@ IDirect3DCubeTexture9*	loadCubemapSeparateImages( const std::string& fileName )
 {
 	IDirect3DCubeTexture9* texture = NULL;
 
-	int dotIdx = fileName.find_last_of( '.' );
+	size_t dotIdx = fileName.find_last_of( '.' );
 	if( dotIdx >= 3 ) { // fit "_px"
 		std::string beforeExt = fileName.substr( dotIdx-3, 3 );
 		if( beforeExt == std::string("_px") ) {
@@ -46,7 +46,7 @@ IDirect3DCubeTexture9*	loadCubemapSeparateImages( const std::string& fileName )
 			static const char* CHAR1 = "pnpnpn";
 			static const char* CHAR2 = "xxyyzz";
 			std::string fileNameCopy = fileName;
-			int charIdx = dotIdx-2;
+			size_t charIdx = dotIdx-2;
 			for( int i = 0; i < 6; ++i ) {
 				IDirect3DSurface9* surface = NULL;
 				hres = texture->GetCubeMapSurface( (D3DCUBEMAP_FACES)i, 0, &surface );

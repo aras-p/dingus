@@ -15,7 +15,7 @@ const DWORD CDynamicIBManager::IB_USAGE = D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY;
 const D3DPOOL CDynamicIBManager::IB_POOL = D3DPOOL_DEFAULT;
 
 
-CDynamicIBManager::CDynamicIBManager( int capacityBytes )
+CDynamicIBManager::CDynamicIBManager( unsigned int capacityBytes )
 :	CManagedBuffer<TIBChunk,CD3DIndexBuffer>(capacityBytes)
 {
 	mBuffer = new CD3DIndexBuffer( NULL );
@@ -26,12 +26,12 @@ CDynamicIBManager::~CDynamicIBManager()
 	delete mBuffer;
 }
 
-CD3DIndexBuffer* CDynamicIBManager::allocateBuffer( int capacityBytes )
+CD3DIndexBuffer* CDynamicIBManager::allocateBuffer( unsigned int capacityBytes )
 {
 	return new CD3DIndexBuffer( createBuffer( capacityBytes ) );
 }
 
-IDirect3DIndexBuffer9* CDynamicIBManager::createBuffer( int capacityBytes )
+IDirect3DIndexBuffer9* CDynamicIBManager::createBuffer( unsigned int capacityBytes )
 {
 	IDirect3DIndexBuffer9* ib = NULL;
 	HRESULT hres = CD3DDevice::getInstance().getDevice().CreateIndexBuffer(
@@ -46,7 +46,7 @@ IDirect3DIndexBuffer9* CDynamicIBManager::createBuffer( int capacityBytes )
 	return ib;
 }
 
-byte* CDynamicIBManager::lockBuffer( int byteStart, int byteCount )
+byte* CDynamicIBManager::lockBuffer( unsigned int byteStart, unsigned int byteCount )
 {
 	if( byteCount == 0 )
 		return NULL;
@@ -60,7 +60,7 @@ byte* CDynamicIBManager::lockBuffer( int byteStart, int byteCount )
 
 	byte* data = NULL;
 	HRESULT hres = mBuffer->getObject()->Lock(
-		byteStart, 
+		byteStart,
 		byteCount,
 		reinterpret_cast<void**>( &data ),
 		lockFlag );

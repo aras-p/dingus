@@ -70,7 +70,7 @@ private:
 	bool fillBufferWithSound( IDirectSoundBuffer* buffer, bool repeatIfLargerBuffer );
 	
 	int		getFreeBufferIndex();
-	long	get3DBuffer( DWORD index, IDirectSound3DBuffer** buffer3D );
+	long	get3DBuffer( int index, IDirectSound3DBuffer** buffer3D );
 
 
 	bool isInside( DWORD pos, DWORD start, DWORD end ) const;

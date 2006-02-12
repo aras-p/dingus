@@ -26,8 +26,8 @@ CFileHelper::TStringList CFileHelper::getFiles( const std::string& p, bool recur
 
 	// find first
 	_finddata_t file;
-	int handle = _findfirst( (path+wildcard).c_str(), &file );
-	int ret = handle;
+	intptr_t handle = _findfirst( (path+wildcard).c_str(), &file );
+	intptr_t ret = handle;
 
 	// while found
 	while( ret >= 0 ) {

@@ -17,7 +17,7 @@ class CManagedBuffer {
 	typedef	typename fastvector<TChunkPtr>	TChunkVector;
 	
 public:
-	CManagedBuffer( int capacityBytes )
+	CManagedBuffer( unsigned int capacityBytes )
 	:	mBuffer(NULL), mCapacityBytes(capacityBytes), mUsedBytes(0)
 	{
 		// NOTE: generally don't allocate buffer here.
@@ -29,14 +29,14 @@ public:
 		discard();
 	}
 	
-	TChunkPtr allocateChunk( int count, int stride )
+	TChunkPtr allocateChunk( unsigned int count, unsigned int stride )
 	{
 		if( count == 0 )
 			return TChunkPtr();
 
 		assert( mBuffer );
 
-		int byteCount = count*stride;
+		unsigned int byteCount = count*stride;
 		ASSERT_MSG( byteCount <= mCapacityBytes, "too much requested for lock. increase capacity of buffer" );
 		if( byteCount > mCapacityBytes ) {
 			CConsoleChannel& ch = CConsole::CON_WARNING;
@@ -45,8 +45,8 @@ public:
 			ch << "req elems=" << count << ", capacity elems=" << mCapacityBytes/stride << endl;
 			return TChunkPtr();
 		}
-		int modulo = mUsedBytes%stride;
-		int byteStart = mUsedBytes + (modulo ? (stride-modulo) : 0);
+		unsigned int modulo = mUsedBytes%stride;
+		unsigned int byteStart = mUsedBytes + (modulo ? (stride-modulo) : 0);
 		if( byteStart + byteCount > mCapacityBytes ) {
 			CConsoleChannel& ch = CConsole::CON_WARNING;
 			ch << "DynaBuffer: filled, discarding" << endl;
@@ -81,16 +81,15 @@ public:
 	BUFFER*		getBuffer() { return mBuffer; }
 
 protected:
-	virtual byte* lockBuffer( int byteStart, int byteCount ) = 0;
-	//virtual BUFFER *allocateBuffer( int capacityBytes ) = 0;
-	int getCapacityBytes() { return mCapacityBytes; }
+	virtual byte* lockBuffer( unsigned int byteStart, unsigned int byteCount ) = 0;
+	unsigned int getCapacityBytes() { return mCapacityBytes; }
 
 protected:
 	BUFFER*		mBuffer;
 
 private:
-	int			mCapacityBytes;
-	int			mUsedBytes;
+	unsigned int	mCapacityBytes;
+	unsigned int	mUsedBytes;
 	
 	TChunkVector mChunks;
 };

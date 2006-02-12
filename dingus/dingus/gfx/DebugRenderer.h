@@ -29,6 +29,7 @@ public:
 
 	void	renderLine( const SVector3& pta, const SVector3& ptb, float width, D3DCOLOR color );
 	void	renderSphere( const SVector3& center, float radius, D3DCOLOR color );
+	void	renderCone( const SVector3& center, const SVector3& axis, float cosAngle, float sinAngle, float length, float lineWidth, D3DCOLOR color );
 	void	renderBox( const SMatrix4x4& matrix, const SVector3& size, D3DCOLOR color );
 	void	renderCoordFrame( const SMatrix4x4& matrix, float size, D3DCOLOR color );
 	void	renderQuad( const SVector3& pt0, const SVector3& pt1, const SVector3& pt2, const SVector3& pt3, D3DCOLOR color );

@@ -25,6 +25,8 @@ public:
 	typedef __int64 value_type;
 public:
 	explicit time_value( value_type v = 0 ) : value(v) { }
+	time_value( const time_value& r ) : value(r.value) { }
+	time_value& operator=( const time_value& r ) { value=r.value; return *this; }
 
 	static time_value fromsec( float seconds ) { return time_value( value_type(((double)seconds)*FREQ) ); }
 	float tosec() const { return (float)value / FREQ; }
@@ -94,6 +96,8 @@ public:
 
 private:
 	CSystemTimer();
+	CSystemTimer( const CSystemTimer& r );
+	void operator=( const CSystemTimer& r );
 	time_value fetchTime() const;
 	void	setTimesS() { mTimeS = mTime.tosec(); mDeltaTimeS = mDeltaTime.tosec(); }
 
@@ -125,6 +129,8 @@ private:
 class CTimer : public ITimeSource {
 public:
 	CTimer() : mTime(0), mDeltaTime(0) { setTimesS(); }
+	CTimer( const CTimer& r ) : mTime(r.mTime), mDeltaTime(r.mDeltaTime), mTimeS(r.mTimeS), mDeltaTimeS(r.mDeltaTimeS) { }
+	CTimer& operator=( const CTimer& r ) { mTime=r.mTime; mDeltaTime=r.mDeltaTime; mTimeS=r.mTimeS; mDeltaTimeS=r.mDeltaTimeS; }
 
 	void	update( const time_value& dt ) {
 		mTime += dt;

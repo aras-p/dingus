@@ -14,7 +14,7 @@ using namespace dingus;
 const DWORD CDynamicVBManager::VB_USAGE = D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY;
 const D3DPOOL CDynamicVBManager::VB_POOL = D3DPOOL_DEFAULT;
 
-CDynamicVBManager::CDynamicVBManager( int capacityBytes )
+CDynamicVBManager::CDynamicVBManager( unsigned int capacityBytes )
 :	CManagedBuffer<TVBChunk,CD3DVertexBuffer>(capacityBytes)
 {
 	mBuffer = new CD3DVertexBuffer( NULL );
@@ -25,12 +25,12 @@ CDynamicVBManager::~CDynamicVBManager()
 	delete mBuffer;
 }
 
-CD3DVertexBuffer* CDynamicVBManager::allocateBuffer( int capacityBytes )
+CD3DVertexBuffer* CDynamicVBManager::allocateBuffer( unsigned int capacityBytes )
 {
 	return new CD3DVertexBuffer( createBuffer( capacityBytes ) );
 }
 
-IDirect3DVertexBuffer9* CDynamicVBManager::createBuffer( int capacityBytes )
+IDirect3DVertexBuffer9* CDynamicVBManager::createBuffer( unsigned int capacityBytes )
 {
 	IDirect3DVertexBuffer9* vb = NULL;
 	HRESULT hres = CD3DDevice::getInstance().getDevice().CreateVertexBuffer(
@@ -45,7 +45,7 @@ IDirect3DVertexBuffer9* CDynamicVBManager::createBuffer( int capacityBytes )
 	return vb;
 }
 
-byte* CDynamicVBManager::lockBuffer( int byteStart, int byteCount )
+byte* CDynamicVBManager::lockBuffer( unsigned int byteStart, unsigned int byteCount )
 {
 	if( byteCount == 0 )
 		return NULL;

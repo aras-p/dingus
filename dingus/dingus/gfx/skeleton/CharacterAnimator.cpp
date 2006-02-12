@@ -45,7 +45,7 @@ void CCharacterAnimator::setNumCurves( int n )
 
 
 
-void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, time_value startTime, float duration, float numCurves, bool& hasScale )
+void CCharacterAnimator::SAnimState::setupState( const CAnimationBunch* b, time_value startTime, float duration, int numCurves, bool& hasScale )
 {
 	bunch = b;
 	if( b == NULL )
@@ -224,7 +224,6 @@ void CCharacterAnimator::updateLocal( time_value curTime )
 		const SSynchAnimState& ascurr = mAnims[animIdx];
 		float baseWeight = accumWeight;
 		if( animIdx > 0 ) {
-			const SSynchAnimState& asprev = mAnims[animIdx-1];
 			time_value curPlayTime = curTime - ascurr.anims[0].posStream->getStartTime();
 			float curPlayTimeS = curPlayTime.tosec();
 			float fadeInTime = ascurr.fadeIn;

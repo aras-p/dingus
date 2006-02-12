@@ -27,7 +27,7 @@ public:
 	 *  @param count Element (eg. vertex or index) count.
 	 *  @return Smart pointer to locked chunk.
 	 */
-	virtual SHARED_CHUNK lock( int count ) = 0;
+	virtual SHARED_CHUNK lock( size_t count ) = 0;
 };
 
 

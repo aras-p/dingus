@@ -223,7 +223,8 @@ LRESULT CDingusSystem::msgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	}
 	*/
 	if( mApplication && mAppInited ) {
-		bool processed = mApplication->msgProc( hWnd, msg, wParam, lParam );
+		mApplication->msgProc( hWnd, msg, wParam, lParam );
+		//bool processed = mApplication->msgProc( hWnd, msg, wParam, lParam );
 		//if( processed )
 		//	return;
 	}

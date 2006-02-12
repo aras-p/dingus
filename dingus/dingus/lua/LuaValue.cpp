@@ -11,7 +11,7 @@ using namespace dingus;
 
 std::string CLuaValue::getString() const 
 {
-	int n = lua_strlen(mLua->getState(),mIndex);
+	size_t n = lua_strlen(mLua->getState(),mIndex);
 	if( n < 1 )
 		return "";
 	return std::string(lua_tostring(mLua->getState(),mIndex),n);

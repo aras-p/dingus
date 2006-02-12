@@ -35,14 +35,14 @@ public:
 	void resetVBs();
 
 	/** Set stream element size in bytes. */
-	void setStride( int stride, int stream = 0 ) { mStride[stream] = stride; }
+	void setStride( unsigned int stride, int stream = 0 ) { mStride[stream] = stride; }
 	/** Get stream element size in bytes. */
-	int getStride( int stream = 0 ) const { return mStride[stream]; }
+	unsigned int getStride( int stream = 0 ) const { return mStride[stream]; }
 
 	/** Set stream offset in bytes. Can be not supported on pre-DX9 drivers. */
-	void setByteOffset( int offset, int stream = 0 ) { mByteOffset[stream] = offset; }
+	void setByteOffset( unsigned int offset, int stream = 0 ) { mByteOffset[stream] = offset; }
 	/** Get stream offset in bytes. */
-	int getByteOffset( int stream = 0 ) const { return mByteOffset[stream]; }
+	unsigned int getByteOffset( int stream = 0 ) const { return mByteOffset[stream]; }
 
 	/** Set vertex declaration. If isn't set, you have to set FVF on the device. */
 	void setVertexDecl( CD3DVertexDecl* decl ) { mVertexDecl = decl; }
@@ -68,8 +68,8 @@ protected:
 	
 private:
 	CD3DVertexBuffer*	mVB[VERTEX_STREAM_COUNT];
-	int					mStride[VERTEX_STREAM_COUNT];
-	int					mByteOffset[VERTEX_STREAM_COUNT];
+	unsigned int		mStride[VERTEX_STREAM_COUNT];
+	unsigned int		mByteOffset[VERTEX_STREAM_COUNT];
 	int					mLargestActiveStream;
 	CD3DVertexDecl*		mVertexDecl;
 

@@ -13,6 +13,7 @@ using namespace dingus;
 
 CEffectBundle::CEffectBundle()
 :	mSharedPool(0), 
+	mSkipConstants(NULL),
 	mOptimizeShaders(true), mUseStateManager(true), mLastErrors("")
 {
 	addExtension( ".fx" );
@@ -44,7 +45,7 @@ void CEffectBundle::setMacro( const char* name, const char* value )
 		mMacros[idx].Definition = value;
 	} else {
 		// replace last (which was NULL)
-		int lastIdx = mMacros.size()-1;
+		size_t lastIdx = mMacros.size()-1;
 		mMacros[lastIdx].Name = name;
 		mMacros[lastIdx].Definition = value;
 		// last macro must be NULL
@@ -58,7 +59,7 @@ void CEffectBundle::removeMacro( const char* name )
 	int idx = findMacro( name );
 	if( idx >= 0 ) {
 		// copy pre-last in place of removed one (last one is NULL)
-		int preLastIdx = mMacros.size()-2;
+		size_t preLastIdx = mMacros.size()-2;
 		mMacros[idx] = mMacros[preLastIdx];
 		// set pre-last to NULL
 		mMacros[preLastIdx].Name = mMacros[preLastIdx].Definition = NULL;
@@ -69,7 +70,7 @@ void CEffectBundle::removeMacro( const char* name )
 
 int CEffectBundle::findMacro( const char* name ) const
 {
-	int n = mMacros.size() - 1; // last one is NULL anyway
+	int n = (int)mMacros.size() - 1; // last one is NULL anyway
 	for( int i = 0; i < n; ++i ) {
 		if( !strcmp(name,mMacros[i].Name) )
 			return i;
@@ -82,6 +83,7 @@ CD3DXEffect* CEffectBundle::loadResourceById( const CResourceId& id, const CReso
 {
 	CD3DXEffect* fx = new CD3DXEffect( NULL );
 	bool ok = fxloader::load( id.getUniqueName(), fullName.getUniqueName(),
+		mSkipConstants,
 		*fx, mLastErrors, mSharedPool,
 		mUseStateManager ? (&CD3DDevice::getInstance().getStateManager()) : NULL,
 		&mMacros[0], mMacros.size(), mOptimizeShaders, CONSOLE );

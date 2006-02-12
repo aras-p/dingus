@@ -181,7 +181,7 @@ int CD3DDeviceCaps::calcVideoMemory()
 						// See how much memory is on the card
 						DDSCAPS2 ddscaps2;
 						DWORD junk;
-						DWORD videoMemory = -1;
+						DWORD videoMemory = (DWORD)-1;
 						DWORD temp = 0;
 						memset( &ddscaps2, 0, sizeof(ddscaps2) );
 						ddscaps2.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_VIDEOMEMORY;
@@ -202,7 +202,7 @@ int CD3DDeviceCaps::calcVideoMemory()
 							videoMemory=temp;
 
 						// If cannot get memory size, there must be a problem with D3D / DirectDraw
-						if( -1 == videoMemory ) {
+						if( (DWORD)-1 == videoMemory ) {
 							videoMemory = 0;
 						} else {
 							

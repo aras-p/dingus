@@ -35,7 +35,7 @@ public:
 	int getGroupID() const { return mGroupID; }
 
     /// get number of bones in palette
-    int getBoneCount() const { return mBoneIndices.size(); }
+    int getBoneCount() const { return (int)mBoneIndices.size(); }
     /// get bone index at given palette index
     int getBoneIdx( int paletteIdx ) const { return mBoneIndices[paletteIdx]; }
 
@@ -64,7 +64,7 @@ public:
 	int getPaletteSize() const { return mPaletteSize; }
 	int getBonesPerVertex() const { return mBonesPerVertex; }
 
-	int getPaletteCount() const { return mPalettes.size(); }
+	int getPaletteCount() const { return (int)mPalettes.size(); }
 	const CSkinBonePalette& getPalette( int i ) const { return mPalettes[i]; }
 	
 private:
