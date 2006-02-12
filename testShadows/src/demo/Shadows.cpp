@@ -4,6 +4,9 @@
 #include <dingus/gfx/GfxUtils.h>
 
 
+extern	bool gUseDSTShadows;
+
+
 // --------------------------------------------------------------------------
 
 SceneEntityPtrs			gScene;
@@ -15,7 +18,6 @@ static SVector3 gLightPos;
 static SVector3 gLightDir;
 static SVector3 gLightColor;
 static float gLightCosAngle;
-static SMatrix4x4 gShadowLightViewProj;
 static SMatrix4x4 gShadowTexProj;
 
 
@@ -39,8 +41,7 @@ void ShadowBuffer::SetOntoRenderContext()
 	G_RENDERCTX->getCamera().setProjectionMatrix( matProj );
 
 	// calculate the rest of matrices for shadow projections
-	m_ViewProjMatrix = G_RENDERCTX->getCamera().getViewProjMatrix();
-	gfx::textureProjectionWorld( m_ViewProjMatrix, float(m_RTSize), float(m_RTSize), m_TextureProjMatrix );
+	gfx::textureProjectionWorld( G_RENDERCTX->getCamera().getViewProjMatrix(), float(m_RTSize), float(m_RTSize), m_TextureProjMatrix );
 }
 
 
@@ -78,7 +79,6 @@ SceneEntity::SceneEntity( const std::string& name )
 	ep.addVector3Ref( "vLightDir", gLightDir );
 	ep.addVector3Ref( "vLightColor", gLightColor );
 	ep.addFloatRef( "fLightCosAngle", &gLightCosAngle );
-	ep.addMatrix4x4Ref( "mLightViewProj", gShadowLightViewProj );
 	ep.addMatrix4x4Ref( "mShadowProj", gShadowTexProj );
 	ep.addVector3Ref( "vColor", m_Color );
 }
@@ -352,6 +352,16 @@ void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 
 	// Now that all the setup is done, actually render the shadow buffers
 	CD3DDevice& dx = CD3DDevice::getInstance();
+	
+	if( gUseDSTShadows )
+	{
+		const float kDepthBias = 0.0001f;
+		const float kSlopeBias = 2.0f;
+		dx.getStateManager().SetRenderState( D3DRS_COLORWRITEENABLE, 0 );
+		dx.getStateManager().SetRenderState( D3DRS_DEPTHBIAS, *(DWORD*)&kDepthBias );
+		dx.getStateManager().SetRenderState( D3DRS_SLOPESCALEDEPTHBIAS, *(DWORD*)&kSlopeBias );
+	}
+
 	for( i = 0; i < nlights; ++i )
 	{
 		Light& light = *gLights[i];
@@ -360,9 +370,18 @@ void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 		{
 			ShadowBuffer& shadowBuffer = *light.m_ShadowBuffers[sb];
 			// set render target to this SB
-			dx.setRenderTarget( shadowBuffer.m_RTSurface );
-			dx.setZStencil( gShadowRTManager->FindDepthBuffer( shadowBuffer.m_RTSize ) );
-			dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
+			if( gUseDSTShadows )
+			{
+				dx.setRenderTarget( gShadowRTManager->FindDepthBuffer( shadowBuffer.m_RTSize ) );
+				dx.setZStencil( shadowBuffer.m_RTSurface );
+				dx.clearTargets( false, true, false, 0xFFffffff, 1.0f );
+			}
+			else
+			{
+				dx.setRenderTarget( shadowBuffer.m_RTSurface );
+				dx.setZStencil( gShadowRTManager->FindDepthBuffer( shadowBuffer.m_RTSize ) );
+				dx.clearTargets( true, true, false, 0xFFffffff, 1.0f );
+			}
 			// calculate and set SB camera matrices
 			shadowBuffer.SetOntoRenderContext();
 			G_RENDERCTX->applyGlobalEffect();
@@ -373,6 +392,14 @@ void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 				shadowBuffer.m_Casters[o]->render( RM_CASTER, true, true );
 			G_RENDERCTX->directEnd();
 		}
+	}
+
+	if( gUseDSTShadows )
+	{
+		dx.getStateManager().SetRenderState( D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_BLUE|D3DCOLORWRITEENABLE_ALPHA );
+		const float temp = 0.0f;
+		dx.getStateManager().SetRenderState( D3DRS_DEPTHBIAS, *(DWORD*)&temp );
+		dx.getStateManager().SetRenderState( D3DRS_SLOPESCALEDEPTHBIAS, *(DWORD*)&temp );
 	}
 
 	// Render the main camera with all the shadows and lights and whatever
@@ -398,9 +425,20 @@ void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 	dx.getStateManager().SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
 	dx.getStateManager().SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
 	// shadow map sampling
-	dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
-	dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MINFILTER, D3DTEXF_POINT );
-	dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MIPFILTER, D3DTEXF_POINT );
+	if( gUseDSTShadows )
+	{
+		dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+		dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+		dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MIPFILTER, D3DTEXF_NONE );
+		dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
+		dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
+	}
+	else
+	{
+		dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+		dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+		dx.getStateManager().SetSamplerState( kShaderShadowTextureIndex, D3DSAMP_MIPFILTER, D3DTEXF_POINT );
+	}
 
 	// render all visible objects with shadows and lights
 	for( i = 0; i < nsceneobjs; ++i )
@@ -425,7 +463,6 @@ void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 			gLightDir = light.mWorldMat.getAxisZ();
 			gLightColor = light.m_Color;
 			gLightCosAngle = light.getViewCone().cosAngle;
-			gShadowLightViewProj = shadowBuffer.m_ViewProjMatrix;
 			gShadowTexProj = shadowBuffer.m_TextureProjMatrix;
 
 			obj.render( RM_NORMAL, false, true );

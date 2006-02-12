@@ -19,6 +19,9 @@ bool	gFinished = false;
 bool	gShowStats = false;
 CDebugRenderer*	gDebugRenderer;
 
+bool			gUseDSTShadows;
+
+
 // --------------------------------------------------------------------------
 
 CDemo::CDemo()
@@ -86,43 +89,6 @@ void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 // --------------------------------------------------------------------------
 
 
-/*
-void gInitializeScene()
-{
-	int i;
-
-	const int kLightCount = 5;
-	const int kAICount = 200;
-
-	for( i = 0; i < kLightCount; ++i )
-	{
-		Light* l = new Light();
-		l->mWorldMat.getOrigin().set(
-			gRandom.getFloat( -10.0f, 10.0f ),
-			10.0f,
-			gRandom.getFloat( -10.0f, 10.0f )
-		);
-		l->mWorldMat.getAxisZ().set( 0, -1, 0 );
-		l->mWorldMat.spaceFromAxisZ();
-		l->setProjectionParams( D3DX_PI/4, 1.0f, 1.0f, 20.0f );
-		l->updateViewConeAngleFOV();
-		l->updateViewCone();
-		gLights.push_back( l );
-	}
-
-	for( i = 0; i < kAICount; ++i )
-	{
-		SceneEntity* obj = new SceneEntity( "AI_0" );
-		obj->mWorldMat.getOrigin().set(
-			gRandom.getFloat( -10.0f,  10.0f ),
-			0,//gRandom.getFloat( -10.0f,   0.0f ),
-			gRandom.getFloat( -10.0f,  10.0f )
-		);
-		gScene.push_back( obj );
-	}
-}
-*/
-
 void gInitializeScene( const char* fileName )
 {
 	FILE* f = fopen( fileName, "rt" );
@@ -182,7 +148,12 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gAppContext = &appContext;
 	G_INPUTCTX->addListener( *this );
 
-	//CEffectBundle::getInstance().setSkipConstants( "mShadowProj;mLightViewProj;vLightDir;vLightPos;fLightAngle;" );
+	gUseDSTShadows = CD3DDevice::getInstance().getCaps().hasShadowMaps();
+	//gUseDSTShadows = false;
+
+	if( gUseDSTShadows ) {
+		CEffectBundle::getInstance().setMacro( "DST_SHADOWS", "1" );
+	}
 
 	gDebugRenderer = new CDebugRenderer( *G_RENDERCTX, *RGET_FX("debug") );
 
@@ -384,8 +355,8 @@ static void gAnimate( float dt )
 			SMatrix4x4 mr;
 			D3DXMatrixRotationYawPitchRoll(
 				&mr,
-				cosf(i)*dt*0.6f,
-				sinf(i)*dt*0.3f,
+				cosf(i)*dt*1.2f,
+				sinf(i)*dt*0.7f,
 				cosf(i)*dt*0.2f
 			);
 			obj.mWorldMat = mr * obj.mWorldMat;

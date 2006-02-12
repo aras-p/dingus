@@ -4,6 +4,8 @@
 
 ShadowBufferRTManager*	gShadowRTManager;
 
+extern	bool gUseDSTShadows;
+
 
 static int LowerPowerOf2( int x )
 {
@@ -97,8 +99,16 @@ bool ShadowBufferRTManager::RequestBuffer( int& size, CD3DTexture** outTex, CD3D
 	RenderTarget rt( buf );
 	rt.used = true;
 
-	CSharedTextureBundle::getInstance().registerTexture( rt.resID,
-		*new CFixedTextureCreator(size,size,1,D3DUSAGE_RENDERTARGET,D3DFMT_R32F,D3DPOOL_DEFAULT) );
+	if( gUseDSTShadows )
+	{
+		CSharedTextureBundle::getInstance().registerTexture( rt.resID,
+			*new CFixedTextureCreator(size,size,1,D3DUSAGE_DEPTHSTENCIL,D3DFMT_D24S8,D3DPOOL_DEFAULT) );
+	}
+	else
+	{
+		CSharedTextureBundle::getInstance().registerTexture( rt.resID,
+			*new CFixedTextureCreator(size,size,1,D3DUSAGE_RENDERTARGET,D3DFMT_R32F,D3DPOOL_DEFAULT) );
+	}
 	DINGUS_REGISTER_STEX_SURFACE( CSharedSurfaceBundle::getInstance(), rt.resID );
 
 	rt.texture = RGET_S_TEX(rt.resID);
@@ -139,8 +149,16 @@ CD3DSurface* ShadowBufferRTManager::FindDepthBuffer( int size )
 	CConsole::getChannel("shadows") << "new depth buffer: " << size << endl;
 
 	DepthBuffer db( buf );
-	CSharedSurfaceBundle::getInstance().registerSurface( db.resID,
-		*new CFixedSurfaceCreator(size, size, true, D3DFMT_D24S8 ) );
+	if( gUseDSTShadows )
+	{
+		CSharedSurfaceBundle::getInstance().registerSurface( db.resID,
+			*new CFixedSurfaceCreator(size, size, false, D3DFMT_R5G6B5 ) );
+	}
+	else
+	{
+		CSharedSurfaceBundle::getInstance().registerSurface( db.resID,
+			*new CFixedSurfaceCreator(size, size, true, D3DFMT_D24S8 ) );
+	}
 	db.surface = RGET_S_SURF( db.resID );
 
 	mSizeToDB.insert( std::make_pair(size, db) );

@@ -4,35 +4,36 @@
 #include "shared.fx"
 #include "structs.fx"
 
+#ifdef DST_SHADOWS
+half4 psCasterMain() : COLOR {
+	return 0;
+}
+#else
 static inline float gShadowZ( float4 wvppos ) {
 	return (wvppos.z + fShadowBias) / wvppos.w;
 }
-
 float4 psCasterMain( SPosZ i ) : COLOR {
 	return i.z;
 }
+#endif
 
 static inline void gShadowProj( in float4 wpos,
-	in float4x4 shadowProj, in float4x4 lightVW,
+	in float4x4 shadowProj,
 	out float4 ouvz )
 {
-	ouvz = mul( wpos, shadowProj ).xyww;
-	float4 wvpos = mul( wpos, lightVW );
-	ouvz.z = wvpos.z / wvpos.w;
-#ifdef DST_SHADOWS
-	ouvz.z -= fShadowBias;
+	ouvz = mul( wpos, shadowProj );
+#ifndef DST_SHADOWS
+	ouvz.z /= ouvz.w;
 #endif
 }
 
-static inline float gSampleShadow( sampler2D smap, float4 uvz ) {
-	float shadow;
+static inline half gSampleShadow( sampler2D smap, float4 uvz ) {
 #ifdef DST_SHADOWS
-	shadow = tex2Dproj( smap, uvz ).r;
+	return tex2Dproj( smap, uvz ).r;
 #else
 	float z = tex2Dproj( smap, uvz ).r;
-	shadow = z < uvz.z ? 0.0 : 1.0;
+	return z < uvz.z ? 0.0 : 1.0;
 #endif
-	return shadow;
 }
 
 

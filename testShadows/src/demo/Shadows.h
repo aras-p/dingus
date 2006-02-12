@@ -60,7 +60,6 @@ struct ShadowBuffer
 	ViewCone		m_LSpaceCone;	// light space cone of this SB
 
 	// render target data
-	SMatrix4x4		m_ViewProjMatrix;
 	SMatrix4x4		m_TextureProjMatrix;
 	int				m_RTSize;
 	CD3DTexture*	m_RTTexture;

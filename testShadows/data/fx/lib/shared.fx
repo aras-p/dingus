@@ -16,17 +16,11 @@ shared float3	vCameraY;
 // --------------------------------------------------------------------------
 // light and shadows
 
+#ifndef DST_SHADOWS
 static const float	fShadowBias = 0.1;
+#endif
 
 sampler smpShadow : register(s4);
-
-/*
-float3	vLightPos : register(c32);
-float3	vLightDir : register(c33);
-float	fLightAngle : register(c34);
-float4x4	mShadowProj : register(c35);
-float4x4	mLightViewProj : register(c39);
-*/
 
 
 #endif
