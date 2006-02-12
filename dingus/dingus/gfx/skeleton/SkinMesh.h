@@ -25,7 +25,7 @@ public:
     void setBone( int paletteIdx, int boneIdx ) {
 		if( boneIdx < 0 )
 			return;
-		assert( mBoneIndices.size() == paletteIdx );
+		assert( (int)mBoneIndices.size() == paletteIdx );
 		mBoneIndices.push_back( boneIdx );
 	}
     /// finish defining palette

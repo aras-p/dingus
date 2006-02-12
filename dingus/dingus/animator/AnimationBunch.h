@@ -154,7 +154,7 @@ inline CAnimationBunch::TFloatAnimation* CAnimationBunch::findFloatAnim( const s
 
 inline void CAnimationBunch::addCurveDesc( const std::string& name, int parentIndex )
 {
-	assert( parentIndex == -1 || (parentIndex >= 0 && parentIndex < mCurveDescs.size() ) );
+	assert( parentIndex == -1 || (parentIndex >= 0 && parentIndex < (int)mCurveDescs.size() ) );
 	assert( getCurveIndexByName(name) == -1 );
 	mCurveDescs.push_back( SCurveDesc( name, parentIndex ) );
 }
@@ -164,17 +164,17 @@ inline int CAnimationBunch::getCurveCount() const
 }
 inline const std::string& CAnimationBunch::getCurveName( int curveIdx ) const
 {
-	assert( curveIdx >= 0 && curveIdx < mCurveDescs.size() );
+	assert( curveIdx >= 0 && curveIdx < (int)mCurveDescs.size() );
 	return mCurveDescs[curveIdx].mName;
 }
 inline int CAnimationBunch::getCurveParent( int curveIdx ) const
 {
-	assert( curveIdx >= 0 && curveIdx < mCurveDescs.size() );
+	assert( curveIdx >= 0 && curveIdx < (int)mCurveDescs.size() );
 	return mCurveDescs[curveIdx].mParentIndex;
 }
 inline int CAnimationBunch::getCurveChildrenCount( int curveIdx ) const
 {
-	assert( curveIdx >= 0 && curveIdx < mCurveDescs.size() );
+	assert( curveIdx >= 0 && curveIdx < (int)mCurveDescs.size() );
 	return mCurveDescs[curveIdx].mChildrenCount;
 }
 inline int CAnimationBunch::getCurveIndexByName( const std::string& name ) const

@@ -146,7 +146,7 @@ int CD3DXEffect::beginFx()
 	DWORD flags = mHasRestoringPass ? (FX_BEGIN_PARAMS) : 0;
 	HRESULT hr = getObject()->Begin( &p, flags );
 	assert( SUCCEEDED(hr) );
-	assert( mHasRestoringPass && p==mPassCount+1 || !mHasRestoringPass && p==mPassCount );
+	assert( mHasRestoringPass && (int)p==mPassCount+1 || !mHasRestoringPass && (int)p==mPassCount );
 	return mPassCount;
 }
 

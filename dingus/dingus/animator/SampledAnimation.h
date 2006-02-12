@@ -38,12 +38,12 @@ public:
 	void	addSample( const value_type& sample ) { mSamples.push_back(sample); }
 	void	reserveSamples( int sampleCount ) { mSamples.reserve(sampleCount); }
 	void	resizeSamples( int sampleCount ) { mSamples.resize(sampleCount); }
-	int		getTotalSampleCount() const { return mSamples.size(); }
+	int		getTotalSampleCount() const { return (int)mSamples.size(); }
 	const value_type& getSample( int index ) const;
 
 	void	addCurve( const curve_type& curve ) { mCurves.push_back(curve); }
 	void	reserveCurves( int curveCount ) { mCurves.reserve(curveCount); }
-	int		getCurveCount() const { return mCurves.size(); }
+	int		getCurveCount() const { return (int)mCurves.size(); }
 	const curve_type& getCurve( int index ) const;
 
 	int		getSamplesInCurve() const { return mSamplesInCurve; }

@@ -264,8 +264,8 @@ public:
 	}
 
 	const TStateVector& getStates() const { return mStates; }
-	int getPassStateStart( int pass ) const { assert(pass>=0&&pass<mPassStart.size()); return mPassStart[pass]; }
-	int getPassStateCount( int pass ) const { assert(pass>=0&&pass<mPassCounts.size()); return mPassCounts[pass]; }
+	int getPassStateStart( int pass ) const { assert(pass>=0&&pass<(int)mPassStart.size()); return mPassStart[pass]; }
+	int getPassStateCount( int pass ) const { assert(pass>=0&&pass<(int)mPassCounts.size()); return mPassCounts[pass]; }
 
 
 	/**

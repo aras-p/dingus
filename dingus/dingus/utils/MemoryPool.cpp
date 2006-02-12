@@ -121,8 +121,8 @@ void CMemoryPool::deallocate( void *memBlock )
 #ifdef _DEBUG
 	// check to see if the memory is from the allocated range
 	bool ok = false;
-	int n = mBubbles.size();
-	for( int i = 0; i < n; ++i ) {
+	size_t n = mBubbles.size();
+	for( size_t i = 0; i < n; ++i ) {
 		SBubble* p = mBubbles[i];
 		if( (char*)memBlock >= p->mData && (char*)memBlock < (p->mData + p->mByteCount) ) {
 			ok = true;
