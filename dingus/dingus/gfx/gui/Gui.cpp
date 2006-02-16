@@ -78,7 +78,7 @@ static inline int rectHeight( const RECT &rc ) { return ( (rc).bottom - (rc).top
 // --------------------------------------------------------------------------
 
 CUIDialog::CUIDialog()
-:	mHasCaption(false), mMinimized(false),
+:	mHasCaption(false), mMinimized(false), mDragging(false),
 	mX(0), mY(0), mWidth(0), mHeight(0), mCaptionHeight(18),
 	mColorUL(0), mColorUR(0), mColorDL(0), mColorDR(0),
 	mCallbackEvent(NULL), mDefaultTexture(NULL),
@@ -345,22 +345,21 @@ bool CUIDialog::msgProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
 	// If caption is enabled, check for clicks in the caption area.
 	if( mHasCaption ) {
-		static bool dragging;
 
 		if( msg == WM_LBUTTONDOWN || msg == WM_LBUTTONDBLCLK ) {
 			if( mousePoint.x >= mX && mousePoint.x < mX + mWidth &&
 				mousePoint.y >= mY && mousePoint.y < mY + mCaptionHeight )
 			{
-				dragging = true;
+				mDragging = true;
 				SetCapture( CD3DDevice::getInstance().getDeviceWindow() );
 				return true;
 			}
-		} else if( msg == WM_LBUTTONUP && dragging ) {
+		} else if( msg == WM_LBUTTONUP && mDragging ) {
 			if( mousePoint.x >= mX && mousePoint.x < mX + mWidth &&
 				mousePoint.y >= mY && mousePoint.y < mY + mCaptionHeight )
 			{
 				ReleaseCapture();
-				dragging = false;
+				mDragging = false;
 				mMinimized = !mMinimized;
 				return true;
 			}
@@ -512,6 +511,14 @@ bool CUIDialog::msgProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			}
 			break;
 		}
+		case WM_CAPTURECHANGED:
+			// The application has lost mouse capture. The dialog object may
+			// not have received a WM_MOUSEUP when capture changed. Reset
+			// mDragging so that the dialog does not mistakenly
+			// think the mouse button is still held down.
+			if( (HWND)lParam != hwnd )
+				mDragging = false;
+			break;
 	}
 
 	// Not handled
@@ -1294,6 +1301,7 @@ void CUIDialog::clearFocus()
 		sCtrlFocus->onFocusOut();
 		sCtrlFocus = NULL;
 	}
+	ReleaseCapture();
 }
 
 
@@ -1333,7 +1341,8 @@ void CUIDialog::onCycleFocus( bool forward )
 		// If the dialog accepts keybord input and the control can have focus then
 		// move focus
 		if( ctrl->mDialog->mDoKeyboardInput && ctrl->canHaveFocus() ) {
-			sCtrlFocus->onFocusOut();
+			if( sCtrlFocus )
+				sCtrlFocus->onFocusOut();
 			sCtrlFocus = ctrl;
 			sCtrlFocus->onFocusIn();
 			return;
@@ -2982,7 +2991,6 @@ bool CUISlider::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam )
 			{
 				mPressed = false;
 				ReleaseCapture();
-				mDialog->clearFocus();
 				mDialog->sendEvent( UIEVENT_SLIDER_VALUE_CHANGED, true, this );
 
 				return true;
@@ -3085,6 +3093,7 @@ void CUISlider::render( IDirect3DDevice9* device, float dt )
 //--------------------------------------------------------------------------------------
 
 CUIScrollBar::CUIScrollBar( CUIDialog *dialog )
+:	mDragging(false)
 {
 	mType = UICTRL_SCROLLBAR;
 	mDialog = dialog;
@@ -3188,7 +3197,6 @@ bool CUIScrollBar::handleKeyb( UINT msg, WPARAM wParam, LPARAM lParam )
 bool CUIScrollBar::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam )
 {
 	static int ThumbOffsetY;
-	static bool dragging;
 
 	mLastMouse = pt;
 	switch( msg )
@@ -3220,7 +3228,7 @@ bool CUIScrollBar::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam
 
 			// Check for click on thumb
 			if( mRectThumb.containsPoint( pt ) ) {
-				dragging = true;
+				mDragging = true;
 				ThumbOffsetY = pt.y - (int)mRectThumb.top;
 				return true;
 			}
@@ -3240,7 +3248,7 @@ bool CUIScrollBar::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam
 		}
 
 		case WM_LBUTTONUP: {
-			dragging = false;
+			mDragging = false;
 			ReleaseCapture();
 			updateThumbRect();
 			mArrows = CLEAR;
@@ -3248,7 +3256,7 @@ bool CUIScrollBar::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam
 		}
 
 		case WM_MOUSEMOVE: {
-			if( dragging ) {
+			if( mDragging ) {
 				mRectThumb.bottom += pt.y - ThumbOffsetY - mRectThumb.top;
 				mRectThumb.top = float( pt.y - ThumbOffsetY );
 				if( mRectThumb.top < mRectTrack.top )
@@ -3273,6 +3281,20 @@ bool CUIScrollBar::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam
 
 	return false;
 }
+
+bool CUIScrollBar::msgProc( UINT msg, WPARAM wparam, LPARAM lparam )
+{
+	if( WM_CAPTURECHANGED == msg )
+	{
+		// The application just lost mouse capture. We may not have gotten
+		// the WM_MOUSEUP message, so reset mDragging here.
+		if( (HWND)lparam != CD3DDevice::getInstance().getDeviceWindow() )
+			mDragging = false;
+	}
+
+	return false;
+}
+
 
 
 void CUIScrollBar::render( IDirect3DDevice9* device, float dt )
@@ -3395,8 +3417,9 @@ void CUIScrollBar::capPosition()	// Clips position at boundaries. Ensures it sta
 //--------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------
-CUIListBox::CUIListBox( CUIDialog *dialog ) :
-	mScrollBar( dialog )
+CUIListBox::CUIListBox( CUIDialog *dialog )
+:	mScrollBar( dialog )
+,	mDragging(false)
 {
 	mType = UICTRL_LISTBOX;
 	mDialog = dialog;
@@ -3405,7 +3428,6 @@ CUIListBox::CUIListBox( CUIDialog *dialog ) :
 	mSBWidth = 16;
 	mSelected = -1;
 	mSelStart = 0;
-	mDragging = false;
 	mBorder = 6;
 	mMargin = 5;
 	mTextHeight = 0;
@@ -3914,6 +3936,21 @@ bool CUIListBox::handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam )
 
 	return false;
 }
+
+
+bool CUIListBox::msgProc( UINT msg, WPARAM wparam, LPARAM lparam )
+{
+	if( WM_CAPTURECHANGED == msg )
+	{
+		// The application just lost mouse capture. We may not have gotten
+		// the WM_MOUSEUP message, so reset mDragging here.
+		if( (HWND)lparam != CD3DDevice::getInstance().getDeviceWindow() )
+			mDragging = false;
+	}
+
+	return false;
+}
+
 
 
 //--------------------------------------------------------------------------------------

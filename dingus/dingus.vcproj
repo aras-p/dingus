@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="dingus"
+	ProjectGUID="{0ED318F0-1F02-4B96-9E29-6A5AAC636513}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

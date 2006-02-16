@@ -337,6 +337,7 @@ private:
 	char	mCaption[256];
 	bool	mHasCaption;
 	bool	mMinimized;
+	bool	mDragging;
 
 	float	mX;
 	float	mY;
@@ -672,6 +673,7 @@ public:
 	virtual ~CUIScrollBar();
 
 	// CUIControl
+	virtual bool msgProc( UINT msg, WPARAM wParam, LPARAM lParam );
 	virtual bool handleKeyb( UINT msg, WPARAM wParam, LPARAM lParam );
 	virtual bool handleMouse( UINT msg, POINT pt, WPARAM wParam, LPARAM lParam );
 	virtual void render( IDirect3DDevice9* device, float dt );
@@ -700,6 +702,8 @@ protected:
 	void	capPosition();  ///< Clips position at boundaries. Ensures it stays within legal range.
 
 	bool	mShowThumb;
+	bool	mDragging;
+
 	SFRect	mRectUp;
 	SFRect	mRectDown;
 	SFRect	mRectTrack;
@@ -736,6 +740,7 @@ public:
 	virtual ~CUIListBox();
 
 	// CUIControl
+	virtual bool msgProc( UINT msg, WPARAM wParam, LPARAM lParam );
 	virtual HRESULT onInit() { return mDialog->initControl( &mScrollBar ); }
 	virtual bool	canHaveFocus() const { return (mVisible && mEnabled); }
 	virtual bool	handleKeyb( UINT msg, WPARAM wParam, LPARAM lParam );
