@@ -19,6 +19,7 @@ static SVector3 gLightDir;
 static SVector3 gLightColor;
 static float gLightCosAngle;
 static SMatrix4x4 gShadowTexProj;
+static SVector3 gInvShadowSize;
 
 
 // --------------------------------------------------------------------------
@@ -80,6 +81,7 @@ SceneEntity::SceneEntity( const std::string& name )
 	ep.addVector3Ref( "vLightColor", gLightColor );
 	ep.addFloatRef( "fLightCosAngle", &gLightCosAngle );
 	ep.addMatrix4x4Ref( "mShadowProj", gShadowTexProj );
+	ep.addVector3Ref( "vInvShadowSize", gInvShadowSize );
 	ep.addVector3Ref( "vColor", m_Color );
 }
 
@@ -356,7 +358,7 @@ void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 	if( gUseDSTShadows )
 	{
 		const float kDepthBias = 0.0001f;
-		const float kSlopeBias = 2.0f;
+		const float kSlopeBias = 1.5f;
 		dx.getStateManager().SetRenderState( D3DRS_COLORWRITEENABLE, 0 );
 		dx.getStateManager().SetRenderState( D3DRS_DEPTHBIAS, *(DWORD*)&kDepthBias );
 		dx.getStateManager().SetRenderState( D3DRS_SLOPESCALEDEPTHBIAS, *(DWORD*)&kSlopeBias );
@@ -464,6 +466,8 @@ void RenderSceneWithShadows( CCameraEntity& camera, float shadowQuality )
 			gLightColor = light.m_Color;
 			gLightCosAngle = light.getViewCone().cosAngle;
 			gShadowTexProj = shadowBuffer.m_TextureProjMatrix;
+			gInvShadowSize.x = 1.0f / shadowBuffer.m_RTSize;
+			gInvShadowSize.y = 1.0f / shadowBuffer.m_RTSize;
 
 			obj.render( RM_NORMAL, false, true );
 		}

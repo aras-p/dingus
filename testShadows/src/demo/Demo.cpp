@@ -9,6 +9,7 @@
 #include <dingus/utils/Random.h>
 #include <dingus/gfx/DebugRenderer.h>
 #include <dingus/gfx/geometry/DynamicVBManager.h>
+#include <dingus/renderer/EffectParamsNotifier.h>
 
 
 // --------------------------------------------------------------------------
@@ -77,6 +78,8 @@ CUICheckBox*	gUIChkDrawBounds;
 CUICheckBox*	gUIChkDrawStats;
 CUISlider*		gUISldShadowQuality;
 
+CUIComboBox*	gUICmbShadowFilter;
+
 
 // --------------------------------------------------------------------------
 
@@ -84,6 +87,17 @@ void CALLBACK gUIRenderCallback( CUIDialog& dlg );
 
 void CALLBACK gUICallback( UINT evt, int ctrlID, CUIControl* ctrl )
 {
+	if( evt == UIEVENT_COMBOBOX_SELECTION_CHANGED )
+	{
+		CUIComboBox* c = (CUIComboBox*)ctrl;
+		if( c == gUICmbShadowFilter )
+		{
+			CEffectBundle& bfx = CEffectBundle::getInstance();
+			bfx.setMacro( "D_SHD_FILTER", (const char*)c->getSelectedData() );
+			bfx.reload();
+			CEffectParamsNotifier::getInstance().notify();
+		}
+	}
 }
 
 // --------------------------------------------------------------------------
@@ -178,13 +192,21 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	gUIDlgHUD->setCallback( gUICallback );
 	gUIDlgHUD->setRenderCallback( gUIRenderCallback );
 
+	gUIDlgHUD->addStatic( 0, "", 5,  460, 200, 20, false, &gUIFPS );
+
 	const int hctl = 16;
 	int y = 100-hctl;
 
-	gUIDlgHUD->addStatic( 0, "", 5,  460, 200, 20, false, &gUIFPS );
-
 	gUIDlgHUD->addStatic( 0, "Shadow quality:", 5, y+=hctl, 100, hctl );
 	gUIDlgHUD->addSlider( 0, 100, y, 70, hctl, 1, 10, 6, false, &gUISldShadowQuality );
+
+	gUIDlgHUD->addStatic( 0, "Shadow filter:", 5, y+=hctl, 100, hctl );
+	gUIDlgHUD->addComboBox( 0, 100, y, 70, hctl, 0, false, &gUICmbShadowFilter );
+	gUICmbShadowFilter->addItem( "None", "0", true );
+	gUICmbShadowFilter->addItem( "3x3 PCF", "1", false );
+	gUICmbShadowFilter->addItem( "4x4 PCF", "2", false );
+	if( CD3DDevice::getInstance().getCaps().getPShaderVersion() >= CD3DDeviceCaps::PS_3_0 )
+		gUICmbShadowFilter->addItem( "4x4 PCF Dither", "3", false ); // only on SM3.0
 
 	gUIDlgHUD->addCheckBox( 0, "Anim objects", 5, y+=hctl, 100, 16, false, 0, false, &gUIChkAnimObjects );
 	gUIDlgHUD->addCheckBox( 0, "Draw lights",  5, y+=hctl, 100, 16, true, 0, false, &gUIChkDrawLights );

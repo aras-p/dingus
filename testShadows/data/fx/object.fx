@@ -11,6 +11,7 @@ float3	vLightDir;
 float3	vLightColor;
 float	fLightCosAngle;
 float4x4	mShadowProj;
+float3	vInvShadowSize;
 
 
 struct SOutput {
@@ -41,10 +42,18 @@ SOutput vsMain( SPosN i )
 }
 
 
+#if D_SHD_FILTER == 3
+half4 psMain( SOutput i, float2 pos : VPOS ) : COLOR
+#else
 half4 psMain( SOutput i ) : COLOR
+#endif
 {
 	// shadow
-	half shadow = gSampleShadow( smpShadow, i.shz );
+#if D_SHD_FILTER == 3
+	half shadow = gSampleShadow( smpShadow, i.shz, vInvShadowSize.xy, pos.xy );
+#else
+	half shadow = gSampleShadow( smpShadow, i.shz, vInvShadowSize.xy );
+#endif
 	
 	// spot light
 	float3 tol = normalize( vLightPos - i.wpos );
@@ -63,8 +72,13 @@ half4 psMain( SOutput i ) : COLOR
 technique tec20
 {
 	pass P0 {
+		#if D_SHD_FILTER == 3
+		VertexShader = compile vs_3_0 vsMain();
+		PixelShader = compile ps_3_0 psMain();
+		#else
 		VertexShader = compile vs_1_1 vsMain();
 		PixelShader = compile ps_2_0 psMain();
+		#endif
 	}
 	RESTORE_PASS
 }
