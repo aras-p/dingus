@@ -4,7 +4,7 @@
 /// Wall-bounding cells have this height. The further from the walls, the higher height.
 const float MIN_CELL_HEIGHT = 1.5f;
 
-const int DECOR_POINT_TYPE_COUNT = 12;
+const int DECOR_POINT_TYPE_COUNT = 14;
 
 
 class CGameMap : public boost::noncopyable {
@@ -65,6 +65,7 @@ public:
 
 	const std::string& getName() const { return mName; }
 	unsigned int getCRC() const { return mCRC; }
+	eMapContext	getContext() const { return mContext; }
 
 private:
 	void	calcCellHeights();
@@ -83,6 +84,7 @@ private:
 
 	std::string		mName;	/// Map's name
 	unsigned int	mCRC;	/// CRC 32 of the cells
+	eMapContext		mContext;
 };
 
 

@@ -12,7 +12,7 @@ extern SAppSettings gAppSettings;
 
 
 
-const unsigned int CACHED_DATA_VERSION = 20051016;
+const unsigned int CACHED_DATA_VERSION = 20060218;
 
 
 struct SLevelVertex {
@@ -768,7 +768,7 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x-0.5f, y0, -(z-0.5f) );
 				mverts[vidx+1].pos.set( x-0.5f, y1, -(z-0.5f) );
-				SVector3 col = gColors.texture[c.color];
+				SVector3 col = gColors.texture[gmap.getContext()][c.color];
 				mverts[vidx+0].data = col;
 				mverts[vidx+1].data = col;
 				vertsmine.ul = vidx;
@@ -779,7 +779,7 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x+1-0.5f, y0, -(z-0.5f) );
 				mverts[vidx+1].pos.set( x+1-0.5f, y1, -(z-0.5f) );
-				SVector3 col = gColors.texture[c.color];
+				SVector3 col = gColors.texture[gmap.getContext()][c.color];
 				mverts[vidx+0].data = col;
 				mverts[vidx+1].data = col;
 				vertsmine.ur = vidx;
@@ -790,7 +790,7 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x-0.5f, y0, -(z+1-0.5f) );
 				mverts[vidx+1].pos.set( x-0.5f, y1, -(z+1-0.5f) );
-				SVector3 col = gColors.texture[c.color];
+				SVector3 col = gColors.texture[gmap.getContext()][c.color];
 				mverts[vidx+0].data = col;
 				mverts[vidx+1].data = col;
 				vertsmine.dl = vidx;
@@ -801,7 +801,7 @@ void CLevelMesh::initSubdivMesh( CSubdivMesh& mesh )
 				mverts.push_back( CSubdivMesh::SVertex() );
 				mverts[vidx+0].pos.set( x+1-0.5f, y0, -(z+1-0.5f) );
 				mverts[vidx+1].pos.set( x+1-0.5f, y1, -(z+1-0.5f) );
-				SVector3 col = gColors.texture[c.color];
+				SVector3 col = gColors.texture[gmap.getContext()][c.color];
 				mverts[vidx+0].data = col;
 				mverts[vidx+1].data = col;
 				vertsmine.dr = vidx;

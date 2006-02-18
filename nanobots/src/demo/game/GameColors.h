@@ -37,8 +37,8 @@ struct SColors {
 	SColorSet	ptHoshimi;
 	SColorSet	ptObjective;
 
-	SVector3	texture[CCOLORCOUNT];
-	D3DCOLOR	minimap[CCOLORCOUNT][CELLCOUNT];
+	SVector3	texture[MAPCTXCOUNT][CCOLORCOUNT];
+	D3DCOLOR	minimap[MAPCTXCOUNT][CCOLORCOUNT][CELLCOUNT];
 };
 
 extern SColors	gColors;

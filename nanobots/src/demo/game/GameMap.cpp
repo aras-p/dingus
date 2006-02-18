@@ -66,7 +66,7 @@ public:
 			D3DCOLOR* p = (D3DCOLOR*)linePtr;
 			for( int x = 0; x < mGameMap->getCellsX(); ++x ) {
 				const CGameMap::SCell& cell = mGameMap->getCell(x,y);
-				*p = gColors.minimap[cell.color][cell.type];
+				*p = gColors.minimap[mGameMap->getContext()][cell.color][cell.type];
 				++p;
 			}
 			linePtr += lr.Pitch;
@@ -93,7 +93,7 @@ private:
 // --------------------------------------------------------------------------
 
 CGameMap::CGameMap()
-:	mCellsX(0), mCellsY(0), mCells(NULL), mCRC(0)
+:	mCellsX(0), mCellsY(0), mCells(NULL), mCRC(0), mContext(MAPCTX_ORGANIC)
 {
 }
 
@@ -116,7 +116,7 @@ std::string CGameMap::initialize()
 	byte[]	Tissue Bitmap (200*200)
 	string	Entites text file
 	string	Streams text file
-	string	Walls text files
+	string	Walls text file - actually, this just indicates "context" (animal, tree or robot)
 	*/
 
 	const BYTE* data;
@@ -125,7 +125,7 @@ std::string CGameMap::initialize()
 	// parse name
 
 	mName = bu::receiveStr();
-	// TBD: workaround around Richard's funky stuff
+	// workaround around Richard's funky stuff
 	int lastSlash = mName.find_last_of( "\\//" );
 	if( lastSlash >= 0 )
 		mName = mName.substr( lastSlash+1, mName.length()-lastSlash );
@@ -281,8 +281,19 @@ std::string CGameMap::initialize()
 		mStreams.push_back( strm );
 	} while( pline = strtok( NULL, tokens ) );
 
-	// TBD:  walls
-	bu::receiveStr(); // walls
+	// this is empty or 'A' for organic context, 'T' for tree context, 'R' for robot context
+	std::string context = bu::receiveStr();
+	if( context.length() == 1 ) {
+		char ctx = toupper( context[0] );
+		if( ctx == 'A' )
+			mContext = MAPCTX_ORGANIC;
+		else if( ctx == 'T' )
+			mContext = MAPCTX_WOOD;
+		else if( ctx == 'R' )
+			mContext = MAPCTX_ROBOT;
+		else
+			mContext = MAPCTX_ORGANIC;
+	}
 
 	//
 	// all is loaded now
@@ -291,11 +302,29 @@ std::string CGameMap::initialize()
 	calcCellHeights();
 
 	// add some decorative elements
-	static int DECOR_TYPES_IN_TISSUE[DECOR_POINT_TYPE_COUNT] = {
+	static int DECOR_TYPES_IN_TISSUE[MAPCTXCOUNT][DECOR_POINT_TYPE_COUNT] = {
+	{
 		(1<<CCOLOR_BLOOD), (1<<CCOLOR_BLOOD), (1<<CCOLOR_BLOOD),
 		(1<<CCOLOR_BONE), (1<<CCOLOR_BONE), (1<<CCOLOR_BONE) | (1<<CCOLOR_BLOOD),
 		(1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON),
 		(1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON)|(1<<CCOLOR_BLOOD)|(1<<CCOLOR_BONE),
+		0, 0
+	},
+	{
+		0, 0, 0,
+		(1<<CCOLOR_BONE), (1<<CCOLOR_BONE), (1<<CCOLOR_BONE) | (1<<CCOLOR_BLOOD),
+		0, 0, 0,
+		0, 0, 0,
+		(1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON)
+	},
+	{
+		// TBD
+		(1<<CCOLOR_BLOOD), (1<<CCOLOR_BLOOD), (1<<CCOLOR_BLOOD),
+		(1<<CCOLOR_BONE), (1<<CCOLOR_BONE), (1<<CCOLOR_BONE) | (1<<CCOLOR_BLOOD),
+		(1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON),
+		(1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON), (1<<CCOLOR_NEURON)|(1<<CCOLOR_BLOOD)|(1<<CCOLOR_BONE),
+		0, 0
+	},
 	};
 	const int DECOR_PTS_COUNT = 125;
 	const int MAX_TRY_COUNT = DECOR_PTS_COUNT * 10;
@@ -313,7 +342,7 @@ std::string CGameMap::initialize()
 			continue;
 
 		int ptType = gRandom.getUInt() % DECOR_POINT_TYPE_COUNT;
-		if( !(DECOR_TYPES_IN_TISSUE[ptType] & (1<<cell.color)) )
+		if( !(DECOR_TYPES_IN_TISSUE[mContext][ptType] & (1<<cell.color)) )
 			continue;
 
 		mPoints.push_back( SPoint(PT_DECORATIVE,x,y, ptType) );

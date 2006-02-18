@@ -1,0 +1,9 @@
+name = 'Decor3b'
+groups = {
+{
+  fx = 'PointDecor', pri = 1,
+  params = {
+	  { 'tex', 'tBase', 'Decor3b' },
+  },
+},
+}

@@ -307,7 +307,7 @@ void CEntityManager::renderLabels( CUIDialog& dlg )
 
 		if( etype == ENTITY_NEEDLE && gAppSettings.drawAznNeedle )
 			drawAzn = true;
-		if( etype == ENTITY_COLLECTOR && gAppSettings.drawAznCollector && s.stock > 0 )
+		if( (etype == ENTITY_COLLECTOR || etype == ENTITY_CONTAINER) && gAppSettings.drawAznCollector && s.stock > 0 )
 			drawAzn = true;
 
 		if( mSelectedEntityID == e.getGameEntity().getID() ) {

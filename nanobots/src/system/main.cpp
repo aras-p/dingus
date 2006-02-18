@@ -19,7 +19,7 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR lpCmdLine, INT )
 		//return 0;
 
 		// assume localhost:9000
-		strcpy( serverName, "169.254.15.187" ); // TBD: this is only for me!
+		strcpy( serverName, "127.0.0.1" ); // TBD: this is only for me!
 		serverPort = 9000;
 	}
 	try {

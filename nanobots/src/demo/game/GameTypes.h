@@ -58,6 +58,14 @@ enum eCellType {
 	CELLCOUNT
 };
 
+// Map context types
+enum eMapContext {
+	MAPCTX_ORGANIC = 0, ///< Blood, bone, neuron
+	MAPCTX_WOOD,		///< Green, brown, whatever!
+	MAPCTX_ROBOT,		///< Robot!
+	MAPCTXCOUNT
+};
+
 // Cell color types
 enum eCellColor {
 	CCOLOR_BLOOD = 0,
