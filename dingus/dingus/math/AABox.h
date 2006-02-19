@@ -65,6 +65,16 @@ public:
 		extend( b.getMin() );
 		extend( b.getMax() );
 	}
+	
+	/// Intersects box with another one
+	void	intersect( const CAABox& b ) {
+		if( b.mMin.x > mMin.x ) mMin.x = b.mMin.x;
+		if( b.mMin.y > mMin.y ) mMin.y = b.mMin.y;
+		if( b.mMin.z > mMin.z ) mMin.z = b.mMin.z;
+		if( b.mMax.x < mMax.x ) mMax.x = b.mMax.x;
+		if( b.mMax.y < mMax.y ) mMax.y = b.mMax.y;
+		if( b.mMax.z < mMax.z ) mMax.z = b.mMax.z;
+	}
 
 	/// Transforms box with a matrix and calculates new box of the result
 	void	transform( const SMatrix4x4& m ) {

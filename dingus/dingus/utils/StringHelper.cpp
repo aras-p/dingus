@@ -34,7 +34,7 @@ void CStringHelper::replaceWhitespace( std::string& s )
 void CStringHelper::trimString( std::string& s ) 
 {
 	size_t first = s.find_first_not_of( " \t\n\r" );
-	if( first < 0 ) {
+	if( first == std::string::npos ) {
 		s = "";
 		return;
 	}

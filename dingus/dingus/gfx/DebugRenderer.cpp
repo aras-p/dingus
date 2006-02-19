@@ -7,6 +7,7 @@
 #include "../renderer/RenderableBuffer.h"
 #include "geometry/VBManagerSource.h"
 #include "../kernel/D3DDevice.h"
+#include "../math/AABox.h"
 
 using namespace dingus;
 
@@ -184,6 +185,70 @@ void CDebugRenderer::renderCone( const SVector3& center, const SVector3& axis, f
 			vb += 6;
 		}
 	}
+}
+
+
+void CDebugRenderer::renderFrustum( const SMatrix4x4& viewProj, float lineWidth, D3DCOLOR color )
+{
+	SMatrix4x4 invVP;
+	D3DXMatrixInverse( &invVP, NULL, &viewProj );
+
+	float cube[8][3] = {
+		{ -1, -1, 0 },
+		{  1, -1, 0 },
+		{ -1,  1, 0 },
+		{  1,  1, 0 },
+		{ -1, -1, 1 },
+		{  1, -1, 1 },
+		{ -1,  1, 1 },
+		{  1,  1, 1 },
+	};
+	D3DXVec3TransformCoordArray( (D3DXVECTOR3*)cube, sizeof(SVector3), (D3DXVECTOR3*)cube, sizeof(SVector3), &invVP, 8 );
+
+	D3DCOLOR color2, color3;
+	color2 = color;
+	color2 &= 0x00ffffff;
+	color2 |= ((color>>24)/2) << 24;
+	color3 = color;
+	color3 &= 0x00ffffff;
+	color3 |= ((color>>24)/3) << 24;
+
+	TDebugVertex* vb = requestVertices( 12 * 2 );
+	internalRenderLine( cube[0], cube[1], lineWidth, color, vb ); vb += 6;
+	internalRenderLine( cube[1], cube[3], lineWidth, color, vb ); vb += 6;
+	internalRenderLine( cube[3], cube[2], lineWidth, color, vb ); vb += 6;
+	internalRenderLine( cube[2], cube[0], lineWidth, color, vb ); vb += 6;
+
+	internalRenderLine( cube[0], cube[4], lineWidth, color2, vb ); vb += 6;
+	internalRenderLine( cube[1], cube[5], lineWidth, color2, vb ); vb += 6;
+	internalRenderLine( cube[2], cube[6], lineWidth, color2, vb ); vb += 6;
+	internalRenderLine( cube[3], cube[7], lineWidth, color2, vb ); vb += 6;
+	
+	internalRenderLine( cube[4], cube[5], lineWidth, color3, vb ); vb += 6;
+	internalRenderLine( cube[5], cube[7], lineWidth, color3, vb ); vb += 6;
+	internalRenderLine( cube[7], cube[6], lineWidth, color3, vb ); vb += 6;
+	internalRenderLine( cube[6], cube[4], lineWidth, color3, vb ); vb += 6;
+}
+
+void CDebugRenderer::renderAABB( const CAABox& aabb, float lineWidth, D3DCOLOR color )
+{
+	TDebugVertex* vb = requestVertices( 12 * 2 );
+	const SVector3& mn = aabb.getMin();
+	const SVector3& mX = aabb.getMax();
+	internalRenderLine( SVector3(mn.x, mn.y, mn.z), SVector3(mX.x, mn.y, mn.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mX.x, mn.y, mn.z), SVector3(mX.x, mX.y, mn.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mX.x, mX.y, mn.z), SVector3(mn.x, mX.y, mn.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mn.x, mX.y, mn.z), SVector3(mn.x, mn.y, mn.z), lineWidth, color, vb ); vb += 6;
+	
+	internalRenderLine( SVector3(mn.x, mn.y, mX.z), SVector3(mX.x, mn.y, mX.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mX.x, mn.y, mX.z), SVector3(mX.x, mX.y, mX.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mX.x, mX.y, mX.z), SVector3(mn.x, mX.y, mX.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mn.x, mX.y, mX.z), SVector3(mn.x, mn.y, mX.z), lineWidth, color, vb ); vb += 6;
+	
+	internalRenderLine( SVector3(mn.x, mn.y, mn.z), SVector3(mn.x, mn.y, mX.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mn.x, mX.y, mn.z), SVector3(mn.x, mX.y, mX.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mX.x, mn.y, mn.z), SVector3(mX.x, mn.y, mX.z), lineWidth, color, vb ); vb += 6;
+	internalRenderLine( SVector3(mX.x, mX.y, mn.z), SVector3(mX.x, mX.y, mX.z), lineWidth, color, vb ); vb += 6;
 }
 
 

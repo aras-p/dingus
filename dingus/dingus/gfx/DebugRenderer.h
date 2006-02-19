@@ -16,8 +16,10 @@ namespace dingus {
 class CRenderContext;
 class CD3DXEffect;
 class CRenderableBuffer;
+class CAABox;
 
 
+// ---------------------------------------------------------------------------
 
 class CDebugRenderer : public boost::noncopyable {
 public:
@@ -31,13 +33,16 @@ public:
 	void	renderSphere( const SVector3& center, float radius, D3DCOLOR color );
 	void	renderCone( const SVector3& center, const SVector3& axis, float cosAngle, float sinAngle, float length, float lineWidth, D3DCOLOR color );
 	void	renderBox( const SMatrix4x4& matrix, const SVector3& size, D3DCOLOR color );
+	void	renderAABB( const CAABox& aabb, float lineWidth, D3DCOLOR color );
 	void	renderCoordFrame( const SMatrix4x4& matrix, float size, D3DCOLOR color );
 	void	renderQuad( const SVector3& pt0, const SVector3& pt1, const SVector3& pt2, const SVector3& pt3, D3DCOLOR color );
 	void	renderTri( const SVector3& pt0, const SVector3& pt1, const SVector3& pt2, D3DCOLOR color );
 	
+	void	renderFrustum( const SMatrix4x4& viewProj, float lineWidth, D3DCOLOR color );
+	
 	void	renderTris( const void* verts, int vstride, const int* indices, int ntris, D3DCOLOR color );
 	void	renderTrisNMat( const void* verts, int vstride, const int* indices, int ntris, D3DCOLOR color, const SMatrix4x4& world );
-	
+
 private:
 	typedef SVertexXyzNormalDiffuse	TDebugVertex;
 
@@ -58,6 +63,7 @@ private:
 	TVBChunk::TSharedPtr	mVBChunk;
 	int		mUsedVertsInChunk;
 };
+
 
 }; // namespace
 
