@@ -198,7 +198,7 @@ void CDemo::initialize( IDingusAppContext& appContext )
 	int y = 100-hctl;
 
 	gUIDlgHUD->addStatic( 0, "Shadow quality:", 5, y+=hctl, 100, hctl );
-	gUIDlgHUD->addSlider( 0, 100, y, 70, hctl, 1, 10, 6, false, &gUISldShadowQuality );
+	gUIDlgHUD->addSlider( 0, 100, y, 70, hctl, 7, 11, 10, false, &gUISldShadowQuality );
 
 	gUIDlgHUD->addStatic( 0, "Shadow filter:", 5, y+=hctl, 100, hctl );
 	gUIDlgHUD->addComboBox( 0, 100, y, 70, hctl, 0, false, &gUICmbShadowFilter );
@@ -398,7 +398,7 @@ void CDemo::perform()
 	sprintf( buf, "fps: %6.1f", dx.getStats().getFPS() );
 	gUIFPS->setText( buf );
 
-	float shadowQuality = gUISldShadowQuality->getValue() * 200;
+	float shadowQuality = gUISldShadowQuality->getValue();
 
 	// camera
 	SMatrix4x4& mc = gCamera.mWorldMat;
@@ -414,7 +414,7 @@ void CDemo::perform()
 	// render
 	dx.sceneBegin();
 
-	RenderSceneWithShadows( gDummyCamera, gCamera, shadowQuality, gUIChkLISPSM->isChecked() );
+	RenderSceneWithShadows( gCamera, gCamera, shadowQuality, gUIChkLISPSM->isChecked() );
 	gRenderDebug();
 
 	gUIDlgHUD->onRender( dt );

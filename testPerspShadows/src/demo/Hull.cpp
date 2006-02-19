@@ -56,10 +56,10 @@ void CalculateFrustumHull( HullObject& obj, const SVector3 p[8] )
 	obj.f[4].v[2] = p[7];
 	obj.f[4].v[3] = p[5];
 	
-	obj.f[4].v[0] = p[3];
-	obj.f[4].v[1] = p[2];
-	obj.f[4].v[2] = p[4];
-	obj.f[4].v[3] = p[5];
+	obj.f[5].v[0] = p[3];
+	obj.f[5].v[1] = p[2];
+	obj.f[5].v[2] = p[4];
+	obj.f[5].v[3] = p[5];
 }
 
 void CalcAABBPlanes( SPlane p[6], const CAABox& b )
@@ -81,7 +81,6 @@ void ClipPolyByPlane( const HullFace& f, const SPlane& A, HullFace& polyOut, Hul
 		return;
 
 	bool* outside = new bool[f.v.size()];
-	//for each point
 	for( i = 0; i < fsize; ++i )
 	{
 		outside[i] = A.distance( f.v[i] ) > 0.0f;
@@ -275,9 +274,95 @@ void ClipHullByAABB( HullObject& obj, const CAABox& box )
 }
 
 
+static bool ClipTest( const double p, const double q, double& u1, double& u2 )
+{
+	// Return value is 'true' if line segment intersects the current test
+	// plane.  Otherwise 'false' is returned in which case the line segment
+	// is entirely clipped.
+	const double EPS = 1.0e-10f;
+	if( p < -EPS ) {
+		double r = q/p;
+		if( r > u2 )
+			return false;
+		else {
+			if( r > u1 )
+				u1 = r;
+			return true;
+		}
+	}
+	else if( p > EPS )
+	{
+		double r = q/p;
+		if( r < u1 )
+			return false;
+		else {
+			if( r < u2 )
+                u2 = r;
+			return true;
+		}
+	}
+	else
+	{
+		return q >= 0.0;
+	}
+}
+
+
+static bool IntersectLineAABB( SVector3& v, const SVector3& p, const SVector3& dir, const CAABox& b )
+{
+	double t1 = 0.0;
+	double t2 = 1.0e30;
+	bool intersect =
+		ClipTest(-dir.z,p.z-b.getMin().z,t1,t2) && ClipTest(dir.z,b.getMax().z-p.z,t1,t2) &&
+		ClipTest(-dir.y,p.y-b.getMin().y,t1,t2) && ClipTest(dir.y,b.getMax().y-p.y,t1,t2) &&
+		ClipTest(-dir.x,p.x-b.getMin().x,t1,t2) && ClipTest(dir.x,b.getMax().x-p.x,t1,t2);
+	if( !intersect )
+		return false;
+	
+	intersect = false;
+	if( 0 <= t1 ) {
+		v = p + dir * t1;
+		intersect = true;
+	}
+	if( 0 <= t2 ) {
+		v = p + dir * t2;
+		intersect = true;
+	}
+	return intersect;
+}
+
+
+void IncludeLightVolume( HullFace& points, const HullObject& obj, const SVector3& lightDir, const CAABox& sceneAABox )
+{
+	int i;
+	SVector3 ld = -lightDir;
+	
+	points.v.clear();
+	int nfaces = obj.f.size();
+	for( i = 0; i < nfaces; ++i )
+	{
+		points.v.insert( points.v.end(), obj.f[i].v.begin(), obj.f[i].v.end() );
+		int zzz = points.v.size();
+	}
+
+	int npts = points.v.size();
+	
+	// for each point add the point on the ray in -lightDir
+	// intersected with the sceneAABox
+	for( i = 0; i < npts; ++i )
+	{
+		SVector3 pt;
+		if( IntersectLineAABB( pt, points.v[i], ld, sceneAABox ) ) {
+			points.v.push_back( pt );
+		}
+	}
+}
+
+
+
 // Returns our "focused region of interest": frustum, clipped by scene bounds,
 // extruded towards light and clipped by scene bounds again.
-void CalculateFocusedLightHull( const SMatrix4x4& invViewProj, const SVector3& lightDir, const CAABox& sceneAABB )
+void CalculateFocusedLightHull( const SMatrix4x4& invViewProj, const SVector3& lightDir, const CAABox& sceneAABB, HullFace& points )
 {
 	SVector3 viewFrustum[8];
 	CalculateFrustumCoords( viewFrustum, invViewProj );
@@ -285,5 +370,8 @@ void CalculateFocusedLightHull( const SMatrix4x4& invViewProj, const SVector3& l
 	HullObject frustumHull;
 	CalculateFrustumHull( frustumHull, viewFrustum );
 
-	ClipHullByAABB( frustumHull, sceneAABB );
+	//ClipHullByAABB( frustumHull, sceneAABB ); // TBD
+
+	IncludeLightVolume( points, frustumHull, lightDir, sceneAABB );
+	int zzz = points.v.size();
 }

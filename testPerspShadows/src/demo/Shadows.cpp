@@ -2,6 +2,7 @@
 #include "Shadows.h"
 #include "ShadowBufferRTManager.h"
 #include <dingus/gfx/GfxUtils.h>
+#include "Hull.h"
 
 
 extern	bool gUseDSTShadows;
@@ -129,25 +130,6 @@ bool Frustum::TestSphere( const SVector3& pos, float radius ) const
 		inside &= ( (D3DXPlaneDotCoord(&camPlanes[i], &pos) + radius) >= 0.0f );
 	return inside;
 }
-
-/*
-bool Frustum::TestBox( const CAABox& box ) const
-{
-	bool intersect = false;
-	for( int i=0; i<6; i++ )
-	{
-		int nV = nVertexLUT[i];
-		// pVertex is diagonally opposed to nVertex
-		SVector3 nVertex( (nV&1)?box->getMin().x:box->getMax().x, (nV&2)?box->getMin().y:box->getMax().y, (nV&4)?box->getMin().z:box->getMax().z );
-		SVector3 pVertex( (nV&1)?box->getMax().x:box->getMin().x, (nV&2)?box->getMax().y:box->getMin().y, (nV&4)?box->getMax().z:box->getMin().z );
-		if( D3DXPlaneDotCoord(&camPlanes[i], &nVertex) < 0.f )
-			return false;
-		if( D3DXPlaneDotCoord(&camPlanes[i], &pVertex) < 0.f )
-			return true;
-	}
-	return true;
-}
-*/
 
 //  this function tests if the projection of a bounding sphere along the light direction intersects
 //  the view frustum 
@@ -298,8 +280,18 @@ static void CalculateLisPSM( const CCameraEntity& cam, Light& light )
 		return;
 	}
 
-	// build body B from frustum extrema plus casters/receivers in world space
+	// calculate the hull of body B in world space
+	HullFace bodyB;
+	SMatrix4x4 invCamVP;
+	D3DXMatrixInverse( &invCamVP, NULL, &cam.mWorldMat );
+	invCamVP *= cam.getProjectionMatrix();
+	D3DXMatrixInverse( &invCamVP, NULL, &invCamVP );
+
+	CalculateFocusedLightHull( invCamVP, lightDir, gCasterBounds, bodyB );
+	int zzz = bodyB.v.size();
+
 	int i, j;
+	/*
 	Frustum camFrustum( cam.getProjectionMatrix() );
 	std::vector<SVector3>	bodyB;
 	bodyB.reserve( gSceneCasters.size()*8 + 8 );
@@ -318,6 +310,7 @@ static void CalculateLisPSM( const CCameraEntity& cam, Light& light )
 			bodyB.push_back( p );
 		}
 	}
+	*/
 	
 	// calculate basis of light space projection
 	SVector3 ly = -lightDir;
@@ -333,11 +326,11 @@ static void CalculateLisPSM( const CCameraEntity& cam, Light& light )
 	D3DXMatrixInverse( &lightV, NULL, &lightW );
 
 	// rotate bound body points from world into light projection space and calculate AABB there
-	D3DXVec3TransformCoordArray( &bodyB[0], sizeof(SVector3), &bodyB[0], sizeof(SVector3), &lightV, bodyB.size() );
+	D3DXVec3TransformCoordArray( &bodyB.v[0], sizeof(SVector3), &bodyB.v[0], sizeof(SVector3), &lightV, bodyB.v.size() );
 	CAABox bodyLBounds;
 	bodyLBounds.setNull();
-	for( i = 0; i < bodyB.size(); ++i )
-		bodyLBounds.extend( bodyB[i] );
+	for( i = 0; i < bodyB.v.size(); ++i )
+		bodyLBounds.extend( bodyB.v[i] );
 	
 	// calculate free parameter N
 	double sinGamma = sqrt( 1.0-dotProd*dotProd );
@@ -349,9 +342,9 @@ static void CalculateLisPSM( const CCameraEntity& cam, Light& light )
 
 	// go through bound points in light space, and compute projected bound
 	float maxx = 0.0f, maxy = 0.0f, maxz = 0.0f;
-	for( i = 0; i < bodyB.size(); ++i )
+	for( i = 0; i < bodyB.v.size(); ++i )
 	{
-		SVector3 tmp = bodyB[i] - lightSpaceO;
+		SVector3 tmp = bodyB.v[i] - lightSpaceO;
 		assert( tmp.z > 0.0f );
 		maxx = max( maxx, fabsf(tmp.x / tmp.z) );
 		maxy = max( maxy, fabsf(tmp.y / tmp.z) );
@@ -380,6 +373,7 @@ static void CalculateLisPSM( const CCameraEntity& cam, Light& light )
 	SMatrix4x4 lightFinal = G_RENDERCTX->getCamera().getViewMatrix() * lightProj;
 
 	// unit cube clipping
+	/*
 	{
 		// receiver hull
 		std::vector<SVector3> receiverPts;
@@ -425,6 +419,7 @@ static void CalculateLisPSM( const CCameraEntity& cam, Light& light )
 			lightProj *= clipMatrix;
 		}
 	}
+	*/
 
 	G_RENDERCTX->getCamera().setProjectionMatrix( lightProj );
 }
@@ -463,7 +458,7 @@ SceneEntity::SceneEntity( const std::string& name )
 	assert( !name.empty() );
 	mMesh = RGET_MESH(name);
 
-	if( name=="Teapot" || name=="Torus" )
+	if( name=="Teapot" || name=="Torus" || name=="Table" )
 		m_CanAnimate = true;
 
 	for( int i = 0; i < RMCOUNT; ++i ) {
@@ -526,7 +521,7 @@ void RenderSceneWithShadows( CCameraEntity& camera, CCameraEntity& actualCamera,
 	for( i = 0; i < nlights; ++i )
 	{
 		Light& light = *gLights[i];
-		light.m_RTSize = 1024; // TBD
+		light.m_RTSize = 1 << int(shadowQuality);
 		bool ok = gShadowRTManager->RequestBuffer(
 			light.m_RTSize,
 			&light.m_RTTexture,

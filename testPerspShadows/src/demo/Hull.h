@@ -10,4 +10,7 @@ struct HullObject {
 };
 
 
+void CalculateFocusedLightHull( const SMatrix4x4& invViewProj, const SVector3& lightDir, const CAABox& sceneAABB, HullFace& points );
+
+
 #endif
