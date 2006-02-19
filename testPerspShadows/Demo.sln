@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo", "Demo.vcproj", "{53459E89-3AA8-42F5-B811-C8EA895FA9FE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{54A4A6E9-5DEE-425C-ADE6-2D29E4F6886F} = {54A4A6E9-5DEE-425C-ADE6-2D29E4F6886F}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dingus", "..\dingus\dingus.vcproj", "{54A4A6E9-5DEE-425C-ADE6-2D29E4F6886F}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{53459E89-3AA8-42F5-B811-C8EA895FA9FE}.Debug.ActiveCfg = Debug|Win32
+		{53459E89-3AA8-42F5-B811-C8EA895FA9FE}.Debug.Build.0 = Debug|Win32
+		{53459E89-3AA8-42F5-B811-C8EA895FA9FE}.Release.ActiveCfg = Release|Win32
+		{53459E89-3AA8-42F5-B811-C8EA895FA9FE}.Release.Build.0 = Release|Win32
+		{54A4A6E9-5DEE-425C-ADE6-2D29E4F6886F}.Debug.ActiveCfg = Debug|Win32
+		{54A4A6E9-5DEE-425C-ADE6-2D29E4F6886F}.Debug.Build.0 = Debug|Win32
+		{54A4A6E9-5DEE-425C-ADE6-2D29E4F6886F}.Release.ActiveCfg = Release|Win32
+		{54A4A6E9-5DEE-425C-ADE6-2D29E4F6886F}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
