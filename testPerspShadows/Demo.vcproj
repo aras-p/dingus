@@ -163,6 +163,12 @@
 				RelativePath="src\demo\Entity.h">
 			</File>
 			<File
+				RelativePath=".\src\demo\Hull.cpp">
+			</File>
+			<File
+				RelativePath=".\src\demo\Hull.h">
+			</File>
+			<File
 				RelativePath=".\src\demo\ShadowBufferRTManager.cpp">
 			</File>
 			<File

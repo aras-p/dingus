@@ -3,13 +3,11 @@
 
 
 struct HullFace {
-	std::vector<int>	idx;
+	std::vector<SVector3>	v;
 };
 struct HullObject {
-	std::vector<SVector3>	verts;
-	std::vector<HullFace>	faces;
+	std::vector<HullFace>	f;
 };
-
 
 
 #endif
