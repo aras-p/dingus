@@ -544,8 +544,9 @@ void RenderSceneWithShadows( CCameraEntity& camera, CCameraEntity& actualCamera,
 		G_RENDERCTX->applyGlobalEffect();
 		// render all casters
 		G_RENDERCTX->directBegin();
-		for( j = 0; j < nsceneobjs; ++j )
-			gScene[j]->render( RM_CASTER, true, true );
+		size_t ncasters = gSceneCasters.size();
+		for( j = 0; j < ncasters; ++j )
+			gSceneCasters[j].entity->render( RM_CASTER, true, true );
 		G_RENDERCTX->directEnd();
 	}
 
@@ -566,9 +567,10 @@ void RenderSceneWithShadows( CCameraEntity& camera, CCameraEntity& actualCamera,
 
 	// lay down depth for all visible objects
 	G_RENDERCTX->directBegin();
-	for( i = 0; i < nsceneobjs; ++i )
+	size_t nreceivers = gSceneReceivers.size();
+	for( i = 0; i < nreceivers; ++i )
 	{
-		gScene[i]->render( RM_ZFILL, true, true );
+		gSceneReceivers[i].entity->render( RM_ZFILL, true, true );
 	}
 
 	// additive lighting
@@ -594,9 +596,9 @@ void RenderSceneWithShadows( CCameraEntity& camera, CCameraEntity& actualCamera,
 	}
 
 	// render all objects with shadows and lights
-	for( i = 0; i < nsceneobjs; ++i )
+	for( i = 0; i < nreceivers; ++i )
 	{
-		SceneEntity& obj = *gScene[i];
+		SceneEntity& obj = *gSceneReceivers[i].entity;
 		// additively render all lights on this object
 		for( size_t j = 0; j < nlights; ++j )
 		{

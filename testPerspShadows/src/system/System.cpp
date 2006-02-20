@@ -20,8 +20,8 @@ SAppStartupParams CSystem::getStartupParams()
 	SAppStartupParams sp;
 	sp.windowTitle = "Test Shadows";
 	sp.dataPath = "data/";
-	sp.windowWidth = 640;
-	sp.windowHeight = 480;
+	sp.windowWidth = 800;
+	sp.windowHeight = 600;
 	sp.minColorBits = 8;
 	sp.minAlphaBits = 8;
 	sp.minZBits = 24;
