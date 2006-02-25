@@ -66,9 +66,8 @@ public:
 				mStreams[i].mWeight *= invWSum;
 		}
 
-		// go thru streams and weight-blend them into dest
+		// go through streams and weight-blend them into dest
 		bool firstStream = true;
-		float accumWeight = 0.0f; // for quat blending
 		for( i = 0; i < n; ++i ) {
 			const SStreamData& s = mStreams[i];
 			float streamWeight = s.mWeight;
@@ -87,16 +86,21 @@ public:
 				ncrv = s.mSkipCurves + s.mUseCurves;
 				destVal += destStride * s.mSkipCurves;
 			}
-			for( size_t c = s.mSkipCurves; c < ncrv; ++c, destVal += destStride ) {
-				value_type& dv = *reinterpret_cast<value_type*>(destVal);
-				if( firstStream )
+			if( firstStream ) {
+				for( size_t c = s.mSkipCurves; c < ncrv; ++c, destVal += destStride ) {
+					value_type& dv = *reinterpret_cast<value_type*>(destVal);
 					SBlender<value_type>::calcFirst( dv, mScratchValues[c], streamWeight );
-				else 
-					SBlender<value_type>::calcBlend( dv, mScratchValues[c], streamWeight, accumWeight );
+				}
+				firstStream = false;
+			} else {
+				for( size_t c = s.mSkipCurves; c < ncrv; ++c, destVal += destStride ) {
+					value_type& dv = *reinterpret_cast<value_type*>(destVal);
+					SBlender<value_type>::calcBlend( dv, mScratchValues[c], streamWeight );
+				}
 			}
-			firstStream = false;
-			accumWeight += streamWeight;
 		}
+
+		SBlender<value_type>::calcEnd( dest, numCurves, destStride );
 	};
 
 private:
@@ -112,19 +116,30 @@ private:
 		static void calcFirst( _T& dest, const _T& val, float weight ) {
 			dest = val * weight;
 		};
-		static void calcBlend( _T& dest, const _T& val, float weight, float accumWeight ) {
+		static void calcBlend( _T& dest, const _T& val, float weight ) {
 			dest += val * weight;
 		};
+		static void calcEnd( _T* dest, size_t n, int destStride ) { }
 	};
 	// Blend specialization code for quaternions.
 	template<> struct SBlender<SQuaternion> {
 		static void calcFirst( SQuaternion& dest, const SQuaternion& val, float weight ) {
-			dest = val;
+			dest = val * weight;
 		};
-		static void calcBlend( SQuaternion& dest, const SQuaternion& val, float weight, float accumWeight ) {
-			float w = weight / ( accumWeight + weight );
-			dest.slerp( dest, val, w );
+		static void calcBlend( SQuaternion& dest, const SQuaternion& val, float weight ) {
+			if( dest.dot( val ) >= 0.0f )
+				dest += val * weight;
+			else
+				dest -= val * weight;
 		};
+		static void calcEnd( SQuaternion* dest, size_t n, int destStride )
+		{
+			for( size_t i = 0; i < n; ++i )
+			{
+				dest->normalize();
+				dest = reinterpret_cast<SQuaternion*>(reinterpret_cast<char*>(dest) + destStride);
+			}
+		}
 	};
 
 private:

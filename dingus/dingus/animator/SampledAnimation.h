@@ -159,17 +159,6 @@ void CSampledAnimation<_V>::sample( float time, int firstCurve, int numCurves, _
 			*dest = math_type_traits<value_type>::interpolate( s1, s2, alpha );
 			}
 			break;
-			/*
-		case curve_type::LINEAR:
-			{
-			const value_type& s0 = getSample( fstsmp + smpidx0 );
-			const value_type& s1 = getSample( fstsmp + smpidx1 );
-			const value_type& s2 = getSample( fstsmp + smpidx2 );
-			const value_type& s3 = getSample( fstsmp + smpidx3 );
-			*dest = math_type_traits<value_type>::cm_interpolate( s0, s1, s2, s3, alpha );
-			}
-			break;
-			*/
 		};
 
 		((const char*&)dest) += destStride;
