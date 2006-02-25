@@ -2,6 +2,7 @@
 #include "Hull.h"
 #include <dingus/math/Plane.h>
 #include <dingus/math/AABox.h>
+#include <dingus/gfx/DebugRenderer.h>
 
 // --------------------------------------------------------------------------
 
@@ -12,12 +13,12 @@ void CalculateFrustumCoords( SVector3 pts[8], const SMatrix4x4& invViewProj )
 	float cube[8][3] = {
 		{ -1, -1, 0 },
 		{  1, -1, 0 },
-		{ -1,  1, 0 },
 		{  1,  1, 0 },
+		{ -1,  1, 0 },
 		{ -1, -1, 1 },
 		{  1, -1, 1 },
-		{ -1,  1, 1 },
 		{  1,  1, 1 },
+		{ -1,  1, 1 },
 	};
 	D3DXVec3TransformCoordArray( pts, sizeof(SVector3), (D3DXVECTOR3*)cube, sizeof(SVector3), &invViewProj, 8 );
 }
@@ -31,45 +32,80 @@ void CalculateFrustumHull( HullObject& obj, const SVector3 p[8] )
 	// near
 	obj.f[0].v[0] = p[0];
 	obj.f[0].v[1] = p[1];
-	obj.f[0].v[2] = p[3];
-	obj.f[0].v[3] = p[2];
+	obj.f[0].v[2] = p[2];
+	obj.f[0].v[3] = p[3];
 	
 	// far
-	obj.f[1].v[0] = p[4];
-	obj.f[1].v[1] = p[5];
-	obj.f[1].v[2] = p[7];
-	obj.f[1].v[3] = p[6];
+	obj.f[1].v[0] = p[7];
+	obj.f[1].v[1] = p[6];
+	obj.f[1].v[2] = p[5];
+	obj.f[1].v[3] = p[4];
 
 	// sides
 	obj.f[2].v[0] = p[0];
-	obj.f[2].v[1] = p[1];
-	obj.f[2].v[2] = p[5];
+	obj.f[2].v[1] = p[3];
+	obj.f[2].v[2] = p[7];
 	obj.f[2].v[3] = p[4];
 	
 	obj.f[3].v[0] = p[1];
-	obj.f[3].v[1] = p[3];
-	obj.f[3].v[2] = p[7];
-	obj.f[3].v[3] = p[5];
+	obj.f[3].v[1] = p[5];
+	obj.f[3].v[2] = p[6];
+	obj.f[3].v[3] = p[2];
 
-	obj.f[4].v[0] = p[1];
-	obj.f[4].v[1] = p[3];
-	obj.f[4].v[2] = p[7];
-	obj.f[4].v[3] = p[5];
+	obj.f[4].v[0] = p[4];
+	obj.f[4].v[1] = p[5];
+	obj.f[4].v[2] = p[1];
+	obj.f[4].v[3] = p[0];
 	
-	obj.f[5].v[0] = p[3];
-	obj.f[5].v[1] = p[2];
-	obj.f[5].v[2] = p[4];
-	obj.f[5].v[3] = p[5];
+	obj.f[5].v[0] = p[6];
+	obj.f[5].v[1] = p[7];
+	obj.f[5].v[2] = p[3];
+	obj.f[5].v[3] = p[2];
+
+	/*
+	// near
+	obj.f[0].v[0] = p[3];
+	obj.f[0].v[1] = p[2];
+	obj.f[0].v[2] = p[1];
+	obj.f[0].v[3] = p[0];
+
+	// far
+	obj.f[1].v[0] = p[4];
+	obj.f[1].v[1] = p[5];
+	obj.f[1].v[2] = p[6];
+	obj.f[1].v[3] = p[7];
+
+	// sides
+	obj.f[2].v[0] = p[4];
+	obj.f[2].v[1] = p[7];
+	obj.f[2].v[2] = p[3];
+	obj.f[2].v[3] = p[0];
+
+	obj.f[3].v[0] = p[2];
+	obj.f[3].v[1] = p[6];
+	obj.f[3].v[2] = p[5];
+	obj.f[3].v[3] = p[1];
+
+	obj.f[4].v[0] = p[0];
+	obj.f[4].v[1] = p[1];
+	obj.f[4].v[2] = p[5];
+	obj.f[4].v[3] = p[4];
+
+	obj.f[5].v[0] = p[2];
+	obj.f[5].v[1] = p[3];
+	obj.f[5].v[2] = p[7];
+	obj.f[5].v[3] = p[6];
+	*/
 }
 
 void CalcAABBPlanes( SPlane p[6], const CAABox& b )
 {
-	p[0].set(  0, -1,  0, fabs(b.getMin().y) );
-	p[1].set(  0,  1,  0, fabs(b.getMax().y) );
-	p[2].set( -1,  0,  0, fabs(b.getMin().x) );
-	p[3].set(  1,  0,  0, fabs(b.getMax().x) );
-	p[4].set(  0,  0, -1, fabs(b.getMin().z) );
-	p[5].set(  0,  0,  1, fabs(b.getMax().z) );
+	p[0].set(  0,  1,  0, fabs(b.getMin().y) );
+	p[1].set(  0, -1,  0, fabs(b.getMax().y) );
+	p[2].set(  1,  0,  0, fabs(b.getMin().x) );
+	p[3].set( -1,  0,  0, fabs(b.getMax().x) );
+	p[4].set(  0,  0,  1, fabs(b.getMin().z) );
+	p[5].set(  0,  0, -1, fabs(b.getMax().z) );
 }
 
 
@@ -83,7 +119,7 @@ void ClipPolyByPlane( const HullFace& f, const SPlane& A, HullFace& polyOut, Hul
 	bool* outside = new bool[f.v.size()];
 	for( i = 0; i < fsize; ++i )
 	{
-		outside[i] = A.distance( f.v[i] ) > 0.0f;
+		outside[i] = A.distance( f.v[i] ) < 0.0f;
 	}
 	for( i = 0; i < fsize; ++i )
 	{
@@ -228,7 +264,7 @@ void AppendIntersectionFaces( HullObject& obj, HullObject& inter )
 		// remove last f from inter, because it is already saved or degenerated
 		inter.f.pop_back();
 	}
-	// last point can be deleted, because he is the same as the first (closes polygon)
+	// last point can be deleted, because it is the same as the first (closes polygon)
 	polyOut.v.pop_back();
 }
 
@@ -249,7 +285,7 @@ void ClipHullByPlane( HullObject& obj, const SPlane& A )
 		int nOutFaces = obj.f.size();
 		obj.f.push_back( HullFace() );
 		inter.f.push_back( HullFace() );
-		ClipPolyByPlane( objIn.f[i], A, obj.f.back(), obj.f.back() );
+		ClipPolyByPlane( objIn.f[i], A, obj.f.back(), inter.f.back() );
 		
 		// if whole face was clipped away -> delete empty f
 		if( obj.f.back().v.empty() ) {
@@ -366,12 +402,41 @@ void CalculateFocusedLightHull( const SMatrix4x4& invViewProj, const SVector3& l
 {
 	SVector3 viewFrustum[8];
 	CalculateFrustumCoords( viewFrustum, invViewProj );
-
 	HullObject frustumHull;
 	CalculateFrustumHull( frustumHull, viewFrustum );
 
-	//ClipHullByAABB( frustumHull, sceneAABB ); // TBD
+	ClipHullByAABB( frustumHull, sceneAABB );
 
 	IncludeLightVolume( points, frustumHull, lightDir, sceneAABB );
 	int zzz = points.v.size();
+}
+
+
+void DebugCalcFrustumHull( const SMatrix4x4& invViewProj, HullObject& obj )
+{
+	obj.clear();
+	SVector3 viewFrustum[8];
+	CalculateFrustumCoords( viewFrustum, invViewProj );
+	CalculateFrustumHull( obj, viewFrustum );
+}
+
+void DebugRenderHull( const HullObject& obj, CDebugRenderer& dr, D3DCOLOR color )
+{
+	D3DCOLOR colors[6] = {
+		0xFFff0000,
+		0xFF00ff00,
+		0xFF0000ff,
+		0xFFffff00,
+		0xFF00ffff,
+		0xFFff00ff,
+	};
+	int nfaces = obj.f.size();
+	for( int i = 0; i < nfaces; ++i ) {
+		const HullFace& fc = obj.f[i];
+		int nverts = fc.v.size();
+		D3DCOLOR c = color & colors[i%6];
+		for( int j = 1; j < nverts-1; ++j ) {
+			dr.renderTri( fc.v[0], fc.v[j], fc.v[j+1], c );
+		}
+	}
 }

@@ -2,6 +2,7 @@
 
 #include "Demo.h"
 #include "Shadows.h"
+#include "Hull.h"
 #include "ShadowBufferRTManager.h"
 
 #include <dingus/math/MathUtils.h>
@@ -10,6 +11,7 @@
 #include <dingus/gfx/DebugRenderer.h>
 #include <dingus/gfx/geometry/DynamicVBManager.h>
 #include <dingus/renderer/EffectParamsNotifier.h>
+#include <dingus/math/Plane.h>
 
 
 // --------------------------------------------------------------------------
@@ -299,7 +301,7 @@ void gRenderDebug()
 	vp.invert();
 	vp *= gDummyCamera.getProjectionMatrix();
 
-	gDebugRenderer->renderFrustum( vp, kMeterSize*0.03f, 0x80FF0000 );
+	//gDebugRenderer->renderFrustum( vp, kMeterSize*0.03f, 0x80FF0000 );
 	
 	gDebugRenderer->renderAABB( gCasterBounds, kMeterSize*0.02f, 0x400000FF );
 	gDebugRenderer->renderAABB( gReceiverBounds, kMeterSize*0.02f, 0x4000FFFF );
@@ -315,6 +317,26 @@ void gRenderDebug()
 			gDebugRenderer->renderFrustum( l.m_DebugViewProjMatrix, kMeterSize*0.05f, 0x8000FF00 );
 		}
 	}
+
+	// debug: camera hull
+	/*
+	HullObject camHull;
+	SMatrix4x4 invVP;
+	D3DXMatrixInverse( &invVP, NULL, &vp );
+	DebugCalcFrustumHull( invVP, camHull );
+	//DebugRenderHull( camHull, *gDebugRenderer, 0x20FFFFFF );
+	
+	//ClipHullByAABB( camHull, gSceneBounds );
+	CAABox aabb;
+	aabb.getMin() = gDummyCamera.mWorldMat.getOrigin() - SVector3(100,100,100);
+	aabb.getMax() = gDummyCamera.mWorldMat.getOrigin() + SVector3(100,100,100);
+	//aabb.setNull();
+	ClipHullByAABB( camHull, aabb );
+	//ClipHullByPlane( camHull, SPlane(gDummyCamera.mWorldMat.getOrigin() + SVector3(0,-100,0), SVector3(0,1,0)) );
+	//ClipHullByPlane( camHull, SPlane(gDummyCamera.mWorldMat.getOrigin() + SVector3(0, 100,0), SVector3(0,-1,0)) );
+	
+	DebugRenderHull( camHull, *gDebugRenderer, 0x20FFFFFF );
+	*/
 
 	gDebugRenderer->endDebug();
 }
