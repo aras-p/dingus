@@ -12,7 +12,7 @@ extern SAppSettings gAppSettings;
 
 
 
-const unsigned int CACHED_DATA_VERSION = 20060218;
+const unsigned int CACHED_DATA_VERSION = 20060226;
 
 
 struct SLevelVertex {
@@ -622,6 +622,15 @@ void CLevelMesh::computeData()
 	saveDataToCache();
 }
 
+static std::string gGetLevelCacheName( const CGameMap& gmap )
+{
+	std::string cacheName = "data/levelcache/";
+	cacheName += gmap.getName();
+	cacheName += '.';
+	cacheName += ('0' + gmap.getContext());
+	cacheName += ".cache";
+	return cacheName;
+}
 
 
 bool CLevelMesh::loadCachedData()
@@ -631,7 +640,7 @@ bool CLevelMesh::loadCachedData()
 		return false;
 
 	// open the file
-	FILE* f = fopen( ("data/levelcache/" + mGameMap->getName() + ".cache").c_str(), "rb" );
+	FILE* f = fopen( gGetLevelCacheName(*mGameMap).c_str(), "rb" );
 	if( !f )
 		return false;
 
@@ -668,7 +677,7 @@ void CLevelMesh::saveDataToCache()
 		return;
 
 	// open the file
-	FILE* f = fopen( ("data/levelcache/" + mGameMap->getName() + ".cache").c_str(), "wb" );
+	FILE* f = fopen( gGetLevelCacheName(*mGameMap).c_str(), "wb" );
 	if( !f )
 		return;
 

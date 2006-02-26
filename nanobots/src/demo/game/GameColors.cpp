@@ -37,7 +37,7 @@ void gInitColors()
 
 	gColors.texture[MAPCTX_WOOD][CCOLOR_BLOOD].set( 135.0f/255.0f, 161.0f/255.0f, 59.0f/255.0f );
 	gColors.texture[MAPCTX_WOOD][CCOLOR_BONE].set( 213.0f/255.0f, 208.0f/255.0f, 110.0f/255.0f );
-	gColors.texture[MAPCTX_WOOD][CCOLOR_NEURON].set( 148.0f/255.0f, 96.0f/255.0f, 45.0f/255.0f );
+	gColors.texture[MAPCTX_WOOD][CCOLOR_NEURON].set( 148.0f/255.0f, 130.0f/255.0f, 45.0f/255.0f );
 
 	// TBD: robot colors
 	
@@ -63,9 +63,9 @@ void gInitColors()
 	gColors.minimap[MAPCTX_WOOD][CCOLOR_BONE][CELL_BLOOD2] = 0xFF555030;
 	gColors.minimap[MAPCTX_WOOD][CCOLOR_BONE][CELL_BLOOD3] = 0xFF555030;
 	gColors.minimap[MAPCTX_WOOD][CCOLOR_BONE][CELL_BONE] = 0L;
-	gColors.minimap[MAPCTX_WOOD][CCOLOR_NEURON][CELL_BLOOD1] = 0xFF302000;
-	gColors.minimap[MAPCTX_WOOD][CCOLOR_NEURON][CELL_BLOOD2] = 0xFF302000;
-	gColors.minimap[MAPCTX_WOOD][CCOLOR_NEURON][CELL_BLOOD3] = 0xFF302000;
+	gColors.minimap[MAPCTX_WOOD][CCOLOR_NEURON][CELL_BLOOD1] = 0xFF302F10;
+	gColors.minimap[MAPCTX_WOOD][CCOLOR_NEURON][CELL_BLOOD2] = 0xFF302F10;
+	gColors.minimap[MAPCTX_WOOD][CCOLOR_NEURON][CELL_BLOOD3] = 0xFF302F10;
 	gColors.minimap[MAPCTX_WOOD][CCOLOR_NEURON][CELL_BONE] = 0L;
 
 	// TBD: robot colors
