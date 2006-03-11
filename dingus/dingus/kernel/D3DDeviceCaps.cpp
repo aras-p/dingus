@@ -86,11 +86,11 @@ void CD3DDeviceCaps::setData( IDirect3D9& d3d, UINT adapterOrdinal, D3DDEVTYPE d
 		mPShaderVersion >= PS_2_0
 		&& SUCCEEDED( d3d.CheckDeviceFormat(
 			adapterOrdinal, devType,
-			D3DFMT_X8R8G8B8, // TBD
+			D3DFMT_X8R8G8B8,
 			D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F ) )
 		&& SUCCEEDED( d3d.CheckDeviceFormat(
 			adapterOrdinal, devType,
-			D3DFMT_X8R8G8B8, // TBD
+			D3DFMT_X8R8G8B8,
 			D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F ) )
 	);
 
@@ -99,11 +99,11 @@ void CD3DDeviceCaps::setData( IDirect3D9& d3d, UINT adapterOrdinal, D3DDEVTYPE d
 		mPShaderVersion >= PS_1_1
 		&& SUCCEEDED( d3d.CheckDeviceFormat(
 			adapterOrdinal, devType,
-			D3DFMT_X8R8G8B8, // TBD
+			D3DFMT_X8R8G8B8,
 			0, D3DRTYPE_TEXTURE, D3DFMT_D24S8 ) )
 		&& SUCCEEDED( d3d.CheckDeviceFormat(
 			adapterOrdinal, devType,
-			D3DFMT_X8R8G8B8, // TBD
+			D3DFMT_X8R8G8B8,
 			0, D3DRTYPE_TEXTURE, D3DFMT_D16 ) )
 	);
 }

@@ -463,7 +463,6 @@ bool CUIDialog::msgProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		case WM_LBUTTONDBLCLK:
 		case WM_MBUTTONDBLCLK:
 		case WM_RBUTTONDBLCLK:
-		//case WM_XBUTTONDBLCLK: // TBD
 		case WM_MOUSEWHEEL:
 		{
 			// If not accepting mouse input, return false to indicate the

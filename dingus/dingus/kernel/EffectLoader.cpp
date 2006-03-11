@@ -773,7 +773,7 @@ bool dingus::fxloader::load(
 		&CD3DDevice::getInstance().getDevice(),
 		fileName.c_str(),
 		newMacros,
-		NULL, // TBD ==> includes
+		NULL,
 
 #ifdef DINGUS_HAVE_D3DX_FEB_2005
 		skipConstants,
@@ -863,7 +863,7 @@ bool dingus::fxloader::load(
 	assert( pool );
 	hres = D3DXCreateEffectFromFile(
 		&CD3DDevice::getInstance().getDevice(),
-		fileName.c_str(), newMacros, NULL, // TBD ==> includes
+		fileName.c_str(), newMacros, NULL,
 		optimizeShaders ? 0 : D3DXSHADER_SKIPOPTIMIZATION,
 		pool, &fx, &errors );
 	if( errors && errors->GetBufferSize() > 1 ) {
