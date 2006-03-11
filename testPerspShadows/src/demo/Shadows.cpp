@@ -331,10 +331,15 @@ static void CalculateLisPSM( const CCameraEntity& cam, Light& light )
 	bodyLBounds.setNull();
 	for( i = 0; i < bodyB.v.size(); ++i )
 		bodyLBounds.extend( bodyB.v[i] );
+
+	float zextent = cam.getZFar() - cam.getZNear();
+	float zLextent = bodyLBounds.getMax().z - bodyLBounds.getMin().z;
+	if( zLextent < zextent )
+		zextent = zLextent;
 	
 	// calculate free parameter N
 	double sinGamma = sqrt( 1.0-dotProd*dotProd );
-	const double n = ( cam.getZNear() + sqrt(cam.getZFar()*cam.getZNear()) ) / sinGamma;
+	const double n = ( cam.getZNear() + sqrt(cam.getZNear() * (cam.getZNear() + zextent)) ) / sinGamma;
 
 	// origin in this light space: looking at center of bounds, from distance n
 	SVector3 lightSpaceO = bodyLBounds.getCenter();
