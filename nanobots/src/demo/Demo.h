@@ -3,12 +3,10 @@
 
 #include "../system/System.h"
 
-/**
- *  Demo application.
- */
+
 class CDemo : public CSystem, public IInputListener {
 public:
-	CDemo( const std::string& serverName, int serverPort );
+	CDemo( const std::string& serverName, int serverPort, const std::string& recordFileName, bool writeRecord );
 
 	// IDingusApplication
 	virtual bool checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProcessing vproc, CD3DEnumErrors& errors );

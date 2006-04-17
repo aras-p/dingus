@@ -23,6 +23,7 @@
 #include "map/PointsMesh.h"
 #include "entity/EntityManager.h"
 #include "net/NetInterface.h"
+#include "CameraReplay.h"
 
 
 // --------------------------------------------------------------------------
@@ -34,6 +35,8 @@ const char* RMODE_PREFIX[RMCOUNT] = {
 
 std::string	gServerName;
 int			gServerPort;
+
+CCameraReplay*	gCameraReplay;
 
 
 int			gGlobalCullMode;	// global cull mode
@@ -56,10 +59,18 @@ SAppSettings	gAppSettings;
 
 // --------------------------------------------------------------------------
 
-CDemo::CDemo( const std::string& serverName, int serverPort )
+CDemo::CDemo( const std::string& serverName, int serverPort, const std::string& recordFileName, bool writeRecord )
 {
 	gServerName = serverName;
 	gServerPort = serverPort;
+
+	// TBD! - correct record filename!
+	eRecordMode recMode;
+	if( recordFileName.empty() )
+		recMode = REC_NONE;
+	else
+		recMode = writeRecord ? REC_WRITE : REC_READ;
+	gCameraReplay = new CCameraReplay( recordFileName, recMode );
 }
 
 bool CDemo::checkDevice( const CD3DDeviceCaps& caps, CD3DDeviceCaps::eVertexProcessing vproc, CD3DEnumErrors& errors )
@@ -1615,6 +1626,8 @@ void CDemo::shutdown()
 	
 	CONS << "Shutting down..." << endl;
 	CGameInfo::finalize();
+
+	delete gCameraReplay;
 
 	delete gDebugRenderer;
 

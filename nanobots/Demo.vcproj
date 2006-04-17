@@ -147,6 +147,12 @@
 				RelativePath="src\demo\ByteUtils.h">
 			</File>
 			<File
+				RelativePath=".\src\demo\CameraReplay.cpp">
+			</File>
+			<File
+				RelativePath=".\src\demo\CameraReplay.h">
+			</File>
+			<File
 				RelativePath="src\demo\Demo.cpp">
 			</File>
 			<File
