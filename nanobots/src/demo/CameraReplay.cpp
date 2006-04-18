@@ -41,11 +41,23 @@ void CCameraReplay::SFrameData::lerp( const SFrameData& a, const SFrameData& b, 
 
 static void writeFrameDataToFile( FILE* f, int frame, const CCameraReplay::SFrameData& d )
 {
+	static int prevFrame = 0;
+	static CCameraReplay::SFrameData prevData;
+
+	if( frame == prevFrame )
+	{
+		prevData = d;
+		return;
+	}
+
 	fprintf( f, "%i pos %f %f %f rot %f %f %f %f zoom %f tilt %f follow %i\n",
-		frame,
-		d.pos.x, d.pos.y, d.pos.z,
-		d.rot.x, d.rot.y, d.rot.z, d.rot.w, 
-		d.megaZoom, d.megaTilt, d.followMode );
+		prevFrame,
+		prevData.pos.x, prevData.pos.y, prevData.pos.z,
+		prevData.rot.x, prevData.rot.y, prevData.rot.z, prevData.rot.w, 
+		prevData.megaZoom, prevData.megaTilt, prevData.followMode );
+
+	prevFrame = frame;
+	prevData = d;
 }
 
 static bool readFrameDataFromFile( FILE* f, int& frame, CCameraReplay::SFrameData& d )
@@ -118,12 +130,6 @@ void CCameraReplay::processFrame( float frame, SMatrix4x4& viewerMat, float& zoo
 	}
 	else
 	{
-		static int lastFrame = -1;
-		if( iframe0 == lastFrame )
-			return;
-
-		lastFrame = iframe0;
-
 		SFrameData fd;
 		fd.pos = viewerMat.getOrigin();
 		D3DXQuaternionRotationMatrix( &fd.rot, &viewerMat );

@@ -1505,6 +1505,26 @@ void CDemo::perform()
 		}
 	}
 
+	//
+	// camera replay
+
+	float timeAlpha = (tmv - gi.getState().getTurnReceivedTime()).tosec() / desc.getTurnDT();
+	if( timeAlpha >= 1.0f )
+		timeAlpha = 1.0f;
+
+	if( !gameSetupActive )
+	{
+		gCameraReplay->processFrame( gi.getState().getTurn() + timeAlpha, gViewer, gAppSettings.megaZoom, gAppSettings.megaTilt, gAppSettings.followMode );
+		if( gCameraReplay->isReadingReplay() )
+		{
+			gUISliderZoom->setValue( gAppSettings.megaZoom * 10 );
+			gUISliderTilt->setValue( gAppSettings.megaTilt * 10 );
+		}
+	}
+
+	//
+	// final camera setup
+
 	SMatrix4x4& mm = gCamera.mWorldMat;
 	mm = gViewer;
 	float camnear, camfar, camfov, fognear, fogfar;
@@ -1550,9 +1570,6 @@ void CDemo::perform()
 	mouseRay.pos = eyePos;
 	mouseRay.vec = gMouseRay;
 
-	float timeAlpha = (tmv - gi.getState().getTurnReceivedTime()).tosec() / desc.getTurnDT();
-	if( timeAlpha >= 1.0f )
-		timeAlpha = 1.0f;
 	gi.getEntities().update( mouseRay, timeAlpha );
 	
 	// stats UI
