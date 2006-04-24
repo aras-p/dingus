@@ -2,7 +2,9 @@
 #include "CameraReplay.h"
 #include <dingus/math/Interpolation.h>
 
-const int CAMERA_REPLAY_VERSION = 20060416;
+const int CAMERA_REPLAY_VERSION = 20060423;
+
+const int RECORDS_PER_TURN = 5;
 
 CCameraReplay::CCameraReplay( const std::string& fileName, eRecordMode mode )
 :	mFile(NULL)
@@ -110,6 +112,8 @@ void CCameraReplay::processFrame( float frame, SMatrix4x4& viewerMat, float& zoo
 {
 	if( mMode == REC_NONE )
 		return;
+
+	frame *= RECORDS_PER_TURN;
 
 	int iframe0 = (int)frame;
 	int iframe1 = iframe0 + 1;
