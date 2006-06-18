@@ -30,7 +30,7 @@ IDirect3DCubeTexture9*	loadCubemapSeparateImages( const std::string& fileName )
 	IDirect3DCubeTexture9* texture = NULL;
 
 	size_t dotIdx = fileName.find_last_of( '.' );
-	if( dotIdx >= 3 ) { // fit "_px"
+	if( dotIdx != std::string::npos && dotIdx >= 3 ) { // fit "_px"
 		std::string beforeExt = fileName.substr( dotIdx-3, 3 );
 		if( beforeExt == std::string("_px") ) {
 			D3DXIMAGE_INFO info;

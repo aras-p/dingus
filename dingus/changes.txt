@@ -1,6 +1,7 @@
 
 Dingus small rare developments
 ========
+060618: fixed bug in CubeTextureBundle (caught by Brian Smith)
 060225: quaternion slerp replaced by nlerp everywhere!
 060219: renderFrustum, renderAABB added to DebugRenderer.
 060216: Fix some mouse capture issues in GUI code.
