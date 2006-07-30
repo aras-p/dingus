@@ -417,3 +417,14 @@ void CEntityManager::onNewInjectionPoint( const CGameMap::SPoint& pt )
 {
 	mPointEntities.push_back( new CPointEntity(pt) );
 }
+
+void CEntityManager::onHideInjectionPoint( const CGameMap::SPoint& pt )
+{
+	int n = mPointEntities.size();
+	for( int i = 0; i < n; ++i )
+	{
+		CPointEntity& pe = *mPointEntities[i];
+		if( pe.getPoint() == &pt )
+			pe.hide();
+	}
+}

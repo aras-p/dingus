@@ -1,0 +1,9 @@
+name = 'Wall'
+groups = {
+{
+  fx = 'entity', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'NanoWall' },
+  },
+},
+}

@@ -61,6 +61,7 @@ public:
 
 	void	onNewEntity( const CGameEntity& e );
 	void	onNewInjectionPoint( int player, int x, int y );
+	void	onHideInjectionPoint( int pointIndex );
 
 	/*
 	const CTimer& getTimer() const { return mTimer; }

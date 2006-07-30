@@ -18,7 +18,7 @@ public:
 		mEntities.push_back( SEntity() );
 		mEntities.back().matrix = &matrix;
 		mEntities.back().alpha = alpha;
-		mEntities.back().type = type;
+		mEntities.back().type = float(type);
 	}
 	void	endEntities() {
 	}

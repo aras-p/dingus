@@ -1,0 +1,9 @@
+name = 'IPCreator'
+groups = {
+{
+  fx = 'entity', pri = 0,
+  params = {
+	  { 'tex', 'tBase', 'NanoIPCreator' },
+  },
+},
+}

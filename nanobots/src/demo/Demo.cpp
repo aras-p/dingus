@@ -1117,6 +1117,9 @@ static const char* UIST_TYPENAMES[ENTITYCOUNT] = {
 	"Container",
 	"NeuroCtrl",
 	"Blocker",
+	"unused",
+	"Wall",
+	"IPCreator",
 };
 static const char* UIST_OWNERNAMES[G_MAX_PLAYERS] = {
 	"CO",

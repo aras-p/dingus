@@ -57,7 +57,13 @@ public:
 
 	int		getPointCount() const { return mPoints.size(); }
 	const SPoint& getPoint( int i ) const { return mPoints[i]; }
-	const SPoint& addInjectionPoint( int player, int x, int y ) { mPoints.push_back( SPoint(PT_INJECTION,x,y,player) ); return mPoints.back(); }
+	const SPoint& addInjectionPoint( int player, int x, int y, int* outPtIndex )
+	{
+		mPoints.push_back( SPoint(PT_INJECTION,x,y,player) );
+		if( outPtIndex )
+			*outPtIndex = mPoints.size()-1;
+		return mPoints.back();
+	}
 	void	addObjectivePoint( int mission, int x, int y ) { mPoints.push_back( SPoint(PT_OBJECTIVE,x,y,mission) ); }
 
 	int		getStreamCount() const { return mStreams.size(); }

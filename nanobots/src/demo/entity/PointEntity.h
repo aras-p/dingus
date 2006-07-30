@@ -14,6 +14,9 @@ public:
 	void	renderPoint( eRenderMode renderMode );
 
 	void	update();
+
+	void	hide();
+	const CGameMap::SPoint* getPoint() const { return mPoint; }
 	
 private:
 	SVector4	mColor;

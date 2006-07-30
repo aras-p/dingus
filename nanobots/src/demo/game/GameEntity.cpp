@@ -15,6 +15,9 @@ static const char* ENT_TYPE_NAMES[ENTITYCOUNT] = {
 	"Container",
 	"NeuroCtrl",
 	"Blocker",
+	"unused",
+	"Wall",
+	"IPCreator",
 };
 
 CGameEntity::CGameEntity( unsigned short eid, eEntityType type, int owner, int bornTurn )
@@ -57,6 +60,13 @@ void CGameEntity::updateState( int turn, SState& state )
 		return; // already updated this turn
 
 	state.pos.set( float(state.posx), 0, float(-state.posy) );
+
+	// if IPCreator is in creating state, show secondary injection point
+	if( mType == ENTITY_IPCREATOR )
+	{
+		CGameState& gstate = CGameInfo::getInstance().getState();
+		gstate.updateIPCreatorPoint( mOwner, state.posx, state.posy, state.state == ENTSTATE_CREATINGIP );
+	}
 
 	// this is a very first update, remember max. health
 	// and fill entire history with current state

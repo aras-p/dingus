@@ -4,6 +4,7 @@
 #include "../net/NetMessages.h"
 #include "../GameInfo.h"
 #include "GameDesc.h"
+#include "../entity/EntityManager.h"
 
 
 CGameState::CGameState()
@@ -129,6 +130,7 @@ void CGameState::updateState( int winnerPlayer )
 		assert( pid >= 0 && pid < G_MAX_PLAYERS );
 		int type = bu::receiveByte();
 		assert( type >= ENTITY_NEEDLE && type < ENTITYCOUNT );
+
 		std::string fname = bu::receiveStr();
 		if( fname.length() > CGameEntity::MAX_NAME_LEN )
 			fname.resize( CGameEntity::MAX_NAME_LEN );
@@ -217,5 +219,29 @@ void CGameState::updateServerState( bool forceNow, bool sendStart )
 		const CGameDesc& desc = CGameInfo::getInstance().getGameDesc();
 		mLastStateQueryTime = currT;
 		net::receiveServerState( desc.getPlayerCount(), mServerState, mServerStateErrMsg, sendStart );
+	}
+}
+
+void CGameState::updateIPCreatorPoint( int playerIndex, int x, int y, bool building )
+{
+	assert( playerIndex > 0 && playerIndex < G_MAX_PLAYERS ); // owner can't be the computer
+	CGameState::SPlayer& player = mPlayers[playerIndex];
+	if( building )
+	{
+		// create IP if not created yet
+		if( player.creatorInjectionPtIndex == -1 )
+		{
+			const CGameMap::SPoint& pt = CGameInfo::getInstance().getGameDesc().getMap().addInjectionPoint( playerIndex, x, y, &player.creatorInjectionPtIndex );
+			CGameInfo::getInstance().getEntities().onNewInjectionPoint( pt );
+		}
+	}
+	else
+	{
+		// hide IP if not hidden yet
+		if( player.creatorInjectionPtIndex != -1 )
+		{
+			CGameInfo::getInstance().onHideInjectionPoint( player.creatorInjectionPtIndex );
+			player.creatorInjectionPtIndex = -1;
+		}
 	}
 }

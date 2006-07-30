@@ -112,3 +112,9 @@ void CPointEntity::renderPoint( eRenderMode renderMode )
 		return;
 	render( renderMode, 0, false );
 }
+
+void CPointEntity::hide()
+{
+	mColor.w = 0.0f;
+	mAlphaBase = mAlphaAmpl = 0.0f;
+}

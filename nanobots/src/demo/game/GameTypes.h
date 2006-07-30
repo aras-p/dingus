@@ -34,6 +34,9 @@ enum eEntityType {
 	ENTITY_CONTAINER,
 	ENTITY_NEUROC,
 	ENTITY_BLOCKER,
+	ENTITY__UNUSED,
+	ENTITY_WALL,
+	ENTITY_IPCREATOR,
 	ENTITYCOUNT
 };
 
@@ -45,7 +48,8 @@ enum eEntityState {
 	ENTSTATE_COLLECT,
 	ENTSTATE_TRANSFER,
 	ENTSTATE_BUILD,
-	ENTSTATE_DEAD, ///< Used only internally by the viewer
+	ENTSTATE_CREATINGIP,
+	ENTSTATE_DEAD, ///< Used only internally by the viewer, keep this last
 	ENTSTATECOUNT
 };
 

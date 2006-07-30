@@ -26,13 +26,14 @@ public:
 		float			completion; // 0..1
 	};
 	struct SPlayer {
-		SPlayer() : score(0), injectionPtX(0), injectionPtY(0), aiID(-1), botCount(0) { }
+		SPlayer() : score(0), injectionPtX(0), injectionPtY(0), creatorInjectionPtIndex(-1), aiID(-1), botCount(0) { }
 		
 		std::vector<SMissionStatus>	missions;
 		ringdeque<SLogMsg,MAX_LOG_MSGS>	logs; // [0] is the most recent one
 		int		score;
 		int		injectionPtX;
 		int		injectionPtY;
+		int		creatorInjectionPtIndex;
 		int		aiID;
 		int		botCount;				// alive entity count
 	};
@@ -54,6 +55,7 @@ public:
 	int getFirstTurn() const { return mFirstTurn; }
 
 	const SPlayer& getPlayer( int i ) const { return mPlayers[i]; }
+	void updateIPCreatorPoint( int playerIndex, int x, int y, bool building );
 
 	const SServerState& getServerState() const { return mServerState; }
 	void	updateServerState( bool forceNow, bool sendStart );

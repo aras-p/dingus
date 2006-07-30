@@ -146,7 +146,13 @@ void CGameInfo::onNewEntity( const CGameEntity& e )
 
 void CGameInfo::onNewInjectionPoint( int player, int x, int y )
 {
-	const CGameMap::SPoint& pt = mGameDesc->getMap().addInjectionPoint( player, x, y );
+	const CGameMap::SPoint& pt = mGameDesc->getMap().addInjectionPoint( player, x, y, NULL );
 	mEntities->onNewInjectionPoint( pt );
 }
 
+void CGameInfo::onHideInjectionPoint( int pointIndex )
+{
+	assert( pointIndex >= 0 && pointIndex < mGameDesc->getMap().getPointCount() );
+	const CGameMap::SPoint& pt = mGameDesc->getMap().getPoint( pointIndex );
+	mEntities->onHideInjectionPoint( pt );
+}
