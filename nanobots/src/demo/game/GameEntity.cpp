@@ -105,6 +105,13 @@ void CGameEntity::markDead( int turn )
 	int n = mStates.size();
 	for( int i = 0; i < n; ++i )
 		mStates[i].state = ENTSTATE_DEAD;
+
+	// for IPCreator, hide the point
+	if( mType == ENTITY_IPCREATOR )
+	{
+		CGameState& gstate = CGameInfo::getInstance().getState();
+		gstate.updateIPCreatorPoint( mOwner, 0, 0, false );
+	}
 }
 
 void CGameEntity::adjustPosition( int turn, SState& state, bool height )
