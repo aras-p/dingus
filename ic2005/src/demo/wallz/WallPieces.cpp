@@ -384,7 +384,8 @@ namespace polygon_merger {
 				assert( itLoopStart != localPolygon.end() );
 
 				// append to results
-				TIntVector loopPolygon( itLoopStart, localPolygon.end() );
+				TIntVector::const_iterator localPolyEnd = localPolygon.end();
+				TIntVector loopPolygon( itLoopStart, localPolyEnd );
 				triangulator::process( vb, loopPolygon, localIB );
 				polygon.insert( polygon.end(), loopPolygon.begin(), loopPolygon.end() );
 				ib.insert( ib.end(), localIB.begin(), localIB.end() );

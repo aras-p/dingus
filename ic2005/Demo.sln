@@ -1,0 +1,39 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo", "Demo.vcproj", "{1FD619AC-0F31-4777-84AA-0307A20E39A5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DE42B3CC-1E26-42C0-AD94-CCCD009F9AB5} = {DE42B3CC-1E26-42C0-AD94-CCCD009F9AB5}
+		{0ED318F0-1F02-4B96-9E29-6A5AAC636513} = {0ED318F0-1F02-4B96-9E29-6A5AAC636513}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ode", "src\extern\ode\ode.vcproj", "{DE42B3CC-1E26-42C0-AD94-CCCD009F9AB5}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dingus", "..\dingus\dingus.vcproj", "{0ED318F0-1F02-4B96-9E29-6A5AAC636513}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{1FD619AC-0F31-4777-84AA-0307A20E39A5}.Debug.ActiveCfg = Debug|Win32
+		{1FD619AC-0F31-4777-84AA-0307A20E39A5}.Debug.Build.0 = Debug|Win32
+		{1FD619AC-0F31-4777-84AA-0307A20E39A5}.Release.ActiveCfg = Release|Win32
+		{1FD619AC-0F31-4777-84AA-0307A20E39A5}.Release.Build.0 = Release|Win32
+		{DE42B3CC-1E26-42C0-AD94-CCCD009F9AB5}.Debug.ActiveCfg = Debug|Win32
+		{DE42B3CC-1E26-42C0-AD94-CCCD009F9AB5}.Debug.Build.0 = Debug|Win32
+		{DE42B3CC-1E26-42C0-AD94-CCCD009F9AB5}.Release.ActiveCfg = Release|Win32
+		{DE42B3CC-1E26-42C0-AD94-CCCD009F9AB5}.Release.Build.0 = Release|Win32
+		{0ED318F0-1F02-4B96-9E29-6A5AAC636513}.Debug.ActiveCfg = Debug|Win32
+		{0ED318F0-1F02-4B96-9E29-6A5AAC636513}.Debug.Build.0 = Debug|Win32
+		{0ED318F0-1F02-4B96-9E29-6A5AAC636513}.Release.ActiveCfg = Release|Win32
+		{0ED318F0-1F02-4B96-9E29-6A5AAC636513}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
