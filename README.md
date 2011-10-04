@@ -11,6 +11,11 @@ Basically, I've got into demoscene more or less seriously, and the engine was us
 An engine with similar ideas/philosophy _(hey, the same people!)_ was also used for some small games and other interactive entertainment projects while I was working at my previous job. That's it; right now I am working at Unity Technologies on [Unity](http://unity3d.com) game development tool, and have not so much time left to be working on dingus. Oh well!
 
 
+## What now?
+
+Clone the source code. Some documentation in [dingus/doc](dingus/doc) folder.
+
+
 ## What's the point?
 
 I know that the engine itself provides nearly zero value. However, I'll try to write some small articles on how the engine is made and hopefully provide some standalone tools. If that would benefit anyone in any way - that's great. _Oh, and having the sourcecode repository somewhere online is more convenient for myself._
