@@ -13,7 +13,7 @@ An engine with similar ideas/philosophy _(hey, the same people!)_ was also used 
 
 ## What now?
 
-Clone the source code. Some documentation in [dingus/doc](tree/master/dingus/doc) folder.
+Clone the source code. Some documentation in [dingus/doc](dingus/tree/master/dingus/doc) folder.
 
 
 ## What's the point?
